@@ -1,7 +1,7 @@
 # ![](http://i.imgur.com/g0MZFu1.png) Disa's Open Source Repository
 
 
-Welcome to Disa's open source repository! Disa is a unified messenger currently available for Android devices. This open source repository aims to provide you everything needed to start developing plugins for your favorite instant messaging plaforms (or anything that you can really _make_ out of this platform).
+Welcome to Disa's open source repository! Disa is a unified messenger currently available for Android devices (more platforms soon to come!). This open source repository aims to provide you everything needed to start developing your own plugins for your favorite instant messaging plaforms (or anything that you can really _make_ out of it).
 
 __Please note that the documention currently provided is in a very prelimenary state. Over the next few months, significant efforts will be placed on maturing it. If you can't figure it out, raise an issue or check back a month later (in hope for your question(s) answered with newly provided documentation).__
 
@@ -13,13 +13,9 @@ At the very core of Disa is Disa.Framework. Disa.Framework is code that cross-co
 
 Thus, if done correctly, your plugin will run on any platform that Disa.Framework runs on - "write once, run anywhere".
 
-## Getting Started
+## Getting Started & Contributing
 
-Head over to the Wiki to get started!
-
-## Contributing
-
-Head over to the Wiki's TODO to find out what you can contribute to.
+Head over to the Wiki where you'll find this information.
 
 ## License
 
