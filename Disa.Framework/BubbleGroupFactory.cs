@@ -130,35 +130,34 @@ namespace Disa.Framework
 
                         var handles = OpenDatabaseStreams(groups).ToList();
 
-                        GetMoreBubbles:
-
-                        var result = LoadDatabaseBubblesOnUnitInto(groups, _day, handles, groupCursors, _selection.BubbleTypes, _selection.Comparer);
-
-                        var bubbles = result.Item1;
-                        if (bubbles != null)
+                        while (true)
                         {
-                            allBubbles.AddRange(bubbles);
-                        }
+                            var result = LoadDatabaseBubblesOnUnitInto(groups, _day, handles, groupCursors, _selection.BubbleTypes, _selection.Comparer);
 
-                        groupCursors = result.Item2;
-                        _day++;
+                            var bubbles = result.Item1;
+                            if (bubbles != null)
+                            {
+                                allBubbles.AddRange(bubbles);
+                            }
 
-                        var endReached = result.Item2.Count(cursor => cursor.Item2 == -2);
-                        if (endReached == result.Item2.Count)
-                        {
-                            _endReached = true;
-                            goto ReturnResult;
-                        }
-                        if (bubbles == null)
-                        {
-                            goto GetMoreBubbles;
-                        }
-                        if (allBubbles.Count < 100)
-                        {
-                            goto GetMoreBubbles;
-                        }
+                            groupCursors = result.Item2;
+                            _day++;
 
-                        ReturnResult:
+                            var endReached = result.Item2.Count(cursor => cursor.Item2 == -2);
+                            if (endReached == result.Item2.Count)
+                            {
+                                _endReached = true;
+                                break;
+                            }
+                            if (bubbles == null)
+                            {
+                                continue;
+                            }
+                            if (allBubbles.Count >= 100)
+                            {
+                                break;
+                            }
+                        }
 
                         CloseDatabaseStreams(handles);
 
