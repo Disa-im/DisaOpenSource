@@ -17,6 +17,10 @@ Thus, if done correctly, your plugin will run on any platform that Disa.Framewor
 
 Head over to the Wiki where you'll find this information.
 
+## Contact
+
+If you have any questions, give us an email at opensoure@disa.im.
+
 ## License
 
  (C) Copyright 2015 Disa (http://disa.im).
