@@ -1,0 +1,223 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Linq;
+using Disa.Framework.Bubbles;
+using System.Reflection;
+
+namespace Disa.Framework
+{
+    public static class Utils
+    {
+        public static bool Logging { get; set; }
+
+        public static Task GcCollect()
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    GC.Collect();
+#if __ANDROID__
+                        
+                    Java.Lang.Runtime.GetRuntime().Gc();
+#endif
+
+                }
+                catch (Exception ex)
+                {
+                    DebugPrint("Failed to GC collect: " + ex);
+                }
+            });
+        }
+
+        public static SynchronizedCollection<T> ToSynchronizedCollection<T>(this List<T> list)
+        {
+            if (list == null)
+                return null;
+            var synchronizedCollection = new SynchronizedCollection<T>();
+            foreach (var participant in list)
+            {
+                synchronizedCollection.Add(participant);
+            }
+            return synchronizedCollection;
+        }
+
+        public static string ColorIntToString(int argb)
+        {
+            return "#" + argb.ToString("X4").PadLeft(6, '0');
+        }
+
+        public static int ColorStringToInt(string argb)
+        {
+            return Convert.ToInt32(argb.Remove(0, 1), 16);
+        }
+
+        public static bool UrlHasParams(string location)
+        {
+            return location.Contains("?");
+        }
+
+        public static string ConvertToUrlEscapingIllegalCharacters(String @string)
+        {
+            var uri = new Uri(@string);
+            var ascii = uri.AbsoluteUri;
+            return ascii;
+        }
+
+        public static bool IsUrl(string location)
+        {
+            var trimmed = location.Trim();
+            return trimmed.StartsWith("https://") || trimmed.StartsWith("http://");
+        }
+
+        public static void DebugPrint(string str)
+        {
+			if (Logging)
+            {
+                Console.WriteLine(str);
+                LogsManager.WriteLine(str);
+            }
+        }
+
+        public static void DebugPrintNoLog(string str)
+        {
+			if (Logging)
+            {
+                Console.WriteLine(str);
+            }
+        }
+
+        public static Task Delay(double milliseconds)
+        {
+            return Task.Delay((int)milliseconds);
+        }
+
+        public static string RemoveDiacritics(string stIn)
+        {
+            string stFormD = stIn.Normalize(NormalizationForm.FormD);
+            StringBuilder sb = new StringBuilder();
+
+            for (int ich = 0; ich < stFormD.Length; ich++)
+            {
+                UnicodeCategory uc = CharUnicodeInfo.GetUnicodeCategory(stFormD[ich]);
+                if (uc != UnicodeCategory.NonSpacingMark)
+                {
+                    sb.Append(stFormD[ich]);
+                }
+            }
+
+            return (sb.ToString().Normalize(NormalizationForm.FormC));
+        }
+
+        public static T Clone<T>(T source)
+        {
+            if (!typeof(T).IsSerializable)
+            {
+                throw new ArgumentException("The type must be serializable.", "source");
+            }
+
+            // Don't serialize a null object, simply return the default for that object
+            if (ReferenceEquals(source, null))
+            {
+                return default(T);
+            }
+
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new MemoryStream();
+            using (stream)
+            {
+                formatter.Serialize(stream, source);
+                stream.Seek(0, SeekOrigin.Begin);
+                return (T)formatter.Deserialize(stream);
+            }
+        }
+
+        public static IEnumerable<int> Factor(int number)
+        {
+            var factors = new List<int>();
+            var max = (int)Math.Sqrt(number);
+
+            for (var factor = 1; factor <= max; ++factor)
+            {
+                if (number % factor != 0) continue;
+
+                factors.Add(factor);
+                if (factor != number / factor)
+                { 
+                    factors.Add(number / factor);
+                }
+            }
+
+            return factors;
+        }
+
+        public static bool Search(string haystack, string needle)
+        {
+            if (string.IsNullOrWhiteSpace(needle))
+                return true;
+
+            if (string.IsNullOrWhiteSpace(haystack))
+            {
+                return false;
+            }
+
+            var queryTrimmedAndDiacriticsRemoved = Utils.RemoveDiacritics(needle.Trim());
+
+            var queryIsPartOfTitle = haystack.Split(' ').FirstOrDefault(x => 
+                Utils.RemoveDiacritics(x.Trim())
+                .StartsWith(queryTrimmedAndDiacriticsRemoved, 
+                    StringComparison.CurrentCultureIgnoreCase)) != null;
+
+            if (queryIsPartOfTitle)
+                return true;
+
+            var queryIsTitle = Utils.RemoveDiacritics(haystack.Trim())
+                .IndexOf(queryTrimmedAndDiacriticsRemoved, StringComparison.CurrentCultureIgnoreCase) > -1;
+
+            if (queryIsTitle)
+                return true;
+
+            return false;
+        }
+
+        public static IEnumerable<Type> GetAllTypes(Assembly assembly)
+        {
+            return GetAllTypes(new [] { assembly });
+        }
+
+        public static IEnumerable<Type> GetAllTypes(IEnumerable<Assembly> assemblies)
+        {
+            foreach (var assembly in assemblies)
+            {
+                Type[] types;
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch
+                {
+                    types = null;
+                }
+                if (types != null)
+                {
+                    foreach (var type in types)
+                    {
+                        yield return type;
+                    }
+                }
+                else
+                {
+                    Utils.DebugPrint("Failed to get types out of assembly: " + assembly.FullName);
+                }
+            }
+        }
+    }
+}

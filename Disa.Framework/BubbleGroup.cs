@@ -1,0 +1,280 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Disa.Framework.Bubbles;
+using ProtoBuf;
+
+namespace Disa.Framework
+{
+    public class BubbleGroup : IEnumerable<VisualBubble>
+    {
+        public const int BubblesCapSize = 100;
+
+        public string ID { get; private set; }
+        public string LegibleId { get; internal set; }
+        public bool PartiallyLoaded { get; internal set; }
+
+        internal SynchronizedCollection<VisualBubble> Bubbles { get; private set; }
+
+        public bool IsTitleSetFromService { get; internal set; }
+        public string Title { get; internal set; }
+            
+        public bool IsPhotoSetFromService { get; set; }
+        public bool IsPhotoSetInitiallyFromCache { get; internal set; }
+        public DisaThumbnail Photo { get; internal set; }
+
+        public bool IsParticipantsSetFromService { get; internal set; }
+        public SynchronizedCollection<DisaParticipant> Participants = new SynchronizedCollection<DisaParticipant>();
+        public SynchronizedCollection<string> FailedUnknownParticipants = new SynchronizedCollection<string>();
+
+        public bool NeedsSync { get; internal set; }
+
+        public bool Typing  { get; internal set; }
+		public bool TypingIsAudio { get; internal set; }
+        public long LastSeen { get; internal set; }
+
+        public PresenceBubble.PresenceType PresenceType { get; internal set; }
+        public PresenceBubble.PlatformType PresencePlatformType { get; internal set; }
+        public bool Presence  
+        {
+            get 
+            {
+                return PresenceBubble.IsAvailable(PresenceType);
+            } 
+        }
+
+        private Action<VisualBubble, BubbleGroup> _bubbleInserted;
+        private Action<BubbleGroup> _synced;
+        public UnifiedBubbleGroup Unified { get; private set; }
+        public bool IsUnified
+        {
+            get
+            {
+                return Unified != null;
+            }
+        }
+
+        public DisaReadTime[] ReadTimes 
+        {
+            get
+            {
+                return BubbleGroupSettingsManager.GetReadTimes(this);
+            }
+            internal set
+            {
+                BubbleGroupSettingsManager.SetReadTimes(this, value);
+            }
+        }
+
+        internal BubbleGroupSettings Settings { get; set; }
+
+        private long _bubblesInsertedCount;
+
+        public void RegisterSynced(Action<BubbleGroup> updated)
+        {
+            _synced = updated;
+        }
+
+        public void DeregisterSynced()
+        {
+            _synced = null;
+        }
+
+        public void RegisterUnified(UnifiedBubbleGroup unified)
+        {
+            Unified = unified;
+        }
+
+        public void DeregisterUnified()
+        {
+            Unified = null;
+        }
+
+        public void RegisterBubbleInserted(Action<VisualBubble, BubbleGroup> updated)
+        {
+            _bubbleInserted = updated;
+        }
+
+        public void DeregisterBubbleInserted()
+        {
+            _bubbleInserted = null;
+        }
+
+        public void RaiseBubblesSynced()
+        {
+            if (_synced != null)
+            {
+                _synced(this);
+            }
+        }
+
+        protected void RaiseBubbleInserted(VisualBubble bubble)
+        {
+            if (_bubbleInserted != null)
+            {
+                _bubbleInserted(bubble, this);
+            }
+        }
+
+        private void RaiseUnifiedBubblesUpdatedIfUnified(VisualBubble bubble)
+        {
+            if (Unified != null)
+            {
+                Unified.OnBubbleUpdated(bubble, this);
+            }
+        }
+
+        public bool IsParty
+        {
+            get { return Bubbles[0].Party; }
+        }
+
+        public void InsertByTime(VisualBubble b)
+        {
+            if (Bubbles.Count > BubblesCapSize)
+            {
+                Bubbles.RemoveAt(0);
+            }
+
+            for (int i = Bubbles.Count - 1; i >= 0; i--)
+            {
+                var nBubble = Bubbles[i];
+                if (nBubble.Time <= b.Time)
+                {
+                    // adding it to the end, we can do a simple contract
+                    if (i == Bubbles.Count - 1)
+                    {
+                        Bubbles.Add(b);
+                        if (b.Direction == Bubble.BubbleDirection.Incoming)
+                        {
+                            BubbleGroupSettingsManager.SetUnread(this, true);
+                        }
+                    }
+                    // inserting, do a full contract
+                    else
+                    {
+                        Bubbles.Insert(i + 1, b);
+                    }
+                    break;
+                }
+
+                // could not find a valid place to insert, then skip insertion.
+                if (i == 0)
+                {
+                    return;
+                }
+            }
+
+            if (Unified == null)
+            {
+                _bubblesInsertedCount++;
+                if (_bubblesInsertedCount % 100 == 0)
+                {
+                    if (BubbleGroupSync.SupportsSyncAndIsRunning(this))
+                    {
+                        Action doSync = async () =>
+                        {
+                            using (Platform.AquireWakeLock("DisaSync"))
+                            {
+                                await Utils.Delay(1000);
+                                await BubbleGroupSync.Sync(this, true);
+                            }
+                        };
+                        doSync();
+                    }
+                }
+            }
+
+            RaiseBubbleInserted(b);
+            RaiseUnifiedBubblesUpdatedIfUnified(b);
+        }
+
+        public void UnloadFullLoad()
+        {
+            PartiallyLoaded = true;
+            var lastBubble = Bubbles.Last();
+            Bubbles.Clear();
+            Bubbles.Add(lastBubble);
+        }
+
+        public int CountSafe()
+        {
+            return Bubbles.Count;
+        }
+
+        public VisualBubble this[int key]
+        {
+            get
+            {
+                return Bubbles[key];
+            }
+        }
+
+        public BubbleGroup(VisualBubble initialBubble, string id = null, bool partiallyLoaded = false)
+        {
+            PartiallyLoaded = partiallyLoaded;
+            Bubbles = new SynchronizedCollection<VisualBubble> { initialBubble };
+            Setup(id);
+        }
+
+        public BubbleGroup(List<VisualBubble> initialBubbles, string id = null)
+        {
+            PartiallyLoaded = false;
+            var collection = new SynchronizedCollection<VisualBubble>();
+            foreach (var bubble in initialBubbles)
+            {
+                collection.Add(bubble);
+            }
+            Bubbles = collection;
+            Setup(id);
+        }
+
+        private void Setup(string id)
+        {
+            if (id == null)
+            {
+                ID = Guid.NewGuid().ToString();
+            }
+            else
+            {
+                ID = id;
+            }
+
+            var firstBubble = Bubbles.First();
+
+            NeedsSync = firstBubble.Service is BubbleGroupSync.Agent;
+        }
+
+        public virtual Service Service
+        {
+            get { return Bubbles[0].Service; }
+        }
+
+        public string Address
+        {
+            get { return Bubbles[0].Address; }
+        }
+
+        public VisualBubble LastBubbleSafe()
+        {
+            return Bubbles[CountSafe() - 1];
+        }
+
+        public void RemoveBubble(VisualBubble bubble)
+        {
+            Bubbles.Remove(bubble);
+        }
+
+        public IEnumerator<VisualBubble> GetEnumerator()
+        {
+            return Bubbles.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+}

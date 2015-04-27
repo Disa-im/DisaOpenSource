@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9F73B5C0-CCEC-43B5-9298-E1F1D6826169}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Disa.Framework</RootNamespace>
+    <AssemblyName>Disa.Framework</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="SQLite-net">
+      <HintPath>..\packages\sqlite-net-pcl.1.0.11\lib\portable-net45+wp8+wpa81+win8+MonoAndroid10+MonoTouch10+Xamarin.iOS10\SQLite-net.dll</HintPath>
+    </Reference>
+    <Reference Include="TimSort">
+      <HintPath>..\References\TimSort.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCL.raw">
+      <HintPath>..\packages\SQLitePCL.raw_basic.0.8.0\lib\net45\SQLitePCL.raw.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BubbleGroup.cs" />
+    <Compile Include="BubbleGroupCache.cs" />
+    <Compile Include="BubbleGroupCacheManager.cs" />
+    <Compile Include="BubbleGroupDatabase.cs" />
+    <Compile Include="BubbleGroupDatabasePrimitives.cs" />
+    <Compile Include="BubbleGroupEvents.cs" />
+    <Compile Include="BubbleGroupFactory.cs" />
+    <Compile Include="BubbleGroupManager.cs" />
+    <Compile Include="BubbleGroupSettings.cs" />
+    <Compile Include="BubbleGroupSettingsManager.cs" />
+    <Compile Include="BubbleGroupSync.cs" />
+    <Compile Include="BubbleGroupUpdater.cs" />
+    <Compile Include="BubbleGroupUtils.cs" />
+    <Compile Include="BubbleManager.cs" />
+    <Compile Include="BubbleQueueManager.cs" />
+    <Compile Include="BubbleTransfer.cs" />
+    <Compile Include="ComposeBubbleGroup.cs" />
+    <Compile Include="Contact.cs" />
+    <Compile Include="DisaMutableSettings.cs" />
+    <Compile Include="DisaParticipant.cs" />
+    <Compile Include="DisaReadTime.cs" />
+    <Compile Include="DisaServiceUserSettings.cs" />
+    <Compile Include="DisaSettings.cs" />
+    <Compile Include="DisaThumbnail.cs" />
+    <Compile Include="DisaUnifiedBubbleGroupEntry.cs" />
+    <Compile Include="Emoji.cs" />
+    <Compile Include="IconType.cs" />
+    <Compile Include="IMediaDownloader.cs" />
+    <Compile Include="IMessageIntent.cs" />
+    <Compile Include="INewMessage.cs" />
+    <Compile Include="IPartyOptions.cs" />
+    <Compile Include="IPartyThumbnail.cs" />
+    <Compile Include="IPrivacyList.cs" />
+    <Compile Include="ITimeFormatter.cs" />
+    <Compile Include="IUserInformation.cs" />
+    <Compile Include="IVisualBubbleServiceId.cs" />
+    <Compile Include="LogsManager.cs" />
+    <Compile Include="MediaManager.cs" />
+    <Compile Include="MutableSettingsManager.cs" />
+    <Compile Include="NotificationManager.cs" />
+    <Compile Include="OkHttpClient.cs" />
+    <Compile Include="PhoneBook.cs" />
+    <Compile Include="PhoneBookContact.cs" />
+    <Compile Include="Platform.cs" />
+    <Compile Include="PlatformImplementation.cs" />
+    <Compile Include="PlatformManager.cs" />
+    <Compile Include="Queue.cs" />
+    <Compile Include="Service.cs" />
+    <Compile Include="ServiceBubbleGroupAddressException.cs" />
+    <Compile Include="ServiceBubbleSendFailedException.cs" />
+    <Compile Include="ServiceEvents.cs" />
+    <Compile Include="ServiceExpiredException.cs" />
+    <Compile Include="ServiceInfo.cs" />
+    <Compile Include="ServiceManager.cs" />
+    <Compile Include="ServiceManagerException.cs" />
+    <Compile Include="ServiceQueueBubbleException.cs" />
+    <Compile Include="ServiceRestartException.cs" />
+    <Compile Include="ServiceSchedulerException.cs" />
+    <Compile Include="ServiceSpecialRestartException.cs" />
+    <Compile Include="ServiceUserSettingsManager.cs" />
+    <Compile Include="ServiceWarningException.cs" />
+    <Compile Include="SettingsManager.cs" />
+    <Compile Include="SimpleDatabase.cs" />
+    <Compile Include="Socket.cs" />
+    <Compile Include="SqlDatabase.cs" />
+    <Compile Include="SslSocket.cs" />
+    <Compile Include="Time.cs" />
+    <Compile Include="UnifiedBubbleGroup.cs" />
+    <Compile Include="UserInformation.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="WakeLock.cs" />
+    <Compile Include="WakeLockBalancer.cs" />
+    <Compile Include="WebClient.cs" />
+    <Compile Include="ZipStorer.cs" />
+    <Compile Include="Bubbles\AbstractBubble.cs" />
+    <Compile Include="Bubbles\AudioBubble.cs" />
+    <Compile Include="Bubbles\Bubble.cs" />
+    <Compile Include="Bubbles\ComposeBubble.cs" />
+    <Compile Include="Bubbles\DeliveredBubble.cs" />
+    <Compile Include="Bubbles\DeliveredBubbleReceipt.cs" />
+    <Compile Include="Bubbles\FileBubble.cs" />
+    <Compile Include="Bubbles\ImageBubble.cs" />
+    <Compile Include="Bubbles\LocationBubble.cs" />
+    <Compile Include="Bubbles\NewBubble.cs" />
+    <Compile Include="Bubbles\NewDayBubble.cs" />
+    <Compile Include="Bubbles\PartyInformationBubble.cs" />
+    <Compile Include="Bubbles\PresenceBubble.cs" />
+    <Compile Include="Bubbles\ReadBubble.cs" />
+    <Compile Include="Bubbles\StickerBubble.cs" />
+    <Compile Include="Bubbles\SubscribeBubble.cs" />
+    <Compile Include="Bubbles\TextBubble.cs" />
+    <Compile Include="Bubbles\TypingBubble.cs" />
+    <Compile Include="Bubbles\VideoBubble.cs" />
+    <Compile Include="Bubbles\VisualBubble.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\SQLitePCL.raw_basic.0.8.0\build\net45\SQLitePCL.raw_basic.targets" Condition="Exists('..\packages\SQLitePCL.raw_basic.0.8.0\build\net45\SQLitePCL.raw_basic.targets')" />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Bubbles\" />
+  </ItemGroup>
+</Project>
