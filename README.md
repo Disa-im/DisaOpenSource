@@ -1,4 +1,4 @@
-# ![](http://i.imgur.com/MbL47UB.png) Disa's Open Source Repository
+# ![](http://i.imgur.com/g0MZFu1.png) Disa's Open Source Repository
 
 
 Welcome to Disa's open source repository! Disa is a unified messenger currently available for Android devices. This open source repository aims to provide you everything needed to start developing plugins for your favorite instant messaging plaforms (or anything that you can really _make_ out of this platform). These plugins can then be run on any platform that runs Mono/.NET - including the ability to run on our Android build: https://play.google.com/store/apps/details?id=com.disa
