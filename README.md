@@ -19,7 +19,7 @@ Head over to the Wiki where you'll find this information.
 
 ## Contact
 
-If you have any questions, give us an email at opensoure@disa.im.
+If you have any questions, give us an email at opensource@disa.im.
 
 ## License
 
