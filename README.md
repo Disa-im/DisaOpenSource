@@ -13,7 +13,7 @@ At the very core of Disa is Disa.Framework. Disa.Framework is code that cross-co
 
 Thus, if done correctly, your plugin will run on any platform that Disa.Framework runs on - "write once, run anywhere".
 
-## Getting Started & Contributing
+## Documentation, Roadmap & Contributing
 
 Head over to the Wiki where you'll find this information.
 
