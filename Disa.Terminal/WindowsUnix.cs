@@ -8,7 +8,7 @@ using System.Timers;
 
 namespace Disa.Terminal
 {
-    public class WindowsMac : PlatformImplementation
+    public class WindowsUnix : PlatformImplementation
     {
         public override byte[] GetIcon(IconType iconType)
         {
@@ -18,7 +18,7 @@ namespace Disa.Terminal
 
         public override string GetCurrentLocale()
         {
-            return "en-US";
+            return "en-US"; //TODO
         }
 
         private string GetDisaPath(string directory)
@@ -139,6 +139,7 @@ namespace Disa.Terminal
 
             public DumbWakeLock(string name)
             {
+                TemporaryAcquire();
                 _name = name;
             }
 
