@@ -46,12 +46,12 @@ namespace Disa.Framework
     [AttributeUsage(AttributeTargets.All)]
     public class QueuedBubblesParameters : Attribute
     {
-        public Type[] BubblesNotToQueue { get; set; }
-        public bool FailNotQueuedBubbles { get; set; }
+        public Type[] BubblesNotToQueue { get; private set; }
+        public Type[] SendingBubblesToFailOnServiceStart { get; private set; }
 
-        public QueuedBubblesParameters(bool failNotQueuedBubbles = false, params Type[] bubblesNotToQueue)
+        public QueuedBubblesParameters(Type[] bubblesNotToQueue, Type[] sendingBubblesToFailOnServiceStart)
         {
-            FailNotQueuedBubbles = failNotQueuedBubbles;
+            SendingBubblesToFailOnServiceStart = sendingBubblesToFailOnServiceStart;
             BubblesNotToQueue = bubblesNotToQueue;
         }
     }
