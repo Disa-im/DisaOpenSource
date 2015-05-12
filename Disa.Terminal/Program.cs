@@ -3,6 +3,7 @@ using Disa.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using Disa.Framework.Bubbles;
+using Disa.Framework.Telegram;
 
 namespace Disa.Terminal
 {
@@ -12,7 +13,7 @@ namespace Disa.Terminal
         {
             Console.WriteLine("Welcome to Disa.Terminal!");
 
-            Initialize(new Service[] { });
+            Initialize(new Service[] { new Telegram() });
 
             Console.WriteLine("Initialized.");
 
@@ -164,7 +165,7 @@ namespace Disa.Terminal
             PhoneBook.Country = locale.Substring(3, locale.Length - 3);
 
             // Uncomment if you want to get information from the Framework
-            //Utils.Logging = true;
+            Utils.Logging = true;
 
             PlatformManager.InitializeMain(allServices.ToArray());
 

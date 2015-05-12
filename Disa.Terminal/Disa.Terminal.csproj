@@ -59,6 +59,10 @@
       <Project>{9F73B5C0-CCEC-43B5-9298-E1F1D6826169}</Project>
       <Name>Disa.Framework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Disa.Framework.Telegram\Disa.Framework.Telegram.csproj">
+      <Project>{575DCE77-4E2E-46E0-9BB8-FA8E5C912BFA}</Project>
+      <Name>Disa.Framework.Telegram</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\References\Native\sqlite3.dll">

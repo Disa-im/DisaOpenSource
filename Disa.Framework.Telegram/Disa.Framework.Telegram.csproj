@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{575DCE77-4E2E-46E0-9BB8-FA8E5C912BFA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Disa.Framework.Telegram</RootNamespace>
+    <AssemblyName>Disa.Framework.Telegram</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="BigMath">
+      <HintPath>..\packages\BigMath.0.5.0\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\BigMath.dll</HintPath>
+    </Reference>
+    <Reference Include="Dynamitey">
+      <HintPath>..\packages\Dynamitey.1.0.2.0\lib\net40\Dynamitey.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.0\lib\net45\Nito.AsyncEx.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Concurrent">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.0\lib\net45\Nito.AsyncEx.Concurrent.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Enlightenment">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.0\lib\net45\Nito.AsyncEx.Enlightenment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces">
+      <HintPath>..\packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq">
+      <HintPath>..\packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="Raksha">
+      <HintPath>..\packages\Raksha.0.3\lib\net45\Raksha.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SharpTL\Exceptions.cs" />
+    <Compile Include="SharpTL\GlobalSuppressions.cs" />
+    <Compile Include="SharpTL\ITLSerializer.cs" />
+    <Compile Include="SharpTL\ITLVectorSerializer.cs" />
+    <Compile Include="SharpTL\TLCrcStreamer.cs" />
+    <Compile Include="SharpTL\TLObjectAttribute.cs" />
+    <Compile Include="SharpTL\TLObjectWithCustomSerializerAttribute.cs" />
+    <Compile Include="SharpTL\TLPropertyAttribute.cs" />
+    <Compile Include="SharpTL\TLPropertyInfo.cs" />
+    <Compile Include="SharpTL\TLRig.cs" />
+    <Compile Include="SharpTL\TLSerializationContext.cs" />
+    <Compile Include="SharpTL\TLSerializationMode.cs" />
+    <Compile Include="SharpTL\TLSerializersBucket.cs" />
+    <Compile Include="SharpTL\TLStreamer.cs" />
+    <Compile Include="SharpTL\TLTypeAttribute.cs" />
+    <Compile Include="SharpTL\TLVectorAttribute.cs" />
+    <Compile Include="SharpTL\Serializers\BooleanSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\BuiltIn.cs" />
+    <Compile Include="SharpTL\Serializers\DoubleSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\Int128Serializer.cs" />
+    <Compile Include="SharpTL\Serializers\Int256Serializer.cs" />
+    <Compile Include="SharpTL\Serializers\IntSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\LongSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\StringSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\TLBytesSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\TLCustomObjectSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\TLMultiConstructorObjectSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\TLSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\TLSerializerBase.cs" />
+    <Compile Include="SharpTL\Serializers\TLVectorSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\UIntSerializer.cs" />
+    <Compile Include="SharpTL\Serializers\ULongSerializer.cs" />
+    <Compile Include="SharpTL\Properties\Annotations.cs" />
+    <Compile Include="SharpMTProto\Annotations.cs" />
+    <Compile Include="SharpMTProto\ConnectionConfig.cs" />
+    <Compile Include="SharpMTProto\Defaults.cs" />
+    <Compile Include="SharpMTProto\ErrorCode.cs" />
+    <Compile Include="SharpMTProto\Exceptions.cs" />
+    <Compile Include="SharpMTProto\IMTProtoClientConnection.cs" />
+    <Compile Include="SharpMTProto\IRemoteProcedureCaller.cs" />
+    <Compile Include="SharpMTProto\MTProtoClient.cs" />
+    <Compile Include="SharpMTProto\MTProtoClientBuilder.cs" />
+    <Compile Include="SharpMTProto\MTProtoClientConnection.cs" />
+    <Compile Include="SharpMTProto\Authentication\AuthInfo.cs" />
+    <Compile Include="SharpMTProto\Authentication\AuthKeyNegotiator.cs" />
+    <Compile Include="SharpMTProto\Authentication\KeyChain.cs" />
+    <Compile Include="SharpMTProto\Authentication\PublicKey.cs" />
+    <Compile Include="SharpMTProto\Messaging\MessageCodec.cs" />
+    <Compile Include="SharpMTProto\Messaging\MessageSendingFlags.cs" />
+    <Compile Include="SharpMTProto\Messaging\MessageSerializer.cs" />
+    <Compile Include="SharpMTProto\Messaging\Request.cs" />
+    <Compile Include="SharpMTProto\Messaging\RequestsManager.cs" />
+    <Compile Include="SharpMTProto\Messaging\Sender.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\BadMsgNotificationHandler.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\FirstRequestResponseHandler.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\IResponseHandler.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\MessageContainerHandler.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\ResponseDispatcher.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\ResponseHandler.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\RpcResultHandler.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\SessionHandler.cs" />
+    <Compile Include="SharpMTProto\Schema\SharpMTProto.Schema.cs" />
+    <Compile Include="SharpMTProto\Schema\SharpMTProto.Schema.Ex.cs" />
+    <Compile Include="SharpMTProto\Schema\SharpMTProto.Schema.MethodsImpl.cs" />
+    <Compile Include="SharpMTProto\Schema\SharpMTProto.Schema.MethodsImpl.Ex.cs" />
+    <Compile Include="SharpMTProto\Services\IEncryptionServices.cs" />
+    <Compile Include="SharpMTProto\Services\IHashServices.cs" />
+    <Compile Include="SharpMTProto\Services\MessageIdGenerator.cs" />
+    <Compile Include="SharpMTProto\Services\NonceGenerator.cs" />
+    <Compile Include="SharpMTProto\Services\RandomGenerator.cs" />
+    <Compile Include="SharpMTProto\Transport\IClientTransport.cs" />
+    <Compile Include="SharpMTProto\Transport\IClientTransportConfig.cs" />
+    <Compile Include="SharpMTProto\Transport\IClientTransportFactory.cs" />
+    <Compile Include="SharpMTProto\Transport\TcpClientTransportConfig.cs" />
+    <Compile Include="SharpMTProto\Transport\TcpTransportPacket.cs" />
+    <Compile Include="SharpMTProto\Utils\UnixTimeUtils.cs" />
+    <Compile Include="SharpMTProto\Utils\SocketAwaitable.cs" />
+    <Compile Include="SharpMTProto\Utils\SocketExtensions.cs" />
+    <Compile Include="SharpMTProto\Transport\ClientTransportFactory.cs" />
+    <Compile Include="SharpMTProto\Transport\TcpClientTransport.cs" />
+    <Compile Include="SharpMTProto\Services\EncryptionServices.cs" />
+    <Compile Include="SharpMTProto\Services\EncryptionServices.PCL.cs" />
+    <Compile Include="SharpMTProto\Services\HashServices.cs" />
+    <Compile Include="SharpTelegram\TelegramAppInfo.cs" />
+    <Compile Include="SharpTelegram\TelegramClient.cs" />
+    <Compile Include="SharpTelegram\Schema\Layer18\SharpTelegram.Schema.cs" />
+    <Compile Include="SharpTelegram\Schema\Layer18\SharpTelegram.Schema.MethodsImpl.cs" />
+    <Compile Include="SharpTelegram\Schema\Layer18\SharpTelegram.Schema.MethodsImpl.Ex.cs" />
+    <Compile Include="Telegram.cs" />
+    <Compile Include="RSAPublicKey.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="SharpTL\" />
+    <Folder Include="SharpTL\Serializers\" />
+    <Folder Include="SharpTL\Properties\" />
+    <Folder Include="SharpMTProto\" />
+    <Folder Include="SharpMTProto\Authentication\" />
+    <Folder Include="SharpMTProto\Messaging\" />
+    <Folder Include="SharpMTProto\Messaging\Handlers\" />
+    <Folder Include="SharpMTProto\Schema\" />
+    <Folder Include="SharpMTProto\Services\" />
+    <Folder Include="SharpMTProto\Transport\" />
+    <Folder Include="SharpMTProto\Utils\" />
+    <Folder Include="SharpTelegram\" />
+    <Folder Include="SharpTelegram\Schema\" />
+    <Folder Include="SharpTelegram\Schema\Layer18\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Disa.Framework\Disa.Framework.csproj">
+      <Project>{9F73B5C0-CCEC-43B5-9298-E1F1D6826169}</Project>
+      <Name>Disa.Framework</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
