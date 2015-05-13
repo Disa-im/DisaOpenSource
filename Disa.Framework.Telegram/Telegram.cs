@@ -24,7 +24,7 @@ namespace Disa.Framework.Telegram
             DeviceModel = "LG",
             SystemVersion = "5.0",
             AppVersion = "0.8.2",
-            LangCode = "en",
+            LangCode = PhoneBook.Language,
         };
 
         private TelegramSettings _settings;
@@ -96,7 +96,7 @@ namespace Disa.Framework.Telegram
                                 SmsType = 0,
                                 ApiId = AppInfo.ApiId,
                                 ApiHash = "f8f2562579817ddcec76a8aae4cd86f6",
-                                LangCode = "en"
+                                LangCode = PhoneBook.Language
                             });
                             DebugPrint(result.ToString());
                         }
