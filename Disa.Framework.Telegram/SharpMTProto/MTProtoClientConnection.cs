@@ -332,7 +332,7 @@ namespace SharpMTProto
             responseDispatcher.FallbackHandler = new FirstRequestResponseHandler(_requestsManager);
             responseDispatcher.AddHandler(new BadMsgNotificationHandler(this, _requestsManager));
             responseDispatcher.AddHandler(new MessageContainerHandler(_responseDispatcher));
-            responseDispatcher.AddHandler(new RpcResultHandler(_requestsManager));
+            responseDispatcher.AddHandler(new RpcResultHandler(_requestsManager, _tlRig));
             responseDispatcher.AddHandler(new SessionHandler());
         }
 
