@@ -404,8 +404,9 @@ namespace Disa.Framework
             if (service is UnifiedService)
                 return;
 
-            if (service.QueuedBubblesParameters == null ||
-                !service.QueuedBubblesParameters.FailNotQueuedBubbles)
+            if (service.QueuedBubblesParameters == null 
+                || service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart == null
+                || !service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart.Any())
                 return;
 
             foreach (var group in BubbleGroupManager.FindAll(service))
@@ -416,8 +417,10 @@ namespace Disa.Framework
 
         public static void SetNotQueuedToFailures(BubbleGroup group)
         {
-            var groups = BubbleGroupManager.GetInner(@group).Where(x => !x.PartiallyLoaded && x.Service.QueuedBubblesParameters != null &&
-                                                      x.Service.QueuedBubblesParameters.FailNotQueuedBubbles);
+            var groups = BubbleGroupManager.GetInner(@group).Where(x => !x.PartiallyLoaded && 
+                (x.Service.QueuedBubblesParameters != null 
+                && x.Service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart != null
+                && x.Service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart.Any()));
 
             var failed = new List<Tuple<BubbleGroup, VisualBubble>>();
 
@@ -428,7 +431,12 @@ namespace Disa.Framework
                     if (bubble.Direction == Bubble.BubbleDirection.Outgoing && 
                         bubble.Status == Bubble.BubbleStatus.Waiting)
                     {
-                        failed.Add(new Tuple<BubbleGroup, VisualBubble>(innerGroup, bubble));
+                        if (innerGroup
+                            .Service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart
+                            .FirstOrDefault(x => x == bubble.GetType()) != null)
+                        {
+                            failed.Add(new Tuple<BubbleGroup, VisualBubble>(innerGroup, bubble));
+                        }
                     }
                 }
             }

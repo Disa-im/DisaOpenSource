@@ -69,15 +69,15 @@ namespace Disa.Framework
             var videosNoMedia = Path.Combine(videos, noMedia);
             var audiosNoMedia = Path.Combine(audios, noMedia);
 
-            if (File.Exists(picturesNoMedia))
+            if (!File.Exists(picturesNoMedia))
             {
                 File.Create(picturesNoMedia);
             }
-            if (File.Exists(videosNoMedia))
+            if (!File.Exists(videosNoMedia))
             {
                 File.Create(videosNoMedia);
             }
-            if (File.Exists(audiosNoMedia))
+            if (!File.Exists(audiosNoMedia))
             {
                 File.Create(audiosNoMedia);
             }
