@@ -141,6 +141,7 @@
     <Compile Include="Bubbles\TypingBubble.cs" />
     <Compile Include="Bubbles\VideoBubble.cs" />
     <Compile Include="Bubbles\VisualBubble.cs" />
+    <Compile Include="ITerminal.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SQLitePCL.raw_basic.0.8.0\build\net45\SQLitePCL.raw_basic.targets" Condition="Exists('..\packages\SQLitePCL.raw_basic.0.8.0\build\net45\SQLitePCL.raw_basic.targets')" />
