@@ -389,9 +389,16 @@ namespace SharpMTProto.Transport
             }
             if (_receiverTask != null)
             {
-                if (!_receiverTask.IsCompleted)
+                try
                 {
-                    _receiverTask.Wait(1000);
+                    if (!_receiverTask.IsCompleted)
+                    {
+                        _receiverTask.Wait(1000);
+                    }
+                }
+                catch
+                {
+                    // cancellation token, fall through
                 }
                 if (_receiverTask.IsCompleted)
                 {
