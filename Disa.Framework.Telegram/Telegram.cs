@@ -8,6 +8,7 @@ using SharpMTProto.Transport;
 using SharpMTProto.Authentication;
 using SharpTelegram.Schema.Layer18;
 using System.Linq;
+using SharpMTProto.Messaging.Handlers;
 
 namespace Disa.Framework.Telegram
 {
@@ -148,7 +149,17 @@ namespace Disa.Framework.Telegram
                         }
                     }
                     break;
+                case "getcontacts":
+                    {
+                        var result = await _client.Methods.ContactsGetContactsAsync(new ContactsGetContactsArgs
+                        {
+                            Hash = string.Empty
+                        });
+                        DebugPrint(ObjectDumper.Dump(result));
+                    }
+                    break;
             }
+
         }
 
         private static async Task<AuthInfo> FetchNewAuthentication(TcpClientTransportConfig config)
