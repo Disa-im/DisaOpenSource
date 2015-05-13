@@ -149,6 +149,7 @@
     <Compile Include="SharpTelegram\Schema\Layer18\SharpTelegram.Schema.MethodsImpl.Ex.cs" />
     <Compile Include="Telegram.cs" />
     <Compile Include="RSAPublicKey.cs" />
+    <Compile Include="ObjectDumper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

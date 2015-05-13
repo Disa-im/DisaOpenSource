@@ -98,7 +98,7 @@ namespace Disa.Framework.Telegram
                                 ApiHash = "f8f2562579817ddcec76a8aae4cd86f6",
                                 LangCode = PhoneBook.Language
                             });
-                            DebugPrint(result.ToString());
+                            DebugPrint(ObjectDumper.Dump(result));
                         }
                     }
                     break;
@@ -119,7 +119,7 @@ namespace Disa.Framework.Telegram
                                 PhoneCodeHash = hash,
                                 PhoneCode = code,
                             });
-                            DebugPrint(result.ToString());
+                            DebugPrint(ObjectDumper.Dump(result));
                         }
                     }
                     break;
@@ -144,7 +144,7 @@ namespace Disa.Framework.Telegram
                                 FirstName = firstName,
                                 LastName = lastName,
                             });
-                            DebugPrint(result.ToString());
+                            DebugPrint(ObjectDumper.Dump(result));
                         }
                     }
                     break;
