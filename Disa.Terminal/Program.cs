@@ -80,7 +80,7 @@ namespace Disa.Terminal
 
         private static async void DoCommand(string command)
         {
-            var args = SplitCommandLine(command).ToArray();
+            var args = SplitCommandLine(command).ToList();
 
             switch (args[0].ToLower())
             {
@@ -136,6 +136,27 @@ namespace Disa.Terminal
                             address, null, false, service, message);
                         await BubbleManager.Send(textBubble);
                         Console.WriteLine(textBubble + " sent");
+                    }
+                    break;
+                default:
+                    {
+                        var service = ServiceManager.GetByName(args[0]);
+                        if (service != null)
+                        {
+                            var terminal = service as ITerminal;
+                            if (terminal != null)
+                            {
+                                try
+                                {
+                                    terminal.DoCommand(args.GetRange(1, args.Count - 1).ToArray());
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine("Error in processing a service terminal command: " + ex);
+                                }
+                            }
+
+                        }           
                     }
                     break;
             }
