@@ -37,7 +37,7 @@ namespace Disa.Framework.Telegram
             _settings = settings as TelegramSettings;
             _mutableSettings = MutableSettingsManager.Load<TelegramMutableSettings>();
 
-            if (_settings.AuthKey == null || _settings.Salt == null)
+            if (_settings.AuthKey == null)
             {
                 return false;
             }
