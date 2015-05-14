@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Disa.Framework.Bubbles;
 using Disa.Framework.Telegram;
+using System.IO;
+using Managed.Adb;
 
 namespace Disa.Terminal
 {
     public class MainClass
     {
+        private static TerminalSettings Settings { get; set; }
+
         public static void Main(string[] args)
         {
             Console.WriteLine("Welcome to Disa.Terminal!");
@@ -30,6 +34,25 @@ namespace Disa.Terminal
                 {
                     Console.WriteLine("Unable to perform that command: " + ex);
                     Console.WriteLine("Type 'help' to get help");
+                }
+            }
+        }
+
+        [Serializable]
+        public class TerminalSettings : DisaMutableSettings
+        {
+            public List<PluginDeployment> PluginDeployments { get; set; }
+
+            public class PluginDeployment
+            {
+                public string Name { get; set; }
+                public string Path { get; set; }
+                public List<Assembly> Assemblies { get; set; }
+
+                public class Assembly
+                {
+                    public string Name { get; set; }
+                    public DateTime Modified { get; set; }
                 }
             }
         }
@@ -138,6 +161,121 @@ namespace Disa.Terminal
                         Console.WriteLine(textBubble + " sent");
                     }
                     break;
+                case "plugin-deploy-unregister":
+                    {
+                        var pluginName = args[1];
+                        var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
+                        if (deployment != null)
+                        {
+                            Settings.PluginDeployments.Remove(deployment);
+                        }
+                        MutableSettingsManager.Save(Settings);
+                        Console.WriteLine("Removed.");
+                    }
+                    break;
+                case "plugin-deploy-register":
+                    {
+                        var pluginName = args[1];
+                        var path = args[2].ToLower();
+                        if (Settings.PluginDeployments != null)
+                        {
+                            var hasDeployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower()) != null;
+                            if (hasDeployment)
+                            {
+                                Console.WriteLine("Plugin has already been registered in deployment system.");
+                                break;
+                            }
+                        }
+                        if (Settings.PluginDeployments == null)
+                        {
+                            Settings.PluginDeployments = new List<TerminalSettings.PluginDeployment>();
+                        }
+                        Settings.PluginDeployments.Add(new TerminalSettings.PluginDeployment
+                        {
+                            Name = pluginName,
+                            Path = path,
+                        });
+                        MutableSettingsManager.Save(Settings);
+                        Console.WriteLine("Plugin registered!");
+                    }
+                    break;
+                case "plugin-deploy-clean":
+                    {
+                        var pluginName = args[1];
+                        var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
+                        if (deployment != null)
+                        {
+                            deployment.Assemblies = null;
+                            MutableSettingsManager.Save(Settings);
+                            Console.WriteLine("Cleaned assemblies.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Could not find plugin deployment: " + pluginName);
+                        }
+                    }
+                    break;
+                case "plugin-deploy":
+                    {
+                        var pluginName = args[1];
+                        var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
+                        var oldAssemblies = deployment.Assemblies ?? new List<TerminalSettings.PluginDeployment.Assembly>();
+                        var assembliesToDeploy = new List<TerminalSettings.PluginDeployment.Assembly>();
+                        var newAssemblies = new List<TerminalSettings.PluginDeployment.Assembly>();
+                        var pluginManifest = Path.Combine(deployment.Path, "PluginManifest.xml");
+                        if (!File.Exists(pluginManifest))
+                        {
+                            Console.WriteLine("A plugin manifest file is needed!");
+                            break;
+                        }
+                        foreach (var assemblyFile in Directory.EnumerateFiles(deployment.Path, "*.dll")
+                            .Concat(new [] { pluginManifest }))
+                        {
+                            var assemblyFileName = Path.GetFileName(assemblyFile);
+                            if (PlatformManager.AndroidLinkedAssemblies.Contains(assemblyFileName))
+                                continue;
+
+                            var lastModified = File.GetLastWriteTime(assemblyFile);
+                            var newAssembly = new TerminalSettings.PluginDeployment.Assembly
+                            {
+                                Name = assemblyFileName,
+                                Modified = lastModified
+                            };
+                            newAssemblies.Add(newAssembly);
+
+                            var oldAssembly = oldAssemblies.FirstOrDefault(x => x.Name == assemblyFileName);
+                            if (oldAssembly == null)
+                            {
+                                assembliesToDeploy.Add(newAssembly);
+                            }
+                            else if (oldAssembly.Modified != lastModified)
+                            {
+                                assembliesToDeploy.Add(newAssembly);
+                            }
+                        }
+                        deployment.Assemblies = newAssemblies;
+                        MutableSettingsManager.Save(Settings);
+                        var devices = AdbHelper.Instance.GetDevices(AndroidDebugBridge.SocketAddress);
+                        var firstDevice = devices.First();
+                        var remotePath = "/sdcard/Disa/plugins/" + deployment.Name;
+                        if (!firstDevice.FileSystem.Exists(remotePath))
+                        {
+                            firstDevice.FileSystem.MakeDirectory(remotePath);
+                        }
+                        foreach (var assemblyToDeploy in assembliesToDeploy)
+                        {
+                            Console.WriteLine("Transferring " + assemblyToDeploy.Name + "...");
+                            var remoteAssembly = remotePath + "/" + assemblyToDeploy.Name;
+                            if (firstDevice.FileSystem.Exists(remoteAssembly))
+                            {
+                                firstDevice.FileSystem.Delete(remoteAssembly);
+                            }
+                            firstDevice.SyncService.PushFile(Path.Combine(deployment.Path, assemblyToDeploy.Name),
+                                remoteAssembly, new SyncServiceProgressMonitor());
+                        }
+                        Console.WriteLine("Plugin deployed!");
+                    }
+                    break;
                 default:
                     {
                         var service = ServiceManager.GetByName(args[0]);
@@ -160,6 +298,37 @@ namespace Disa.Terminal
                     }
                     break;
             }
+        }
+
+        private class SyncServiceProgressMonitor : ISyncProgressMonitor
+        {
+            #region ISyncProgressMonitor implementation
+            public void Start(long totalWork)
+            {
+                //throw new NotImplementedException();
+            }
+            public void Stop()
+            {
+                //throw new NotImplementedException();
+            }
+            public void StartSubTask(string source, string destination)
+            {
+                //throw new NotImplementedException();
+            }
+            public void Advance(long work)
+            {
+                //throw new NotImplementedException();
+            }
+            public bool IsCanceled
+            {
+                get
+                {
+                    return false;
+                   // throw new NotImplementedException();
+                }
+            }
+            #endregion
+            
         }
 
         private static void PrintHelp()
@@ -190,6 +359,7 @@ namespace Disa.Terminal
 
             PlatformManager.InitializeMain(allServices.ToArray());
 
+            Settings = MutableSettingsManager.Load<TerminalSettings>();
 
             BubbleGroupEvents.OnBubbleInserted += (bubble, bubbleGroup) =>
             {
