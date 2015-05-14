@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<plugin>
+  <name>Telegram</name>
+  <version>1</version>
+  <minimumframeworkversion>2</minimumframeworkversion>
+  <production>true</production>
+  <author>null</author>
+  <externalmanifest>http://google.com</externalmanifest>
+</plugin>
