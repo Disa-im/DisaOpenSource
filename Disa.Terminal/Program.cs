@@ -5,6 +5,7 @@ using System.Linq;
 using Disa.Framework.Bubbles;
 using System.IO;
 using Managed.Adb;
+using Mono.Cecil;
 
 namespace Disa.Terminal
 {
@@ -160,7 +161,7 @@ namespace Disa.Terminal
                         Console.WriteLine(textBubble + " sent");
                     }
                     break;
-                case "plugin-deploy-unregister":
+                case "deploy-unregister":
                     {
                         var pluginName = args[1];
                         var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
@@ -172,7 +173,7 @@ namespace Disa.Terminal
                         Console.WriteLine("Removed.");
                     }
                     break;
-                case "plugin-deploy-register":
+                case "deploy-register":
                     {
                         var pluginName = args[1];
                         var path = args[2].ToLower();
@@ -198,7 +199,7 @@ namespace Disa.Terminal
                         Console.WriteLine("Plugin registered!");
                     }
                     break;
-                case "plugin-deploy-clean":
+                case "deploy-clean":
                     {
                         var pluginName = args[1];
                         var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
@@ -214,7 +215,7 @@ namespace Disa.Terminal
                         }
                     }
                     break;
-                case "plugin-deploy":
+                case "deploy":
                     {
                         var pluginName = args[1];
                         var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
@@ -289,6 +290,24 @@ namespace Disa.Terminal
                                 remoteAssembly, new SyncServiceProgressMonitor());
                         }
                         Console.WriteLine("Plugin deployed!");
+                    }
+                    break;
+                case "deploy-dependencies":
+                    {
+                        var pluginName = args[1];
+                        var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
+                        foreach (var assemblyFile in Directory.EnumerateFiles(deployment.Path, "*.dll"))
+                        {
+                            var assemblyFileName = Path.GetFileName(assemblyFile);
+                            if (PlatformManager.AndroidLinkedAssemblies.Contains(assemblyFileName))
+                                continue;
+                            var module = ModuleDefinition.ReadModule(assemblyFile);
+                            Console.WriteLine(assemblyFileName + ": ");
+                            foreach (var referenceAssembly in module.AssemblyReferences)
+                            {
+                                Console.WriteLine("> " + referenceAssembly.FullName);
+                            }  
+                        }
                     }
                     break;
                 default:
