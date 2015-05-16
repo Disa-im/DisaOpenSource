@@ -257,21 +257,37 @@ namespace Disa.Terminal
                         deployment.Assemblies = newAssemblies;
                         MutableSettingsManager.Save(Settings);
                         var devices = AdbHelper.Instance.GetDevices(AndroidDebugBridge.SocketAddress);
-                        var firstDevice = devices.First();
-                        var remotePath = "/sdcard/Disa/plugins/" + deployment.Name;
-                        if (!firstDevice.FileSystem.Exists(remotePath))
+                        Device selectedDevice;
+                        if (devices.Count > 1)
                         {
-                            firstDevice.FileSystem.MakeDirectory(remotePath);
+                            Console.WriteLine("Please pick a device:");
+                            var counter = 0;
+                            foreach (var device in devices)
+                            {
+                                Console.WriteLine(counter++ + ") " + device.SerialNumber);
+                            }
+                            Console.Write("Selection: ");
+                            var selection = int.Parse(Console.ReadLine().Trim());
+                            selectedDevice = devices[selection];
+                        }
+                        else
+                        {
+                            selectedDevice = devices.First();
+                        }
+                        var remotePath = "/sdcard/Disa/plugins/" + deployment.Name;
+                        if (!selectedDevice.FileSystem.Exists(remotePath))
+                        {
+                            selectedDevice.FileSystem.MakeDirectory(remotePath);
                         }
                         foreach (var assemblyToDeploy in assembliesToDeploy)
                         {
                             Console.WriteLine("Transferring " + assemblyToDeploy.Name + "...");
                             var remoteAssembly = remotePath + "/" + assemblyToDeploy.Name;
-                            if (firstDevice.FileSystem.Exists(remoteAssembly))
+                            if (selectedDevice.FileSystem.Exists(remoteAssembly))
                             {
-                                firstDevice.FileSystem.Delete(remoteAssembly);
+                                selectedDevice.FileSystem.Delete(remoteAssembly);
                             }
-                            firstDevice.SyncService.PushFile(Path.Combine(deployment.Path, assemblyToDeploy.Name),
+                            selectedDevice.SyncService.PushFile(Path.Combine(deployment.Path, assemblyToDeploy.Name),
                                 remoteAssembly, new SyncServiceProgressMonitor());
                         }
                         Console.WriteLine("Plugin deployed!");
