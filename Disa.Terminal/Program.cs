@@ -6,6 +6,8 @@ using Disa.Framework.Bubbles;
 using System.IO;
 using Managed.Adb;
 using Mono.Cecil;
+using System.Threading.Tasks;
+using System.Text;
 
 namespace Disa.Terminal
 {
@@ -289,7 +291,11 @@ namespace Disa.Terminal
                             selectedDevice.SyncService.PushFile(Path.Combine(deployment.Path, assemblyToDeploy.Name),
                                 remoteAssembly, new SyncServiceProgressMonitor());
                         }
-                        Console.WriteLine("Plugin deployed!");
+                        Console.WriteLine("Plugin deployed! Restarting Disa...");
+                        selectedDevice.ExecuteShellCommand("am force-stop com.disa", new ShellOutputReceiver());
+                        Task.Delay(250).Wait();
+                        selectedDevice.ExecuteShellCommand("monkey -p com.disa -c android.intent.category.LAUNCHER 1", new ShellOutputReceiver());
+                        Console.WriteLine("Disa restarted!");
                     }
                     break;
                 case "deploy-dependencies":
@@ -331,6 +337,23 @@ namespace Disa.Terminal
                         }           
                     }
                     break;
+            }
+        }
+
+        private class ShellOutputReceiver : IShellOutputReceiver
+        {
+            public void AddOutput(byte[] data, int offset, int length)
+            {
+            }
+            public void Flush()
+            {
+            }
+            public bool IsCancelled
+            {
+                get
+                {
+                    return false;
+                }
             }
         }
 
