@@ -6,6 +6,7 @@ using Disa.Framework.Bubbles;
 using Disa.Framework.Telegram;
 using System.IO;
 using Managed.Adb;
+using Mono.Cecil;
 
 namespace Disa.Terminal
 {
@@ -274,6 +275,24 @@ namespace Disa.Terminal
                                 remoteAssembly, new SyncServiceProgressMonitor());
                         }
                         Console.WriteLine("Plugin deployed!");
+                    }
+                    break;
+                case "plugin-deploy-print-dependencies":
+                    {
+                        var pluginName = args[1];
+                        var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
+                        foreach (var assemblyFile in Directory.EnumerateFiles(deployment.Path, "*.dll"))
+                        {
+                            var assemblyFileName = Path.GetFileName(assemblyFile);
+                            if (PlatformManager.AndroidLinkedAssemblies.Contains(assemblyFileName))
+                                continue;
+                            var module = ModuleDefinition.ReadModule(assemblyFile);
+                            Console.WriteLine(assemblyFileName + ": ");
+                            foreach (var referenceAssembly in module.AssemblyReferences)
+                            {
+                                Console.WriteLine("> " + referenceAssembly.FullName);
+                            }  
+                        }
                     }
                     break;
                 default:

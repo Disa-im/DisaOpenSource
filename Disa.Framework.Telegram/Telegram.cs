@@ -166,6 +166,7 @@ namespace Disa.Framework.Telegram
         {
             var authKeyNegotiater = MTProtoClientBuilder.Default.BuildAuthKeyNegotiator(config);
             authKeyNegotiater.KeyChain.Add(RSAPublicKey.Get());
+
             return await authKeyNegotiater.CreateAuthKey();
         }
 
