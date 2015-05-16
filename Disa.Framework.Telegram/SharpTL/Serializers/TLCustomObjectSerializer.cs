@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Dynamitey;
 
 namespace SharpTL.Serializers
 {
@@ -156,29 +155,25 @@ namespace SharpTL.Serializers
         {
             protected readonly TLPropertyInfo TLPropertyInfo;
 
-            private readonly CacheableInvocation _get;
-            private readonly CacheableInvocation _set;
+            private readonly string _propertyName;
 
             protected TLPropertySerializationAgentBase(TLPropertyInfo tlPropertyInfo)
             {
                 TLPropertyInfo = tlPropertyInfo;
 
-                string propertyName = TLPropertyInfo.PropertyInfo.Name;
-
-                _get = new CacheableInvocation(InvocationKind.Get, propertyName);
-                _set = new CacheableInvocation(InvocationKind.Set, propertyName, 1);
+                _propertyName = TLPropertyInfo.PropertyInfo.Name;
             }
 
             public void Write(object obj, TLSerializationContext context)
             {
-                object propertyValue = _get.Invoke(obj);
+                object propertyValue = obj.GetType().GetProperty(_propertyName).GetValue(obj);
                 WriteValue(propertyValue, context);
             }
 
             public void Read(object obj, TLSerializationContext context)
             {
                 object value = ReadValue(context);
-                _set.Invoke(obj, value);
+                obj.GetType().GetProperty(_propertyName).SetValue(obj, value);
             }
 
             protected abstract void WriteValue(object propertyValue, TLSerializationContext context);

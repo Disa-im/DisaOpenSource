@@ -29,7 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Reactive.Core">
       <HintPath>References\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -1255,44 +1254,6 @@
     <Compile Include="Raksha\IO\Net45FileInfo.cs" />
     <Compile Include="Raksha\Security\DotNetUtilities.cs" />
     <Compile Include="Raksha\Security\Cryptography\Net45RNGCryptoServiceProvider.cs" />
-    <Compile Include="Dynamitey\Builder.cs" />
-    <Compile Include="Dynamitey\CacheableInvocation.cs" />
-    <Compile Include="Dynamitey\Dynamic.cs" />
-    <Compile Include="Dynamitey\Expando.cs" />
-    <Compile Include="Dynamitey\FluentRegex.cs" />
-    <Compile Include="Dynamitey\InlineLambdas1.cs" />
-    <Compile Include="Dynamitey\Invocation.cs" />
-    <Compile Include="Dynamitey\InvokeArg.cs" />
-    <Compile Include="Dynamitey\InvokeContext.cs" />
-    <Compile Include="Dynamitey\InvokeMemberName.cs" />
-    <Compile Include="Dynamitey\PartialApply.cs" />
-    <Compile Include="Dynamitey\ThisFunctions1.cs" />
-    <Compile Include="Dynamitey\Tupler.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\BaseDictionary.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\BaseForwarder.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\BaseObject.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\Builder.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\Dictionary.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\Dummy.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\ExtensionToInstanceProxy.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\Factory.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\FauxType.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\FluentStringLookup.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\Get.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\LateType.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\Lazy.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\LinqInstanceProxy.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\List.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\Mimic.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\Recorder.cs" />
-    <Compile Include="Dynamitey\DynamicObjects\RegexMatch.cs" />
-    <Compile Include="Dynamitey\Internal\Curry.cs" />
-    <Compile Include="Dynamitey\Internal\InvokeSetters.cs" />
-    <Compile Include="Dynamitey\Internal\Optimization\BareBonesList.cs" />
-    <Compile Include="Dynamitey\Internal\Optimization\BinderHash.cs" />
-    <Compile Include="Dynamitey\Internal\Optimization\InvokeHelper-Regular.cs" />
-    <Compile Include="Dynamitey\Internal\Optimization\InvokeHelper.cs" />
-    <Compile Include="Dynamitey\Internal\Optimization\Util.cs" />
     <Compile Include="Nito.AsyncEx\Base\AsyncAutoResetEvent.cs" />
     <Compile Include="Nito.AsyncEx\Base\AsyncBarrier.cs" />
     <Compile Include="Nito.AsyncEx\Base\AsyncConditionVariable.cs" />
@@ -1362,10 +1323,6 @@
     <Folder Include="BigMath\" />
     <Folder Include="BigMath\Utils\" />
     <Folder Include="Raksha\" />
-    <Folder Include="Dynamitey\" />
-    <Folder Include="Dynamitey\DynamicObjects\" />
-    <Folder Include="Dynamitey\Internal\" />
-    <Folder Include="Dynamitey\Internal\Optimization\" />
     <Folder Include="Nito.AsyncEx\" />
     <Folder Include="Nito.AsyncEx\Base\" />
     <Folder Include="Nito.AsyncEx\Enlightement\" />
