@@ -321,33 +321,25 @@ namespace Disa.Terminal
 
         private class SyncServiceProgressMonitor : ISyncProgressMonitor
         {
-            #region ISyncProgressMonitor implementation
             public void Start(long totalWork)
             {
-                //throw new NotImplementedException();
             }
             public void Stop()
             {
-                //throw new NotImplementedException();
             }
             public void StartSubTask(string source, string destination)
             {
-                //throw new NotImplementedException();
             }
             public void Advance(long work)
             {
-                //throw new NotImplementedException();
             }
             public bool IsCanceled
             {
                 get
                 {
                     return false;
-                   // throw new NotImplementedException();
                 }
             }
-            #endregion
-            
         }
 
         private static void PrintHelp()
