@@ -162,7 +162,7 @@ namespace Disa.Terminal
                         Console.WriteLine(textBubble + " sent");
                     }
                     break;
-                case "plugin-deploy-unregister":
+                case "deploy-unregister":
                     {
                         var pluginName = args[1];
                         var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
@@ -174,7 +174,7 @@ namespace Disa.Terminal
                         Console.WriteLine("Removed.");
                     }
                     break;
-                case "plugin-deploy-register":
+                case "deploy-register":
                     {
                         var pluginName = args[1];
                         var path = args[2].ToLower();
@@ -200,7 +200,7 @@ namespace Disa.Terminal
                         Console.WriteLine("Plugin registered!");
                     }
                     break;
-                case "plugin-deploy-clean":
+                case "deploy-clean":
                     {
                         var pluginName = args[1];
                         var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
@@ -216,7 +216,7 @@ namespace Disa.Terminal
                         }
                     }
                     break;
-                case "plugin-deploy":
+                case "deploy":
                     {
                         var pluginName = args[1];
                         var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
@@ -293,7 +293,7 @@ namespace Disa.Terminal
                         Console.WriteLine("Plugin deployed!");
                     }
                     break;
-                case "plugin-deploy-print-dependencies":
+                case "deploy-print-dependencies":
                     {
                         var pluginName = args[1];
                         var deployment = Settings.PluginDeployments.FirstOrDefault(x => x.Name.ToLower() == pluginName.ToLower());
