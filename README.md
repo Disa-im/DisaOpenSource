@@ -7,6 +7,11 @@ __Please note that the documention currently provided is in a very preliminary s
 
 If you are looking for the latest APK to sideload to your device (for whatever reason you don't or can't use the Play Store), you're in the wrong place. Go here: https://github.com/Dynogic/DisaBuilds
 
+<div style="text-align:center"><img src ="http://i.imgur.com/85yg9Gk.png" /></div>
+
+
+# ![](http://i.imgur.com/85yg9Gk.png)
+
 ## Understanding Disa
 
 At the very core of Disa is Disa.Framework. Disa.Framework is code that cross-compiles to any platform that runs Mono/.NET. A front-end is then developed for each platform that hooks into the underlying Disa.Framework. For instance, we use Xamarin.Android to provide a front-end for Android (called Disa.Android respectively).
@@ -34,6 +39,4 @@ If you have any questions, give us an email at opensource@disa.im.
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  Lesser General Public License for more details.
-
-
 
