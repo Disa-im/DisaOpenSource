@@ -7,10 +7,7 @@ __Please note that the documention currently provided is in a very preliminary s
 
 If you are looking for the latest APK to sideload to your device (for whatever reason you don't or can't use the Play Store), you're in the wrong place. Go here: https://github.com/Dynogic/DisaBuilds
 
-<div style="text-align:center"><img src ="http://i.imgur.com/85yg9Gk.png" /></div>
-
-
-# ![](http://i.imgur.com/85yg9Gk.png)
+# ![](http://i.imgur.com/5PGlzsV.png)
 
 ## Understanding Disa
 
