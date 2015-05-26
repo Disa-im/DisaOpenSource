@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Automatically generated-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="InjectReference_8c0f73b2-4a38-41f5-9b01-5cc04e0e5742" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
+      <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\winxp\x86\sqlite3.dll">
+        <Link>x86\sqlite3.dll</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\winxp\x64\sqlite3.dll">
+        <Link>x64\sqlite3.dll</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
+</Project>
