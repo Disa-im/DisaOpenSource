@@ -158,6 +158,35 @@ namespace Disa.Framework.Telegram
                         DebugPrint(ObjectDumper.Dump(result));
                     }
                     break;
+                case "sendhello":
+                    {
+                        var contacts = (ContactsContacts)await _client.Methods.ContactsGetContactsAsync(new ContactsGetContactsArgs
+                            {
+                                Hash = string.Empty
+                            });
+                        var counter = 0;
+                        Console.WriteLine("Pick a contact:");
+                        foreach (var icontact in contacts.Users)
+                        {
+                            var contact = icontact as UserContact;
+                            if (contact == null)
+                                continue;
+                            Console.WriteLine(counter++ + ") " + contact.FirstName + " " + contact.LastName);
+                        }
+                        var choice = int.Parse(Console.ReadLine());
+                        var chosenContact = (UserContact)contacts.Users[choice];
+                        var result = await _client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
+                            {
+                                Peer = new InputPeerContact
+                                    {
+                                        UserId = chosenContact.Id,
+                                    },
+                                Message = "Hello from Disa!",
+                                RandomId = (ulong)Time.GetNowUnixTimestamp(),
+                            });
+                        Console.WriteLine(ObjectDumper.Dump(result));
+                    }
+                    break;
             }
 
         }
