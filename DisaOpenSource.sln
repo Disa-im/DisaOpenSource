@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disa.Framework", "Disa.Fram
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disa.Framework.Telegram", "Disa.Framework.Telegram\Disa.Framework.Telegram.csproj", "{575DCE77-4E2E-46E0-9BB8-FA8E5C912BFA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disa.Framework.Mobile", "Disa.Framework.Mobile\Disa.Framework.Mobile.csproj", "{82CC4D09-0EF8-4FA2-B339-5DA808F27856}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -17,6 +19,10 @@ Global
 		{575DCE77-4E2E-46E0-9BB8-FA8E5C912BFA}.Debug|x86.Build.0 = Debug|Any CPU
 		{575DCE77-4E2E-46E0-9BB8-FA8E5C912BFA}.Release|x86.ActiveCfg = Release|Any CPU
 		{575DCE77-4E2E-46E0-9BB8-FA8E5C912BFA}.Release|x86.Build.0 = Release|Any CPU
+		{82CC4D09-0EF8-4FA2-B339-5DA808F27856}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{82CC4D09-0EF8-4FA2-B339-5DA808F27856}.Debug|x86.Build.0 = Debug|Any CPU
+		{82CC4D09-0EF8-4FA2-B339-5DA808F27856}.Release|x86.ActiveCfg = Release|Any CPU
+		{82CC4D09-0EF8-4FA2-B339-5DA808F27856}.Release|x86.Build.0 = Release|Any CPU
 		{9F73B5C0-CCEC-43B5-9298-E1F1D6826169}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{9F73B5C0-CCEC-43B5-9298-E1F1D6826169}.Debug|x86.Build.0 = Debug|Any CPU
 		{9F73B5C0-CCEC-43B5-9298-E1F1D6826169}.Release|x86.ActiveCfg = Release|Any CPU
