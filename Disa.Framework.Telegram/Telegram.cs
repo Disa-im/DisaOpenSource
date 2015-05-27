@@ -239,7 +239,12 @@ namespace Disa.Framework.Telegram
 
         public override string GetIcon(bool large)
         {
-            throw new NotImplementedException();
+            if (large)
+            {
+                return Constants.LargeIcon;
+            }
+
+            return Constants.SmallIcon;
         }
 
         public override IEnumerable<Bubble> ProcessBubbles()

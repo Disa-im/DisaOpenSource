@@ -1303,6 +1303,7 @@
     <Compile Include="Nito.AsyncEx\Enlightement\Internal\PlatformEnlightenment\SingleThreadedApartmentThread.cs" />
     <Compile Include="Nito.AsyncEx\Enlightement\Internal\PlatformEnlightenment\SynchronizationContextEnlightenment.cs" />
     <Compile Include="Nito.AsyncEx\Enlightement\Internal\PlatformEnlightenment\ThreadPoolEnlightenment.cs" />
+    <Compile Include="Constants.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
