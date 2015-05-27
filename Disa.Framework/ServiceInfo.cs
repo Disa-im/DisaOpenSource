@@ -70,11 +70,11 @@ namespace Disa.Framework
     }
 
     [AttributeUsage(AttributeTargets.All)]
-    public class DisaPluginSettingsUI : Attribute
+    public class PluginSettingsUI : Attribute
     {
         public Type Service { get; private set; }
 
-        public DisaPluginSettingsUI(Type service)
+        public PluginSettingsUI(Type service)
         {
             Service = service;
         }
