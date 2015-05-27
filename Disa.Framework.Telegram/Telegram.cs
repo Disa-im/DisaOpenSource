@@ -199,7 +199,7 @@ namespace Disa.Framework.Telegram
             return await authKeyNegotiater.CreateAuthKey();
         }
 
-        private T RynSynchronously<T>(Task<T> task)
+        private T RunSynchronously<T>(Task<T> task)
         {
             task.Wait();
             return task.Result;
@@ -207,14 +207,14 @@ namespace Disa.Framework.Telegram
 
         private uint GetNearestDc()
         {
-            var nearestDc = (NearestDc)RynSynchronously(
+            var nearestDc = (NearestDc)RunSynchronously(
                 _client.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
             return nearestDc.NearestDcProperty;
         }
 
         private Tuple<string, uint> GetDcIPAndPort(uint id)
         {
-            var config = (Config)RynSynchronously(_client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
+            var config = (Config)RunSynchronously(_client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
             var dcOption = config.DcOptions.OfType<DcOption>().FirstOrDefault(x => x.Id == id);
             return Tuple.Create(dcOption.IpAddress, dcOption.Port);
         }
@@ -251,12 +251,10 @@ namespace Disa.Framework.Telegram
                 new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo);
             using (new WakeLock.TemporaryFree(wakeLock))
             {
-                var task = _client.Connect();
-                task.Wait();
-                var result = task.Result;
+                var result = RunSynchronously(_client.Connect());
                 if (result != MTProtoConnectResult.Success)
                 {
-                    throw new Exception("Failed to connect: " + task.Result);
+                    throw new Exception("Failed to connect: " + result);
                 }
             }
         }
