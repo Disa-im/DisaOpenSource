@@ -70,6 +70,15 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Telegram is a messaging app with a focus on speed and security. It&apos;s super-fast, simple, secure and free..
+        /// </summary>
+        internal static string TelegramDescription {
+            get {
+                return ResourceManager.GetString("TelegramDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Telegram is not Running.
         /// </summary>
         internal static string TelegramNotRunning {

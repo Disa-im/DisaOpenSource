@@ -33,4 +33,7 @@
   <data name="TelegramProfileSettings" xml:space="preserve">
     <value>Profile Settings</value>
   </data>
+  <data name="TelegramDescription" xml:space="preserve">
+    <value>Telegram is a messaging app with a focus on speed and security. It's super-fast, simple, secure and free.</value>
+  </data>
 </root>	
