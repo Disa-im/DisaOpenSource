@@ -2,7 +2,7 @@
 <plugin>
   <name>Telegram</name>
   <version>1</version>
-  <minimumframeworkversion>2</minimumframeworkversion>
+  <minimumframeworkversion>7</minimumframeworkversion>
   <production>true</production>
   <author>null</author>
   <externalmanifest>http://google.com</externalmanifest>
