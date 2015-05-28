@@ -1,0 +1,944 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Xamarin.Forms.Labs.iOS</name>
+    </assembly>
+    <members>
+        <member name="T:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer">
+            <summary>
+            Draws a button on the Android platform with the image shown in the right 
+            position with the right size.
+            </summary>
+            <summary>
+            Draws a button on the iOS platform with the image shown in the right 
+            position with the right size.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.ControlPadding">
+            <summary>
+            The padding to use in the control.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.Ipad">
+            <summary>
+            Identifies the iPad.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.GetHandler(Xamarin.Forms.ImageSource)">
+            <summary>
+            Returns the proper <see cref="T:Xamarin.Forms.Platform.iOS.IImageSourceHandler"/> based on the type of <see cref="T:Xamarin.Forms.ImageSource"/> provided.
+            </summary>
+            <param name="source">The <see cref="T:Xamarin.Forms.ImageSource"/> to get the handler for.</param>
+            <returns>The needed handler.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.GetWidth(System.Int32)">
+            <summary>
+            Gets the width based on the requested width, if request less than 0, returns 50.
+            </summary>
+            <param name="requestedWidth">The requested width.</param>
+            <returns>The width to use.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.GetHeight(System.Int32)">
+            <summary>
+            Gets the height based on the requested height, if request less than 0, returns 50.
+            </summary>
+            <param name="requestedHeight">The requested height.</param>
+            <returns>The height to use.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.OnElementChanged(Xamarin.Forms.Platform.iOS.ElementChangedEventArgs{Xamarin.Forms.Button})">
+            <summary>
+            Handles the initial drawing of the button.
+            </summary>
+            <param name="e">Information on the <see cref="P:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.ImageButton"/>.</param> 
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.OnElementPropertyChanged(System.Object,System.ComponentModel.PropertyChangedEventArgs)">
+            <summary>
+            Called when the underlying model's properties are changed.
+            </summary>
+            <param name="sender">Model sending the change event.</param>
+            <param name="e">Event arguments.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.AlignToLeft(MonoTouch.UIKit.UIButton)">
+            <summary>
+            Properly aligns the title and image on a button to the left.
+            </summary>
+            <param name="targetButton">The button to align.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.AlignToRight(System.Int32,MonoTouch.UIKit.UIButton)">
+            <summary>
+            Properly aligns the title and image on a button to the right.
+            </summary>
+            <param name="widthRequest">The requested image width.</param>
+            <param name="targetButton">The button to align.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.AlignToTop(System.Int32,System.Int32,MonoTouch.UIKit.UIButton)">
+            <summary>
+            Properly aligns the title and image on a button when the image is over the title.
+            </summary>
+            <param name="heightRequest">The requested image height.</param>
+            <param name="widthRequest">The requested image width.</param>
+            <param name="targetButton">The button to align.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.AlignToBottom(System.Int32,System.Int32,MonoTouch.UIKit.UIButton)">
+            <summary>
+            Properly aligns the title and image on a button when the title is over the image.
+            </summary>
+            <param name="heightRequest">The requested image height.</param>
+            <param name="widthRequest">The requested image width.</param>
+            <param name="targetButton">The button to align.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.SetImageAsync(Xamarin.Forms.ImageSource,System.Int32,System.Int32,MonoTouch.UIKit.UIButton)">
+            <summary>
+            Loads an image from a bundle given the supplied image name, resizes it to the
+            height and width request and sets it into a <see cref="T:MonoTouch.UIKit.UIButton"/>.
+            </summary>
+            <param name="source">The <see cref="T:Xamarin.Forms.ImageSource"/> to load the image from.</param>
+            <param name="widthRequest">The requested image width.</param>
+            <param name="heightRequest">The requested image height.</param>
+            <param name="targetButton">A <see cref="T:MonoTouch.UIKit.UIButton"/> to set the image into.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> for the awaited operation.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.ImageButton">
+            <summary>
+            Gets the underlying element typed as an <see cref="P:Xamarin.Forms.Labs.iOS.Controls.ImageButton.ImageButtonRenderer.ImageButton"/>.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.HybridWebViewRenderer">
+            <summary>
+            The hybrid web view renderer.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.HybridWebViewRenderer.OnElementChanged(Xamarin.Forms.Platform.iOS.ElementChangedEventArgs{Xamarin.Forms.Labs.Controls.HybridWebView})">
+            <summary>
+            The on element changed callback.
+            </summary>
+            <param name="e">
+            The event arguments.
+            </param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Accelerometer">
+            <summary>
+            The accelerometer.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Accelerometer.Gravitation">
+            <summary>
+            Gravitational force is 9.81 m/s^2
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Accelerometer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Accelerometer"/> class.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Accelerometer.ReadingAvailable">
+            <summary>
+            The reading available event handler.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Accelerometer.LatestReading">
+            <summary>
+            Gets the latest reading.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Accelerometer.Interval">
+            <summary>
+            Gets or sets the interval.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Battery">
+            <summary>
+            Battery portion for Apple devices.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Battery.StartLevelMonitoring">
+            <summary>
+            Starts the level monitor.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Battery.StopLevelMonitoring">
+            <summary>
+            Stops the level monitoring.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Battery.StopChargerMonitoring">
+            <summary>
+            Stops the charger monitoring.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Battery.StartChargerMonitoring">
+            <summary>
+            Starts the charger monitoring.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.OnLevelChange">
+            <summary>
+            Event handler for battery level changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.OnChargerStatusChanged">
+            <summary>
+             Event handler for charger connection changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.onLevelChange">
+            <summary>
+            Private event handler for battery level changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.onChargerStatusChanged">
+            <summary>
+            Private event handler for charger connection changes. 
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Battery.Level">
+            <summary>
+             Gets the battery level. 
+            </summary>
+            <returns>Battery level in percentage, 0-100</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Battery.Charging">
+            <summary>
+            Gets a value indicating whether this <see cref="!:SimplyMobile.Device.Battery"/> is charging.
+            </summary>
+            <value><c>true</c> if charging; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.iOS.Controls.CheckBoxRenderer">
+            <summary>
+            The check box renderer for iOS.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.DynamicUITableViewRenderer`1.GetCell(MonoTouch.UIKit.UITableView,MonoTouch.Foundation.NSIndexPath)">
+            <summary>
+            Gets cell for UITableView
+            </summary>
+            <param name="tableView">
+            The table view.
+            </param>
+            <param name="indexPath">
+            The index path.
+            </param>
+            <returns>
+            The <see cref="T:MonoTouch.UIKit.UITableViewCell"/>.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.DynamicUITableViewRenderer`1.RowsInSection(MonoTouch.UIKit.UITableView,System.Int32)">
+            <summary>
+            The rows in section.
+            </summary>
+            <param name="tableView">
+            The table view.
+            </param>
+            <param name="section">
+            The section.
+            </param>
+            <returns>
+            The <see cref="T:System.Int32"/>.
+            </returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.iOS.Controls.ExtendedEntryRenderer">
+            <summary>
+            A renderer for the ExtendedEntry control.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ExtendedEntryRenderer.OnElementChanged(Xamarin.Forms.Platform.iOS.ElementChangedEventArgs{Xamarin.Forms.Entry})">
+            <summary>
+            The on element changed callback.
+            </summary>
+            <param name="e">
+            The event arguments.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ExtendedEntryRenderer.OnElementPropertyChanged(System.Object,System.ComponentModel.PropertyChangedEventArgs)">
+            <summary>
+            The on element property changed callback
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.iOS.Controls.IconButton.IconButtonRenderer">
+            <summary>
+            Draws a button on the iOS platform with an icon shown to the right or left of the button's text
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.IconButton.IconButtonRenderer.GetButtonFont(Xamarin.Forms.Labs.Controls.IconButton,MonoTouch.UIKit.UIButton)">
+            <summary>
+            Gets the font for the button (applied to all button text EXCEPT the icon)
+            </summary>
+            <param name="iconButton"></param>
+            <param name="targetButton"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.IconButton.IconButtonRenderer.OnElementChanged(Xamarin.Forms.Platform.iOS.ElementChangedEventArgs{Xamarin.Forms.Button})">
+            <summary>
+            Handles the initial drawing of the button
+            </summary>
+            <param name="e">Information on the <see cref="P:Xamarin.Forms.Labs.iOS.Controls.IconButton.IconButtonRenderer.IconButton"/></param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.IconButton.IconButtonRenderer.OnElementPropertyChanged(System.Object,System.ComponentModel.PropertyChangedEventArgs)">
+            <summary>
+            Called when the underlying model's properties are changed.
+            </summary>
+            <param name="sender">Model sending the change event.</param>
+            <param name="e">Event arguments.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Controls.IconButton.IconButtonRenderer.IconButton">
+            <summary>
+            Gets the underlying element typed as an <see cref="P:Xamarin.Forms.Labs.iOS.Controls.IconButton.IconButtonRenderer.IconButton"/>
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Controls.WebImage.WebImageRenderer.WebImage">
+            <summary>
+            Gets the underlying control typed as an <see cref="P:Xamarin.Forms.Labs.iOS.Controls.WebImage.WebImageRenderer.WebImage"/>
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.AppleDevice">
+            <summary>
+            Apple device base class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.AppleDevice.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.AppleDevice"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.AppleDevice.LaunchUriAsync(System.Uri)">
+            <summary>
+            Starts the default app associated with the URI for the specified URI.
+            </summary>
+            <param name="uri">The URI.</param>
+            <returns>The launch operation.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.AppleDevice.GetSystemProperty(System.String)">
+            <summary>
+            Gets the system property.
+            </summary>
+            <returns>The system property value.</returns>
+            <param name="property">Property to get.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.CurrentDevice">
+            <summary>
+            Gets the runtime device for Apple's devices.
+            </summary>
+            <value>
+            The current device.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.Id">
+            <summary>
+            Gets Unique Id for the device.
+            </summary>
+            <value>
+            The id for the device.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.Display">
+            <summary>
+            Gets or sets the display information for the device.
+            </summary>
+            <value>
+            The display.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.PhoneService">
+            <summary>
+            Gets or sets the phone service for this device.
+            </summary>
+            <value>Phone service instance if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.Battery">
+            <summary>
+            Gets or sets the battery for the device.
+            </summary>
+            <value>
+            The battery.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.MediaPicker">
+            <summary>
+            Gets the picture chooser.
+            </summary>
+            <value>The picture chooser.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.Network">
+            <summary>
+            Gets the network service.
+            </summary>
+            <value>The network service.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.Accelerometer">
+            <summary>
+            Gets or sets the accelerometer for the device if available
+            </summary>
+            <value>Instance of IAccelerometer if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.Gyroscope">
+            <summary>
+            Gets the gyroscope.
+            </summary>
+            <value>The gyroscope instance if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.Microphone">
+            <summary>
+            Gets the default microphone for the device
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.FileManager">
+            <summary>
+            Gets the file manager for the device.
+            </summary>
+            <value>Device file manager.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.Name">
+            <summary>
+            Gets or sets the name of the device.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.FirmwareVersion">
+            <summary>
+            Gets or sets the firmware version.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.HardwareVersion">
+            <summary>
+            Gets or sets the hardware version.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AppleDevice.Manufacturer">
+            <summary>
+            Gets the manufacturer.
+            </summary>
+            <value>
+            The manufacturer.
+            </value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Display">
+            <summary>
+            Apple Display class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.#ctor(System.Int32,System.Int32,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Display"/> class.
+            </summary>
+            <param name="height">Height in pixels.</param>
+            <param name="width">Width in pixels.</param>
+            <param name="xdpi">Pixel density for X.</param>
+            <param name="ydpi">Pixel density for  Y.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.WidthRequestInInches(System.Double)">
+            <summary>
+            Convert width in inches to runtime pixels
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.HeightRequestInInches(System.Double)">
+            <summary>
+            Convert height in inches to runtime pixels
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:Xamarin.Forms.Labs.Display"/>.
+            </summary>
+            <returns>A <see cref="T:System.String"/> that represents the current <see cref="T:Xamarin.Forms.Labs.Display"/>.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Display.Height">
+            <summary>
+            Gets the screen height in pixels
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Display.Width">
+            <summary>
+            Gets the screen width in pixels
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Display.Xdpi">
+            <summary>
+            Gets the screens X pixel density per inch
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Display.Ydpi">
+            <summary>
+            Gets the screens Y pixel density per inch
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Pad">
+            <summary>
+            Apple iPad.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Pad.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Pad"/> class.
+            </summary>
+            <param name="majorVersion">Major version.</param>
+            <param name="minorVersion">Minor version.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Pad.Version">
+            <summary>
+            Gets the version of the iPad.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Phone">
+            <summary>
+            Apple iPhone.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Phone.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Phone"/> class.
+            </summary>
+            <param name="majorVersion">Major version.</param>
+            <param name="minorVersion">Minor version.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Phone.Version">
+            <summary>
+            Gets the version of iPhone.
+            </summary>
+            <value>
+            The version.
+            </value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Phone.PhoneType">
+            <summary>
+            The phone type.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Phone.PhoneType.Unknown">
+            <summary>
+            Unknown phone type.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Phone.PhoneType.iPhone1G">
+            <summary>
+            The iPhone 1G.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Pod">
+            <summary>
+            Apple iPod.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Pod.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Pod"/> class.
+            </summary>
+            <param name="majorVersion">Major version.</param>
+            <param name="minorVersion">Minor version.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Pod.Version">
+            <summary>
+            Gets the version of iPod.
+            </summary>
+            <value>The version.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Simulator">
+            <summary>
+            Apple device Simulator.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Simulator.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Simulator"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.UIViewExtensions.ToNativeImage(MonoTouch.UIKit.UIView)">
+            <summary>
+            Takes an image of the view.
+            </summary>
+            <param name="view">View to process to image.</param>
+            <returns>A native image of type <see cref="T:MonoTouch.UIKit.UIImage"/>.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Media.Microphone.QueueInputCompleted(System.Object,MonoTouch.AudioToolbox.InputCompletedEventArgs)">
+            <summary>
+            Handles iOS audio buffer queue completed message.
+            </summary>
+            <param name='sender'>Sender object</param>
+            <param name='e'> Input completed parameters.</param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.iOS.Services.PhoneService">
+            <summary>
+            Apple Phone service implements <see cref="T:Xamarin.Forms.Labs.Services.IPhoneService"/>.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.PhoneService.DialNumber(System.String)">
+            <summary>
+            Opens native dialog to dial the specified number.
+            </summary>
+            <param name="number">Number to dial.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Services.PhoneService.CellularProvider">
+            <summary>
+            Gets the cellular provider.
+            </summary>
+            <value>
+            The cellular provider name.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Services.PhoneService.IsCellularDataEnabled">
+            <summary>
+            Gets a value indicating whether this instance has cellular data enabled.
+            </summary>
+            <value><c>true</c> if this instance is cellular data enabled; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Services.PhoneService.IsCellularDataRoamingEnabled">
+            <summary>
+            Gets a value indicating whether this instance has cellular data roaming enabled.
+            </summary>
+            <value><c>true</c> if this instance is cellular data roaming enabled; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Services.PhoneService.IsNetworkAvailable">
+            <summary>
+            Gets a value indicating whether this instance is network available.
+            </summary>
+            <value><c>true</c> if this instance is network available; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Services.PhoneService.ICC">
+            <summary>
+            Gets the ISO Country Code.
+            </summary>
+            <value>
+            The ISO Country Code.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Services.PhoneService.MCC">
+            <summary>
+            Gets the Mobile Country Code.
+            </summary>
+            <value>
+            The Mobile Country Code.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Services.PhoneService.MNC">
+            <summary>
+            Gets the Mobile Network Code.
+            </summary>
+            <value>
+            The Mobile Network Code.
+            </value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.iOS.Services.Reachability">
+            <summary>
+            The reachability utility class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Reachability.IsReachableWithoutRequiringConnection(MonoTouch.SystemConfiguration.NetworkReachabilityFlags)">
+            <summary>
+            Checks if network is reachable without requiring connection.
+            </summary>
+            <param name="flags">
+            The reachability flags.
+            </param>
+            <returns>
+            True if reachable, false if connection is required.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Reachability.IsHostReachable(System.String)">
+            <summary>
+            Determines if host is reachable.
+            </summary>
+            <param name="host">
+            The host address.
+            </param>
+            <returns>
+            True if host is reachable, otherwise false.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Reachability.IsAdHocWiFiNetworkAvailable(MonoTouch.SystemConfiguration.NetworkReachabilityFlags@)">
+            <summary>
+            Determines if AdHoc WiFi network is available.
+            </summary>
+            <param name="flags">
+            Optional extra network reachability flags.
+            </param>
+            <returns>
+            Returns true if it is possible to reach the AdHoc WiFi network, otherwise false.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Reachability.RemoteHostStatus(System.String)">
+            <summary>
+            The remote host status.
+            </summary>
+            <param name="hostName">
+            The host name.
+            </param>
+            <returns>
+            The <see cref="T:Xamarin.Forms.Labs.Services.NetworkStatus"/>.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Reachability.InternetConnectionStatus">
+            <summary>
+            The internet connection status.
+            </summary>
+            <returns>
+            The <see cref="T:Xamarin.Forms.Labs.Services.NetworkStatus"/>.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Reachability.LocalWifiConnectionStatus">
+            <summary>
+            The local WiFi connection status.
+            </summary>
+            <returns>
+            The <see cref="T:Xamarin.Forms.Labs.Services.NetworkStatus"/>.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Reachability.IsNetworkAvailable(MonoTouch.SystemConfiguration.NetworkReachabilityFlags@)">
+            <summary>
+            Returns network reachability flags and network availability.
+            </summary>
+            <param name="flags">
+            The network reachability flags.
+            </param>
+            <returns>
+            True if network is available, otherwise false.
+            </returns>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.iOS.Services.Reachability.ReachabilityChanged">
+            <summary>
+            The reachability changed event.
+            </summary>
+            <remarks>
+            Raised every time there is an interesting reachable event, 
+            we do not even pass the info as to what changed, and 
+            we lump all three status we probe into one.
+            </remarks>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.iOS.Services.TextToSpeechService">
+            <summary>
+            The text to speech service for iOS.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.TextToSpeechService.Speak(System.String)">
+            <summary>
+            The speak.
+            </summary>
+            <param name="text">
+            The text.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.TextToSpeechService.GetInstalledLanguages">
+            <summary>
+            Get installed languages.
+            </summary>
+            <returns>
+            The installed language names.
+            </returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.iOS.Controls.ExtendedLabelRenderer">
+            <summary>
+            The extended label renderer.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ExtendedLabelRenderer.OnElementChanged(Xamarin.Forms.Platform.iOS.ElementChangedEventArgs{Xamarin.Forms.Label})">
+            <summary>
+            The on element changed callback.
+            </summary>
+            <param name="e">
+            The event arguments.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Controls.ExtendedLabelRenderer.UpdateUi(Xamarin.Forms.Labs.Controls.ExtendedLabel,MonoTouch.UIKit.UILabel)">
+            <summary>
+            Updates the UI.
+            </summary>
+            <param name="view">
+            The view.
+            </param>
+            <param name="control">
+            The control.
+            </param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.UISensorBar">
+            <summary>
+            The UI sensor bar view.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.UISensorBar.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Controls.UISensorBar"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.UISensorBar.#ctor(System.Drawing.RectangleF)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Controls.UISensorBar"/> class.
+            </summary>
+            <param name="bounds">
+            The bounds.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.UISensorBar.#ctor(System.IntPtr)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Controls.UISensorBar"/> class.
+            </summary>
+            <param name="handle">
+            The handle.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.UISensorBar.Draw(System.Drawing.RectangleF)">
+            <summary>
+            The draw.
+            </summary>
+            <param name="rect">
+            The rectangle for draw.
+            </param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.UISensorBar.CurrentValue">
+            <summary>
+            Gets or sets the current value.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.UISensorBar.Limit">
+            <summary>
+            Gets or sets the limit.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.UISensorBar.PositiveColor">
+            <summary>
+            Gets or sets the positive color.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.UISensorBar.NegativeColor">
+            <summary>
+            Gets or sets the negative color.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.SensorBarViewRenderer">
+            <summary>
+            The sensor bar view renderer.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.SensorBarViewRenderer.OnElementChanged(Xamarin.Forms.Platform.iOS.ElementChangedEventArgs{Xamarin.Forms.Labs.Controls.SensorBarView})">
+            <summary>
+            The on element changed callback.
+            </summary>
+            <param name="e">
+            The event arguments.
+            </param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate">
+            <summary>
+            Class XFormsApplicationDelegate.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.FinishedLaunching(MonoTouch.UIKit.UIApplication)">
+            <summary>
+            Finished the launching.
+            </summary>
+            <param name="application">The application.</param>
+            <remarks>Deprecated function</remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.FinishedLaunching(MonoTouch.UIKit.UIApplication,MonoTouch.Foundation.NSDictionary)">
+            <summary>
+            Finished the launching.
+            </summary>
+            <param name="app">The application.</param>
+            <param name="options">The options.</param>
+            <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.WillTerminate(MonoTouch.UIKit.UIApplication)">
+            <summary>
+            Wills the terminate.
+            </summary>
+            <param name="application">The application.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.OnActivated(MonoTouch.UIKit.UIApplication)">
+            <summary>
+            Called when [activated].
+            </summary>
+            <param name="application">The application.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.DidEnterBackground(MonoTouch.UIKit.UIApplication)">
+            <summary>
+            Dids the enter background.
+            </summary>
+            <param name="application">The application.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.WillEnterForeground(MonoTouch.UIKit.UIApplication)">
+            <summary>
+            Wills the enter foreground.
+            </summary>
+            <param name="application">The application.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.FinishedLaunchingEvent">
+            <summary>
+            Gets or sets the finished launching event.
+            </summary>
+            <value>The finished launching event.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.WillTerminateEvent">
+            <summary>
+            Gets or sets the will terminate event.
+            </summary>
+            <value>The will terminate event.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.OnActivatedEvent">
+            <summary>
+            Gets or sets the on activated event.
+            </summary>
+            <value>The on activated event.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.DidEnterBackgroundEvent">
+            <summary>
+            Gets or sets the did enter background event.
+            </summary>
+            <value>The did enter background event.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate.WillEnterForegroundEvent">
+            <summary>
+            Gets or sets the will enter foreground event.
+            </summary>
+            <value>The will enter foreground event.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.iOS.XFormsAppiOS">
+            <summary>
+            Class XFormsAppiOS.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.XFormsAppiOS.OnInit(Xamarin.Forms.Labs.iOS.XFormsApplicationDelegate)">
+            <summary>
+            Called when [initialize].
+            </summary>
+            <param name="app">The application.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Media.MediaPicker.SelectPhotoAsync(Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions)">
+            <summary>
+            Select a picture from library.
+            </summary>
+            <param name="options">The storage options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Media.MediaPicker.TakePhotoAsync(Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions)">
+            <summary>
+            Takes the picture.
+            </summary>
+            <param name="options">The storage options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Media.MediaPicker.SelectVideoAsync(Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions)">
+            <summary>
+            Selects the video asynchronous.
+            </summary>
+            <param name="options">The options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.iOS.Services.Media.MediaPicker.TakeVideoAsync(Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions)">
+            <summary>
+            Takes the video asynchronous.
+            </summary>
+            <param name="options">The options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Services.Media.MediaPicker.OnMediaSelected">
+            <summary>
+            Event the fires when media has been selected
+            </summary>
+            <value>The on photo selected.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.iOS.Services.Media.MediaPicker.OnError">
+            <summary>
+            Gets or sets the on error.
+            </summary>
+            <value>The on error.</value>
+        </member>
+    </members>
+</doc>

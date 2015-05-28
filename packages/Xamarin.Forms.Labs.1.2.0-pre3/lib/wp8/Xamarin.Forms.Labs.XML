@@ -1,0 +1,2971 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Xamarin.Forms.Labs</name>
+    </assembly>
+    <members>
+        <member name="T:Xamarin.Forms.Labs.Controls.DynamicListView`1">
+            <summary>
+            The dynamic native list view.
+            </summary>
+            <typeparam name="T">
+            Type of items in the list view
+            </typeparam>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.DynamicListView`1.data">
+            <summary>
+            The data.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.DynamicListView`1.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Controls.DynamicListView`1"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.DynamicListView`1.Add(`0)">
+            <summary>
+            Add items to data collection.
+            </summary>
+            <param name="item">
+            The item.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.DynamicListView`1.Replace(`0,`0)">
+            <summary>
+            Replaces an object in collection.
+            </summary>
+            <param name="original">
+            The original object.
+            </param>
+            <param name="replacement">
+            The replacement object.
+            </param>
+            <returns>
+            <see cref="T:System.Boolean"/>, true if replacement was successful, false if original object was not found.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.DynamicListView`1.Remove(`0)">
+            <summary>
+            The remove item method.
+            </summary>
+            <param name="item">
+            The item to remove.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.DynamicListView`1.InvokeItemSelectedEvent(System.Object,`0)">
+            <summary>
+            Invokes the item selected event.
+            </summary>
+            <param name="sender">
+            The sender.
+            </param>
+            <param name="item">
+            Item that was selected.
+            </param>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Controls.DynamicListView`1.OnSelected">
+            <summary>
+            Occurs when item is selected.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.DynamicListView`1.Data">
+            <summary>
+            Gets or sets the data.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.ExtendedContentView">
+            <summary>
+            Extended content view.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedContentView.WidthRequestInInchesProperty">
+            <summary>
+            The width request in inches property.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedContentView.WidthRequestInInches">
+            <summary>
+            Gets or sets the width request in inches.
+            </summary>
+            <value>The width request in inches.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedContentView.HeightRequestInInches">
+            <summary>
+            Gets or sets the height request in inches.
+            </summary>
+            <value>The height request in inches.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.ExtendedEntry">
+            <summary>
+            An extended entry control that allows the Font and text X alignment to be set
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedEntry.FontProperty">
+            <summary>
+            The font property
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedEntry.XAlignProperty">
+            <summary>
+            The XAlign property
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedEntry.HasBorderProperty">
+            <summary>
+            The HasBorder property
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedEntry.PlaceholderTextColorProperty">
+            <summary>
+            The PlaceholderTextColor property
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedEntry.Font">
+            <summary>
+            Gets or sets the Font
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedEntry.XAlign">
+            <summary>
+            Gets or sets the X alignment of the text
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedEntry.HasBorder">
+            <summary>
+            Gets or sets if the border should be shown or not
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedEntry.PlaceholderTextColor">
+            <summary>
+            Sets color for placeholder text
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedSwitch.TintColorProperty">
+            <summary>
+            Identifies the Switch tint color bindable property.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.CurrentPageChangingEventHandler">
+            <summary>
+                Delegate CurrentPageChangingEventHandler.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.CurrentPageChangedEventHandler">
+            <summary>
+                Delegate CurrentPageChangedEventHandler.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.SwipeLeftEventHandler">
+            <summary>
+            Delegate SwipeLeftEventHandler
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.SwipeRightEventHandler">
+            <summary>
+            Delegate SwipeRightEventHandler
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage">
+            <summary>
+                Class ExtendedTabbedPage.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.#ctor">
+            <summary>
+                Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.InvokeSwipeRightEvent(System.Object,System.Object)">
+            <summary>
+            Invokes the item SwipeRight event.
+            </summary>
+            <param name="sender"></param>
+            <param name="item">Item.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.InvokeSwipeLeftEvent(System.Object,System.Object)">
+            <summary>
+            Invokes the SwipeLeft event.
+            </summary>
+            <param name="sender"></param>
+            <param name="item">Item.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.OnPropertyChanging(System.Object,Xamarin.Forms.PropertyChangingEventArgs)">
+            <summary>
+                Handles the <see cref="E:PropertyChanging"/> event.
+            </summary>
+            <param name="sender">The sender.</param>
+            <param name="e">The <see cref="!:System.ComponentModel.PropertyChangingEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.OnPropertyChanged(System.Object,System.ComponentModel.PropertyChangedEventArgs)">
+            <summary>
+                Handles the <see cref="E:PropertyChanged"/> event.
+            </summary>
+            <param name="sender">The sender.</param>
+            <param name="e">The <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.SwipeLeft(System.Object,System.EventArgs)">
+            <summary>
+            Move to the previous Tabbed Page
+            </summary>
+            <param name="a"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.SwipeRight(System.Object,System.EventArgs)">
+            <summary>
+            Move to the next Tabbed Page
+            </summary>
+            <param name="a"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.RaiseCurrentPageChanging">
+            <summary>
+                Raises the current page changing.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.RaiseCurrentPageChanged">
+            <summary>
+                Raises the current page changed.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.NextPage">
+            <summary>
+            Move to the next page.
+            Restart at the first page should you try 
+            to move past the last page.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.PreviousPage">
+            <summary>
+            Move to the previous page.
+            If you are on the first page then return 
+            the last page in the list
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.CurrentPageChanging">
+            <summary>
+                Occurs when [current page changing].
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.CurrentPageChanged">
+            <summary>
+                Occurs when [current page changed].
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.OnSwipeRight">
+            <summary>
+            Occurs when the TabbedPage is swipped Right
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Controls.ExtendedTabbedPage.OnSwipeLeft">
+            <summary>
+            Occurs when the TabbedPage is swipped Left
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.HybridWebView">
+            <summary>
+            The hybrid web view.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.HybridWebView.injectLock">
+            <summary>
+            The inject lock.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.HybridWebView.jsonSerializer">
+            <summary>
+            The JSON serializer.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.HybridWebView.registeredActions">
+            <summary>
+            The registered actions.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.HybridWebView.registeredFunctions">
+            <summary>
+            The registered actions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.HybridWebView.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Controls.HybridWebView"/> class.
+            </summary>
+            <remarks>HybridWebView will use either <see cref="T:Xamarin.Forms.Labs.Services.Serialization.IJsonSerializer"/> configured
+            with IoC or if missing it will use <see cref="T:Xamarin.Forms.Labs.Services.Serialization.SystemJsonSerializer"/> by default.</remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.HybridWebView.#ctor(Xamarin.Forms.Labs.Services.Serialization.IJsonSerializer)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Controls.HybridWebView"/> class.
+            </summary>
+            <param name="jsonSerializer">
+            The JSON serializer.
+            </param>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.HybridWebView.UriProperty">
+            <summary>
+            The uri property.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.HybridWebView.RegisterCallback(System.String,System.Action{System.String})">
+            <summary>
+            Registers a native callback.
+            </summary>
+            <param name="name">
+            The name.
+            </param>
+            <param name="action">
+            The action.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.HybridWebView.RegisterNativeFunction(System.String,System.Func{System.String,System.Object[]})">
+            <summary>
+            Registers a native callback and returns data to closure
+            </summary>
+            <param name="name">
+            The name.
+            </param>
+            <param name="action">
+            The action.
+            </param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.HybridWebView.Uri">
+            <summary>
+            Gets or sets the uri.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.IconButton">
+            <summary>
+            Creates a button with text and a FontAwesome icon
+            The icon can be on the left, above, on the right or below the text.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.IconButton.OrientationProperty">
+            <summary>
+            Backing field for the orientation property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.IconButton.IconProperty">
+            <summary>
+            Backing field for the icon property
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.IconButton.IconColorProperty">
+            <summary>
+            Backing field for the icon color property
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.IconButton.IconSizeProperty">
+            <summary>
+            Backing field for the icon size property
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.IconButton.IconFontNameProperty">
+            <summary>
+            Backing field for the icon font name property
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.IconButton.Orientation">
+            <summary>
+            Gets or sets The orientation of the image relative to the text.
+            </summary> 
+            <value>
+            The Orientation property gets/sets the value of the backing field, OrientationProperty.
+            </value> 
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.IconButton.Icon">
+            <summary>
+            Gets or sets the icon. A set of FontAwesome icons have been included in <see cref="T:Xamarin.Forms.Labs.Helpers.Icons"/>, and
+            more can be added from the FontAwesome cheatsheet (http://fortawesome.github.io/Font-Awesome/cheatsheet/)
+            </summary>
+            <value>
+            The Icon property gets/sets the value of the backing field, IconProperty
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.IconButton.IconColor">
+            <summary>
+            Gets or sets the icon's color
+            </summary>
+            <value>
+            The IconColor property gets/sets the value of the backing field, IconColorProperty
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.IconButton.IconSize">
+            <summary>
+            Gets or set's the font size of the icon
+            </summary>
+            <value>
+            The IconSize property gets/sets the value of the backing field, IconSizeProperty
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.IconButton.IconFontName">
+            <summary>
+            Gets or set's the font name for the icon - currently this will default to using the FontAwesome font (http://fortawesome.github.io/Font-Awesome/cheatsheet/).
+            Be sure that the fontawesome-webfont.ttf is in your iOS project's Resources folder, and that the build action for it is set to Bundle Resource and Copy Always to Output.
+            Also, an entry to your iOS's info.plist must be made. If you are using Visual Studio 2013, this can be done manually by editing the info.plist as XML. Simply add an entry
+            like this inside of the <dict></dict> element:
+            
+            <key>UIAppFonts</key>
+            <array>
+                <string>Fonts/Roboto-Light.ttf</string> <!-- Inside the Resources/Fonts folder -->
+                <string>Fonts/fontawesome-webfont.ttf</string> <!-- Inside the Resources/Fonts folder -->
+                <string>AnotherFont.ttf</string> <!-- Inside the Resources folder -->
+            </array>
+            
+            </summary>
+            <value>
+            The IconFontName property gets/sets the value of the backing field, IconFontNameProperty
+            </value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.ImageButton">
+            <summary>
+            Creates a button with text and an image.
+            The image can be on the left, above, on the right or below the text.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ImageButton.SourceProperty">
+            <summary>
+            Backing field for the Image property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ImageButton.OrientationProperty">
+            <summary>
+            Backing field for the orientation property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ImageButton.ImageHeightRequestProperty">
+            <summary>
+            Backing field for the image height property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ImageButton.ImageWidthRequestProperty">
+            <summary>
+            Backing field for the image width property.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ImageButton.Source">
+            <summary>
+            Gets or sets the ImageSource to use with the control.
+            </summary>
+            <value>
+            The Source property gets/sets the value of the backing field, SourceProperty.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ImageButton.Orientation">
+            <summary>
+            Gets or sets The orientation of the image relative to the text.
+            </summary> 
+            <value>
+            The Orientation property gets/sets the value of the backing field, OrientationProperty.
+            </value> 
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ImageButton.ImageHeightRequest">
+            <summary>
+            Gets or sets the requested height of the image.  If less than or equal to zero than a 
+            height of 50 will be used.
+            </summary>
+            <value>
+            The ImageHeightRequest property gets/sets the value of the backing field, ImageHeightRequestProperty.
+            </value> 
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ImageButton.ImageWidthRequest">
+            <summary>
+            Gets or sets the requested width of the image.  If less than or equal to zero than a 
+            width of 50 will be used.
+            </summary>
+            <value>
+            The ImageHeightRequest property gets/sets the value of the backing field, ImageHeightRequestProperty.
+            </value> 
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.ImageSourceConverter">
+            <summary>
+            Creates an <see cref="T:Xamarin.Forms.ImageSource"/> from the a string
+            that is either a file or a URI.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ImageSourceConverter.CanConvertFrom(System.Type)">
+            <summary>
+            Checks to see if the type attempted to be converted from is a string.
+            </summary>
+            <param name="sourceType">The type that is attempting to be converted.</param>
+            <returns>Returns true if the sourceType is a <see cref="T:System.String"/>.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ImageSourceConverter.ConvertFrom(System.Globalization.CultureInfo,System.Object)">
+            <summary>
+            Converts the string value into a <see cref="T:Xamarin.Forms.ImageSource"/> either from a file or URI.
+            </summary>
+            <param name="culture">The current culture being used.</param>
+            <param name="value">The string value to convert.</param>
+            <returns>Returns a <see cref="T:Xamarin.Forms.ImageSource"/> loaded from the value.</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.PopupLayout.PopupLocation">
+            <summary>
+            Popup location options when relative to another view
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.PopupLayout.PopupLocation.Top">
+            <summary>
+            Will show popup on top of the specified view
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.PopupLayout.PopupLocation.Bottom">
+            <summary>
+            Will show popup below of the specified view
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.WebImage.ImageUrl">
+            <summary>
+            The URL of the image to display from the web
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.WebImage.DefaultImage">
+            <summary>
+            The path to the local image to display if the <c>ImageUrl</c> can't be loaded
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Data.ObservableObject">
+            <summary>
+            Base class enabling INotifyPropertyChanged implementation and methods for setting property values.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Data.ObservableObject.NotifyPropertyChanged(System.String)">
+            <summary>
+            Raises the PropertyChanged event.
+            </summary>
+            <param name="propertyName">The name of the property to raise the PropertyChanged event for.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Data.ObservableObject.NotifyPropertyChanged``1(System.Linq.Expressions.Expression{System.Func{``0}})">
+            <summary>
+            Raises the PropertyChanged event.
+            </summary>
+            <typeparam name="T">The 1st type parameter.</typeparam>
+            <param name="propertyExpression">The lambda expression of the property to raise the PropertyChanged event for.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Data.ObservableObject.OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs)">
+            <summary>
+            The property changed event invoker.
+            </summary>
+            <param name="e">
+            The event arguments.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Data.ObservableObject.SetProperty``1(``0@,``0,System.Linq.Expressions.Expression{System.Func{``0}})">
+            <summary>
+            Changes the property if the value is different and raises the PropertyChanged event.
+            </summary>
+            <typeparam name="T">The 1st type parameter.</typeparam>
+            <param name="storage">Reference to current value.</param>
+            <param name="value">New value to be set.</param>
+            <param name="propertyExpression">The lambda expression of the property to raise the PropertyChanged event for.</param>
+            <returns><c>true</c> if new value, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Data.ObservableObject.SetProperty``1(``0@,``0,System.String)">
+            <summary>
+            Changes the property if the value is different and raises the PropertyChanged event.
+            </summary>
+            <typeparam name="T">The 1st type parameter.</typeparam>
+            <param name="storage">Reference to current value.</param>
+            <param name="value">New value to be set.</param>
+            <param name="propertyName">The name of the property to raise the PropertyChanged event for.</param>
+            <returns><c>true</c> if new value, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Data.ObservableObject.GetPropertyName``1(System.Linq.Expressions.Expression{System.Func{``0}})">
+            <summary>
+            Gets property name from expression.
+            </summary>
+            <param name="propertyExpression">
+            The property expression.
+            </param>
+            <typeparam name="T">
+            </typeparam>
+            <returns>
+            The <see cref="T:System.String"/>.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Throws an exception if expression is null.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Expression should be a member access lambda expression
+            </exception>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Data.ObservableObject.PropertyChanged">
+            <summary>
+            Occurs when property is changed.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.IAccelerometer">
+            <summary>
+            The Accelerometer interface.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.IAccelerometer.ReadingAvailable">
+            <summary>
+            The reading available event handler.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IAccelerometer.LatestReading">
+            <summary>
+            Gets the latest reading.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IAccelerometer.Interval">
+            <summary>
+            Gets or sets the interval.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.AccelerometerInterval">
+            <summary>
+            The accelerometer interval.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.AccelerometerInterval.Fastest">
+            <summary>
+            The fastest interval.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.AccelerometerInterval.Game">
+            <summary>
+            The game interval, approximately 20ms.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.AccelerometerInterval.Ui">
+            <summary>
+            The UI interval, approximately 70ms.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.AccelerometerInterval.Normal">
+            <summary>
+            The normal interval, approximately 200ms.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.IBattery">
+            <summary>
+            Defines battery interface
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IBattery.Level">
+            <summary>
+            Gets the level.
+            </summary>
+            <value>
+            The level in percentage 0-100.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IBattery.Charging">
+            <summary>
+            Gets a value indicating whether battery is charging
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.IBattery.OnLevelChange">
+            <summary>
+             Occurs when level changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.IBattery.OnChargerStatusChanged">
+            <summary>
+             Occurs when charger is connected or disconnected. 
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.IDevice">
+            <summary>
+            Abstracted device interface.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.IDevice.LaunchUriAsync(System.Uri)">
+            <summary>
+            Starts the default app associated with the URI for the specified URI.
+            </summary>
+            <param name="uri">The URI.</param>
+            <returns>The launch operation.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.Id">
+            <summary>
+            Gets Unique Id for the device.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.Display">
+            <summary>
+            Gets the display information for the device.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.PhoneService">
+            <summary>
+            Gets the phone service for this device.
+            </summary>
+            <value>Phone service instance if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.Battery">
+            <summary>
+            Gets the battery for the device.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.Accelerometer">
+            <summary>
+            Gets the accelerometer.
+            </summary>
+            <value>The accelerometer instance if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.Gyroscope">
+            <summary>
+            Gets the gyroscope.
+            </summary>
+            <value>The gyroscope instance if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.MediaPicker">
+            <summary>
+            Gets the picture chooser.
+            </summary>
+            <value>The picture chooser.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.Network">
+            <summary>
+            Gets the network service.
+            </summary>
+            <value>The network service.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.Microphone">
+            <summary>
+            Gets the default microphone for the device
+            </summary>
+            <value>The default microphone if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.FileManager">
+            <summary>
+            Gets the file manager for the device.
+            </summary>
+            <value>Device file manager.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.Name">
+            <summary>
+            Gets the name of the device.
+            </summary>
+            <value>The name of the device.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.FirmwareVersion">
+            <summary>
+            Gets the firmware version.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.HardwareVersion">
+            <summary>
+            Gets the hardware version.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDevice.Manufacturer">
+            <summary>
+            Gets the manufacturer.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.IDisplay">
+            <summary>
+            Portable interface for device screen information
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.IDisplay.WidthRequestInInches(System.Double)">
+            <summary>
+            Convert width in inches to runtime pixels
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.IDisplay.HeightRequestInInches(System.Double)">
+            <summary>
+            Convert height in inches to runtime pixels
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDisplay.Height">
+            <summary>
+            Gets the screen height in pixels
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDisplay.Width">
+            <summary>
+            Gets the screen width in pixels
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDisplay.Xdpi">
+            <summary>
+            Gets the screens X pixel density per inch
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDisplay.Ydpi">
+            <summary>
+            Gets the screens Y pixel density per inch
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IDisplay.FontManager">
+            <summary>
+            Gets the font manager
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.IGyroscope.LatestReading">
+            <summary>
+            Gets the latest reading vector
+            </summary>
+            <value>Rotation values in radians per second</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Enums.ImageOrientation">
+            <summary>
+            Specifies where the image will occur relative to the text on a
+            <see cref="T:Xamarin.Forms.Labs.Controls.ImageButton"/>.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.EventArgs`1">
+            <summary>
+            Generic event argument class
+            </summary>
+            <typeparam name="T">Type of the argument</typeparam>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.EventArgs`1.#ctor(`0)">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.EventArgs"/> class.
+            </summary>
+            <param name="value">Value of the argument</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.EventArgs`1.Value">
+            <summary>
+            Gets the value of the event argument
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.EventExtensions">
+            <summary>
+            Event extensions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.EventExtensions.Invoke``1(System.EventHandler{Xamarin.Forms.Labs.EventArgs{``0}},System.Object,``0)">
+            <summary>
+            Raise the specified event.
+            </summary>
+            <param name="handler">Event handler.</param>
+            <param name="sender">Sender object.</param>
+            <param name="value">Argument value.</param>
+            <typeparam name="T">The value type.</typeparam>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Helpers.Icons">
+            <summary>
+            Font Awesome icons
+            Get all the icons at http://fortawesome.github.io/Font-Awesome/cheatsheet/
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Helpers.TaskUtils.TaskFromResult``1(``0)">
+            <summary>
+            Tasks from result.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="result">The result.</param>
+            <returns>Task&lt;T&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.INavigationAware.OnNavigatingTo(Xamarin.Forms.Page)">
+            <summary>
+            Called when being navigated to.
+            </summary>
+            <remarks>
+            Can be implemented on either viewmodel or view.
+            </remarks>
+            <param name="previousView">The view being navigated away from.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.INavigationAware.OnNavigatingFrom(Xamarin.Forms.Page)">
+            <summary>
+            Called when being navigated away from.
+            </summary>
+            <remarks>
+            Can be implemented on either viewmodel or view.
+            </remarks>
+            <param name="nextView">The view being navigated to.</param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Mvvm.IXFormsApp">
+            <summary>
+            Interface IXFormsApp
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp.IsInitialized">
+            <summary>
+            Gets a value indicating whether this instance is initialized.
+            </summary>
+            <value><c>true</c> if this instance is initialized; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp.AppDataDirectory">
+            <summary>
+            Gets or sets the application data directory.
+            </summary>
+            <value>The application data directory</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp.Initialize">
+            <summary>
+            Gets or sets the initialize.
+            </summary>
+            <value>The initialize.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp.Startup">
+            <summary>
+            Gets or sets the on startup.
+            </summary>
+            <value>The on startup.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp.Closing">
+            <summary>
+            Gets or sets the on close.
+            </summary>
+            <value>The on close.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp.Suspended">
+            <summary>
+            Gets or sets the on suspend.
+            </summary>
+            <value>The on suspend.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp.Resumed">
+            <summary>
+            Gets or sets the on resume.
+            </summary>
+            <value>The on resume.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp.Error">
+            <summary>
+            Gets or sets the on error.
+            </summary>
+            <value>The on error.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp.Rotation">
+            <summary>
+            Gets or sets the on rotation.
+            </summary>
+            <value>The on rotation.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Mvvm.IXFormsApp`1">
+            <summary>
+            Interface IXFormsApp
+            </summary>
+            <typeparam name="TApp">The type of the t application.</typeparam>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.IXFormsApp`1.Init(`0)">
+            <summary>
+            Initializes the specified context.
+            </summary>
+            <param name="context">The context.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.IXFormsApp`1.AppContext">
+            <summary>
+            Gets or sets the application context.
+            </summary>
+            <value>The application context.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Mvvm.ViewModel">
+            <summary>
+            View model base class.
+            </summary>
+            <example>
+            To implement observable property:
+            private object propertyBackField;
+            public object Property
+            {
+            get { return this.propertyBackField; }
+            set
+            {
+            this.ChangeAndNotify(ref this.propertyBackField, value);
+            }
+            </example>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.ViewModel.Unbind">
+            <summary>
+            Unbind all handlers from property changed event.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.ViewModel.ChangeAndNotify``1(``0@,``0,System.String)">
+            <summary>
+            Changes the property if the value is different and invokes PropertyChangedEventHandler.
+            </summary>
+            <typeparam name="T">The 1st type parameter.</typeparam>
+            <param name="property">Property.</param>
+            <param name="value">Value.</param>
+            <param name="propertyName">Property name.</param>
+            <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.ViewModel.Navigation">
+            <summary>
+            Gets or sets the navigation.
+            </summary>
+            <value>The navigation.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.ViewModel.IsBusy">
+            <summary>
+            Gets or sets a value indicating whether this instance is busy.
+            </summary>
+            <value>
+              <c>true</c> if this instance is busy; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Mvvm.ViewModel.PropertyChanged">
+            <summary>
+            Occurs when property is changed.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.NavigationAwareViewModel.OnNavigatingTo(Xamarin.Forms.Page)">
+            <summary>
+            Called when being navigated to.
+            </summary>
+            <param name="previousView">The view being navigated away from.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.NavigationAwareViewModel.OnNavigatingFrom(Xamarin.Forms.Page)">
+            <summary>
+            Called when being navigated away from.
+            </summary>
+            <param name="nextView">The view being navigated to.</param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Mvvm.XFormsApp`1">
+            <summary>
+            Class XFormsApp.
+            </summary>
+            <typeparam name="TApp">The type of the application.</typeparam>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.Init(`0)">
+            <summary>
+            Initializes the specified context.
+            </summary>
+            <param name="context">The context.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.OnInit(`0)">
+            <summary>
+            Initializes the specified context.
+            </summary>
+            <param name="context">The context.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.OnStartup">
+            <summary>
+            Called when [startup].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.OnClosing">
+            <summary>
+            Called when [closing].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.OnSuspended">
+            <summary>
+            Called when [suspended].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.OnResumed">
+            <summary>
+            Called when [resumed].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.OnError(System.Exception)">
+            <summary>
+            Called when [error].
+            </summary>
+            <param name="ex">The exception.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.OnBackPress">
+            <summary>
+            Called when [error].
+            </summary>
+            <param name="ex">The exception.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.RaiseOnInitialize">
+            <summary>
+            Called when [initialize].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.RaiseOnStartUp">
+            <summary>
+            Called when [start up].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.RaiseOnClosing">
+            <summary>
+            Called when [closing].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.RaiseOnSuspeded">
+            <summary>
+            Called when [suspeded].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.RaiseOnResumed">
+            <summary>
+            Called when [resumed].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.RaiseOnError(System.Exception)">
+            <summary>
+            Called when [error].
+            </summary>
+            <param name="e">The exception.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.IsInitialized">
+            <summary>
+            Gets a value indicating whether this instance is initialized.
+            </summary>
+            <value><c>true</c> if this instance is initialized; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.AppDataDirectory">
+            <summary>
+            Gets or sets the application data directory.
+            </summary>
+            <value>The application data directory</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.AppContext">
+            <summary>
+            Gets or sets the application context.
+            </summary>
+            <value>The application context.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.Initialize">
+            <summary>
+            Gets or sets the initialize.
+            </summary>
+            <value>The initialize.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.Startup">
+            <summary>
+            Gets or sets the on startup.
+            </summary>
+            <value>The on startup.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.Closing">
+            <summary>
+            Gets or sets the on close.
+            </summary>
+            <value>The on close.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.Suspended">
+            <summary>
+            Gets or sets the on suspend.
+            </summary>
+            <value>The on suspend.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.Resumed">
+            <summary>
+            Gets or sets the on resume.
+            </summary>
+            <value>The on resume.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.Error">
+            <summary>
+            Gets or sets the on error.
+            </summary>
+            <value>The on error.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.XFormsApp`1.Rotation">
+            <summary>
+            Gets or sets the on rotation.
+            </summary>
+            <value>The on rotation.</value>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IAsyncSimpleCache.RemoveAsync(System.String)">
+            <summary>
+            Removes the specified item from the cache.
+            </summary>
+            <param name="key">The identifier for the item to delete.</param>
+            <returns>
+            True if the item was successfully removed from the cache; false otherwise.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IAsyncSimpleCache.RemoveAllAsync(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Removes the cache for all the keys provided.
+            </summary>
+            <param name="keys">The keys to remove.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IAsyncSimpleCache.GetAsync``1(System.String)">
+            <summary>
+            Retrieves the specified item from the cache.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">The identifier for the item to retrieve.</param>
+            <returns>
+            The retrieved item, or <value>null</value> if the key was not found.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IAsyncSimpleCache.AddAsync``1(System.String,``0)">
+            <summary>
+            Adds a new item into the cache at the specified cache key only if the cache is empty.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">The key used to reference the item.</param>
+            <param name="value">The object to be inserted into the cache.</param>
+            <returns>True if item was added, otherwise false.</returns>
+            <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IAsyncSimpleCache.SetAsync``1(System.String,``0)">
+            <summary>
+            Sets an item into the cache at the cache key specified regardless if it already exists or not.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item.</param>
+            <param name="value">Item to set.</param>
+            <returns>True if item was added, otherwise false.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IAsyncSimpleCache.ReplaceAsync``1(System.String,``0)">
+            <summary>
+            Replaces the item at the cache.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item to replace.</param>
+            <param name="value">Item to replace with.</param>
+            <returns>True if the item exists, otherwise false.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IAsyncSimpleCache.FlushAllAsync">
+            <summary>
+            Invalidates all data on the cache.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IAsyncSimpleCache.GetAllAsync``1(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Retrieves multiple items from the cache. 
+            The default value of T is set for all keys that do not exist.
+            </summary>
+            <typeparam name="T">Type of values to get.</typeparam>
+            <param name="keys">The list of identifiers for the items to retrieve.</param>
+            <returns>
+            a Dictionary holding all items indexed by their key.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IAsyncSimpleCache.SetAllAsync``1(System.Collections.Generic.IDictionary{System.String,``0})">
+            <summary>
+            Sets multiple items to the cache. 
+            </summary>
+            <typeparam name="T">Type of values to set.</typeparam>
+            <param name="values">The values.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IFontManager.GetHeight(Xamarin.Forms.Font)">
+            <summary>
+            Gets height for the font.
+            </summary>
+            <param name="font">Font whose height is calculated.</param>
+            <returns>Height of the font in inches.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IFontManager.FindClosest(System.String,System.Double)">
+            <summary>
+            Finds the closest font to the desired height.
+            </summary>
+            <param name="name">Name of the font.</param>
+            <param name="desiredHeight">Desired height in inches.</param>
+            <returns></returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.IFontManager.AvailableFonts">
+            <summary>
+            Gets all available system fonts.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Services.Media.IAudioStream.OnBroadcast">
+            <summary>
+            Occurs when new audio has been streamed.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.IAudioStream.SampleRate">
+            <summary>
+            Gets the sample rate.
+            </summary>
+            <value>
+            The sample rate in hertz.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.IAudioStream.ChannelCount">
+            <summary>
+            Gets the channel count.
+            </summary>
+            <value>
+            The channel count.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.IAudioStream.BitsPerSample">
+            <summary>
+            Gets bits per sample.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.IAudioStream.SupportedSampleRates">
+            <summary>
+            Gets the average data transfer rate
+            </summary>
+            <value>The average data transfer rate in bytes per second.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.MediaExtensions">
+            <summary>
+            Class MediaExtensions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaExtensions.VerifyOptions(Xamarin.Forms.Labs.Services.Media.MediaStorageOptions)">
+            <summary>
+            Verifies the options.
+            </summary>
+            <param name="self">The self.</param>
+            <exception cref="T:System.ArgumentNullException">options</exception>
+            <exception cref="T:System.ArgumentException">options.Directory must be a relative folder;options</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaExtensions.GetMediaFileWithPath(Xamarin.Forms.Labs.Services.Media.MediaStorageOptions,System.String)">
+            <summary>
+            Gets the output file name with folder.
+            </summary>
+            <param name="self">The self.</param>
+            <param name="rootPath">The root folder.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaExtensions.GetUniqueMediaFileWithPath(Xamarin.Forms.Labs.Services.Media.MediaStorageOptions,System.String,System.Func{System.String,System.Boolean})">
+            <summary>
+            Gets the unique filepath.
+            </summary>
+            <param name="self">The self.</param>
+            <param name="rootPath">The root folder.</param>
+            <param name="checkExists">The check exists.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.MediaFileHelpers">
+            <summary>
+            Class MediaFileHelpers.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaFileHelpers.GetMediaFileWithPath(System.Boolean,System.String,System.String,System.String)">
+            <summary>
+            Gets the output file with folder.
+            </summary>
+            <param name="isPhoto">if set to <c>true</c> [is photo].</param>
+            <param name="folder">The root folder.</param>
+            <param name="subdir">The subdir.</param>
+            <param name="name">The name.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaFileHelpers.GetUniqueMediaFileWithPath(System.Boolean,System.String,System.String,System.Func{System.String,System.Boolean})">
+            <summary>
+            Gets the unique file folder.
+            </summary>
+            <param name="isPhoto">if set to <c>true</c> [is photo].</param>
+            <param name="folder">The folder.</param>
+            <param name="name">The name.</param>
+            <param name="checkExists">The check exists.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.MediaFile">
+            <summary>
+            Class MediaFile. This class cannot be inherited.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Media.MediaFile._dispose">
+            <summary>
+            The _dispose
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Media.MediaFile._path">
+            <summary>
+            The _path
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Media.MediaFile._streamGetter">
+            <summary>
+            The _stream getter
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Media.MediaFile._isDisposed">
+            <summary>
+            The _is disposed
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaFile.#ctor(System.String,System.Func{System.IO.Stream},System.Action{System.Boolean})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.Media.MediaFile"/> class.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="streamGetter">The stream getter.</param>
+            <param name="dispose">The dispose.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaFile.Finalize">
+            <summary>
+            Finalizes an instance of the <see cref="T:Xamarin.Forms.Labs.Services.Media.MediaFile"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaFile.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaFile.Dispose(System.Boolean)">
+            <summary>
+            Releases unmanaged and - optionally - managed resources.
+            </summary>
+            <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only
+            unmanaged resources.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaFile.Path">
+            <summary>
+            Gets the path.
+            </summary>
+            <value>The path.</value>
+            <exception cref="T:System.ObjectDisposedException">null</exception>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaFile.Source">
+            <summary>
+            Gets the stream.
+            </summary>
+            <value>The source.</value>
+            <exception cref="T:System.ObjectDisposedException">null</exception>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaFile.Exif">
+            <summary>
+            Gets the exif.
+            </summary>
+            <value>The exif.</value>
+            <exception cref="T:System.ObjectDisposedException">null</exception>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.MediaFileNotFoundException">
+            <summary>
+            Class MediaFileNotFoundException.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaFileNotFoundException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.Media.MediaFileNotFoundException"/> class.
+            </summary>
+            <param name="path">The path.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaFileNotFoundException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.Media.MediaFileNotFoundException"/> class.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="innerException">The inner exception.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaFileNotFoundException.Path">
+            <summary>
+            Gets the path.
+            </summary>
+            <value>The path.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.MediaStorageOptions">
+            <summary>
+            Class MediaStorageOptions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaStorageOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.Media.MediaStorageOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaStorageOptions.Directory">
+            <summary>
+            Gets or sets the directory.
+            </summary>
+            <value>The directory.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaStorageOptions.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaStorageOptions.MaxPixelDimension">
+            <summary>
+            Gets or sets the maximum pixel dimension.
+            </summary>
+            <value>The maximum pixel dimension.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaStorageOptions.PercentQuality">
+            <summary>
+            Gets or sets the percent quality.
+            </summary>
+            <value>The percent quality.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.CameraDevice">
+            <summary>
+            Enum CameraDevice
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Media.CameraDevice.Rear">
+            <summary>
+            The rear
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Media.CameraDevice.Front">
+            <summary>
+            The front
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions">
+            <summary>
+            Class CameraMediaStorageOptions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions.DefaultCamera">
+            <summary>
+            Gets or sets the default camera.
+            </summary>
+            <value>The default camera.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions.SaveMediaOnCapture">
+            <summary>
+            Gets or sets a value indicating whether [save media on capture].
+            </summary>
+            <value><c>true</c> if [save media on capture]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.VideoQuality">
+            <summary>
+            Enum VideoQuality
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Media.VideoQuality.Low">
+            <summary>
+            The low
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Media.VideoQuality.Medium">
+            <summary>
+            The medium
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Media.VideoQuality.High">
+            <summary>
+            The high
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions">
+            <summary>
+            Class VideoMediaStorageOptions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions.DefaultCamera">
+            <summary>
+            Gets or sets the default camera.
+            </summary>
+            <value>The default camera.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions.SaveMediaOnCapture">
+            <summary>
+            Gets or sets a value indicating whether [save media on capture].
+            </summary>
+            <value><c>true</c> if [save media on capture]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions.DesiredLength">
+            <summary>
+            Gets or sets the length of the desired.
+            </summary>
+            <value>The length of the desired.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions.Quality">
+            <summary>
+            Gets or sets the quality.
+            </summary>
+            <value>The quality.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.IDependencyContainer">
+            <summary>
+            Interface for dependency container. Extends on <see cref="T:Xamarin.Forms.Labs.Services.IResolver"/> by providing the 
+            ability to register services.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IDependencyContainer.GetResolver">
+            <summary>
+            Gets the resolver from the container
+            </summary>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.IResolver"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IDependencyContainer.Register``1(``0)">
+            <summary>
+            Registers an instance of T to be stored in the container.
+            </summary>
+            <typeparam name="T">Type of instance</typeparam>
+            <param name="instance">Instance of type T.</param>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.IDependencyContainer"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IDependencyContainer.Register``2">
+            <summary>
+            Registers a type to instantiate for type T.
+            </summary>
+            <typeparam name="T">Type of instance</typeparam>
+            <typeparam name="TImpl">Type to register for instantiation.</typeparam>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.IDependencyContainer"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IDependencyContainer.RegisterSingle``2">
+            <summary>
+            Registers a type to instantiate for type T as singleton.
+            </summary>
+            <typeparam name="T">Type of instance</typeparam>
+            <typeparam name="TImpl">Type to register for instantiation.</typeparam>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.IDependencyContainer"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IDependencyContainer.Register``1(System.Type)">
+            <summary>
+            Tries to register a type
+            </summary>
+            <typeparam name="T">Type of instance</typeparam>
+            <param name="type">Type of implementation</param>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.IDependencyContainer"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IDependencyContainer.Register(System.Type,System.Type)">
+            <summary>
+            Tries to register a type
+            </summary>
+            <param name="type">Type to register.</param>
+            <param name="impl">Type that implements registered type.</param>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.IDependencyContainer"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IDependencyContainer.Register``1(System.Func{Xamarin.Forms.Labs.Services.IResolver,``0})">
+            <summary>
+            Registers a function which returns an instance of type T.
+            </summary>
+            <typeparam name="T">Type of instance.</typeparam>
+            <param name="func">Function which returns an instance of T.</param>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.IDependencyContainer"/></returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.IResolver">
+            <summary>
+            Interface definition for dependency resolver.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IResolver.Resolve``1">
+            <summary>
+            Resolve a dependency.
+            </summary>
+            <typeparam name="T">Type of instance to get.</typeparam>
+            <returns>An instance of {T} if successful, otherwise null.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IResolver.Resolve(System.Type)">
+            <summary>
+            Resolve a dependency by type.
+            </summary>
+            <param name="type">Type of object.</param>
+            <returns>An instance to type if found as <see cref="T:System.Object"/>, otherwise null.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IResolver.ResolveAll``1">
+            <summary>
+            Resolve a dependency.
+            </summary>
+            <typeparam name="T">Type of instance to get.</typeparam>
+            <returns>All instances of {T} if successful, otherwise null.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IResolver.ResolveAll(System.Type)">
+            <summary>
+            Resolve a dependency by type.
+            </summary>
+            <param name="type">Type of object.</param>
+            <returns>All instances of type if found as <see cref="T:System.Object"/>, otherwise null.</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Resolver">
+            <summary>
+            Wrapper for IResolver instance for quick access.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Resolver.instance">
+            <summary>
+            The <see cref="T:Xamarin.Forms.Labs.Services.IResolver"/> instance.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Resolver.SetResolver(Xamarin.Forms.Labs.Services.IResolver)">
+            <summary>
+            Sets the resolver instance.
+            </summary>
+            <param name="resolver">Instance of IResolver implementation.</param>
+            <exception cref="T:System.InvalidOperationException">Instance can only be set once to prevent mix-ups.</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Resolver.Resolve``1">
+            <summary>
+            Resolve a dependency.
+            </summary>
+            <typeparam name="T">Type of instance to get.</typeparam>
+            <returns>An instance of {T} if successful, otherwise null.</returns>
+            <exception cref="T:System.NullReferenceException">IResolver instance has not been set.</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Resolver.Resolve(System.Type)">
+            <summary>
+            Resolve a dependency by type.
+            </summary>
+            <param name="type">Type of object.</param>
+            <returns>An instance to type if found as <see cref="T:System.Object"/>, otherwise null.</returns>
+            <exception cref="T:System.NullReferenceException">IResolver instance has not been set.</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Resolver.ResolveAll``1">
+            <summary>
+            Resolve a dependency.
+            </summary>
+            <typeparam name="T">Type of instance to get.</typeparam>
+            <returns>All instances of {T} if successful, otherwise null.</returns>
+            <exception cref="T:System.NullReferenceException">IResolver instance has not been set.</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Resolver.ResolveAll(System.Type)">
+            <summary>
+            Resolve a dependency by type.
+            </summary>
+            <param name="type">Type of object.</param>
+            <returns>All instances of type if found as <see cref="T:System.Object"/>, otherwise null.</returns>
+            <exception cref="T:System.NullReferenceException">IResolver instance has not been set.</exception>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Resolver.Instance">
+            <summary>
+            Gets or sets the instance.
+            </summary>
+            <exception cref="T:System.NullReferenceException">IResolver instance has not been set.</exception>
+            <exception cref="T:System.InvalidOperationException">Instance can only be set once to prevent mix-ups.</exception>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Resolver.IsSet">
+            <summary>
+            Gets a value indicating whether resolver has been set.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.SimpleContainer">
+            <summary>
+            Simple dependency container implementation
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SimpleContainer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.SimpleContainer"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SimpleContainer.GetResolver">
+            <summary>
+            Gets the resolver from the container
+            </summary>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.IResolver"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SimpleContainer.Register``1(``0)">
+            <summary>
+            Registers an instance of T to be stored in the container.
+            </summary>
+            <typeparam name="T">Type of instance</typeparam>
+            <param name="instance">Instance of type T.</param>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.SimpleContainer"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SimpleContainer.Register``2">
+            <summary>
+            Registers a type to instantiate for type T.
+            </summary>
+            <typeparam name="T">Type of instance</typeparam>
+            <typeparam name="TImpl">Type to register for instantiation.</typeparam>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.SimpleContainer"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SimpleContainer.Register``1(System.Type)">
+            <summary>
+            Tries to register a type
+            </summary>
+            <typeparam name="T">Type of instance</typeparam>
+            <param name="type">Type of implementation</param>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.SimpleContainer"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SimpleContainer.Register(System.Type,System.Type)">
+            <summary>
+            Tries to register a type
+            </summary>
+            <param name="type">Type to register.</param>
+            <param name="impl">Type that implements registered type.</param>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.SimpleContainer"/></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SimpleContainer.Register``1(System.Func{Xamarin.Forms.Labs.Services.IResolver,``0})">
+            <summary>
+            Registers a function which returns an instance of type T.
+            </summary>
+            <typeparam name="T">Type of instance.</typeparam>
+            <param name="func">Function which returns an instance of T.</param>
+            <returns>An instance of <see cref="T:Xamarin.Forms.Labs.Services.SimpleContainer"/></returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Geolocation.PositionExtensions">
+            <summary>
+            Position extensions
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Geolocation.PositionExtensions.EquatorRadius">
+            <summary>
+            The equator radius.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Geolocation.PositionExtensions.DistanceFrom(Xamarin.Forms.Labs.Services.Geolocation.Position,Xamarin.Forms.Labs.Services.Geolocation.Position)">
+            <summary>
+            Calculates distance between two locations.
+            </summary>
+            <returns>The <see cref="T:System.Double"/>The distance in meters</returns>
+            <param name="a">Location a</param>
+            <param name="b">Location b</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Geolocation.PositionExtensions.BearingFrom(Xamarin.Forms.Labs.Services.Geolocation.Position,Xamarin.Forms.Labs.Services.Geolocation.Position)">
+            <summary>
+            Calculates bearing between start and stop.
+            </summary>
+            <returns>The <see cref="T:System.Double"/>.</returns>
+            <param name="start">Start coordinates.</param>
+            <param name="stop">Stop coordinates.</param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.ICacheProvider">
+            <summary>
+            The CacheProvider interface.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.ISimpleCache">
+            <summary>
+            A common cache provider interface.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ISimpleCache.Remove(System.String)">
+            <summary>
+            Removes the specified item from the cache.
+            </summary>
+            <param name="key">The identifier for the item to delete.</param>
+            <returns>
+            True if the item was successfully removed from the cache; false otherwise.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ISimpleCache.RemoveAll(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Removes the cache for all the keys provided.
+            </summary>
+            <param name="keys">The keys to remove.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ISimpleCache.Get``1(System.String)">
+            <summary>
+            Retrieves the specified item from the cache.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">The identifier for the item to retrieve.</param>
+            <returns>
+            The retrieved item, or <value>null</value> if the key was not found.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ISimpleCache.Add``1(System.String,``0)">
+            <summary>
+            Adds a new item into the cache at the specified cache key only if the cache is empty.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">The key used to reference the item.</param>
+            <param name="value">The object to be inserted into the cache.</param>
+            <returns>True if item was added, otherwise false.</returns>
+            <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ISimpleCache.Set``1(System.String,``0)">
+            <summary>
+            Sets an item into the cache at the cache key specified regardless if it already exists or not.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item.</param>
+            <param name="value">Item to set.</param>
+            <returns>True if item was added, otherwise false.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ISimpleCache.Replace``1(System.String,``0)">
+            <summary>
+            Replaces the item at the cache.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item to replace.</param>
+            <param name="value">Item to replace with.</param>
+            <returns>True if the item exists, otherwise false.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ISimpleCache.FlushAll">
+            <summary>
+            Invalidates all data on the cache.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ISimpleCache.GetAll``1(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Retrieves multiple items from the cache. 
+            The default value of T is set for all keys that do not exist.
+            </summary>
+            <typeparam name="T">Type of values to get.</typeparam>
+            <param name="keys">The list of identifiers for the items to retrieve.</param>
+            <returns>
+            a Dictionary holding all items indexed by their key.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ISimpleCache.SetAll``1(System.Collections.Generic.IDictionary{System.String,``0})">
+            <summary>
+            Sets multiple items to the cache. 
+            </summary>
+            <typeparam name="T">Type of values to set.</typeparam>
+            <param name="values">The values.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ICacheProvider.Add``1(System.String,``0,System.DateTime)">
+            <summary>
+            Adds a new item into the cache at the specified cache key only if the cache is empty.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item.</param>
+            <param name="value">Item to add.</param>
+            <param name="expiresAt">Expiration time.</param>
+            <returns>True if item was added, otherwise false.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ICacheProvider.Set``1(System.String,``0,System.DateTime)">
+            <summary>
+            Sets an item into the cache at the cache key specified regardless if it already exists or not.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item.</param>
+            <param name="value">Item to set.</param>
+            <param name="expiresAt">Expiration time.</param>
+            <returns>True if item was set, otherwise false.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ICacheProvider.Replace``1(System.String,``0,System.DateTime)">
+            <summary>
+            Replaces the item at the cache.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item to replace.</param>
+            <param name="value">Item to replace with.</param>
+            <param name="expiresAt">Expiration time.</param>
+            <returns>True if the item exists, otherwise false.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ICacheProvider.Add``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            Adds a new item into the cache at the specified cache key only if the cache is empty.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item.</param>
+            <param name="value">Item to add.</param>
+            <param name="expiresIn">Expiration timespan.</param>
+            <returns>True if item was added, otherwise false.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ICacheProvider.Set``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            Sets an item into the cache at the cache key specified regardless if it already exists or not.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item.</param>
+            <param name="value">Item to set.</param>
+            <param name="expiresIn">Expiration timespan.</param>
+            <returns>True if item was set, otherwise false.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ICacheProvider.Replace``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            Replaces an item in the cache.
+            </summary>
+            <typeparam name="T">Type of item.</typeparam>
+            <param name="key">Key for the item to replace.</param>
+            <param name="value">Item to replace with.</param>
+            <param name="expiresIn">Expiration timespan.</param>
+            <returns>True if item was replaced, otherwise false.</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.IPhoneService">
+            <summary>
+            Interface for phone functionality and information.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.IPhoneService.DialNumber(System.String)">
+            <summary>
+            Opens native dialog to dial the specified number.
+            </summary>
+            <param name="number">Number to dial.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.IPhoneService.CellularProvider">
+            <summary>
+            Gets the cellular provider.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.IPhoneService.IsCellularDataEnabled">
+            <summary>
+            Gets a value indicating whether this instance has cellular data enabled.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.IPhoneService.IsCellularDataRoamingEnabled">
+            <summary>
+            Gets a value indicating whether this instance has cellular data roaming enabled.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.IPhoneService.IsNetworkAvailable">
+            <summary>
+            Gets a value indicating whether this instance has network available.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.IPhoneService.ICC">
+            <summary>
+            Gets the ISO Country Code.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.IPhoneService.MCC">
+            <summary>
+            Gets the Mobile Country Code.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.IPhoneService.MNC">
+            <summary>
+            Gets the Mobile Network Code.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.IPhoneService.CanSendSMS">
+            <summary>
+            Gets whether the service can send SMS
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.ITextToSpeechService">
+            <summary>
+            The Text To Speech Service interface.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ITextToSpeechService.Speak(System.String)">
+            <summary>
+            The speak method.
+            </summary>
+            <param name="text">
+            The text to speak.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.ITextToSpeechService.GetInstalledLanguages">
+            <summary>
+            Get installed languages.
+            </summary>
+            <returns>
+            The installed language names.
+            </returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.RelayCommand.#ctor(System.Action)">
+            <summary>
+            Initializes a new instance of the RelayCommand class that 
+            can always execute.
+            </summary>
+            <param name="execute">The execution logic.</param>
+            <exception cref="T:System.ArgumentNullException">If the execute argument is null.</exception>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Mvvm.RelayCommand.CanExecuteChanged">
+            <summary>
+            Occurs when changes occur that affect whether the command should execute.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Mvvm.RelayCommand`1.CanExecuteChanged">
+            <summary>
+            Occurs when changes occur that affect whether the command should execute.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.ExtendedLabel">
+            <summary>
+            Class ExtendedLabel.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedLabel.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Controls.ExtendedLabel"/> class.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedLabel.FontSizeProperty">
+            <summary>
+            The font size property
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedLabel.FontNameAndroidProperty">
+            <summary>
+            The font name android property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedLabel.FontNameIOSProperty">
+            <summary>
+            The font name ios property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedLabel.FontNameProperty">
+            <summary>
+            The font name property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedLabel.FriendlyFontNameProperty">
+            <summary>
+            The friendly font name property. This can be found on the first line of the font or in the font preview. 
+            This is only required on Windows Phone. If not given then the file name excl. the extension is used.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedLabel.IsUnderlineProperty">
+            <summary>
+            The is underlined property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedLabel.IsStrikeThroughProperty">
+            <summary>
+            The is underlined property.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedLabel.FontSize">
+            <summary>
+            Gets or sets the size of the font.
+            </summary>
+            <value>The size of the font.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedLabel.FontNameAndroid">
+            <summary>
+            Gets or sets the font name android.
+            </summary>
+            <value>The font name android.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedLabel.FontNameIOS">
+            <summary>
+            Gets or sets the font name ios.
+            </summary>
+            <value>The font name ios.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedLabel.FontName">
+            <summary>
+            Gets or sets the name of the font file including extension. If no extension given then ttf is assumed.
+            Fonts need to be included in projects accoring to the documentation.
+            </summary>
+            <value>The full name of the font file including extension.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedLabel.FriendlyFontName">
+            <summary>
+            Gets or sets the name of the font.
+            </summary>
+            <value>The name of the font.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedLabel.IsUnderline">
+            <summary>
+            Gets or sets a value indicating whether the text in the label is underlined.
+            </summary>
+            <value>A <see cref="T:System.Boolean"/> indicating if the text in the label should be underlined.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedLabel.IsStrikeThrough">
+            <summary>
+            Gets or sets a value indicating whether the text in the label is underlined.
+            </summary>
+            <value>A <see cref="T:System.Boolean"/> indicating if the text in the label should be underlined.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.IMediaPicker">
+            <summary>
+            Interface IMediaPicker
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.IMediaPicker.SelectPhotoAsync(Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions)">
+            <summary>
+            Select a picture from library.
+            </summary>
+            <param name="options">The storage options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.IMediaPicker.TakePhotoAsync(Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions)">
+            <summary>
+            Takes the picture.
+            </summary>
+            <param name="options">The storage options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.IMediaPicker.SelectVideoAsync(Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions)">
+            <summary>
+            Selects the video asynchronous.
+            </summary>
+            <param name="options">The options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.IMediaPicker.TakeVideoAsync(Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions)">
+            <summary>
+            Takes the video asynchronous.
+            </summary>
+            <param name="options">The options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.IMediaPicker.IsCameraAvailable">
+            <summary>
+            Gets a value indicating whether this instance is camera available.
+            </summary>
+            <value><c>true</c> if this instance is camera available; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.IMediaPicker.IsPhotosSupported">
+            <summary>
+            Gets a value indicating whether this instance is photos supported.
+            </summary>
+            <value><c>true</c> if this instance is photos supported; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.IMediaPicker.IsVideosSupported">
+            <summary>
+            Gets a value indicating whether this instance is videos supported.
+            </summary>
+            <value><c>true</c> if this instance is videos supported; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.IMediaPicker.OnMediaSelected">
+            <summary>
+            Event the fires when media has been selected
+            </summary>
+            <value>The on photo selected.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.IMediaPicker.OnError">
+            <summary>
+            Gets or sets the on error.
+            </summary>
+            <value>The on error.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.MediaPickerArgs">
+            <summary>
+            Class MediaPickerArgs.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaPickerArgs.#ctor(Xamarin.Forms.Labs.Services.Media.MediaFile)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.Media.MediaPickerArgs"/> class.
+            </summary>
+            <param name="mf">The mf.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaPickerArgs.MediaFile">
+            <summary>
+            Gets the media file.
+            </summary>
+            <value>The media file.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Media.MediaPickerErrorArgs">
+            <summary>
+            Class MediaPickerErrorArgs.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Media.MediaPickerErrorArgs.#ctor(System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.Media.MediaPickerErrorArgs"/> class.
+            </summary>
+            <param name="ex">The ex.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Media.MediaPickerErrorArgs.Error">
+            <summary>
+            Gets the error.
+            </summary>
+            <value>The error.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.NetworkStatus">
+            <summary>
+            The network status.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.NetworkStatus.NotReachable">
+            <summary>
+            Network not reachable.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.NetworkStatus.ReachableViaCarrierDataNetwork">
+            <summary>
+            Network reachable via carrier data network.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.NetworkStatus.ReachableViaWiFiNetwork">
+            <summary>
+            Network reachable via WiFi network.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.IByteSerializer">
+            <summary>
+            Common interface for byte buffer serializer.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.IByteSerializer.SerializeToBytes``1(``0)">
+            <summary>
+            Serializes object to a string.
+            </summary>
+            <typeparam name="T">Type of object to serialize to.</typeparam>
+            <param name="obj">Object to serialize.</param>
+            <returns>Serialized byte[] of the object.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.IByteSerializer.Deserialize``1(System.Byte[])">
+            <summary>
+            Deserializes string into an object.
+            </summary>
+            <typeparam name="T">Type of object to serialize to.</typeparam>
+            <param name="data">Serialized object as byte buffer.</param>
+            <returns>Object of type T.</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.IJsonSerializer">
+            <summary>
+            The JsonSerializer interface.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.ISerializer">
+            <summary>
+            Common serializer interface.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.IStreamSerializer">
+            <summary>
+            Defines a generic interface for stream serializer.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.IStreamSerializer.Serialize``1(``0,System.IO.Stream)">
+            <summary>
+            Serializes object to a stream.
+            </summary>
+            <typeparam name="T">Type of object to serialize.</typeparam>
+            <param name="obj">Object to serialize.</param>
+            <param name="stream">Stream to serialize to.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.IStreamSerializer.Deserialize``1(System.IO.Stream)">
+            <summary>
+            Deserializes stream into an object.
+            </summary>
+            <typeparam name="T">Type of object to serialize to.</typeparam>
+            <param name="stream">Stream to deserialize from.</param>
+            <returns>Object of type T.</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.IStringSerializer">
+            <summary>
+            Serialization interface for strings.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.IStringSerializer.Serialize``1(``0)">
+            <summary>
+            Serializes object to a string.
+            </summary>
+            <typeparam name="T">Type of object to serialize.</typeparam>
+            <param name="obj">Object to serialize.</param>
+            <returns>Serialized string of the object.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.IStringSerializer.Deserialize``1(System.String)">
+            <summary>
+            Deserializes string into an object.
+            </summary>
+            <typeparam name="T">Type of object to serialize to.</typeparam>
+            <param name="data">Serialized object.</param>
+            <returns>Object of type T.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.ISerializer.Flush">
+            <summary>
+            Cleans memory.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Serialization.ISerializer.Format">
+            <summary>
+            Gets the serialization format.
+            </summary>
+            <value>Serialization format.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.IProtoBufSerializer">
+            <summary>
+            The protobuf Serializer interface.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.IXmlSerializer">
+            <summary>
+            The XmlSerializer interface.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.SerializationFormat">
+            <summary>
+            Serialization format type.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Serialization.SerializationFormat.Custom">
+            <summary>
+            Custom undefined format.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Serialization.SerializationFormat.Json">
+            <summary>
+            JSON format.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Serialization.SerializationFormat.Xml">
+            <summary>
+            XML format.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Serialization.SerializationFormat.ProtoBuffer">
+            <summary>
+            ProtoBuffer format.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Serialization.SerializationFormat.Binary">
+            <summary>
+            Custom binary format.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.StreamSerializer">
+            <summary>
+            The stream serializer.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StreamSerializer.Flush">
+            <summary>
+            Cleans memory.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StreamSerializer.SerializeToBytes``1(``0)">
+            <summary>
+            Serializes object to a string.
+            </summary>
+            <typeparam name="T">Type of object to serialize to.</typeparam>
+            <param name="obj">Object to serialize.</param>
+            <returns>Serialized byte[] of the object.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StreamSerializer.Deserialize``1(System.Byte[])">
+            <summary>
+            Deserializes string into an object.
+            </summary>
+            <typeparam name="T">Type of object to serialize to.</typeparam>
+            <param name="data">Serialized object as byte buffer.</param>
+            <returns>Object of type T.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StreamSerializer.Serialize``1(``0,System.IO.Stream)">
+            <summary>
+            Serializes object to a stream.
+            </summary>
+            <typeparam name="T">Type of object to serialize.</typeparam>
+            <param name="obj">Object to serialize.</param>
+            <param name="stream">Stream to serialize to.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StreamSerializer.Deserialize``1(System.IO.Stream)">
+            <summary>
+            Deserializes stream into an object.
+            </summary>
+            <typeparam name="T">Type of object to serialize to.</typeparam>
+            <param name="stream">Stream to deserialize from.</param>
+            <returns>Object of type T.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StreamSerializer.Serialize``1(``0)">
+            <summary>
+            Serializes object to a string.
+            </summary>
+            <typeparam name="T">Type of object to serialize.</typeparam>
+            <param name="obj">Object to serialize.</param>
+            <returns>Serialized string of the object.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StreamSerializer.Deserialize``1(System.String)">
+            <summary>
+            Deserializes string into an object.
+            </summary>
+            <typeparam name="T">Type of object to serialize to.</typeparam>
+            <param name="data">Serialized object.</param>
+            <returns>Object of type T.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Serialization.StreamSerializer.Format">
+            <summary>
+            Gets the serialization format.
+            </summary>
+            <value>Serialization format.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.StringSerializer">
+            <summary>
+            The string serializer base class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StringSerializer.Flush">
+            <summary>
+            Cleans memory.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Serialization.StringSerializer.Format">
+            <summary>
+            Gets the serialization format.
+            </summary>
+            <value>Serialization format.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.StringSerializerExtensions">
+            <summary>
+            Serializer extensions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StringSerializerExtensions.SerializeToStream(Xamarin.Forms.Labs.Services.Serialization.IStringSerializer,System.Object,System.IO.Stream)">
+            <summary>
+            Serializes to stream.
+            </summary>
+            <param name="obj">Object to serialize.</param>
+            <param name="stream">Stream to serialize to.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StringSerializerExtensions.DeserializeFromStream``1(Xamarin.Forms.Labs.Services.Serialization.IStringSerializer,System.IO.Stream)">
+            <summary>
+            Deserializes from stream.
+            </summary>
+            <returns>The deserialized object.</returns>
+            <param name="serializer">The string serializer.</param>
+            <param name="stream">Stream to deserialize from.</param>
+            <typeparam name="T">The type of object to deserialize.</typeparam>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StringSerializerExtensions.SerializeToWriter(Xamarin.Forms.Labs.Services.Serialization.IStringSerializer,System.Object,System.IO.TextWriter)">
+            <summary>
+            Serializes to writer.
+            </summary>
+            <param name="obj">Object to serialize.</param>
+            <param name="writer">Writer.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.StringSerializerExtensions.DeserializeFromReader``1(Xamarin.Forms.Labs.Services.Serialization.IStringSerializer,System.IO.TextReader)">
+            <summary>
+            Deserializes from reader.
+            </summary>
+            <returns>The serialized object from reader.</returns>
+            <param name="reader">Reader to deserialize from.</param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Mvvm.NavigationConverter">
+            <summary>
+            Converts the Xamarin Forms page navigation to our <see cref="T:Xamarin.Forms.Labs.Mvvm.ViewModelNavigation"/> instance.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.BaseView.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Mvvm.BaseView"/> class.
+            Binds the Navigation and IsBusy property.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Mvvm.ViewTypeAttribute">
+            <summary>
+            Class ViewTypeAttribute.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.ViewTypeAttribute.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Mvvm.ViewTypeAttribute"/> class.
+            </summary>
+            <param name="viewType">Type of the view.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.ViewTypeAttribute.ViewType">
+            <summary>
+            Gets the type of the view.
+            </summary>
+            <value>The type of the view.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Mvvm.ViewFactory">
+            <summary>
+            Class ViewFactory.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Mvvm.ViewFactory.TypeDictionary">
+            <summary>
+            The type dictionary.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Mvvm.ViewFactory.PageCache">
+            <summary>
+            The page cache.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.ViewFactory.Register``2(System.Func{Xamarin.Forms.Labs.Services.IResolver,``1})">
+            <summary>
+            Registers this instance.
+            </summary>
+            <typeparam name="TView">The type of the t view.</typeparam>
+            <typeparam name="TViewModel">The type of the t view model.</typeparam>
+            <param name="func">Function which returns an instance of the t view model.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.ViewFactory.CreatePage``1(System.Action{``0,Xamarin.Forms.Page})">
+            <summary>
+            Creates the page.
+            </summary>
+            <typeparam name="TViewModel">The type of the view model.</typeparam>
+            <param name="initialiser">
+            The create action.
+            </param>
+            <returns>
+            Page for the ViewModel.
+            </returns>
+            <exception cref="T:System.InvalidOperationException">
+            Unknown View for ViewModel.
+            </exception>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Mvvm.ViewFactory.EnableCache">
+            <summary>
+            Gets or sets a value indicating whether [enable cache].
+            </summary>
+            <value><c>true</c> if [enable cache]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.ViewModelNavigation.PushAsync``1(System.Action{``0,Xamarin.Forms.Page})">
+            <summary>
+            Pushes the asynchronous.
+            </summary>
+            <typeparam name="TViewModel">The type of the t view model.</typeparam>
+            <param name="activateAction">The activate action.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Mvvm.ViewModelNavigation.PushModalAsync``1(System.Action{``0,Xamarin.Forms.Page})">
+            <summary>
+            Pushes the modal asynchronous.
+            </summary>
+            <typeparam name="TViewModel">The type of the t view model.</typeparam>
+            <param name="activateAction">The create action.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Serialization.SystemJsonSerializer">
+            <summary>
+            The system JSON serializer.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.SystemJsonSerializer.Flush">
+            <summary>
+            Cleans memory.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.SystemJsonSerializer.Serialize``1(``0,System.IO.Stream)">
+            <summary>
+            Serializes object to a stream.
+            </summary>
+            <param name="obj">Object to serialize.</param>
+            <param name="stream">Stream to serialize to.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.SystemJsonSerializer.Deserialize``1(System.IO.Stream)">
+            <summary>
+            Deserializes stream into an object.
+            </summary>
+            <typeparam name="T">Type of object to serialize to.</typeparam>
+            <param name="stream">Stream to deserialize from.</param>
+            <returns>Object of type T.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Serialization.SystemJsonSerializer.Format">
+            <summary>
+            Gets the format.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.SystemXmlSerializer.Serialize``1(``0,System.IO.Stream)">
+            <summary>
+            Serializes object to a stream
+            </summary>
+            <param name="obj">Object to serialize</param>
+            <param name="stream">Stream to serialize to</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Serialization.SystemXmlSerializer.Deserialize``1(System.IO.Stream)">
+            <summary>
+            Deserializes stream into an object
+            </summary>
+            <typeparam name="T">Type of object to serialize to</typeparam>
+            <param name="stream">Stream to deserialize from</param>
+            <returns>Object of type T</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Geolocation.Position.Latitude">
+            <summary>
+            Gets or sets the latitude.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Geolocation.Position.Longitude">
+            <summary>
+            Gets or sets the longitude.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Geolocation.Position.Altitude">
+            <summary>
+            Gets or sets the altitude in meters relative to sea level.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Geolocation.Position.Accuracy">
+            <summary>
+            Gets or sets the potential position error radius in meters.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Geolocation.Position.AltitudeAccuracy">
+            <summary>
+            Gets or sets the potential altitude error range in meters.
+            </summary>
+            <remarks>
+            Not supported on Android, will always read 0.
+            </remarks>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Geolocation.Position.Heading">
+            <summary>
+            Gets or sets the heading in degrees relative to true North.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Geolocation.Position.Speed">
+            <summary>
+            Gets or sets the speed in meters per second.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Geolocation.GeolocationError.PositionUnavailable">
+            <summary>
+            The provider was unable to retrieve any position data.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Services.Geolocation.GeolocationError.Unauthorized">
+            <summary>
+            The app is not, or no longer, authorized to receive location data.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Geolocation.IGeolocator.StartListening(System.UInt32,System.Double)">
+            <summary>
+            Start listening to location changes
+            </summary>
+            <param name="minTime">Minimum interval in milliseconds</param>
+            <param name="minDistance">Minimum distance in meters</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Geolocation.IGeolocator.StartListening(System.UInt32,System.Double,System.Boolean)">
+            <summary>
+            Start listening to location changes
+            </summary>
+            <param name="minTime">Minimum interval in milliseconds</param>
+            <param name="minDistance">Minimum distance in meters</param>
+            <param name="includeHeading">Include heading information</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Geolocation.IGeolocator.StopListening">
+            <summary>
+            Stop listening to location changes
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Web.IRestClient">
+            <summary>
+            Rest Client interface.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Web.IRestClient.AddHeader(System.String,System.String)">
+            <summary>
+            Add request header.
+            </summary>
+            <param name="key">
+            The key.
+            </param>
+            <param name="value">
+            The value.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Web.IRestClient.RemoveHeader(System.String)">
+            <summary>
+            Remove request header.
+            </summary>
+            <param name="key">
+            The key.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Web.IRestClient.PostAsync``1(System.String,System.Object)">
+            <summary>
+            Async POST method.
+            </summary>
+            <returns>The async task.</returns>
+            <param name="address">Address of the service.</param>
+            <param name="dto">DTO to post.</param>
+            <typeparam name="T">The type of object to be returned.</typeparam>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Web.IRestClient.PutAsync``1(System.String,System.Object)">
+            <summary>
+            Async PUT method.
+            </summary>
+            <returns>The async task.</returns>
+            <param name="address">Address of the service.</param>
+            <param name="dto">DTO to put.</param>
+            <typeparam name="T">The type of object to be returned.</typeparam>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Web.IRestClient.GetAsync``1(System.String)">
+            <summary>
+            Async GET method.
+            </summary>
+            <returns>The async task.</returns>
+            <param name="address">Address of the service.</param>
+            <typeparam name="T">The type of object to be returned.</typeparam>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Web.IRestClient.GetAsync``1(System.String,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Async GET method.
+            </summary>
+            <returns>The async task.</returns>
+            <param name="address">Address of the service.</param>
+            <param name="values">Values for the request.</param>
+            <typeparam name="T">The 1st type parameter.</typeparam>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Web.IRestClient.DeleteAsync``1(System.String)">
+            <summary>
+            Deletes the async.
+            </summary>
+            <returns>The async task.</returns>
+            <param name="address">Address.</param>
+            <typeparam name="T">The 1st type parameter.</typeparam>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.Web.IRestClient.Timeout">
+            <summary>
+            Gets or sets timeout
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.SoundService.ISoundService">
+            <summary>
+            Interface ISoundService
+            Enables playing any type of sound
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SoundService.ISoundService.PlayAsync(System.String,System.String)">
+            <summary>
+            Plays the asynchronous.
+            </summary>
+            <param name="filename">The filename.</param>
+            <param name="extension">The extension.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SoundService.ISoundService.SetMediaAsync(System.String)">
+            <summary>
+            Sets the media asynchronous.
+            </summary>
+            <param name="filename">The filename.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SoundService.ISoundService.GoToAsync(System.Double)">
+            <summary>
+            Goes to asynchronous.
+            </summary>
+            <param name="position">The position.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SoundService.ISoundService.Play">
+            <summary>
+            Plays this instance.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SoundService.ISoundService.Stop">
+            <summary>
+            Stops this instance.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.SoundService.ISoundService.Pause">
+            <summary>
+            Pauses this instance.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Services.SoundService.ISoundService.SoundFileFinished">
+            <summary>
+            Occurs when [sound file finished].
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.SoundService.ISoundService.Volume">
+            <summary>
+            Gets or sets the volume.
+            </summary>
+            <value>
+            The volume.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.SoundService.ISoundService.CurrentTime">
+            <summary>
+            Gets the current time.
+            </summary>
+            <value>
+            The current time.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.SoundService.ISoundService.IsPlaying">
+            <summary>
+            Gets a value indicating whether this instance is playing.
+            </summary>
+            <value>
+            <c>true</c> if this instance is playing; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.SoundService.ISoundService.CurrentFile">
+            <summary>
+            Gets the current file.
+            </summary>
+            <value>
+            The current file.
+            </value>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.GridView.InvokeItemSelectedEvent(System.Object,System.Object)">
+            <summary>
+            Invokes the item selected event.
+            </summary>
+            <param name="item">Item.</param>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Controls.GridView.ItemSelected">
+            <summary>
+            Occurs when item is selected.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.CheckBox">
+            <summary>
+            The check box.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.CheckBox.CheckedProperty">
+            <summary>
+            The width request in inches property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.CheckBox.CheckedTextProperty">
+            <summary>
+            The checked text property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.CheckBox.UncheckedTextProperty">
+            <summary>
+            The unchecked text property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.CheckBox.DefaultTextProperty">
+            <summary>
+            The default text property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.CheckBox.TextColorProperty">
+            <summary>
+            Identifies the TextColor bindable property.
+            </summary>
+            
+            <remarks/>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.CheckBox.FontSizeProperty">
+            <summary>
+            The font size property
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.CheckBox.FontNameProperty">
+            <summary>
+            The font name property.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.CheckBox.CheckedChanged">
+            <summary>
+            The checked changed event.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.CheckBox.Checked">
+            <summary>
+            Gets or sets a value indicating whether the control is checked.
+            </summary>
+            <value>The checked state.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.CheckBox.CheckedText">
+            <summary>
+            Gets or sets a value indicating the checked text.
+            </summary>
+            <value>The checked state.</value>
+            <remarks>
+            Overwrites the default text property if set when checkbox is checked.
+            </remarks>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.CheckBox.UncheckedText">
+            <summary>
+            Gets or sets a value indicating whether the control is checked.
+            </summary>
+            <value>The checked state.</value>
+            <remarks>
+            Overwrites the default text property if set when checkbox is checked.
+            </remarks>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.CheckBox.DefaultText">
+            <summary>
+            Gets or sets the text.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.CheckBox.FontSize">
+            <summary>
+            Gets or sets the size of the font.
+            </summary>
+            <value>The size of the font.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.CheckBox.FontName">
+            <summary>
+            Gets or sets the name of the font.
+            </summary>
+            <value>The name of the font.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.ExtendedEntryCell">
+            <summary>
+            An extended entry cell control that allows set IsPassword
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.ExtendedEntryCell.IsPasswordProperty">
+            <summary>
+            The IsPassword property
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.ExtendedEntryCell.IsPassword">
+            <summary>
+            Gets or sets IsPassword 
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.Separator.OrientationProperty">
+            Orientation property
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.Separator.ColorProperty">
+            Color property
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.Separator.SpacingBeforeProperty">
+            Spacing property
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.Separator.SpacingAfterProperty">
+            Spacing property
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.Separator.ThicknessProperty">
+            Spacing property
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.Separator.StrokeTypeProperty">
+            Spacing property
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.Separator.SpacingBefore">
+            Spacing property
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.Separator.SpacingAfter">
+            Spacing property
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.Separator.Thickness">
+            Spacing property
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Controls.Separator.StrokeType">
+            Spacing property
+        </member>
+    </members>
+</doc>

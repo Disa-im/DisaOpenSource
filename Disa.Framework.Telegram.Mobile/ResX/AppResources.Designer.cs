@@ -70,6 +70,168 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to generate an authentication. Please try again..
+        /// </summary>
+        internal static string TelegramAuthGenerationFailedMessage {
+            get {
+                return ResourceManager.GetString("TelegramAuthGenerationFailedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auth Generation Failed.
+        /// </summary>
+        internal static string TelegramAuthGenerationFailedTitle {
+            get {
+                return ResourceManager.GetString("TelegramAuthGenerationFailedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Code.
+        /// </summary>
+        internal static string TelegramCode {
+            get {
+                return ResourceManager.GetString("TelegramCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The code entered has expired. Please send yourself another..
+        /// </summary>
+        internal static string TelegramCodeCodeExpired {
+            get {
+                return ResourceManager.GetString("TelegramCodeCodeExpired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The code entered is invalid. Please try another..
+        /// </summary>
+        internal static string TelegramCodeCodeInvalid {
+            get {
+                return ResourceManager.GetString("TelegramCodeCodeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error has occured. Please try again..
+        /// </summary>
+        internal static string TelegramCodeError {
+            get {
+                return ResourceManager.GetString("TelegramCodeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The first name entered is invalid. Please try another..
+        /// </summary>
+        internal static string TelegramCodeFirstNameInvalid {
+            get {
+                return ResourceManager.GetString("TelegramCodeFirstNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter a code to verify Telegram..
+        /// </summary>
+        internal static string TelegramCodeInvalidMessage {
+            get {
+                return ResourceManager.GetString("TelegramCodeInvalidMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Code.
+        /// </summary>
+        internal static string TelegramCodeInvalidTitle {
+            get {
+                return ResourceManager.GetString("TelegramCodeInvalidTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The last name entered is invalid. Please try another..
+        /// </summary>
+        internal static string TelegramCodeLastNameInvalid {
+            get {
+                return ResourceManager.GetString("TelegramCodeLastNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter the 6 character code provided from Telegram below..
+        /// </summary>
+        internal static string TelegramCodeManualEnter {
+            get {
+                return ResourceManager.GetString("TelegramCodeManualEnter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The phone number entered is invalid. Please try another..
+        /// </summary>
+        internal static string TelegramCodeNumberInvalid {
+            get {
+                return ResourceManager.GetString("TelegramCodeNumberInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If your code does not come through, please click the &apos;Verification&apos; tab and activate Telegram with the &apos;via Phone&apos; option..
+        /// </summary>
+        internal static string TelegramCodeSentNotComingSms {
+            get {
+                return ResourceManager.GetString("TelegramCodeSentNotComingSms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Telegram activation has been contacted! You&apos;ll be phoned shortly with an activation code..
+        /// </summary>
+        internal static string TelegramCodeSentViaPhone {
+            get {
+                return ResourceManager.GetString("TelegramCodeSentViaPhone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Telegram activation has been contacted! You&apos;ll be messaged shortly with an activation code..
+        /// </summary>
+        internal static string TelegramCodeSentViaSms {
+            get {
+                return ResourceManager.GetString("TelegramCodeSentViaSms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Code.
+        /// </summary>
+        internal static string TelegramCodeTitle {
+            get {
+                return ResourceManager.GetString("TelegramCodeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Is the number [number] correct? This is what we&apos;ll use to verify your Telegram account..
+        /// </summary>
+        internal static string TelegramConfirmNumberMessage {
+            get {
+                return ResourceManager.GetString("TelegramConfirmNumberMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm Number.
+        /// </summary>
+        internal static string TelegramConfirmNumberTitle {
+            get {
+                return ResourceManager.GetString("TelegramConfirmNumberTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Telegram is a messaging app with a focus on speed and security. It&apos;s super-fast, simple, secure and free..
         /// </summary>
         internal static string TelegramDescription {
@@ -79,11 +241,119 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Information.
+        /// </summary>
+        internal static string TelegramInformationTitle {
+            get {
+                return ResourceManager.GetString("TelegramInformationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter your name..
+        /// </summary>
+        internal static string TelegramInvalidNameMessage {
+            get {
+                return ResourceManager.GetString("TelegramInvalidNameMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Name.
+        /// </summary>
+        internal static string TelegramInvalidNameTitle {
+            get {
+                return ResourceManager.GetString("TelegramInvalidNameTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The number you have entered is not valid. Please correct it..
+        /// </summary>
+        internal static string TelegramInvalidNumberMessage {
+            get {
+                return ResourceManager.GetString("TelegramInvalidNumberMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Number.
+        /// </summary>
+        internal static string TelegramInvalidNumberTitle {
+            get {
+                return ResourceManager.GetString("TelegramInvalidNumberTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Load last 10 conversations into Disa..
+        /// </summary>
+        internal static string TelegramLoadConversations {
+            get {
+                return ResourceManager.GetString("TelegramLoadConversations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string TelegramName {
+            get {
+                return ResourceManager.GetString("TelegramName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Next.
+        /// </summary>
+        internal static string TelegramNext {
+            get {
+                return ResourceManager.GetString("TelegramNext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No.
+        /// </summary>
+        internal static string TelegramNo {
+            get {
+                return ResourceManager.GetString("TelegramNo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Telegram is not Running.
         /// </summary>
         internal static string TelegramNotRunning {
             get {
                 return ResourceManager.GetString("TelegramNotRunning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Okay.
+        /// </summary>
+        internal static string TelegramOkay {
+            get {
+                return ResourceManager.GetString("TelegramOkay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone Number.
+        /// </summary>
+        internal static string TelegramPhoneNumber {
+            get {
+                return ResourceManager.GetString("TelegramPhoneNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please connect to the internet before running the Setup Wizard..
+        /// </summary>
+        internal static string TelegramPleaseConnectToInternet {
+            get {
+                return ResourceManager.GetString("TelegramPleaseConnectToInternet", resourceCulture);
             }
         }
         
@@ -138,6 +408,96 @@ namespace Disa.Framework.Telegram.Mobile {
         internal static string TelegramSetupWizard {
             get {
                 return ResourceManager.GetString("TelegramSetupWizard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Telegram Setup Wizard.
+        /// </summary>
+        internal static string TelegramSetupWizardTitle {
+            get {
+                return ResourceManager.GetString("TelegramSetupWizardTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Submit.
+        /// </summary>
+        internal static string TelegramSubmit {
+            get {
+                return ResourceManager.GetString("TelegramSubmit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verification.
+        /// </summary>
+        internal static string TelegramVerificationTitle {
+            get {
+                return ResourceManager.GetString("TelegramVerificationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error has occured. Please try again..
+        /// </summary>
+        internal static string TelegramVerifyError {
+            get {
+                return ResourceManager.GetString("TelegramVerifyError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to I Have a Code.
+        /// </summary>
+        internal static string TelegramVerifyHaveCode {
+            get {
+                return ResourceManager.GetString("TelegramVerifyHaveCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The phone number you entered is invalid. Please use another..
+        /// </summary>
+        internal static string TelegramVerifyInvalidNumber {
+            get {
+                return ResourceManager.GetString("TelegramVerifyInvalidNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How would you like to verify your Telegram account?.
+        /// </summary>
+        internal static string TelegramVerifyQuestion {
+            get {
+                return ResourceManager.GetString("TelegramVerifyQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to via Phone.
+        /// </summary>
+        internal static string TelegramVerifyViaPhone {
+            get {
+                return ResourceManager.GetString("TelegramVerifyViaPhone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to via SMS.
+        /// </summary>
+        internal static string TelegramVerifyViaSms {
+            get {
+                return ResourceManager.GetString("TelegramVerifyViaSms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes.
+        /// </summary>
+        internal static string TelegramYes {
+            get {
+                return ResourceManager.GetString("TelegramYes", resourceCulture);
             }
         }
     }

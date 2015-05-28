@@ -1,6 +1,8 @@
 ﻿using System;
 using Disa.Framework.Mobile;
 using Xamarin.Forms;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Disa.Framework.Telegram.Mobile
 {
@@ -10,11 +12,11 @@ namespace Disa.Framework.Telegram.Mobile
         public Page Fetch(Service service)
         {
             NavigationPage navigationPage;
-//            if (ServiceManager.IsManualSettingsNeeded(service))
-//            {
-//                navigationPage = new NavigationPage(Setup.Fetch(service));
-//            }
-//            else 
+            if (ServiceManager.IsManualSettingsNeeded(service))
+            {
+                navigationPage = new NavigationPage(Setup.Fetch(service));
+            }
+            else 
             {
                 navigationPage = new NavigationPage(new Main(service));
             }
@@ -78,7 +80,7 @@ namespace Disa.Framework.Telegram.Mobile
                 _setupWizard.BackgroundColor = Color.FromHex("c50923");
                 _setupWizard.Clicked += async (sender, e) =>
                     {
-                        //await Navigation.PushAsync(Setup.Fetch(service));
+                        await Navigation.PushAsync(Setup.Fetch(service));
                     };
                 if (running)
                 {

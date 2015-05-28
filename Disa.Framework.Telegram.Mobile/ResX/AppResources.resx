@@ -1,13 +1,121 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
   </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TelegramRunning" xml:space="preserve">
     <value>Telegram is Running</value>
@@ -36,4 +144,124 @@
   <data name="TelegramDescription" xml:space="preserve">
     <value>Telegram is a messaging app with a focus on speed and security. It's super-fast, simple, secure and free.</value>
   </data>
-</root>	
+  <data name="TelegramPleaseConnectToInternet" xml:space="preserve">
+    <value>Please connect to the internet before running the Setup Wizard.</value>
+  </data>
+  <data name="TelegramSetupWizardTitle" xml:space="preserve">
+    <value>Telegram Setup Wizard</value>
+  </data>
+  <data name="TelegramName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="TelegramLoadConversations" xml:space="preserve">
+    <value>Load last 10 conversations into Disa.</value>
+  </data>
+  <data name="TelegramPhoneNumber" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="TelegramNext" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="TelegramInvalidNameTitle" xml:space="preserve">
+    <value>Invalid Name</value>
+  </data>
+  <data name="TelegramInvalidNameMessage" xml:space="preserve">
+    <value>Please enter your name.</value>
+  </data>
+  <data name="TelegramOkay" xml:space="preserve">
+    <value>Okay</value>
+  </data>
+  <data name="TelegramYes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="TelegramNo" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="TelegramInvalidNumberTitle" xml:space="preserve">
+    <value>Invalid Number</value>
+  </data>
+  <data name="TelegramInvalidNumberMessage" xml:space="preserve">
+    <value>The number you have entered is not valid. Please correct it.</value>
+  </data>
+  <data name="TelegramConfirmNumberTitle" xml:space="preserve">
+    <value>Confirm Number</value>
+  </data>
+  <data name="TelegramConfirmNumberMessage" xml:space="preserve">
+    <value>Is the number [number] correct? This is what we'll use to verify your Telegram account.</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedMessage" xml:space="preserve">
+    <value>Failed to generate an authentication. Please try again.</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedTitle" xml:space="preserve">
+    <value>Auth Generation Failed</value>
+  </data>
+  <data name="TelegramInformationTitle" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="TelegramVerificationTitle" xml:space="preserve">
+    <value>Verification</value>
+  </data>
+  <data name="TelegramVerifyHaveCode" xml:space="preserve">
+    <value>I Have a Code</value>
+  </data>
+  <data name="TelegramVerifyQuestion" xml:space="preserve">
+    <value>How would you like to verify your Telegram account?</value>
+  </data>
+  <data name="TelegramVerifyViaPhone" xml:space="preserve">
+    <value>via Phone</value>
+  </data>
+  <data name="TelegramVerifyViaSms" xml:space="preserve">
+    <value>via SMS</value>
+  </data>
+  <data name="TelegramVerifyError" xml:space="preserve">
+    <value>An error has occured. Please try again.</value>
+  </data>
+  <data name="TelegramVerifyInvalidNumber" xml:space="preserve">
+    <value>The phone number you entered is invalid. Please use another.</value>
+  </data>
+  <data name="TelegramCodeSentViaSms" xml:space="preserve">
+    <value>Telegram activation has been contacted! You'll be messaged shortly with an activation code.</value>
+  </data>
+  <data name="TelegramCodeSentViaPhone" xml:space="preserve">
+    <value>Telegram activation has been contacted! You'll be phoned shortly with an activation code.</value>
+  </data>
+  <data name="TelegramCodeManualEnter" xml:space="preserve">
+    <value>Please enter the 6 character code provided from Telegram below.</value>
+  </data>
+  <data name="TelegramCodeSentNotComingSms" xml:space="preserve">
+    <value>If your code does not come through, please click the 'Verification' tab and activate Telegram with the 'via Phone' option.</value>
+  </data>
+  <data name="TelegramCodeTitle" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="TelegramCode" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="TelegramCodeInvalidTitle" xml:space="preserve">
+    <value>Invalid Code</value>
+  </data>
+  <data name="TelegramCodeInvalidMessage" xml:space="preserve">
+    <value>Please enter a code to verify Telegram.</value>
+  </data>
+  <data name="TelegramSubmit" xml:space="preserve">
+    <value>Submit</value>
+  </data>
+  <data name="TelegramCodeError" xml:space="preserve">
+    <value>An error has occured. Please try again.</value>
+  </data>
+  <data name="TelegramCodeNumberInvalid" xml:space="preserve">
+    <value>The phone number entered is invalid. Please try another.</value>
+  </data>
+  <data name="TelegramCodeCodeExpired" xml:space="preserve">
+    <value>The code entered has expired. Please send yourself another.</value>
+  </data>
+  <data name="TelegramCodeCodeInvalid" xml:space="preserve">
+    <value>The code entered is invalid. Please try another.</value>
+  </data>
+  <data name="TelegramCodeFirstNameInvalid" xml:space="preserve">
+    <value>The first name entered is invalid. Please try another.</value>
+  </data>
+  <data name="TelegramCodeLastNameInvalid" xml:space="preserve">
+    <value>The last name entered is invalid. Please try another.</value>
+  </data>
+</root>

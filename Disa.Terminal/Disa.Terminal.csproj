@@ -81,6 +81,10 @@
       <Project>{575DCE77-4E2E-46E0-9BB8-FA8E5C912BFA}</Project>
       <Name>Disa.Framework.Telegram</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Disa.Framework.Telegram.Mobile\Disa.Framework.Telegram.Mobile.csproj">
+      <Project>{BF8CC773-49F3-45ED-8653-EBECEE6B8D11}</Project>
+      <Name>Disa.Framework.Telegram.Mobile</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,0 +1,682 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Xamarin.Forms.Labs.WP8</name>
+    </assembly>
+    <members>
+        <member name="T:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer">
+            <summary>
+            Draws a button on the Android platform with the image shown in the right 
+            position with the right size.
+            </summary>
+            <summary>
+            Draws a button on the Windows Phone platform with the image shown in the right 
+            position with the right size.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer.GetHandler(Xamarin.Forms.ImageSource)">
+            <summary>
+            Returns the proper <see cref="T:Xamarin.Forms.Platform.WinPhone.IImageSourceHandler"/> based on the type of <see cref="T:Xamarin.Forms.ImageSource"/> provided.
+            </summary>
+            <param name="source">The <see cref="T:Xamarin.Forms.ImageSource"/> to get the handler for.</param>
+            <returns>The needed handler.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer.GetWidth(System.Int32)">
+            <summary>
+            Gets the width based on the requested width, if request less than 0, returns 50.
+            </summary>
+            <param name="requestedWidth">The requested width.</param>
+            <returns>The width to use.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer.GetHeight(System.Int32)">
+            <summary>
+            Gets the height based on the requested height, if request less than 0, returns 50.
+            </summary>
+            <param name="requestedHeight">The requested height.</param>
+            <returns>The height to use.</returns>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer.currentImage">
+            <summary>
+            The image displayed in the button.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer.OnElementChanged(Xamarin.Forms.Platform.WinPhone.ElementChangedEventArgs{Xamarin.Forms.Button})">
+            <summary>
+            Handles the initial drawing of the button.
+            </summary>
+            <param name="e">Information on the <see cref="N:Xamarin.Forms.Labs.WP8.Controls.ImageButton"/>.</param> 
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer.OnElementPropertyChanged(System.Object,System.ComponentModel.PropertyChangedEventArgs)">
+            <summary>
+            Called when the underlying model's properties are changed.
+            </summary>
+            <param name="sender">Model sending the change event.</param>
+            <param name="e">Event arguments.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer.GetTextAlignment(Xamarin.Forms.Labs.Enums.ImageOrientation)">
+            <summary>
+            Returns the alignment of the label on the button depending on the orientation.
+            </summary>
+            <param name="imageOrientation">The orientation to use.</param>
+            <returns>The alignment to use for the text.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer.GetImageAsync(Xamarin.Forms.ImageSource,System.Int32,System.Int32)">
+            <summary>
+            Returns a <see cref="T:Xamarin.Forms.Image"/> from the <see cref="T:Xamarin.Forms.ImageSource"/> provided.
+            </summary>
+            <param name="source">The <see cref="T:Xamarin.Forms.ImageSource"/> to load the image from.</param>
+            <param name="height">The height for the image (divides by 2 for the Windows Phone platform).</param>
+            <param name="width">The width for the image (divides by 2 for the Windows Phone platform).</param>
+            <returns>A properly sized image.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Controls.ImageButton.ImageButtonRenderer.SetImageMargin(System.Windows.Controls.Image,Xamarin.Forms.Labs.Enums.ImageOrientation)">
+            <summary>
+            Sets a margin of 10 between the image and the text.
+            </summary>
+            <param name="image">The image to add a margin to.</param>
+            <param name="orientation">The orientation of the image on the button.</param>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Accelerometer.Gravitation">
+            <summary>
+            Gravitational force is 9.81 m/s^2
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Accelerometer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Accelerometer"/> class.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Accelerometer.ReadingAvailable">
+            <summary>
+            The reading available event handler.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Accelerometer.LatestReading">
+            <summary>
+            Gets the latest reading.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Battery">
+            <summary>
+            Windows Phone Battery class.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.OnLevelChange">
+            <summary>
+            Event handler for battery level changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.OnChargerStatusChanged">
+            <summary>
+             Event handler for charger connection changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.onLevelChange">
+            <summary>
+            Private event handler for battery level changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.onChargerStatusChanged">
+            <summary>
+            Private event handler for charger connection changes. 
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Battery.Level">
+            <summary>
+            Gets the level.
+            </summary>
+            <value>
+            The level in percentage 0-100.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Battery.Charging">
+            <summary>
+            Gets a value indicating whether battery is charging
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.ExtendedLabelRenderer">
+            <summary>
+            The extended label renderer.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedLabelRenderer.OnElementChanged(Xamarin.Forms.Platform.WinPhone.ElementChangedEventArgs{Xamarin.Forms.Label})">
+            <summary>
+            The on element changed callback.
+            </summary>
+            <param name="e">
+            The event arguments.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedLabelRenderer.UpdateUi(Xamarin.Forms.Labs.Controls.ExtendedLabel,System.Windows.Controls.TextBlock)">
+            <summary>
+            Updates the UI.
+            </summary>
+            <param name="view">
+            The view.
+            </param>
+            <param name="control">
+            The control.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Controls.ExtendedLabelRenderer.IsLocalFontFileExists(System.String)">
+            <summary>
+            Checks if a local resource font file exists
+            </summary>
+            <param name="filename">the filename including extension, but not path</param>
+            <returns></returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Controls.HybridWebViewRenderer">
+            <summary>
+            The hybrid web view renderer.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Controls.HybridWebViewRenderer.WebView">
+            <summary>
+            The web view.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Controls.SensorBar.SensorBarControl.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Display">
+            <summary>
+            Windows Phone 8 Display.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Display"/> class.
+            </summary>
+            <remarks>
+            To get accurate display reading application should enable ID_CAP_IDENTITY_DEVICE on app manifest.
+            </remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.WidthRequestInInches(System.Double)">
+            <summary>
+            Convert width in inches to runtime pixels
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.HeightRequestInInches(System.Double)">
+            <summary>
+            Convert height in inches to runtime pixels
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:Xamarin.Forms.Labs.Display"/>.
+            </summary>
+            <returns>A <see cref="T:System.String"/> that represents the current <see cref="T:Xamarin.Forms.Labs.Display"/>.</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.WindowsPhoneDevice">
+            <summary>
+            Windows phone device.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.WindowsPhoneDevice.currentDevice">
+            <summary>
+            The current device.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.WindowsPhoneDevice.id">
+            <summary>
+            The Id for the device.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WindowsPhoneDevice.#ctor">
+            <summary>
+            Prevents a default instance of the <see cref="T:Xamarin.Forms.Labs.WindowsPhoneDevice"/> class from being created.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WindowsPhoneDevice.LaunchUriAsync(System.Uri)">
+            <summary>
+            Starts the default app associated with the URI for the specified URI.
+            </summary>
+            <param name="uri">The URI.</param>
+            <returns>The launch operation.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.CurrentDevice">
+            <summary>
+            Gets the current device.
+            </summary>
+            <value>The current device.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.Id">
+            <summary>
+            Gets Unique Id for the device.
+            </summary>
+            <value>
+            The id for the device.
+            </value>
+            <remarks>
+            Requires the application to check ID_CAP_IDENTITY_DEVICE on application permissions.
+            </remarks>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.Display">
+            <summary>
+            Gets the display.
+            </summary>
+            <value>The display.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.PhoneService">
+            <summary>
+            Gets the phone service.
+            </summary>
+            <value>Phone service instance if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.Battery">
+            <summary>
+            Gets the battery.
+            </summary>
+            <value>The battery.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.Accelerometer">
+            <summary>
+            Gets the accelerometer for the device if available.
+            </summary>
+            <value>Instance of IAccelerometer if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.Gyroscope">
+            <summary>
+            Gets the gyroscope.
+            </summary>
+            <value>The gyroscope instance if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.MediaPicker">
+            <summary>
+            Gets the picture chooser.
+            </summary>
+            <value>The picture chooser.</value>
+            <exception cref="T:System.UnauthorizedAccessException">
+            Exception is thrown if application manifest does not enable ID_CAP_ISV_CAMERA capability.
+            </exception>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.Network">
+            <summary>
+            Gets the network service.
+            </summary>
+            <value>The network service.</value>
+            <exception cref="T:System.UnauthorizedAccessException">
+            Exception is thrown if application manifest does not enable ID_CAP_NETWORKING capability.
+            </exception>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.BluetoothHub">
+            <summary>
+            Gets the bluetooth hub service.
+            </summary>
+            <value>The bluetooth hub service if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.Microphone">
+            <summary>
+            Gets the default microphone for the device
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.FileManager">
+            <summary>
+            Gets the file manager for the device.
+            </summary>
+            <value>Device file manager.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.Name">
+            <summary>
+            Gets the name.
+            </summary>
+            <value>The name of the device.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.FirmwareVersion">
+            <summary>
+            Gets the firmware version.
+            </summary>
+            <value>The firmware version.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.HardwareVersion">
+            <summary>
+            Gets the hardware version.
+            </summary>
+            <value>The hardware version.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WindowsPhoneDevice.Manufacturer">
+            <summary>
+            Gets the manufacturer.
+            </summary>
+            <value>The manufacturer.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Geolocation.CoordinateExtensions">
+            <summary>
+            The coordinate extensions for Windows Phone.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Geolocation.CoordinateExtensions.GetPosition(Windows.Devices.Geolocation.Geocoordinate)">
+            <summary>
+            Converts <see cref="T:Windows.Devices.Geolocation.Geocoordinate"/> class into <see cref="T:Xamarin.Forms.Labs.Services.Geolocation.Position"/>.
+            </summary>
+            <param name="geocoordinate">
+            The Geocoordinate.
+            </param>
+            <returns>
+            The <see cref="T:Xamarin.Forms.Labs.Services.Geolocation.Position"/>.
+            </returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.Geolocation.Geolocator">
+            <summary>
+            The geolocator implements <see cref="T:Xamarin.Forms.Labs.Services.Geolocation.IGeolocator"/> interface for Windows Phone 8.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.Geolocation.Geolocator.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Services.Geolocation.Geolocator"/> class.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.WP8.Services.PhoneService">
+            <summary>
+            Phone service for Windows Phone devices.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.PhoneService.DialNumber(System.String)">
+            <summary>
+            Opens native dialog to dial the specified number
+            </summary>
+            <param name="number">Number to dial.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.PhoneService.CellularProvider">
+            <summary>
+            Gets the cellular provider.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.PhoneService.IsCellularDataEnabled">
+            <summary>
+            Gets a value indicating whether this instance has cellular data enabled.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.PhoneService.IsCellularDataRoamingEnabled">
+            <summary>
+            Gets a value indicating whether this instance has cellular data roaming enabled.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.PhoneService.IsNetworkAvailable">
+            <summary>
+            Gets a value indicating whether this instance is network available.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.PhoneService.ICC">
+            <summary>
+            Gets the ISO Country Code
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.PhoneService.MCC">
+            <summary>
+            Gets the Mobile Country Code
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.PhoneService.MNC">
+            <summary>
+            Gets the Mobile Network Code
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker">
+            <summary>
+                Class MediaPicker.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker._cameraCapture">
+            <summary>
+                The _camera capture
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker._photoChooser">
+            <summary>
+                The _photo chooser
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker._completionSource">
+            <summary>
+                The _completion source
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.#ctor">
+            <summary>
+                Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.SelectPhotoAsync(Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions)">
+            <summary>
+                Select a picture from library.
+            </summary>
+            <param name="options">The storage options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.TakePhotoAsync(Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions)">
+            <summary>
+                Takes the picture.
+            </summary>
+            <param name="options">The storage options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.SelectVideoAsync(Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions)">
+            <summary>
+                Selects the video asynchronous.
+            </summary>
+            <param name="options"></param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.TakeVideoAsync(Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions)">
+            <summary>
+                Takes the video asynchronous.
+            </summary>
+            <param name="options">The options.</param>
+            <returns>Task&lt;IMediaFile&gt;.</returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.InternalOnPhotoChosen(System.Object,Microsoft.Phone.Tasks.PhotoResult)">
+            <summary>
+            Internals the on photo chosen.
+            </summary>
+            <param name="sender">The sender.</param>
+            <param name="photoResult">The photo result.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.ResizeImageStream(System.Nullable{System.Int32},System.Nullable{System.Int32},System.IO.Stream,System.Action{System.IO.Stream})">
+            <summary>
+                Resizes the JPEG stream.
+            </summary>
+            <param name="maxPixelDimension">The maximum pixel dimension ratio (used to resize the image).</param>
+            <param name="percentQuality">The percent quality.</param>
+            <param name="input">The stream that contains the image.</param>
+            <param name="success">The action to execute on actionSuccess of resizing the image.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.SafeAsyncCall(System.IO.Stream,System.Action{System.IO.Stream})">
+            <summary>
+                Calls the asynchronous.
+            </summary>
+            <param name="input">The stream that contains the image.</param>
+            <param name="success">The action to execute on actionSuccess of resizing the image.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.SafeAsyncCall(System.Action)">
+            <summary>
+                Does the with invalid operation protection.
+            </summary>
+            <param name="action">The action.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.ResizeBasedOnPixelDimension(System.Nullable{System.Int32},System.Int32,System.Int32,System.Int32@,System.Int32@)">
+            <summary>
+                Calcualtes the target height and width of the image based on the max pixel dimension.
+            </summary>
+            <param name="maxPixelDimension">The maximum pixel dimension ratio (used to resize the image).</param>
+            <param name="currentWidth">Current Width of the image.</param>
+            <param name="currentHeight">Current Height of the image.</param>
+            <param name="targetWidth">Target Width of the image.</param>
+            <param name="targetHeight">Target Height of the image.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.IsCameraAvailable">
+            <summary>
+                Gets a value indicating whether this instance is camera available.
+            </summary>
+            <value><c>true</c> if this instance is camera available; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.IsPhotosSupported">
+            <summary>
+                Gets a value indicating whether this instance is photos supported.
+            </summary>
+            <value><c>true</c> if this instance is photos supported; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.IsVideosSupported">
+            <summary>
+                Gets a value indicating whether this instance is videos supported.
+            </summary>
+            <value><c>true</c> if this instance is videos supported; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.OnMediaSelected">
+            <summary>
+            Event the fires when media has been selected
+            </summary>
+            <value>The on photo selected.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.Media.MediaPicker.OnError">
+            <summary>
+            Gets or sets the on error.
+            </summary>
+            <value>The on error.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.WP8.Services.SoundService">
+            <summary>
+            SoundService implementation on the Windows Phone platform
+            Nees a GlobalMEdiaElement instance on the App resources dictionary
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.SoundService.OnFileFinished(Xamarin.Forms.Labs.Services.SoundService.SoundFinishedEventArgs)">
+            <summary>
+            Raises the <see cref="E:FileFinished"/> event.
+            </summary>
+            <param name="e">The <see cref="T:Xamarin.Forms.Labs.Services.SoundService.SoundFinishedEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.SoundService.PlayAsync(System.String,System.String)">
+            <summary>
+            Plays the asynchronous.
+            </summary>
+            <param name="filename">The filename.</param>
+            <param name="extension">The extension.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.SoundService.SetMediaAsync(System.String)">
+            <summary>
+            Sets the media asynchronous.
+            </summary>
+            <param name="filename">The filename.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.SoundService.GlobalMediaElement_MediaEnded(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Handles the MediaEnded event of the player control.
+            </summary>
+            <param name="sender">The source of the event.</param>
+            <param name="e">The <see cref="T:System.Windows.RoutedEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.SoundService.GoToAsync(System.Double)">
+            <summary>
+            Goes to asynchronous.
+            </summary>
+            <param name="position">The position.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.SoundService.Play">
+            <summary>
+            Plays this instance.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.SoundService.Stop">
+            <summary>
+            Stops this instance.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.SoundService.Pause">
+            <summary>
+            Pauses this instance.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.WP8.Services.SoundService.SoundFileFinished">
+            <summary>
+            Occurs when [sound file finished].
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.SoundService.GlobalMediaElement">
+            <summary>
+            Gets the global media element.
+            </summary>
+            <value>
+            The global media element.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.SoundService.CurrentFile">
+            <summary>
+            Gets the current file.
+            </summary>
+            <value>
+            The current file.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.SoundService.IsPlaying">
+            <summary>
+            Gets a value indicating whether this instance is playing.
+            </summary>
+            <value>
+            <c>true</c> if this instance is playing; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.SoundService.CurrentTime">
+            <summary>
+            Gets the current time.
+            </summary>
+            <value>
+            The current time.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.WP8.Services.SoundService.Volume">
+            <summary>
+            Gets or sets the volume.
+            </summary>
+            <value>
+            The volume.
+            </value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.WP8.Services.TextToSpeechService">
+            <summary>
+            The text to speech service implements <see cref="T:Xamarin.Forms.Labs.Services.ITextToSpeechService"/> for Windows Phone.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.TextToSpeechService.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.WP8.Services.TextToSpeechService"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.TextToSpeechService.Speak(System.String)">
+            <summary>
+            The speak.
+            </summary>
+            <param name="text">
+            The text.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.Services.TextToSpeechService.GetInstalledLanguages">
+            <summary>
+            Get installed languages.
+            </summary>
+            <returns>
+            The installed language names.
+            </returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.WP8.XFormsAppWP">
+            <summary>
+            The Xamarin Forms Labs Windows Phone Application.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.WP8.XFormsAppWP.OnInit(System.Windows.Application)">
+            <summary>
+            Initializes the specified context.
+            </summary>
+            <param name="app">The native application.</param>
+        </member>
+    </members>
+</doc>

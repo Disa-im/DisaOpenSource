@@ -1,0 +1,1233 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Xamarin.Forms.Labs.Droid</name>
+    </assembly>
+    <members>
+        <member name="F:Xamarin.Forms.Labs.Accelerometer.Gravitation">
+            <summary>
+            Gravitational force is 9.81 m/s^2
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Accelerometer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Accelerometer"/> class.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Accelerometer.ReadingAvailable">
+            <summary>
+            The reading available event handler.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Accelerometer.LatestReading">
+            <summary>
+            Gets the latest reading.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Battery">
+            <summary>
+            Battery information class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Battery.GetLevel">
+            <summary>
+            Gets the level.
+            </summary>
+            <returns>The level.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Battery.GetChargerState">
+            <summary>
+            Gets the state of the charger.
+            </summary>
+            <returns><c>true</c>, if charger state was gotten, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.OnLevelChange">
+            <summary>
+            Event handler for battery level changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.OnChargerStatusChanged">
+            <summary>
+             Event handler for charger connection changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.onLevelChange">
+            <summary>
+            Private event handler for battery level changes. 
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Battery.onChargerStatusChanged">
+            <summary>
+            Private event handler for charger connection changes. 
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Battery.Level">
+            <summary>
+            Gets the level percentage from 0-100.
+            </summary>
+            <value>
+            The level.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Battery.Charging">
+            <summary>
+            Gets a value indicating whether this <see cref="!:SimplyMobile.Device.Battery"/> is charging.
+            </summary>
+            <value><c>true</c> if charging; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.BroadcastMonitor">
+            <summary>
+            Broadcast monitor.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.BroadcastMonitor.Start">
+            <summary>
+             Start monitoring. 
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.BroadcastMonitor.Stop">
+            <summary>
+             Stop monitoring. 
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.BroadcastMonitor.Filter">
+            <summary>
+            Gets the intent filter to use for monitoring.
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer">
+            <summary>
+            Draws a button on the Android platform with the image shown in the right 
+            position with the right size.
+            </summary>
+            <summary>
+            Draws a button on the Android platform with the image shown in the right 
+            position with the right size.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.OnElementChanged(Xamarin.Forms.Platform.Android.ElementChangedEventArgs{Xamarin.Forms.Button})">
+            <summary>
+            Sets up the button including the image. 
+            </summary>
+            <param name="e">The event arguments.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.SetImageSourceAsync(Android.Widget.Button,Xamarin.Forms.Labs.Controls.ImageButton)">
+            <summary>
+            Sets the image source.
+            </summary>
+            <param name="targetButton">The target button.</param>
+            <param name="model">The model.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> for the awaited operation.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.GetBitmapAsync(Xamarin.Forms.ImageSource)">
+            <summary>
+            Gets a <see cref="T:Android.Graphics.Bitmap"/> for the supplied <see cref="T:Xamarin.Forms.ImageSource"/>.
+            </summary>
+            <param name="source">The <see cref="T:Xamarin.Forms.ImageSource"/> to get the image for.</param>
+            <returns>A loaded <see cref="T:Android.Graphics.Bitmap"/>.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.OnElementPropertyChanged(System.Object,System.ComponentModel.PropertyChangedEventArgs)">
+            <summary>
+            Called when the underlying model's properties are changed.
+            </summary>
+            <param name="sender">The Model used.</param>
+            <param name="e">The event arguments.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.GetScaleDrawable(Android.Graphics.Drawables.Drawable,System.Int32,System.Int32)">
+            <summary>
+            Returns a <see cref="T:Android.Graphics.Drawables.Drawable"/> with the correct dimensions from an 
+            Android resource id.
+            </summary>
+            <param name="drawable">An android <see cref="T:Android.Graphics.Drawables.Drawable"/>.</param>
+            <param name="width">The width to scale to.</param>
+            <param name="height">The height to scale to.</param>
+            <returns>A scaled <see cref="T:Android.Graphics.Drawables.Drawable"/>.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.GetHandler(Xamarin.Forms.ImageSource)">
+            <summary>
+            Returns the proper <see cref="T:Xamarin.Forms.Platform.Android.IImageSourceHandler"/> based on the type of <see cref="T:Xamarin.Forms.ImageSource"/> provided.
+            </summary>
+            <param name="source">The <see cref="T:Xamarin.Forms.ImageSource"/> to get the handler for.</param>
+            <returns>The needed handler.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.GetWidth(System.Int32)">
+            <summary>
+            Gets the width based on the requested width, if request less than 0, returns 50.
+            </summary>
+            <param name="requestedWidth">The requested width.</param>
+            <returns>The width to use.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.GetHeight(System.Int32)">
+            <summary>
+            Gets the height based on the requested height, if request less than 0, returns 50.
+            </summary>
+            <param name="requestedHeight">The requested height.</param>
+            <returns>The height to use.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.ImageButton">
+            <summary>
+            Gets the underlying control typed as an <see cref="P:Xamarin.Forms.Labs.Droid.Controls.ImageButton.ImageButtonRenderer.ImageButton"/>.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Controls.WebImage.WebImageRenderer.WebImage">
+            <summary>
+            Gets the underlying control typed as an <see cref="P:Xamarin.Forms.Labs.Droid.Controls.WebImage.WebImageRenderer.WebImage"/>
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.AndroidDevice">
+            <summary>
+            Android device implements <see cref="T:Xamarin.Forms.Labs.IDevice"/>.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.AndroidDevice.#ctor">
+            <summary>
+            Prevents a default instance of the <see cref="T:Xamarin.Forms.Labs.AndroidDevice"/> class from being created. 
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.AndroidDevice.LaunchUriAsync(System.Uri)">
+            <summary>
+            Starts the default app associated with the URI for the specified URI.
+            </summary>
+            <param name="uri">The URI.</param>
+            <returns>The launch operation.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.CurrentDevice">
+            <summary>
+            Gets the current device.
+            </summary>
+            <value>
+            The current device.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.Id">
+            <summary>
+            Gets Unique Id for the device.
+            </summary>
+            <value>
+            The id for the device.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.PhoneService">
+            <summary>
+            Gets the phone service for this device.
+            </summary>
+            <value>Phone service instance if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.Display">
+            <summary>
+            Gets the display information for the device.
+            </summary>
+            <value>
+            The display.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.Battery">
+            <summary>
+            Gets the battery.
+            </summary>
+            <value>
+            The battery.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.MediaPicker">
+            <summary>
+            Gets the picture chooser.
+            </summary>
+            <value>The picture chooser.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.Network">
+            <summary>
+            Gets the network service.
+            </summary>
+            <value>The network service.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.Accelerometer">
+            <summary>
+            Gets the accelerometer for the device if available.
+            </summary>
+            <value>Instance of IAccelerometer if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.Gyroscope">
+            <summary>
+            Gets the gyroscope.
+            </summary>
+            <value>The gyroscope instance if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.BluetoothHub">
+            <summary>
+            Gets the bluetooth hub service.
+            </summary>
+            <value>The bluetooth hub service if available, otherwise null.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.Microphone">
+            <summary>
+            Gets the default microphone for the device
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.FileManager">
+            <summary>
+            Gets the file manager for the device.
+            </summary>
+            <value>Device file manager.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.Name">
+            <summary>
+            Gets the name of the device.
+            </summary>
+            <value>
+            The name of the device.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.FirmwareVersion">
+            <summary>
+            Gets the firmware version.
+            </summary>
+            <value>
+            The firmware version.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.HardwareVersion">
+            <summary>
+            Gets the hardware version.
+            </summary>
+            <value>
+            The hardware version.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.AndroidDevice.Manufacturer">
+            <summary>
+            Gets the manufacturer.
+            </summary>
+            <value>
+            The manufacturer.
+            </value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Display">
+            <summary>
+            Android Display implements <see cref="T:Xamarin.Forms.Labs.IDisplay"/>.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Display"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.WidthRequestInInches(System.Double)">
+            <summary>
+            Convert width in inches to runtime pixels
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.HeightRequestInInches(System.Double)">
+            <summary>
+            Convert height in inches to runtime pixels
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Display.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:Xamarin.Forms.Labs.Display"/>.
+            </summary>
+            <returns>A <see cref="T:System.String"/> that represents the current <see cref="T:Xamarin.Forms.Labs.Display"/>.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Display.Height">
+            <summary>
+            Gets the screen height in pixels
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Display.Width">
+            <summary>
+            Gets the screen width in pixels
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Display.Xdpi">
+            <summary>
+            Gets the screens X pixel density per inch
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Display.Ydpi">
+            <summary>
+            Gets the screens Y pixel density per inch
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.BroadcastReceiverExtensions">
+            <summary>
+            Broadcast receiver extensions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.BroadcastReceiverExtensions.RegisterReceiver(Android.Content.BroadcastReceiver,Android.Content.IntentFilter)">
+            <summary>
+            Registers the receiver using <see cref="P:Android.App.Application.Context"/>.
+            </summary>
+            <returns>The receiver intent.</returns>
+            <param name="receiver">Receiver.</param>
+            <param name="intentFilter">Intent filter.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.BroadcastReceiverExtensions.UnregisterReceiver(Android.Content.BroadcastReceiver)">
+            <summary>
+            Unregisters the receiver using <see cref="P:Android.App.Application.Context"/>.
+            </summary>
+            <param name="receiver">Receiver to unregister.</param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.IntentFilterExtensions">
+            <summary>
+            Intent filter extensions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.IntentFilterExtensions.RegisterReceiver(Android.Content.IntentFilter)">
+            <summary>
+            Gets a single result for the intent filter using <see cref="P:Android.App.Application.Context"/>
+            </summary>
+            <param name="intentFilter">Intent filter</param>
+            <returns>An intent result, null if not successful</returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.ObjectExtensions">
+            <summary>
+            Object extensions.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.ObjectExtensions.StartActivity(System.Object,Android.Content.Intent)">
+            <summary>
+            Starts the activity using either the object itself if it a type of <see cref="T:Android.Content.Context"/>
+            or alternatively using <see cref="P:Android.App.Application.Context"/>
+            </summary>
+            <param name="o">O.</param>
+            <param name="intent">Intent.</param>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker">
+            <summary>
+                Class MediaPicker.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker"/> class.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.SelectPhotoAsync(Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions)">
+            <summary>
+            Select a picture from library.
+            </summary>
+            <param name="options">The storage options.</param>
+            <returns>Task with a return type of MediaFile.</returns>
+            <exception cref="T:System.NotSupportedException">Throws an exception if feature is not supported.</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.TakePhotoAsync(Xamarin.Forms.Labs.Services.Media.CameraMediaStorageOptions)">
+            <summary>
+            Takes the picture.
+            </summary>
+            <param name="options">The storage options.</param>
+            <returns>Task with a return type of MediaFile.</returns>
+            <exception cref="T:System.NotSupportedException">Throws an exception if feature is not supported.</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.SelectVideoAsync(Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions)">
+            <summary>
+            Selects the video asynchronous.
+            </summary>
+            <param name="options">Video storage options.</param>
+            <returns>Task with a return type of MediaFile.</returns>
+            <exception cref="T:System.NotSupportedException">Throws an exception if feature is not supported.</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.TakeVideoAsync(Xamarin.Forms.Labs.Services.Media.VideoMediaStorageOptions)">
+            <summary>
+            Takes the video asynchronous.
+            </summary>
+            <param name="options">The options.</param>
+            <returns>Task with a return type of MediaFile.</returns>
+            <exception cref="T:System.NotSupportedException">Throws an exception if feature is not supported.</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.CreateMediaIntent(System.Int32,System.String,System.String,Xamarin.Forms.Labs.Services.Media.MediaStorageOptions,System.Boolean)">
+            <summary>
+            Creates the media intent.
+            </summary>
+            <param name="id">The identifier.</param>
+            <param name="type">The type of intent.</param>
+            <param name="action">The action.</param>
+            <param name="options">The options.</param>
+            <param name="tasked">if set to <c>true</c> [tasked].</param>
+            <returns>Intent to create media.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.GetRequestId">
+            <summary>
+            Gets the request identifier.
+            </summary>
+            <returns>Request id as integer.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.TakeMediaAsync(System.String,System.String,Xamarin.Forms.Labs.Services.Media.MediaStorageOptions)">
+            <summary>
+            Takes the media asynchronous.
+            </summary>
+            <param name="type">The type of intent.</param>
+            <param name="action">The action.</param>
+            <param name="options">The options.</param>
+            <returns>Task with a return type of MediaFile.</returns>
+            <exception cref="T:System.InvalidOperationException">Only one operation can be active at a time.</exception>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.IsCameraAvailable">
+            <summary>	
+            Gets a value indicating whether this instance is camera available.
+            </summary>
+            <value><c>true</c> if this instance is camera available; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.IsPhotosSupported">
+            <summary>
+                Gets a value indicating whether this instance is photos supported.
+            </summary>
+            <value><c>true</c> if this instance is photos supported; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.IsVideosSupported">
+            <summary>
+                Gets a value indicating whether this instance is videos supported.
+            </summary>
+            <value><c>true</c> if this instance is videos supported; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.OnMediaSelected">
+            <summary>
+            Gets or sets the event that fires when media has been selected.
+            </summary>
+            <value>The on photo selected.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.MediaPicker.OnError">
+            <summary>
+                Gets or sets the on error.
+            </summary>
+            <value>The on error.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity">
+            <summary>
+            Class MediaPickerActivity.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.EXTRA_PATH">
+            <summary>
+            The extra path
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.EXTRA_LOCATION">
+            <summary>
+            The extra location
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.EXTRA_TYPE">
+            <summary>
+            The extra type
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.EXTRA_ID">
+            <summary>
+            The extra identifier
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.EXTRA_ACTION">
+            <summary>
+            The extra action
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.EXTRA_TASKED">
+            <summary>
+            The extra tasked
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.MEDIA_FILE_EXTRA_NAME">
+            <summary>
+            The medi a_ fil e_ extr a_ name
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._action">
+            <summary>
+            The action
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._description">
+            <summary>
+            The description
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._id">
+            <summary>
+            The identifier
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._isPhoto">
+            <summary>
+            The is photo
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._path">
+            <summary>
+            The user's destination path.
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._quality">
+            <summary>
+            The quality
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._seconds">
+            <summary>
+            The seconds
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._tasked">
+            <summary>
+            The tasked
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._title">
+            <summary>
+            The title
+            </summary>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity._type">
+            <summary>
+            The type
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.OnSaveInstanceState(Android.OS.Bundle)">
+            <summary>
+            Called to retrieve per-instance state from an activity before being killed
+            so that the state can be restored in <c><see cref="M:Android.App.Activity.OnCreate(Android.OS.Bundle)" /></c> or
+            <c><see cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" /></c> (the <c><see cref="T:Android.OS.Bundle" /></c> populated by this method
+            will be passed to both).
+            </summary>
+            <param name="outState">Bundle in which to place your saved state.</param>
+            <since version="Added in API level 1" />
+            <altmember cref="M:Android.App.Activity.OnCreate(Android.OS.Bundle)" />
+            <altmember cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" />
+            <altmember cref="M:Android.App.Activity.OnPause" />
+            <remarks><para tool="javadoc-to-mdoc">Called to retrieve per-instance state from an activity before being killed
+            so that the state can be restored in <c><see cref="M:Android.App.Activity.OnCreate(Android.OS.Bundle)" /></c> or
+            <c><see cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" /></c> (the <c><see cref="T:Android.OS.Bundle" /></c> populated by this method
+            will be passed to both).
+            </para>
+            <para tool="javadoc-to-mdoc">This method is called before an activity may be killed so that when it
+            comes back some time in the future it can restore its state.  For example,
+            if activity B is launched in front of activity A, and at some point activity
+            A is killed to reclaim resources, activity A will have a chance to save the
+            current state of its user interface via this method so that when the user
+            returns to activity A, the state of the user interface can be restored
+            via <c><see cref="M:Android.App.Activity.OnCreate(Android.OS.Bundle)" /></c> or <c><see cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" /></c>.
+            </para>
+            <para tool="javadoc-to-mdoc">Do not confuse this method with activity lifecycle callbacks such as
+            <c><see cref="M:Android.App.Activity.OnPause" /></c>, which is always called when an activity is being placed
+            in the background or on its way to destruction, or <c><see cref="M:Android.App.Activity.OnStop" /></c> which
+            is called before destruction.  One example of when <c><see cref="M:Android.App.Activity.OnPause" /></c> and
+            <c><see cref="M:Android.App.Activity.OnStop" /></c> is called and not this method is when a user navigates back
+            from activity B to activity A: there is no need to call <c><see cref="M:Android.App.Activity.OnSaveInstanceState(Android.OS.Bundle)" /></c>
+            on B because that particular instance will never be restored, so the
+            system avoids calling it.  An example when <c><see cref="M:Android.App.Activity.OnPause" /></c> is called and
+            not <c><see cref="M:Android.App.Activity.OnSaveInstanceState(Android.OS.Bundle)" /></c> is when activity B is launched in front of activity A:
+            the system may avoid calling <c><see cref="M:Android.App.Activity.OnSaveInstanceState(Android.OS.Bundle)" /></c> on activity A if it isn't
+            killed during the lifetime of B since the state of the user interface of
+            A will stay intact.
+            </para>
+            <para tool="javadoc-to-mdoc">The default implementation takes care of most of the UI per-instance
+            state for you by calling <c><see cref="M:Android.Views.View.OnSaveInstanceState" /></c> on each
+            view in the hierarchy that has an id, and by saving the id of the currently
+            focused view (all of which is restored by the default implementation of
+            <c><see cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" /></c>).  If you override this method to save additional
+            information not captured by each individual view, you will likely want to
+            call through to the default implementation, otherwise be prepared to save
+            all of the state of each view yourself.
+            </para>
+            <para tool="javadoc-to-mdoc">If called, this method will occur before <c><see cref="M:Android.App.Activity.OnStop" /></c>.  There are
+            no guarantees about whether it will occur before or after <c><see cref="M:Android.App.Activity.OnPause" /></c>.</para>
+            <para tool="javadoc-to-mdoc">
+              <format type="text/html">
+                <a href="http://developer.android.com/reference/android/app/Activity.html#onSaveInstanceState(android.os.Bundle)" target="_blank">[Android Documentation]</a>
+              </format>
+            </para></remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.OnCreate(Android.OS.Bundle)">
+            <summary>
+            Called when the activity is starting.
+            </summary>
+            <param name="savedInstanceState">If the activity is being re-initialized after
+            previously being shut down then this Bundle contains the data it most
+            recently supplied in <c><see cref="M:Android.App.Activity.OnSaveInstanceState(Android.OS.Bundle)" /></c>.  <format type="text/html"><b><i>Note: Otherwise it is null.</i></b></format></param>
+            <since version="Added in API level 1" />
+            <altmember cref="M:Android.App.Activity.OnStart" />
+            <altmember cref="M:Android.App.Activity.OnSaveInstanceState(Android.OS.Bundle)" />
+            <altmember cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" />
+            <altmember cref="M:Android.App.Activity.OnPostCreate(Android.OS.Bundle)" />
+            <remarks><para tool="javadoc-to-mdoc">Called when the activity is starting.  This is where most initialization
+            should go: calling <c><see cref="M:Android.App.Activity.SetContentView(System.Int32)" /></c> to inflate the
+            activity's UI, using <c><see cref="M:Android.App.Activity.FindViewById(System.Int32)" /></c> to programmatically interact
+            with widgets in the UI, calling
+            <c><see cref="M:Android.App.Activity.ManagedQuery(Android.Net.Uri, System.String[], System.String[], System.String[], System.String[])" /></c> to retrieve
+            cursors for data being displayed, etc.
+            </para>
+            <para tool="javadoc-to-mdoc">You can call <c><see cref="M:Android.App.Activity.Finish" /></c> from within this function, in
+            which case onDestroy() will be immediately called without any of the rest
+            of the activity lifecycle (<c><see cref="M:Android.App.Activity.OnStart" /></c>, <c><see cref="M:Android.App.Activity.OnResume" /></c>,
+            <c><see cref="M:Android.App.Activity.OnPause" /></c>, etc) executing.
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <i>Derived classes must call through to the super class's
+            implementation of this method.  If they do not, an exception will be
+            thrown.</i>
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <format type="text/html">
+                <a href="http://developer.android.com/reference/android/app/Activity.html#onCreate(android.os.Bundle)" target="_blank">[Android Documentation]</a>
+              </format>
+            </para></remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.OnActivityResult(System.Int32,Android.App.Result,Android.Content.Intent)">
+            <summary>
+            Called when an activity you launched exits, giving you the requestCode
+            you started it with, the resultCode it returned, and any additional
+            data from it.
+            </summary>
+            <param name="requestCode">The integer request code originally supplied to
+            startActivityForResult(), allowing you to identify who this
+            result came from.</param>
+            <param name="resultCode">The integer result code returned by the child activity
+            through its setResult().</param>
+            <param name="data">An Intent, which can return result data to the caller
+            (various data can be attached to Intent "extras").</param>
+            <since version="Added in API level 1" />
+            <altmember cref="M:Android.App.Activity.StartActivityForResult(Android.Content.Intent, System.Int32)" />
+            <altmember cref="M:Android.App.Activity.CreatePendingResult(System.Int32, Android.Content.Intent, Android.Content.Intent)" />
+            <altmember cref="M:Android.App.Activity.SetResult(Android.App.Result)" />
+            <remarks><para tool="javadoc-to-mdoc">Called when an activity you launched exits, giving you the requestCode
+            you started it with, the resultCode it returned, and any additional
+            data from it.  The <format type="text/html"><var>resultCode</var></format> will be
+            <c><see cref="F:Android.App.Result.Canceled" /></c> if the activity explicitly returned that,
+            didn't return any result, or crashed during its operation.
+            </para>
+            <para tool="javadoc-to-mdoc">You will receive this call immediately before onResume() when your
+            activity is re-starting.</para>
+            <para tool="javadoc-to-mdoc">
+              <format type="text/html">
+                <a href="http://developer.android.com/reference/android/app/Activity.html#onActivityResult(int, int, android.content.Intent)" target="_blank">[Android Documentation]</a>
+              </format>
+            </para></remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.GetMediaFileAsync(Android.Content.Context,System.Int32,System.String,System.Boolean,Android.Net.Uri@,Android.Net.Uri)">
+            <summary>
+            Gets the media file asynchronous.
+            </summary>
+            <param name="context">The context.</param>
+            <param name="requestCode">The request code.</param>
+            <param name="action">The action.</param>
+            <param name="isPhoto">if set to <c>true</c> [is photo].</param>
+            <param name="path">The path.</param>
+            <param name="data">The data.</param>
+            <returns>Task&lt;MediaPickedEventArgs&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.TryMoveFileAsync(Android.Content.Context,Android.Net.Uri,Android.Net.Uri,System.Boolean)">
+            <summary>
+            Tries the move file asynchronous.
+            </summary>
+            <param name="context">The context.</param>
+            <param name="url">The URL.</param>
+            <param name="path">The path.</param>
+            <param name="isPhoto">if set to <c>true</c> [is photo].</param>
+            <returns>Task&lt;System.Boolean&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.GetVideoQuality(Xamarin.Forms.Labs.Services.Media.VideoQuality)">
+            <summary>
+            Gets the video quality.
+            </summary>
+            <param name="videoQuality">The video quality.</param>
+            <returns>System.Int32.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.GetOutputMediaFile(Android.Content.Context,System.String,System.String,System.Boolean)">
+            <summary>
+            Gets the output media file.
+            </summary>
+            <param name="context">The context.</param>
+            <param name="subdir">The subdir.</param>
+            <param name="name">The name.</param>
+            <param name="isPhoto">if set to <c>true</c> [is photo].</param>
+            <returns>Uri.</returns>
+            <exception cref="T:System.IO.IOException">Couldn't create directory, have you added the WRITE_EXTERNAL_STORAGE permission?</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.GetFileForUriAsync(Android.Content.Context,Android.Net.Uri,System.Boolean)">
+            <summary>
+            Gets the file for URI asynchronous.
+            </summary>
+            <param name="context">The context.</param>
+            <param name="uri">The URI.</param>
+            <param name="isPhoto">if set to <c>true</c> [is photo].</param>
+            <returns>Task&lt;Tuple&lt;System.String, System.Boolean&gt;&gt;.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.GetLocalPath(Android.Net.Uri)">
+            <summary>
+            Gets the local path.
+            </summary>
+            <param name="uri">The URI.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.Touch">
+            <summary>
+            Touches this instance.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.RaiseOnMediaPicked(Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs)">
+            <summary>
+            Handles the <see cref="E:MediaPicked"/> event.
+            </summary>
+            <param name="e">The <see cref="T:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickerActivity.MediaPicked">
+            <summary>
+            Occurs when [media picked].
+            </summary>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs">
+            <summary>
+            Class MediaPickedEventArgs.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs.#ctor(System.Int32,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs"/> class.
+            </summary>
+            <param name="id">The identifier.</param>
+            <param name="error">The error.</param>
+            <exception cref="T:System.ArgumentNullException">error</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs.#ctor(System.Int32,System.Boolean,Xamarin.Forms.Labs.Services.Media.MediaFile)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs"/> class.
+            </summary>
+            <param name="id">The identifier.</param>
+            <param name="isCanceled">if set to <c>true</c> [is canceled].</param>
+            <param name="media">The media.</param>
+            <exception cref="T:System.ArgumentNullException">media</exception>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs.ToTask">
+            <summary>
+            To the task.
+            </summary>
+            <returns>Task&lt;MediaFile&gt;.</returns>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs.RequestId">
+            <summary>
+            Gets the request identifier.
+            </summary>
+            <value>The request identifier.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs.IsCanceled">
+            <summary>
+            Gets a value indicating whether this instance is canceled.
+            </summary>
+            <value><c>true</c> if this instance is canceled; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs.Error">
+            <summary>
+            Gets the error.
+            </summary>
+            <value>The error.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.MediaPickedEventArgs.Media">
+            <summary>
+            Gets the media.
+            </summary>
+            <value>The media.</value>
+        </member>
+        <member name="F:Xamarin.Forms.Labs.Droid.Services.Media.Microphone.audioSource">
+            <summary>
+            The audio source.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.Microphone.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xamarin.Forms.Labs.Droid.Services.Media.Microphone"/> class.
+            </summary>
+            <param name="sampleRate">Sample rate.</param>
+            <param name="bufferSize">Buffer size.</param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.Microphone.StartRecording">
+            <summary>
+            Start recording from the hardware audio source.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.Media.Microphone.Record">
+            <summary>
+            Record from the microphone and broadcast the buffer.
+            </summary>
+        </member>
+        <member name="E:Xamarin.Forms.Labs.Droid.Services.Media.Microphone.OnBroadcast">
+            <summary>
+            Occurs when new audio has been streamed.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.Microphone.SampleRate">
+            <summary>
+            Gets the sample rate.
+            </summary>
+            <value>
+            The sample rate.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.Microphone.BitsPerSample">
+            <summary>
+            Gets bits per sample.
+            </summary>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.Microphone.ChannelCount">
+            <summary>
+            Gets the channel count.
+            </summary>
+            <value>
+            The channel count.
+            </value>        
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.Media.Microphone.AverageBytesPerSecond">
+            <summary>
+            Gets the average data transfer rate
+            </summary>
+            <value>The average data transfer rate in bytes per second.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.Services.NfcDevice.DeviceId">
+            TODO: figure out if the NFC device has an ID or name. 
+            The below method will not identify external NFC devices.
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Services.PhoneService">
+            <summary>
+            Android Phone service implements <see cref="T:Xamarin.Forms.Labs.Services.IPhoneService"/>.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Services.PhoneService.DialNumber(System.String)">
+            <summary>
+            Opens native dialog to dial the specified number.
+            </summary>
+            <param name="number">Number to dial.</param>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.PhoneService.Manager">
+            <summary>
+            Gets the telephony manager for Android.
+            </summary>
+            <value>
+            The manager.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.PhoneService.ConnectivityManager">
+            <summary>
+            Gets the connectivity manager.
+            </summary>
+            <value>
+            The connectivity manager.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.PhoneService.CellularProvider">
+            <summary>
+            Gets the cellular provider.
+            </summary>
+            <value>
+            The cellular provider.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.PhoneService.ICC">
+            <summary>
+            Gets the ISO Country Code.
+            </summary>
+            <value>
+            The ISO Country Code.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.PhoneService.MCC">
+            <summary>
+            Gets the Mobile Country Code.
+            </summary>
+            <value>
+            The Mobile Country Code.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.PhoneService.MNC">
+            <summary>
+            Gets the Mobile Network Code.
+            </summary>
+            <value>
+            The Mobile Network Code.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.PhoneService.IsCellularDataEnabled">
+            <summary>
+            Gets a value indicating whether this instance has cellular data enabled.
+            </summary>
+            <value>
+            Null if value cannot be determined, otherwise the status of cellular data.
+            </value>
+            <remarks>
+            This feature will require the following Android permissions:
+                - android.permission.INTERNET
+                - android.permission.ACCESS_NETWORK_STATE 
+            Please set them in the AndroidManifest.xml file.
+            </remarks>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.PhoneService.IsCellularDataRoamingEnabled">
+            <summary>
+            Gets a value indicating whether this instance has cellular data roaming enabled.
+            </summary>
+            <value>
+            Null if value cannot be determined, otherwise the status of cellular data roaming.
+            </value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Services.PhoneService.IsNetworkAvailable">
+            <summary>
+            Gets a value indicating whether network is available.
+            </summary>
+            <value>
+            The network availability.
+            </value>
+            <remarks>
+            This feature will require the following Android permissions:
+                - android.permission.INTERNET
+                - android.permission.ACCESS_NETWORK_STATE 
+            Please set them in the AndroidManifest.xml file.
+            </remarks>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Droid.Services.TextToSpeechService">
+            <summary>
+            The text to speech service implements <see cref="T:Xamarin.Forms.Labs.Services.ITextToSpeechService"/> for Android.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.TextToSpeechService.Speak(System.String)">
+            <summary>
+            The speak.
+            </summary>
+            <param name="text">
+            The text.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.TextToSpeechService.OnInit(Android.Speech.Tts.OperationResult)">
+            <summary>
+            Implementation for <see cref="M:Android.Speech.Tts.TextToSpeech.IOnInitListener.OnInit(Android.Speech.Tts.OperationResult)"/>.
+            </summary>
+            <param name="status">
+            The status.
+            </param>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.Services.TextToSpeechService.GetInstalledLanguages">
+            <summary>
+            Get installed languages.
+            </summary>
+            <returns>
+            The installed language names.
+            </returns>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid">
+            <summary>
+            Class XFormsApplicationDroid.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.OnDestroy">
+            <summary>
+            Called when [destroy].
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.OnPause">
+            <summary>
+            Called as part of the activity lifecycle when an activity is going into
+            the background, but has not (yet) been killed.
+            </summary>
+            <since version="Added in API level 1" />
+            <altmember cref="M:Android.App.Activity.OnResume" />
+            <altmember cref="M:Android.App.Activity.OnSaveInstanceState(Android.OS.Bundle)" />
+            <altmember cref="M:Android.App.Activity.OnStop" />
+            <remarks><para tool="javadoc-to-mdoc">Called as part of the activity lifecycle when an activity is going into
+            the background, but has not (yet) been killed.  The counterpart to
+            <c><see cref="M:Android.App.Activity.OnResume" /></c>.
+            </para>
+            <para tool="javadoc-to-mdoc">When activity B is launched in front of activity A, this callback will
+            be invoked on A.  B will not be created until A's <c><see cref="M:Android.App.Activity.OnPause" /></c> returns,
+            so be sure to not do anything lengthy here.
+            </para>
+            <para tool="javadoc-to-mdoc">This callback is mostly used for saving any persistent state the
+            activity is editing, to present a "edit in place" model to the user and
+            making sure nothing is lost if there are not enough resources to start
+            the new activity without first killing this one.  This is also a good
+            place to do things like stop animations and other things that consume a
+            noticeable amount of CPU in order to make the switch to the next activity
+            as fast as possible, or to close resources that are exclusive access
+            such as the camera.
+            </para>
+            <para tool="javadoc-to-mdoc">In situations where the system needs more memory it may kill paused
+            processes to reclaim resources.  Because of this, you should be sure
+            that all of your state is saved by the time you return from
+            this function.  In general <c><see cref="M:Android.App.Activity.OnSaveInstanceState(Android.OS.Bundle)" /></c> is used to save
+            per-instance state in the activity and this method is used to store
+            global persistent data (in content providers, files, etc.)
+            </para>
+            <para tool="javadoc-to-mdoc">After receiving this call you will usually receive a following call
+            to <c><see cref="M:Android.App.Activity.OnStop" /></c> (after the next activity has been resumed and
+            displayed), however in some cases there will be a direct call back to
+            <c><see cref="M:Android.App.Activity.OnResume" /></c> without going through the stopped state.
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <i>Derived classes must call through to the super class's
+            implementation of this method.  If they do not, an exception will be
+            thrown.</i>
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <format type="text/html">
+                <a href="http://developer.android.com/reference/android/app/Activity.html#onPause()" target="_blank">[Android Documentation]</a>
+              </format>
+            </para></remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.OnRestart">
+            <summary>
+            Called after <c><see cref="M:Android.App.Activity.OnStop" /></c> when the current activity is being
+            re-displayed to the user (the user has navigated back to it).
+            </summary>
+            <since version="Added in API level 1" />
+            <altmember cref="M:Android.App.Activity.OnStop" />
+            <altmember cref="M:Android.App.Activity.OnStart" />
+            <altmember cref="M:Android.App.Activity.OnResume" />
+            <remarks><para tool="javadoc-to-mdoc">Called after <c><see cref="M:Android.App.Activity.OnStop" /></c> when the current activity is being
+            re-displayed to the user (the user has navigated back to it).  It will
+            be followed by <c><see cref="M:Android.App.Activity.OnStart" /></c> and then <c><see cref="M:Android.App.Activity.OnResume" /></c>.
+            </para>
+            <para tool="javadoc-to-mdoc">For activities that are using raw <c><see cref="T:Android.Database.ICursor" /></c> objects (instead of
+            creating them through
+            <c><see cref="M:Android.App.Activity.ManagedQuery(Android.Net.Uri, System.String[], System.String[], System.String[], System.String[])" /></c>,
+            this is usually the place
+            where the cursor should be required (because you had deactivated it in
+            <c><see cref="M:Android.App.Activity.OnStop" /></c>.
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <i>Derived classes must call through to the super class's
+            implementation of this method.  If they do not, an exception will be
+            thrown.</i>
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <format type="text/html">
+                <a href="http://developer.android.com/reference/android/app/Activity.html#onRestart()" target="_blank">[Android Documentation]</a>
+              </format>
+            </para></remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.OnResume">
+            <summary>
+            Called after <c><see cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" /></c>, <c><see cref="M:Android.App.Activity.OnRestart" /></c>, or
+            <c><see cref="M:Android.App.Activity.OnPause" /></c>, for your activity to start interacting with the user.
+            </summary>
+            <since version="Added in API level 1" />
+            <altmember cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" />
+            <altmember cref="M:Android.App.Activity.OnRestart" />
+            <altmember cref="M:Android.App.Activity.OnPostResume" />
+            <altmember cref="M:Android.App.Activity.OnPause" />
+            <remarks><para tool="javadoc-to-mdoc">Called after <c><see cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" /></c>, <c><see cref="M:Android.App.Activity.OnRestart" /></c>, or
+            <c><see cref="M:Android.App.Activity.OnPause" /></c>, for your activity to start interacting with the user.
+            This is a good place to begin animations, open exclusive-access devices
+            (such as the camera), etc.
+            </para>
+            <para tool="javadoc-to-mdoc">Keep in mind that onResume is not the best indicator that your activity
+            is visible to the user; a system window such as the key guard may be in
+            front.  Use <c><see cref="M:Android.App.Activity.OnWindowFocusChanged(System.Boolean)" /></c> to know for certain that your
+            activity is visible to the user (for example, to resume a game).
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <i>Derived classes must call through to the super class's
+            implementation of this method.  If they do not, an exception will be
+            thrown.</i>
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <format type="text/html">
+                <a href="http://developer.android.com/reference/android/app/Activity.html#onResume()" target="_blank">[Android Documentation]</a>
+              </format>
+            </para></remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.OnStart">
+            <summary>
+            Called after <c><see cref="M:Android.App.Activity.OnCreate(Android.OS.Bundle)" /></c> or after <c><see cref="M:Android.App.Activity.OnRestart" /></c> when
+            the activity had been stopped, but is now again being displayed to the
+            user.
+            </summary>
+            <since version="Added in API level 1" />
+            <altmember cref="M:Android.App.Activity.OnCreate(Android.OS.Bundle)" />
+            <altmember cref="M:Android.App.Activity.OnStop" />
+            <altmember cref="M:Android.App.Activity.OnResume" />
+            <remarks><para tool="javadoc-to-mdoc">Called after <c><see cref="M:Android.App.Activity.OnCreate(Android.OS.Bundle)" /></c> or after <c><see cref="M:Android.App.Activity.OnRestart" /></c> when
+            the activity had been stopped, but is now again being displayed to the
+            user.  It will be followed by <c><see cref="M:Android.App.Activity.OnResume" /></c>.
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <i>Derived classes must call through to the super class's
+            implementation of this method.  If they do not, an exception will be
+            thrown.</i>
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <format type="text/html">
+                <a href="http://developer.android.com/reference/android/app/Activity.html#onStart()" target="_blank">[Android Documentation]</a>
+              </format>
+            </para></remarks>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.OnStop">
+            <summary>
+            Called when you are no longer visible to the user.
+            </summary>
+            <since version="Added in API level 1" />
+            <altmember cref="M:Android.App.Activity.OnRestart" />
+            <altmember cref="M:Android.App.Activity.OnResume" />
+            <altmember cref="M:Android.App.Activity.OnSaveInstanceState(Android.OS.Bundle)" />
+            <altmember cref="M:Android.App.Activity.OnDestroy" />
+            <remarks><para tool="javadoc-to-mdoc">Called when you are no longer visible to the user.  You will next
+            receive either <c><see cref="M:Android.App.Activity.OnRestart" /></c>, <c><see cref="M:Android.App.Activity.OnDestroy" /></c>, or nothing,
+            depending on later user activity.
+            </para>
+            <para tool="javadoc-to-mdoc">Note that this method may never be called, in low memory situations
+            where the system does not have enough memory to keep your activity's
+            process running after its <c><see cref="M:Android.App.Activity.OnPause" /></c> method is called.
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <i>Derived classes must call through to the super class's
+            implementation of this method.  If they do not, an exception will be
+            thrown.</i>
+            </para>
+            <para tool="javadoc-to-mdoc">
+              <format type="text/html">
+                <a href="http://developer.android.com/reference/android/app/Activity.html#onStop()" target="_blank">[Android Documentation]</a>
+              </format>
+            </para></remarks>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.Destroy">
+            <summary>
+            Gets or sets the destroy.
+            </summary>
+            <value>The destroy.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.Pause">
+            <summary>
+            Gets or sets the pause.
+            </summary>
+            <value>The pause.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.Restart">
+            <summary>
+            Gets or sets the restart.
+            </summary>
+            <value>The restart.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.Resume">
+            <summary>
+            Gets or sets the resume.
+            </summary>
+            <value>The resume.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.Start">
+            <summary>
+            Gets or sets the start.
+            </summary>
+            <value>The start.</value>
+        </member>
+        <member name="P:Xamarin.Forms.Labs.Droid.XFormsApplicationDroid.Stop">
+            <summary>
+            Gets or sets the stop.
+            </summary>
+            <value>The stop event handler.</value>
+        </member>
+        <member name="T:Xamarin.Forms.Labs.Droid.XFormsAppDroid">
+            <summary>
+            Class XFormsAppDroid.
+            </summary>
+        </member>
+        <member name="M:Xamarin.Forms.Labs.Droid.XFormsAppDroid.OnInit(Xamarin.Forms.Labs.Droid.XFormsApplicationDroid)">
+            <summary>
+            Called when [initialize].
+            </summary>
+            <param name="app">The application.</param>
+        </member>
+    </members>
+</doc>
