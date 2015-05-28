@@ -1304,6 +1304,9 @@
     <Compile Include="Nito.AsyncEx\Enlightement\Internal\PlatformEnlightenment\SynchronizationContextEnlightenment.cs" />
     <Compile Include="Nito.AsyncEx\Enlightement\Internal\PlatformEnlightenment\ThreadPoolEnlightenment.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="UI\NewMessage.cs" />
+    <Compile Include="Contact.cs" />
+    <Compile Include="TelegramUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -1327,6 +1330,7 @@
     <Folder Include="Nito.AsyncEx\" />
     <Folder Include="Nito.AsyncEx\Base\" />
     <Folder Include="Nito.AsyncEx\Enlightement\" />
+    <Folder Include="UI\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Nito.AsyncEx\Base\AsyncFactory %28of TResult%29.FromAsync.tt" />

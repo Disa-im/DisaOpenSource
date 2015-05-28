@@ -10,12 +10,16 @@ using SharpTelegram.Schema.Layer18;
 using System.Linq;
 using SharpMTProto.Messaging.Handlers;
 using SharpMTProto.Schema;
+using System.Globalization;
+
+//RESEARCH TOPICS:
+//1) We're sending everything with InputContact/PeerUser ... does the server care if the user is not on our contacts list?
 
 namespace Disa.Framework.Telegram
 {
     [ServiceInfo("Telegram", true, false, false, false, false, typeof(TelegramSettings), 
-        ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble))]
-    public class Telegram : Service, IVisualBubbleServiceId, ITerminal
+        ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(PresenceBubble))]
+    public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
         private static TcpClientTransportConfig DefaultTransportConfig = 
             new TcpClientTransportConfig("149.154.167.50", 443);
@@ -29,10 +33,39 @@ namespace Disa.Framework.Telegram
             LangCode = PhoneBook.Language,
         };
 
+        private readonly object _baseMessageIdCounterLock = new object();
+        private string _baseMessageId = "0000000000";
+        private int _baseMessageIdCounter;
+
+        public string CurrentMessageId
+        {
+            get
+            {
+                return _baseMessageId + Convert.ToString(_baseMessageIdCounter);
+            }
+        }
+
+        public string NextMessageId
+        {
+            get
+            {
+                lock (_baseMessageIdCounterLock)
+                {
+                    _baseMessageIdCounter++;
+                    return CurrentMessageId;
+                }
+            }
+        }
+
         private TelegramSettings _settings;
         private TelegramMutableSettings _mutableSettings;
 
         private TelegramClient _client;
+
+        public Telegram()
+        {
+            _baseMessageId = Convert.ToString(Time.GetNowUnixTimestamp());
+        }
 
         public override bool Initialize(DisaSettings settings)
         {
@@ -484,8 +517,34 @@ namespace Disa.Framework.Telegram
             throw new NotImplementedException();
         }
 
-        public override void SendBubble(Bubble b)
+        public override async void SendBubble(Bubble b)
         {
+            var presenceBubble = b as PresenceBubble;
+            if (presenceBubble != null)
+            {
+                var users = await GetUsers(BubbleGroupManager.FindAll(this).Where(x => !x.IsParty).Select(x => x.Address).ToList());
+                foreach (var user in users)
+                {
+                    EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming, 
+                        TelegramUtils.GetUserId(user), false, this, TelegramUtils.GetAvailable(user)));
+                }
+                await _client.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
+                    {
+                        Offline = !presenceBubble.Available
+                    });
+            }
+
+
+            var textBubble = b as TextBubble;
+            if (textBubble != null)
+            {
+                var message = (MessagesSentMessage)RunSynchronously(_client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
+                    {
+                        Peer = new InputPeerContact  { UserId = uint.Parse(textBubble.Address) },
+                        Message = textBubble.Message,
+                        RandomId = ulong.Parse(NextMessageId)
+                    }));
+            }
         }
 
         public override bool BubbleGroupComparer(string first, string second)
@@ -498,12 +557,37 @@ namespace Disa.Framework.Telegram
             throw new NotImplementedException();
         }
 
+        private async Task<List<IUser>> GetUsers(List<string> userIds)
+        {
+            var response = await _client.Methods.UsersGetUsersAsync(new UsersGetUsersArgs
+                {
+                    Id = userIds.Select(x => 
+                        new InputUserContact
+                        {
+                            UserId = uint.Parse(x)
+                        }).Cast<IInputUser>().ToList()
+                });
+            return response;
+        }
+
+        private async Task<IUser> GetUser(string userId)
+        {
+            return (await GetUsers(new List<string> { userId })).First();
+        }
+
         public override Task GetBubbleGroupName(BubbleGroup group, Action<string> result)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                result(group.Address);
-            });
+            return Task.Factory.StartNew(async () =>
+                {
+                    if (group.IsParty)
+                    {
+                        //TODO:
+                    }
+                    else
+                    {
+                        result(TelegramUtils.GetNameForSoloConversation(await GetUser(group.Address)));
+                    }
+                });
         }
 
         public override Task GetBubbleGroupPhoto(BubbleGroup group, Action<DisaThumbnail> result)
@@ -531,16 +615,33 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
         {
-            throw new NotImplementedException();
+            return Task.Factory.StartNew(async () =>
+                {
+                    result(TelegramUtils.GetLastSeenTime(await GetUser(group.Address)));
+                });
         }
 
         public void AddVisualBubbleIdServices(VisualBubble bubble)
         {
+            bubble.IdService = Time.GetNowUnixTimestamp().ToString(CultureInfo.InvariantCulture);
         }
 
         public bool DisctinctIncomingVisualBubbleIdServices()
         {
             return true;
+        }
+
+        public override void RefreshPhoneBookContacts()
+        {
+//            _client.Methods.ContactsImportContactsAsync(new ContactsImportContactsArgs
+//                {
+//                    Contacts = new List<IInputContact>
+//                        {
+//                            
+//                        };
+//                    Replace = false,
+//                });
+            base.RefreshPhoneBookContacts();
         }
     }
 
