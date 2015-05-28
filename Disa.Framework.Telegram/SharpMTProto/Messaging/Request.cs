@@ -8,6 +8,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SharpMTProto.Schema;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace SharpMTProto.Messaging
 {
@@ -76,6 +79,17 @@ namespace SharpMTProto.Messaging
 
         public void SetResponse(object response)
         {
+            if (response is List<object>)
+            {
+                var genericList = Activator.CreateInstance<TResponse>();
+                var objectList = response as List<object>;
+                foreach (var item in objectList)
+                {
+                    genericList.GetType().InvokeMember("Add", BindingFlags.InvokeMethod | BindingFlags.Instance | BindingFlags.Public, null, genericList, new [] { item });
+                }
+                response = genericList;
+            }
+
             if (!CanSetResponse(response))
             {
                 throw new MTProtoException(string.Format("Wrong response type {0}. Expected: {1}.", response.GetType(), typeof (TResponse).Name));
