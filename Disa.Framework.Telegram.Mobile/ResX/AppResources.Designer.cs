@@ -241,6 +241,15 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to First Name.
+        /// </summary>
+        internal static string TelegramFirstName {
+            get {
+                return ResourceManager.GetString("TelegramFirstName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Information.
         /// </summary>
         internal static string TelegramInformationTitle {
@@ -250,20 +259,38 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please enter your name..
+        ///   Looks up a localized string similar to Please enter your first name..
         /// </summary>
-        internal static string TelegramInvalidNameMessage {
+        internal static string TelegramInvalidFirstNameMessage {
             get {
-                return ResourceManager.GetString("TelegramInvalidNameMessage", resourceCulture);
+                return ResourceManager.GetString("TelegramInvalidFirstNameMessage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Name.
+        ///   Looks up a localized string similar to Invalid First Name.
         /// </summary>
-        internal static string TelegramInvalidNameTitle {
+        internal static string TelegramInvalidFirstNameTitle {
             get {
-                return ResourceManager.GetString("TelegramInvalidNameTitle", resourceCulture);
+                return ResourceManager.GetString("TelegramInvalidFirstNameTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter your last name..
+        /// </summary>
+        internal static string TelegramInvalidLastNameMessage {
+            get {
+                return ResourceManager.GetString("TelegramInvalidLastNameMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Last Name.
+        /// </summary>
+        internal static string TelegramInvalidLastNameTitle {
+            get {
+                return ResourceManager.GetString("TelegramInvalidLastNameTitle", resourceCulture);
             }
         }
         
@@ -286,20 +313,20 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Last Name.
+        /// </summary>
+        internal static string TelegramLastName {
+            get {
+                return ResourceManager.GetString("TelegramLastName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Load last 10 conversations into Disa..
         /// </summary>
         internal static string TelegramLoadConversations {
             get {
                 return ResourceManager.GetString("TelegramLoadConversations", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Name.
-        /// </summary>
-        internal static string TelegramName {
-            get {
-                return ResourceManager.GetString("TelegramName", resourceCulture);
             }
         }
         

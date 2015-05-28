@@ -150,8 +150,11 @@
   <data name="TelegramSetupWizardTitle" xml:space="preserve">
     <value>Telegram Setup Wizard</value>
   </data>
-  <data name="TelegramName" xml:space="preserve">
-    <value>Name</value>
+  <data name="TelegramFirstName" xml:space="preserve">
+    <value>First Name</value>
+  </data>
+  <data name="TelegramLastName" xml:space="preserve">
+    <value>Last Name</value>
   </data>
   <data name="TelegramLoadConversations" xml:space="preserve">
     <value>Load last 10 conversations into Disa.</value>
@@ -162,11 +165,17 @@
   <data name="TelegramNext" xml:space="preserve">
     <value>Next</value>
   </data>
-  <data name="TelegramInvalidNameTitle" xml:space="preserve">
-    <value>Invalid Name</value>
+  <data name="TelegramInvalidFirstNameTitle" xml:space="preserve">
+    <value>Invalid First Name</value>
   </data>
-  <data name="TelegramInvalidNameMessage" xml:space="preserve">
-    <value>Please enter your name.</value>
+  <data name="TelegramInvalidFirstNameMessage" xml:space="preserve">
+    <value>Please enter your first name.</value>
+  </data>
+  <data name="TelegramInvalidLastNameTitle" xml:space="preserve">
+    <value>Invalid Last Name</value>
+  </data>
+  <data name="TelegramInvalidLastNameMessage" xml:space="preserve">
+    <value>Please enter your last name.</value>
   </data>
   <data name="TelegramOkay" xml:space="preserve">
     <value>Okay</value>

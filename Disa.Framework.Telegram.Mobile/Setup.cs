@@ -118,7 +118,8 @@ namespace Disa.Framework.Telegram.Mobile
             private StackLayout _phoneNumberContainer;
             private CheckBox _loadConversations;
 
-            private Entry _name;
+            private Entry _firstName;
+            private Entry _lastName;
             private Button _next;
             private Image _image;
             private ActivityIndicator _progressBar;
@@ -134,8 +135,11 @@ namespace Disa.Framework.Telegram.Mobile
                 _phoneNumberContainer.Children.Add(_phoneNumber);
                 var programmaticChange = false;
 
-                _name = new Entry();
-                _name.Placeholder = Localize.GetString("TelegramName");
+                _firstName = new Entry();
+                _firstName.Placeholder = Localize.GetString("TelegramFirstName");
+
+                _lastName = new Entry();
+                _lastName.Placeholder = Localize.GetString("TelegramLastName");
 
                 _loadConversations = new CheckBox();
                 _loadConversations.DefaultText = Localize.GetString("TelegramLoadConversations");
@@ -146,14 +150,21 @@ namespace Disa.Framework.Telegram.Mobile
                 _loadConversations.Checked = true;
 
                 _next = new Button();
+                _next.HorizontalOptions = LayoutOptions.FillAndExpand;
                 _next.Text = Localize.GetString("TelegramNext");
                 _next.TextColor = Color.White;
                 _next.BackgroundColor = Color.FromHex("77D065");
                 _next.Clicked += async (sender, e) =>
                     {
-                        if (String.IsNullOrWhiteSpace(_name.Text))
+                        if (String.IsNullOrWhiteSpace(_firstName.Text))
                         {
-                            await DisplayAlert(Localize.GetString("TelegramInvalidNameTitle"), Localize.GetString("TelegramInvalidNameMessage"), Localize.GetString("TelegramOkay"));
+                            await DisplayAlert(Localize.GetString("TelegramInvalidFirstNameTitle"), Localize.GetString("TelegramInvalidFirstNameMessage"), Localize.GetString("TelegramOkay"));
+                            return;
+                        }
+
+                        if (String.IsNullOrWhiteSpace(_lastName.Text))
+                        {
+                            await DisplayAlert(Localize.GetString("TelegramInvalidLastNameTitle"), Localize.GetString("TelegramInvalidLastNameMessage"), Localize.GetString("TelegramOkay"));
                             return;
                         }
 
@@ -190,7 +201,8 @@ namespace Disa.Framework.Telegram.Mobile
 
                         _progressBar.IsVisible = true;
                         _next.IsEnabled = false;
-                        _name.IsEnabled = false;
+                        _firstName.IsEnabled = false;
+                        _lastName.IsEnabled = false;
                         _phoneNumber.IsEnabled = false;
                         DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
 
@@ -208,10 +220,12 @@ namespace Disa.Framework.Telegram.Mobile
                             settings = await Task<TelegramSettings>.Factory.StartNew(() => { return Telegram.GenerateAuthentication(service); });
                         }
 
-                        var name = _name.Text.Trim();
+                        var firstName = _firstName.Text.Trim();
+                        var lastName = _lastName.Text.Trim();
 
                         DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
-                        _name.IsEnabled = true;
+                        _firstName.IsEnabled = true;
+                        _lastName.IsEnabled = true;
                         _phoneNumber.IsEnabled = true;
                         _next.IsEnabled = true;
                         _progressBar.IsVisible = false;
@@ -235,7 +249,8 @@ namespace Disa.Framework.Telegram.Mobile
 
                         verify.CountryCode = formattedNumber.Item1;
                         verify.NationalNumber = nationalNumber;
-                        verify.Name = name;
+                        verify.FirstName = firstName;
+                        verify.LastName = lastName;
                         tabs.Children.Add(verify);
                         tabs.CurrentPage = verify;
                     };
@@ -243,6 +258,8 @@ namespace Disa.Framework.Telegram.Mobile
                 _image = new Image();
                 _image.Source = ImageSource.FromUri(
                     new Uri("https://lh4.ggpht.com/fuvTtxbZ1-dkEmzUMfKcgMJwW8PyY4fhJJ_NKT-NpIQJukszEY2GfCkJUF5ch6Co3w=w300"));
+                _image.WidthRequest = 100;
+                _image.HeightRequest = 100;
 
                 _progressBar = new ActivityIndicator();
                 _progressBar.VerticalOptions = LayoutOptions.EndAndExpand;
@@ -255,11 +272,16 @@ namespace Disa.Framework.Telegram.Mobile
                 stackLayout.VerticalOptions = LayoutOptions.Start;
                 var children = stackLayout.Children;
                 children.Add(_image);
-                children.Add(_name);
+                children.Add(_firstName);
+                children.Add(_lastName);
                 children.Add(_phoneNumberContainer);
                 children.Add(_loadConversations);
-                children.Add(_next);
-                children.Add(_progressBar);
+                var nextLayout = new StackLayout();
+                nextLayout.Spacing = 20;
+                nextLayout.Orientation = StackOrientation.Horizontal;
+                nextLayout.Children.Add(_next);
+                nextLayout.Children.Add(_progressBar);
+                children.Add(nextLayout);
 
                 Content = new ScrollView { Content = stackLayout };
                 Title = Localize.GetString("TelegramInformationTitle");
@@ -282,7 +304,8 @@ namespace Disa.Framework.Telegram.Mobile
                     SetVerifyPhoneState();
                 }
             }
-            public string Name { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
 
             private Label _info;
             private Button _verifyPhone;
@@ -338,7 +361,8 @@ namespace Disa.Framework.Telegram.Mobile
 
                         code.CountryCode = CountryCode;
                         code.NationalNumber = NationalNumber;
-                        code.Name = Name;
+                        code.FirstName = FirstName;
+                        code.LastName = LastName;
                         code.ViaSms = viaSms;
                         code.CodeSent = true;
                         tabs.Children.Add(code);
@@ -381,7 +405,8 @@ namespace Disa.Framework.Telegram.Mobile
                     {
                         code.CountryCode = CountryCode;
                         code.NationalNumber = NationalNumber;
-                        code.Name = Name;
+                        code.FirstName = FirstName;
+                        code.LastName = LastName;
                         code.ViaSms = true;
                         code.CodeSent = false;
                         tabs.Children.Add(code);
@@ -506,7 +531,8 @@ namespace Disa.Framework.Telegram.Mobile
 
             public string CountryCode { get; set; }
             public string NationalNumber { get; set; }
-            public string Name { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
 
             public bool ViaSms { get; set; }
 
@@ -569,13 +595,8 @@ namespace Disa.Framework.Telegram.Mobile
             {
                 return Task<ActivationResult>.Factory.StartNew(() =>
                     {
-                        //TODO: fix this
-                        var nameParts = Name.Split(' ');
-                        var firstName = nameParts[0];
-                        var lastName = nameParts[1];
-
                         var result = Telegram.RegisterCode(_service, GetSettingsTelegramSettings(), CountryCode + NationalNumber, 
-                            GetSettingsCodeHash(), code, firstName, lastName, GetSettingsRegistered());
+                            GetSettingsCodeHash(), code, FirstName, LastName, GetSettingsRegistered());
 
                         if (result == null)
                         {
