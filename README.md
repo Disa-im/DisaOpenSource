@@ -21,7 +21,7 @@ Head over to the Wiki where you'll find this information.
 
 ## Requesting Features
 
-If there is a feature that you want to be implemented into Disa (e.g: your plugin has the ability to edit messages after they're sent), contact us at opensource@disa.im or raise an issue.
+If there is a feature that you want to be implemented into Disa (e.g: your service has the ability to edit messages after they're sent, and you want that feature in Disa), contact us at opensource@disa.im or raise an issue. Our team will look into the possibility of implementing it.
 
 ## Contact
 
