@@ -19,6 +19,10 @@ Thus, if done correctly, your plugin will run on any platform that Disa.Framewor
 
 Head over to the Wiki where you'll find this information.
 
+## Requesting Features
+
+If there is a feature that you want to be implemented into Disa (e.g: your plugin has the ability to edit messages after they're sent), contact us at opensource@disa.im or raise an issue.
+
 ## Contact
 
 If you have any questions, give us an email at opensource@disa.im.
