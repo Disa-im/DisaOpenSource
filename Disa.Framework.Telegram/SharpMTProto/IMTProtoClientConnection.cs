@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SharpMTProto.Messaging;
 using SharpMTProto.Schema;
+using System.Collections.Generic;
 
 namespace SharpMTProto
 {
@@ -113,5 +114,9 @@ namespace SharpMTProto
         /// </summary>
         /// <param name="salt">New salt.</param>
         void UpdateSalt(ulong salt);
+
+        EventHandler<List<object>> OnUpdate { get; set; }
+
+        EventHandler OnUpdateTooLong { get; set; }
     }
 }

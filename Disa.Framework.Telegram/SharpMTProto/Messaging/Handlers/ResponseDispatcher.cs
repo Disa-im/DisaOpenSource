@@ -22,7 +22,7 @@ namespace SharpMTProto.Messaging.Handlers
         ///     Fallback handler.
         ///     If it is set then all responses without handler are handled by this handler, otherwise message is ignored.
         /// </summary>
-        IResponseHandler FallbackHandler { get; set; }
+        IResponseHandler GenericHandler { get; set; }
 
         /// <summary>
         ///     Dispatch response message.
@@ -64,7 +64,7 @@ namespace SharpMTProto.Messaging.Handlers
     {
         private readonly Dictionary<Type, IResponseHandler> _handlers = new Dictionary<Type, IResponseHandler>();
 
-        public IResponseHandler FallbackHandler { get; set; }
+        public IResponseHandler GenericHandler { get; set; }
 
         public async Task DispatchAsync(IMessage responseMessage)
         {
@@ -73,9 +73,9 @@ namespace SharpMTProto.Messaging.Handlers
             IResponseHandler handler = _handlers.Where(pair => pair.Key.IsAssignableFrom(responseType)).Select(pair => pair.Value).FirstOrDefault();
             if (handler == null)
             {
-                if (FallbackHandler != null)
+                if (GenericHandler != null)
                 {
-                    handler = FallbackHandler;
+                    handler = GenericHandler;
                 }
                 else
                 {

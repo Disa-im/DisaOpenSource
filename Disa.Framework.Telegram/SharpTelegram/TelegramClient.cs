@@ -11,6 +11,7 @@ using SharpMTProto;
 using SharpMTProto.Transport;
 using SharpTelegram.Schema.Layer18;
 using SharpMTProto.Schema;
+using System.Collections.Generic;
 
 namespace SharpTelegram
 {
@@ -48,6 +49,30 @@ namespace SharpTelegram
         public ITelegramAsyncMethods Methods
         {
             get { return _methods; }
+        }
+
+        public EventHandler<List<object>> OnUpdate
+        {
+            get
+            {
+                return _connection.OnUpdate;
+            }
+            set
+            {
+                _connection.OnUpdate = value;
+            }
+        }
+
+        public EventHandler OnUpdateTooLong
+        {
+            get
+            {
+                return _connection.OnUpdateTooLong;
+            }
+            set
+            {
+                _connection.OnUpdateTooLong = value;
+            }
         }
 
         public IMTProtoAsyncMethods ProtoMethods

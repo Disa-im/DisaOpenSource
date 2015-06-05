@@ -73,6 +73,7 @@ namespace SharpMTProto
         private volatile MTProtoConnectionState _state = MTProtoConnectionState.Disconnected;
         private readonly MTProtoAsyncMethods _methods;
 
+        private readonly UpdatesHandler _updatesHandler;
 
         public MTProtoClientConnection(
             [NotNull] IClientTransportConfig clientTransportConfig,
@@ -90,6 +91,8 @@ namespace SharpMTProto
 
             _methods = new MTProtoAsyncMethods(this);
 
+            _updatesHandler = new UpdatesHandler(_tlRig);
+
             InitResponseDispatcher(_responseDispatcher);
 
             // Init transport.
@@ -103,6 +106,7 @@ namespace SharpMTProto
                 Console.WriteLine("Client has been closed internally.");
 
                 if (_state == MTProtoConnectionState.Disconnected)
+                    
                 {
                     return;
                 }
@@ -138,6 +142,30 @@ namespace SharpMTProto
         public bool IsEncryptionSupported
         {
             get { return _config.AuthKey != null; }
+        }
+
+        public EventHandler<List<object>> OnUpdate
+        {
+            get
+            {
+                return _updatesHandler.OnUpdate;
+            }
+            set
+            {
+                _updatesHandler.OnUpdate = value;
+            }
+        }
+
+        public EventHandler OnUpdateTooLong
+        {
+            get
+            {
+                return _updatesHandler.OnUpdateTooLong;
+            }
+            set
+            {
+                _updatesHandler.OnUpdateTooLong = value;
+            }
         }
 
         /// <summary>
@@ -347,11 +375,12 @@ namespace SharpMTProto
 
         private void InitResponseDispatcher(IResponseDispatcher responseDispatcher)
         {
-            responseDispatcher.FallbackHandler = new FirstRequestResponseHandler(_requestsManager);
+            responseDispatcher.GenericHandler = new GenericRequestResponseHandler(_requestsManager);
             responseDispatcher.AddHandler(new BadMsgNotificationHandler(this, _requestsManager));
             responseDispatcher.AddHandler(new MessageContainerHandler(_responseDispatcher));
             responseDispatcher.AddHandler(new RpcResultHandler(_requestsManager, _tlRig));
             responseDispatcher.AddHandler(new SessionHandler());
+            responseDispatcher.AddHandler(_updatesHandler);
         }
 
         private Task SendRequestAsync(IRequest request, CancellationToken cancellationToken)

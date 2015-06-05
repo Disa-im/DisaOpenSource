@@ -95,7 +95,6 @@
     <Compile Include="SharpMTProto\Messaging\RequestsManager.cs" />
     <Compile Include="SharpMTProto\Messaging\Sender.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\BadMsgNotificationHandler.cs" />
-    <Compile Include="SharpMTProto\Messaging\Handlers\FirstRequestResponseHandler.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\IResponseHandler.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\MessageContainerHandler.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\ResponseDispatcher.cs" />
@@ -1307,6 +1306,8 @@
     <Compile Include="UI\NewMessage.cs" />
     <Compile Include="Contact.cs" />
     <Compile Include="TelegramUtils.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\GenericRequestResponseHandler.cs" />
+    <Compile Include="SharpMTProto\Messaging\Handlers\UpdatesHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

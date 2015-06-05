@@ -7,15 +7,16 @@
 using System;
 using System.Threading.Tasks;
 using SharpMTProto.Schema;
+using Disa.Framework.Telegram;
 
 namespace SharpMTProto.Messaging.Handlers
 {
-    public class FirstRequestResponseHandler : IResponseHandler
+    public class GenericRequestResponseHandler : IResponseHandler
     {
         private static readonly Type ResponseTypeInternal = typeof (object);
         private readonly IRequestsManager _requestsManager;
 
-        public FirstRequestResponseHandler(IRequestsManager requestsManager)
+        public GenericRequestResponseHandler(IRequestsManager requestsManager)
         {
             _requestsManager = requestsManager;
         }

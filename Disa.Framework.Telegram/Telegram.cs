@@ -86,8 +86,22 @@ namespace Disa.Framework.Telegram
                     throw new Exception("Failed to connect: " + result);
                 }
                 SetFullClientPingDelayDisconnect();
+                _fullClientInternal.OnUpdate -= OnFullClientUpdate;
+                _fullClientInternal.OnUpdate += OnFullClientUpdate;
+                _fullClientInternal.OnUpdateTooLong -= OnFullClientUpdateTooLong;
+                _fullClientInternal.OnUpdateTooLong += OnFullClientUpdateTooLong;
                 return _fullClientInternal;
             }
+        }
+
+        private void OnFullClientUpdate(object sender, List<object> updates)
+        {
+
+        }
+
+        private void OnFullClientUpdateTooLong(object sender, EventArgs e)
+        {
+
         }
 
         private async void SetFullClientPingDelayDisconnect()
