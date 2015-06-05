@@ -14,6 +14,7 @@ using System.Globalization;
 
 //RESEARCH TOPICS:
 //1) We're sending everything with InputContact/PeerUser ... does the server care if the user is not on our contacts list?
+using System.Timers;
 
 namespace Disa.Framework.Telegram
 {
@@ -80,23 +81,106 @@ namespace Disa.Framework.Telegram
                     new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
                 _fullClientInternal = new TelegramClient(transportConfig, 
                     new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo);
+                _fullClientInternal.OnUpdate -= OnFullClientUpdate;
+                _fullClientInternal.OnUpdate += OnFullClientUpdate;
+                _fullClientInternal.OnUpdateTooLong -= OnFullClientUpdateTooLong;
+                _fullClientInternal.OnUpdateTooLong += OnFullClientUpdateTooLong;
                 var result = RunSynchronously(_fullClientInternal.Connect());
                 if (result != MTProtoConnectResult.Success)
                 {
                     throw new Exception("Failed to connect: " + result);
                 }
                 SetFullClientPingDelayDisconnect();
-                _fullClientInternal.OnUpdate -= OnFullClientUpdate;
-                _fullClientInternal.OnUpdate += OnFullClientUpdate;
-                _fullClientInternal.OnUpdateTooLong -= OnFullClientUpdateTooLong;
-                _fullClientInternal.OnUpdateTooLong += OnFullClientUpdateTooLong;
                 return _fullClientInternal;
+            }
+        }
+
+        private Dictionary<uint, Timer> _typingTimers = new Dictionary<uint, Timer>();
+
+        private void CancelTypingTimer(uint userId)
+        {
+            if (_typingTimers.ContainsKey(userId))
+            {
+                var timer = _typingTimers[userId];
+                timer.Stop();
+                timer.Dispose();
             }
         }
 
         private void OnFullClientUpdate(object sender, List<object> updates)
         {
+            foreach (var update in updates)
+            {
+                var shortMessage = update as UpdateShortMessage;
+                var newMessage = update as UpdateNewMessage;
+                var typing = update as UpdateUserTyping;
+                var userStatus = update as UpdateUserStatus;
+                var readMessages = update as UpdateReadMessages;
 
+                if (shortMessage != null)
+                {
+                    var fromId = shortMessage.FromId.ToString(CultureInfo.InvariantCulture);
+                    EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+                        Bubble.BubbleDirection.Incoming,
+                        fromId, false, this, false, false));
+                    EventBubble(new TextBubble(Time.GetNowUnixTimestamp(), 
+                        Bubble.BubbleDirection.Incoming, 
+                        fromId, null, false, this, shortMessage.Message,
+                        shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
+                    CancelTypingTimer(shortMessage.FromId);
+                }
+                else if (readMessages != null)
+                {
+                    //TODO:
+                }
+                else if (newMessage != null)
+                {
+                    //TODO:
+                }
+                else if (userStatus != null)
+                {
+                    var available = TelegramUtils.GetAvailable(userStatus.Status);
+                    EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(),
+                        Bubble.BubbleDirection.Incoming,
+                        userStatus.UserId.ToString(CultureInfo.InvariantCulture),
+                        false, this, available));
+                }
+                else if (typing != null)
+                {
+                    var isAudio = typing.Action is SendMessageRecordAudioAction;
+                    var isTyping = typing.Action is SendMessageTypingAction;
+
+                    if (isAudio || isTyping)
+                    {
+                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+                            Bubble.BubbleDirection.Incoming,
+                            typing.UserId.ToString(CultureInfo.InvariantCulture),
+                            false, this, true, isAudio));
+                        CancelTypingTimer(typing.UserId);
+                        var newTimer = new Timer(6000) { AutoReset = false };
+                        newTimer.Elapsed += (sender2, e2) =>
+                        {
+                            EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+                                Bubble.BubbleDirection.Incoming,
+                                typing.UserId.ToString(CultureInfo.InvariantCulture),
+                                false, this, false, isAudio));
+                            newTimer.Dispose();
+                            _typingTimers.Remove(typing.UserId);
+                        };
+                        _typingTimers[typing.UserId] = newTimer;
+                        newTimer.Start();
+                    }
+
+                    else
+                    {
+                        Console.WriteLine("Unknown typing action: " + typing.Action.GetType().Name);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Unknown update: " + ObjectDumper.Dump(update));
+                }
+            }
         }
 
         private void OnFullClientUpdateTooLong(object sender, EventArgs e)
@@ -685,7 +769,7 @@ namespace Disa.Framework.Telegram
                     {
                         Peer = new InputPeerContact  { UserId = uint.Parse(textBubble.Address) },
                         Message = textBubble.Message,
-                        RandomId = ulong.Parse(NextMessageId)
+                        RandomId = ulong.Parse(textBubble.IdService)
                     }));
             }
         }
@@ -766,7 +850,7 @@ namespace Disa.Framework.Telegram
 
         public void AddVisualBubbleIdServices(VisualBubble bubble)
         {
-            bubble.IdService = Time.GetNowUnixTimestamp().ToString(CultureInfo.InvariantCulture);
+            bubble.IdService = NextMessageId;
         }
 
         public bool DisctinctIncomingVisualBubbleIdServices()

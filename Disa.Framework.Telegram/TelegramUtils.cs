@@ -75,6 +75,11 @@ namespace Disa.Framework.Telegram
         public static bool GetAvailable(IUser user)
         {
             var status = GetStatus(user);
+            return GetAvailable(status);
+        }
+
+        public static bool GetAvailable(IUserStatus status)
+        {
             return status is UserStatusOnline;
         }
 
