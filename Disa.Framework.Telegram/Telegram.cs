@@ -30,7 +30,7 @@ namespace Disa.Framework.Telegram
             DeviceModel = "LG",
             SystemVersion = "5.0",
             AppVersion = "0.8.2",
-            LangCode = PhoneBook.Language,
+            LangCode = PhoneBook.Language, //TODO: works?
         };
 
         private readonly object _baseMessageIdCounterLock = new object();
@@ -57,10 +57,103 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private bool _hasPresence;
+
+        private Random _random = new Random(System.Guid.NewGuid().GetHashCode());
+
         private TelegramSettings _settings;
         private TelegramMutableSettings _mutableSettings;
 
-        private TelegramClient _client;
+        private TelegramClient _longPollClient;
+
+        private TelegramClient _fullClientInternal;
+
+        private TelegramClient _fullClient
+        {
+            get
+            {
+                if (_fullClientInternal != null && _fullClientInternal.IsConnected)
+                {
+                    return _fullClientInternal;
+                }
+                var transportConfig = 
+                    new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
+                _fullClientInternal = new TelegramClient(transportConfig, 
+                    new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo);
+                var result = RunSynchronously(_fullClientInternal.Connect());
+                if (result != MTProtoConnectResult.Success)
+                {
+                    throw new Exception("Failed to connect: " + result);
+                }
+                SetFullClientPingDelayDisconnect();
+                return _fullClientInternal;
+            }
+        }
+
+        private async void SetFullClientPingDelayDisconnect()
+        {
+            if (_fullClient == null || !_fullClient.IsConnected)
+            {
+                return;   
+            }
+            IPong iPong;
+            if (_hasPresence)
+            {
+                DebugPrint("Telling full client that it can forever stay alive.");
+
+                iPong = await _fullClient.ProtoMethods.PingDelayDisconnectAsync(new PingDelayDisconnectArgs
+                {
+                    PingId = GetRandomId(),
+                    DisconnectDelay = uint.MaxValue,
+                });
+            }
+            else
+            {
+                DebugPrint("Telling full client that it can only stay alive for a minute.");
+                iPong = await _fullClient.ProtoMethods.PingDelayDisconnectAsync(new PingDelayDisconnectArgs
+                {
+                    PingId = GetRandomId(),
+                    DisconnectDelay = 60,
+                });
+            }
+        }
+
+        private void DisconnectFullClientIfPossible()
+        {
+            if (_fullClient != null && _fullClient.IsConnected)
+            {
+                try
+                {
+                    RunSynchronously(_fullClient.Disconnect());
+                }
+                catch (Exception ex)
+                {
+                    DebugPrint("Failed to disconnect full client: " + ex);
+                }
+            }
+        }
+
+        private void DisconnectLongPollerIfPossible()
+        {
+            if (_longPollClient != null && _longPollClient.IsConnected)
+            {
+                try
+                {
+                    RunSynchronously(_longPollClient.Disconnect());
+                }
+                catch (Exception ex)
+                {
+                    DebugPrint("Failed to disconnect full client: " + ex);
+                }
+            }
+        }
+
+        private ulong GetRandomId()
+        {
+            var buffer = new byte[sizeof(ulong)];
+            _random.NextBytes(buffer);
+            return BitConverter.ToUInt32(buffer, 0);
+        }
 
         public Telegram()
         {
@@ -382,7 +475,7 @@ namespace Disa.Framework.Telegram
                     break;
                 case "getcontacts":
                     {
-                        var result = await _client.Methods.ContactsGetContactsAsync(new ContactsGetContactsArgs
+                        var result = await _fullClient.Methods.ContactsGetContactsAsync(new ContactsGetContactsArgs
                         {
                             Hash = string.Empty
                         });
@@ -391,7 +484,7 @@ namespace Disa.Framework.Telegram
                     break;
                 case "sendhello":
                     {
-                        var contacts = (ContactsContacts)await _client.Methods.ContactsGetContactsAsync(new ContactsGetContactsArgs
+                        var contacts = (ContactsContacts)await _fullClient.Methods.ContactsGetContactsAsync(new ContactsGetContactsArgs
                             {
                                 Hash = string.Empty
                             });
@@ -406,7 +499,7 @@ namespace Disa.Framework.Telegram
                         }
                         var choice = int.Parse(Console.ReadLine());
                         var chosenContact = (UserContact)contacts.Users[choice];
-                        var result = await _client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
+                        var result = await _fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                             {
                                 Peer = new InputPeerContact
                                     {
@@ -443,16 +536,28 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private static void RunSynchronously(Task task)
+        {
+            try
+            {
+                task.Wait();
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.Flatten().InnerException;
+            }
+        }
+
         private uint GetNearestDc()
         {
             var nearestDc = (NearestDc)RunSynchronously(
-                _client.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
+                _fullClient.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
             return nearestDc.NearestDcProperty;
         }
 
         private Tuple<string, uint> GetDcIPAndPort(uint id)
         {
-            var config = (Config)RunSynchronously(_client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
+            var config = (Config)RunSynchronously(_fullClient.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
             var dcOption = config.DcOptions.OfType<DcOption>().FirstOrDefault(x => x.Id == id);
             return Tuple.Create(dcOption.IpAddress, dcOption.Port);
         }
@@ -483,23 +588,45 @@ namespace Disa.Framework.Telegram
 
         public override void Connect(WakeLock wakeLock)
         {
+            var sessionId = GetRandomId();
             var transportConfig = 
                 new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
-            _client = new TelegramClient(transportConfig, 
-                new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo);
-            using (new WakeLock.TemporaryFree(wakeLock))
+            using (var client = new TelegramClient(transportConfig, 
+                                    new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo))
             {
-                var result = RunSynchronously(_client.Connect());
+                var result = RunSynchronously(client.Connect());
                 if (result != MTProtoConnectResult.Success)
                 {
                     throw new Exception("Failed to connect: " + result);
+                }   
+                DebugPrint("Registering long poller...");
+                var registerDeviceResult = RunSynchronously(client.Methods.AccountRegisterDeviceAsync(
+                    new AccountRegisterDeviceArgs
+                {
+                    TokenType = 7,
+                    Token = sessionId.ToString(CultureInfo.InvariantCulture),
+                    DeviceModel = AppInfo.DeviceModel,
+                    SystemVersion = AppInfo.SystemVersion,
+                    AppVersion = AppInfo.AppVersion,
+                    AppSandbox = false,
+                    LangCode = AppInfo.LangCode
+                }));
+                if (!registerDeviceResult)
+                {
+                    throw new Exception("Failed to register long poller...");
                 }
             }
+            DebugPrint("Starting long poller...");
+            _longPollClient = new TelegramClient(transportConfig, 
+                new ConnectionConfig(_settings.AuthKey, _settings.Salt) { SessionId = sessionId }, AppInfo);
+            RunSynchronously(_longPollClient.Connect());
+            DebugPrint("Long poller started!");
         }
 
         public override void Disconnect()
         {
-            _client.Dispose();
+            DisconnectFullClientIfPossible();
+            DisconnectLongPollerIfPossible();
         }
 
         public override string GetIcon(bool large)
@@ -522,13 +649,15 @@ namespace Disa.Framework.Telegram
             var presenceBubble = b as PresenceBubble;
             if (presenceBubble != null)
             {
+                _hasPresence = presenceBubble.Available;
+                SetFullClientPingDelayDisconnect();
                 var users = await GetUsers(BubbleGroupManager.FindAll(this).Where(x => !x.IsParty).Select(x => x.Address).ToList());
                 foreach (var user in users)
                 {
                     EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming, 
                         TelegramUtils.GetUserId(user), false, this, TelegramUtils.GetAvailable(user)));
                 }
-                await _client.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
+                await _fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
                     {
                         Offline = !presenceBubble.Available
                     });
@@ -538,7 +667,7 @@ namespace Disa.Framework.Telegram
             var textBubble = b as TextBubble;
             if (textBubble != null)
             {
-                var message = (MessagesSentMessage)RunSynchronously(_client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
+                var message = (MessagesSentMessage)RunSynchronously(_fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                     {
                         Peer = new InputPeerContact  { UserId = uint.Parse(textBubble.Address) },
                         Message = textBubble.Message,
@@ -559,7 +688,7 @@ namespace Disa.Framework.Telegram
 
         private async Task<List<IUser>> GetUsers(List<string> userIds)
         {
-            var response = await _client.Methods.UsersGetUsersAsync(new UsersGetUsersArgs
+            var response = await _fullClient.Methods.UsersGetUsersAsync(new UsersGetUsersArgs
                 {
                     Id = userIds.Select(x => 
                         new InputUserContact
@@ -633,7 +762,7 @@ namespace Disa.Framework.Telegram
 
         public override void RefreshPhoneBookContacts()
         {
-//            _client.Methods.ContactsImportContactsAsync(new ContactsImportContactsArgs
+//            Client.Methods.ContactsImportContactsAsync(new ContactsImportContactsArgs
 //                {
 //                    Contacts = new List<IInputContact>
 //                        {

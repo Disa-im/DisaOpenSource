@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using SharpMTProto;
 using SharpMTProto.Transport;
 using SharpTelegram.Schema.Layer18;
+using SharpMTProto.Schema;
 
 namespace SharpTelegram
 {
@@ -47,6 +48,11 @@ namespace SharpTelegram
         public ITelegramAsyncMethods Methods
         {
             get { return _methods; }
+        }
+
+        public IMTProtoAsyncMethods ProtoMethods
+        {
+            get { return _connection.Methods; }
         }
 
         public TimeSpan DefaultRpcTimeout

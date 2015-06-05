@@ -25,6 +25,7 @@ namespace SharpMTProto.Transport
         Task ConnectAsync(CancellationToken token);
         void Disconnect();
         Task DisconnectAsync();
+        void RegisterOnDisconnectInternally(Action onDisconnect);
         void Send(byte[] payload);
         Task SendAsync(byte[] payload);
         Task SendAsync(byte[] payload, CancellationToken token);

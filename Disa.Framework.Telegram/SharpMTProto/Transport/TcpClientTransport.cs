@@ -47,6 +47,8 @@ namespace SharpMTProto.Transport
 
         private readonly bool _isOnServerSide;
 
+        private Action _onDisconnectInternally;
+
         public TcpClientTransport(TcpClientTransportConfig config)
         {
             if (config.Port <= 0 || config.Port > ushort.MaxValue)
@@ -168,6 +170,11 @@ namespace SharpMTProto.Transport
             DisconnectAsync().Wait();
         }
 
+        public void RegisterOnDisconnectInternally(Action onDisconnectInternally)
+        {
+            _onDisconnectInternally = onDisconnectInternally;
+        }
+
         public async Task DisconnectAsync()
         {
             ThrowIfDisposed();
@@ -223,6 +230,7 @@ namespace SharpMTProto.Transport
 
         private Task StartReceiver(CancellationToken token)
         {
+            
             return Task.Run(async () =>
             {
                 var args = new SocketAsyncEventArgs();
@@ -271,6 +279,10 @@ namespace SharpMTProto.Transport
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
+                }
+                if (_onDisconnectInternally != null)
+                {
+                    _onDisconnectInternally();
                 }
             }, token);
         }

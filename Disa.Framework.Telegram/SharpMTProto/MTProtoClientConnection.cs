@@ -97,6 +97,24 @@ namespace SharpMTProto
 
             // Connector in/out.
             _clientTransport.ObserveOn(DefaultScheduler.Instance).Do(bytes => LogMessageInOut(bytes, "IN")).Subscribe(ProcessIncomingMessageBytes);
+        
+            _clientTransport.RegisterOnDisconnectInternally(() =>
+            {
+                Console.WriteLine("Client has been closed internally.");
+
+                if (_state == MTProtoConnectionState.Disconnected)
+                {
+                    return;
+                }
+                _state = MTProtoConnectionState.Disconnected;
+
+                if (_connectionCts != null)
+                {
+                    _connectionCts.Cancel();
+                    _connectionCts.Dispose();
+                    _connectionCts = null;
+                }
+            });
         }
 
         public TimeSpan DefaultRpcTimeout { get; set; }

@@ -14,7 +14,7 @@ namespace Disa.Framework.Telegram
             return Task.Factory.StartNew(async () =>
                 {
                     //TODO: search for parties
-                    var response = (ContactsContacts)await _client.Methods.ContactsGetContactsAsync(
+                    var response = (ContactsContacts)await _fullClient.Methods.ContactsGetContactsAsync(
                         new ContactsGetContactsArgs
                         {
                             Hash = string.Empty
