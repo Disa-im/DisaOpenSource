@@ -11,10 +11,10 @@ using System.Linq;
 using SharpMTProto.Messaging.Handlers;
 using SharpMTProto.Schema;
 using System.Globalization;
+using System.Timers;
 
 //RESEARCH TOPICS:
 //1) We're sending everything with InputContact/PeerUser ... does the server care if the user is not on our contacts list?
-using System.Timers;
 
 namespace Disa.Framework.Telegram
 {
