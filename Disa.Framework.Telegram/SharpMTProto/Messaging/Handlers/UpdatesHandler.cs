@@ -35,7 +35,7 @@ namespace SharpMTProto.Messaging.Handlers
         {
             if (OnUpdate != null)
             {
-                OnUpdate(updates, null);
+                OnUpdate(this, updates);
             }
         }
 
