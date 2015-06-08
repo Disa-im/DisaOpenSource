@@ -196,12 +196,26 @@ namespace Disa.Framework.Telegram
                 else if (message != null)
                 {
                     //TODO: media messages
-                    //TODO: groups chats
-                    var fromId = message.FromId.ToString(CultureInfo.InvariantCulture);
-                    EventBubble(new TextBubble((long)message.Date,
-                        Bubble.BubbleDirection.Incoming, 
-                        fromId, null, false, this, message.MessageProperty,
-                        message.Id.ToString(CultureInfo.InvariantCulture)));
+                    var user = message.ToId as PeerUser;
+                    if (user != null)
+                    {
+                        var direction = message.FromId == _settings.AccountId 
+                            ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
+                        var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : user.UserId;
+                        var addressStr = address.ToString(CultureInfo.InvariantCulture);
+                        var tb = new TextBubble((long)message.Date,
+                                     direction, addressStr, null, false, this, message.MessageProperty,
+                                     message.Id.ToString(CultureInfo.InvariantCulture));
+                        if (direction == Bubble.BubbleDirection.Incoming)
+                        {
+                            tb.Status = Bubble.BubbleStatus.Sent;
+                        }
+                        EventBubble(tb);
+                    }
+                    else
+                    {
+                        //TODO: group chats
+                    }
                 }
                 else if (forwardedMessage != null)
                 {
