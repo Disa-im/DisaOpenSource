@@ -156,14 +156,25 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private object FlattenNewMessageIfNeeded(object obj)
+        {
+            var newMessage = obj as UpdateNewMessage;
+            if (newMessage != null)
+            {
+                return newMessage.Message;
+            }
+            return obj;
+        }
+
         private void OnUpdate(object sender, List<object> updates)
         {
             //NOTE: multiple client connects will call this event. Do not call upon _fullClient or any
             //      other connections in here.
-            foreach (var update in updates)
+            foreach (var updatez in updates)
             {
+                var update = FlattenNewMessageIfNeeded(updatez);
+
                 var shortMessage = update as UpdateShortMessage;
-                var newMessage = update as UpdateNewMessage;
                 var typing = update as UpdateUserTyping;
                 var userStatus = update as UpdateUserStatus;
                 var readMessages = update as UpdateReadMessages;
@@ -197,10 +208,6 @@ namespace Disa.Framework.Telegram
                     //TODO:
                 }
                 else if (readMessages != null)
-                {
-                    //TODO:
-                }
-                else if (newMessage != null)
                 {
                     //TODO:
                 }
