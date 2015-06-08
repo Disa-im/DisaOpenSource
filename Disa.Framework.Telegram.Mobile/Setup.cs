@@ -40,6 +40,7 @@ namespace Disa.Framework.Telegram.Mobile
         {
             public bool Success { get; set; }
             public string ErrorMessage { get; set; }
+            public uint AccountId { get; set; }
         }
 
         private static void SaveSettings()
@@ -643,15 +644,18 @@ namespace Disa.Framework.Telegram.Mobile
 
                         return new ActivationResult
                         {
-                            Success = true
+                            Success = true,
+                            AccountId = result.AccountId,
                         };
                     });
             }
 
-            private static void Save(Service service, TelegramSettings settings)
+            private static void Save(Service service, uint accountId, TelegramSettings settings)
             {
                 try
                 {
+                    settings.AccountId = accountId;
+
                     SettingsManager.Save(service, settings);
 
                     if (ServiceManager.IsRunning(service))
@@ -739,7 +743,7 @@ namespace Disa.Framework.Telegram.Mobile
                             return;
                         }
 
-                        Save(service, GetSettingsTelegramSettings());
+                        Save(service, result.AccountId, GetSettingsTelegramSettings());
                         DependencyService.Get<IPluginPageControls>().Finish();
                     };
 

@@ -489,6 +489,8 @@ namespace Disa.Framework.Telegram
         {
             public enum Type { Success, Failure, NumberInvalid, CodeEmpty, CodeExpired, CodeInvalid, FirstNameInvalid, LastNameInvalid }
 
+            public uint AccountId { get; set; }
+
             public long Expires { get; set; }
             public Type Response { get; set; }
         }
@@ -531,6 +533,7 @@ namespace Disa.Framework.Telegram
                         var result = (AuthAuthorization)iresult;
                         return new CodeRegister
                         {
+                            AccountId = (result.User as UserSelf).Id,
                             Expires = result.Expires,
                             Response = CodeRegister.Type.Success,
                         };
@@ -1072,6 +1075,7 @@ namespace Disa.Framework.Telegram
         public uint NearestDcId { get; set; }
         public string NearestDcIp { get; set; }
         public int NearestDcPort { get; set; }
+        public uint AccountId { get; set; }
     }
 
     public class TelegramMutableSettings : DisaMutableSettings
