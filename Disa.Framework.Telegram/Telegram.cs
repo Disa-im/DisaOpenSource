@@ -94,7 +94,7 @@ namespace Disa.Framework.Telegram
                 {
                     _fullClientInternal.OnUpdateState -= OnUpdateState;
                     _fullClientInternal.OnUpdate -= OnUpdate;
-
+                    _fullClientInternal.OnUpdateTooLong -= OnFullClientUpdateTooLong;
                 }
                 _fullClientInternal = new TelegramClient(transportConfig, 
                     new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo);
