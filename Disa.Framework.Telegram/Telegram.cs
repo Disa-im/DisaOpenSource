@@ -71,6 +71,14 @@ namespace Disa.Framework.Telegram
 
         private readonly object _mutableSettingsLock = new object();
 
+        private bool IsFullClientConnected
+        {
+            get
+            {
+                return _fullClientInternal != null && _fullClientInternal.IsConnected;
+            }
+        }
+
         private TelegramClient _fullClient
         {
             get
@@ -79,15 +87,19 @@ namespace Disa.Framework.Telegram
                 {
                     return _fullClientInternal;
                 }
+                Console.WriteLine(System.Environment.StackTrace);
                 var transportConfig = 
                     new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
+                if (_fullClientInternal != null)
+                {
+                    _fullClientInternal.OnUpdateState -= OnUpdateState;
+                    _fullClientInternal.OnUpdate -= OnUpdate;
+
+                }
                 _fullClientInternal = new TelegramClient(transportConfig, 
                     new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo);
-                _fullClientInternal.OnUpdateState -= OnUpdateState;
                 _fullClientInternal.OnUpdateState += OnUpdateState;
-                _fullClientInternal.OnUpdate -= OnFullClientUpdate;
-                _fullClientInternal.OnUpdate += OnFullClientUpdate;
-                _fullClientInternal.OnUpdateTooLong -= OnFullClientUpdateTooLong;
+                _fullClientInternal.OnUpdate += OnUpdate;
                 _fullClientInternal.OnUpdateTooLong += OnFullClientUpdateTooLong;
                 var result = RunSynchronously(_fullClientInternal.Connect());
                 if (result != MTProtoConnectResult.Success)
@@ -144,8 +156,10 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private void OnFullClientUpdate(object sender, List<object> updates)
+        private void OnUpdate(object sender, List<object> updates)
         {
+            //NOTE: multiple client connects will call this event. Do not call upon _fullClient or any
+            //      other connections in here.
             foreach (var update in updates)
             {
                 var shortMessage = update as UpdateShortMessage;
@@ -241,6 +255,27 @@ namespace Disa.Framework.Telegram
             Task.Factory.StartNew(() =>
             {
                 FetchState(_fullClient);
+            });
+        }
+
+        private void OnLongPollClientUpdateTooLong(object sender, EventArgs e)
+        {
+            if (IsFullClientConnected)
+                return;
+            Task.Factory.StartNew(() =>
+            {
+                var transportConfig = 
+                    new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
+                using (var client = new TelegramClient(transportConfig, 
+                    new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo))
+                {
+                    var result = RunSynchronously(client.Connect());
+                    if (result != MTProtoConnectResult.Success)
+                    {
+                        throw new Exception("Failed to connect: " + result);
+                    }  
+                    FetchState(client);
+                }
             });
         }
 
@@ -781,7 +816,7 @@ namespace Disa.Framework.Telegram
                     updates.AddRange(slice.OtherUpdates);
                 }
                 DebugPrint(ObjectDumper.Dump(updates));
-                OnFullClientUpdate(null, updates);
+                OnUpdate(null, updates);
             };
 
             if (diff != null)
@@ -803,6 +838,7 @@ namespace Disa.Framework.Telegram
                 SaveState(empty.Date, 0, 0, empty.Seq);
             }
         }
+
 
         private void FetchState(TelegramClient client)
         {
@@ -850,9 +886,18 @@ namespace Disa.Framework.Telegram
                 FetchState(client);
             }
             DebugPrint("Starting long poller...");
+            if (_longPollClient != null)
+            {
+                _longPollClient.OnUpdateTooLong -= OnLongPollClientUpdateTooLong;
+            }
             _longPollClient = new TelegramClient(transportConfig, 
                 new ConnectionConfig(_settings.AuthKey, _settings.Salt) { SessionId = sessionId }, AppInfo);
-            RunSynchronously(_longPollClient.Connect());
+            var result2 = RunSynchronously(_longPollClient.Connect());
+            if (result2 != MTProtoConnectResult.Success)
+            {
+                throw new Exception("Failed to connect long poll client: " + result2);
+            } 
+            _longPollClient.OnUpdateTooLong += OnLongPollClientUpdateTooLong;
             DebugPrint("Long poller started!");
         }
 
@@ -981,9 +1026,12 @@ namespace Disa.Framework.Telegram
         public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
         {
             return Task.Factory.StartNew(async () =>
+            {
+                if (IsFullClientConnected)
                 {
                     result(TelegramUtils.GetLastSeenTime(await GetUser(group.Address)));
-                });
+                }
+            });
         }
 
         public void AddVisualBubbleIdServices(VisualBubble bubble)
