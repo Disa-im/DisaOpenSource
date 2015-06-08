@@ -196,26 +196,38 @@ namespace Disa.Framework.Telegram
                 else if (message != null)
                 {
                     //TODO: media messages
+
+                    TextBubble tb = null;
+
                     var user = message.ToId as PeerUser;
+                    var chat = message.ToId as PeerChat;
+
+                    var direction = message.FromId == _settings.AccountId 
+                        ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
+
                     if (user != null)
                     {
-                        var direction = message.FromId == _settings.AccountId 
-                            ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
                         var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : user.UserId;
                         var addressStr = address.ToString(CultureInfo.InvariantCulture);
-                        var tb = new TextBubble((long)message.Date,
+                        tb = new TextBubble((long)message.Date,
                                      direction, addressStr, null, false, this, message.MessageProperty,
                                      message.Id.ToString(CultureInfo.InvariantCulture));
-                        if (direction == Bubble.BubbleDirection.Incoming)
-                        {
-                            tb.Status = Bubble.BubbleStatus.Sent;
-                        }
-                        EventBubble(tb);
                     }
-                    else
+                    else if (chat != null)
                     {
-                        //TODO: group chats
+                        var address = chat.ChatId.ToString(CultureInfo.InvariantCulture);
+                        var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
+                        tb = new TextBubble((long)message.Date,
+                            direction, address, participantAddress, true, this, message.MessageProperty,
+                            message.Id.ToString(CultureInfo.InvariantCulture));
                     }
+
+                    if (direction == Bubble.BubbleDirection.Outgoing)
+                    {
+                        tb.Status = Bubble.BubbleStatus.Sent;
+                    }
+
+                    EventBubble(tb);
                 }
                 else if (forwardedMessage != null)
                 {
@@ -972,12 +984,22 @@ namespace Disa.Framework.Telegram
             var textBubble = b as TextBubble;
             if (textBubble != null)
             {
+                var peer = textBubble.Party ? 
+                    (IInputPeer)new InputPeerChat
+                {
+                    ChatId = uint.Parse(textBubble.Address)
+                } :
+                    (IInputPeer)new InputPeerContact
+                {
+                    UserId = uint.Parse(textBubble.Address)
+                };
                 var message = (MessagesSentMessage)RunSynchronously(_fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                     {
-                        Peer = new InputPeerContact  { UserId = uint.Parse(textBubble.Address) },
+                        Peer = peer,
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService)
                     }));
+
             }
         }
 
@@ -1015,7 +1037,7 @@ namespace Disa.Framework.Telegram
                 {
                     if (group.IsParty)
                     {
-                        //TODO:
+                        result("Party Chat");
                     }
                     else
                     {
@@ -1034,17 +1056,26 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupPartyParticipants(BubbleGroup group, Action<DisaParticipant[]> result)
         {
-            throw new NotImplementedException();
+            return Task.Factory.StartNew(() =>
+            {
+                result(null);
+            });
         }
 
         public override Task GetBubbleGroupUnknownPartyParticipant(BubbleGroup group, string unknownPartyParticipant, Action<DisaParticipant> result)
         {
-            throw new NotImplementedException();
+            return Task.Factory.StartNew(() =>
+            {
+                result(null);
+            });
         }
 
         public override Task GetBubbleGroupPartyParticipantPhoto(DisaParticipant participant, Action<DisaThumbnail> result)
         {
-            throw new NotImplementedException();
+            return Task.Factory.StartNew(() =>
+            {
+                result(null);
+            });
         }
 
         public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
