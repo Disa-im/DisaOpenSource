@@ -175,6 +175,7 @@ namespace Disa.Framework.Telegram
                 var update = FlattenNewMessageIfNeeded(updatez);
 
                 var shortMessage = update as UpdateShortMessage;
+                var shortChatMessage = update as UpdateShortChatMessage;
                 var typing = update as UpdateUserTyping;
                 var userStatus = update as UpdateUserStatus;
                 var readMessages = update as UpdateReadMessages;
@@ -187,11 +188,20 @@ namespace Disa.Framework.Telegram
                     EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                         Bubble.BubbleDirection.Incoming,
                         fromId, false, this, false, false));
-                    EventBubble(new TextBubble(Time.GetNowUnixTimestamp(), 
+                    EventBubble(new TextBubble((long)shortMessage.Date, 
                         Bubble.BubbleDirection.Incoming, 
                         fromId, null, false, this, shortMessage.Message,
                         shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
                     CancelTypingTimer(shortMessage.FromId);
+                }
+                else if (shortChatMessage != null)
+                {
+                    var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
+                    var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
+                    EventBubble(new TextBubble((long)shortChatMessage.Date, 
+                        Bubble.BubbleDirection.Incoming, 
+                        address, participantAddress, true, this, shortChatMessage.Message,
+                        shortChatMessage.Id.ToString(CultureInfo.InvariantCulture)));
                 }
                 else if (message != null)
                 {
