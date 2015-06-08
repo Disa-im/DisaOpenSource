@@ -156,13 +156,31 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private object FlattenNewMessageIfNeeded(object obj)
+        private object NormalizeUpdateIfNeeded(object obj)
         {
+            // flatten UpdateNewMessage to Message
             var newMessage = obj as UpdateNewMessage;
             if (newMessage != null)
             {
                 return newMessage.Message;
             }
+
+            // convert ForwardedMessage to Message
+            var forwardedMessage = obj as MessageForwarded;
+            if (forwardedMessage != null)
+            {
+                return new SharpTelegram.Schema.Layer18.Message
+                {
+                    Flags = forwardedMessage.Flags,
+                    Id = forwardedMessage.Id,
+                    FromId = forwardedMessage.FromId,
+                    ToId = forwardedMessage.ToId,
+                    Date = forwardedMessage.Date,
+                    MessageProperty = forwardedMessage.Message,
+                    Media = forwardedMessage.Media,
+                };
+            }
+
             return obj;
         }
 
@@ -172,7 +190,7 @@ namespace Disa.Framework.Telegram
             //      other connections in here.
             foreach (var updatez in updates)
             {
-                var update = FlattenNewMessageIfNeeded(updatez);
+                var update = NormalizeUpdateIfNeeded(updatez);
 
                 var shortMessage = update as UpdateShortMessage;
                 var shortChatMessage = update as UpdateShortChatMessage;
@@ -180,7 +198,6 @@ namespace Disa.Framework.Telegram
                 var userStatus = update as UpdateUserStatus;
                 var readMessages = update as UpdateReadMessages;
                 var message = update as SharpTelegram.Schema.Layer18.Message;
-                var forwardedMessage = update as MessageForwarded;
 
                 if (shortMessage != null)
                 {
@@ -238,10 +255,6 @@ namespace Disa.Framework.Telegram
                     }
 
                     EventBubble(tb);
-                }
-                else if (forwardedMessage != null)
-                {
-                    //TODO:
                 }
                 else if (readMessages != null)
                 {
