@@ -69,6 +69,8 @@ namespace Disa.Framework.Telegram
 
         private TelegramClient _fullClientInternal;
 
+        private readonly object _mutableSettingsLock = new object();
+
         private TelegramClient _fullClient
         {
             get
@@ -81,6 +83,8 @@ namespace Disa.Framework.Telegram
                     new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
                 _fullClientInternal = new TelegramClient(transportConfig, 
                     new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo);
+                _fullClientInternal.OnUpdateState -= OnUpdateState;
+                _fullClientInternal.OnUpdateState += OnUpdateState;
                 _fullClientInternal.OnUpdate -= OnFullClientUpdate;
                 _fullClientInternal.OnUpdate += OnFullClientUpdate;
                 _fullClientInternal.OnUpdateTooLong -= OnFullClientUpdateTooLong;
@@ -107,6 +111,39 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private void OnUpdateState(object sender, SharpMTProto.Messaging.Handlers.UpdatesHandler.State s)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                SaveState(s.Date, s.Pts, s.Qts, s.Seq);
+            });
+        }
+
+        private void SaveState(uint date, uint pts, uint qts, uint seq)
+        {
+            lock (_mutableSettingsLock)
+            {
+                DebugPrint("Saving new state");
+                if (date != 0)
+                {
+                    _mutableSettings.Date = date;
+                }
+                if (pts != 0)
+                {
+                    _mutableSettings.Pts = pts;
+                }
+                if (qts != 0)
+                {
+                    _mutableSettings.Qts = qts;
+                }
+                if (seq != 0)
+                {
+                    _mutableSettings.Seq = seq;
+                }
+                MutableSettingsManager.Save(_mutableSettings);
+            }
+        }
+
         private void OnFullClientUpdate(object sender, List<object> updates)
         {
             foreach (var update in updates)
@@ -116,6 +153,8 @@ namespace Disa.Framework.Telegram
                 var typing = update as UpdateUserTyping;
                 var userStatus = update as UpdateUserStatus;
                 var readMessages = update as UpdateReadMessages;
+                var message = update as SharpTelegram.Schema.Layer18.Message;
+                var forwardedMessage = update as MessageForwarded;
 
                 if (shortMessage != null)
                 {
@@ -128,6 +167,20 @@ namespace Disa.Framework.Telegram
                         fromId, null, false, this, shortMessage.Message,
                         shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
                     CancelTypingTimer(shortMessage.FromId);
+                }
+                else if (message != null)
+                {
+                    //TODO: media messages
+                    //TODO: groups chats
+                    var fromId = message.FromId.ToString(CultureInfo.InvariantCulture);
+                    EventBubble(new TextBubble((long)message.Date,
+                        Bubble.BubbleDirection.Incoming, 
+                        fromId, null, false, this, message.MessageProperty,
+                        message.Id.ToString(CultureInfo.InvariantCulture)));
+                }
+                else if (forwardedMessage != null)
+                {
+                    //TODO:
                 }
                 else if (readMessages != null)
                 {
@@ -185,7 +238,7 @@ namespace Disa.Framework.Telegram
 
         private void OnFullClientUpdateTooLong(object sender, EventArgs e)
         {
-
+            //TODO:
         }
 
         private async void SetFullClientPingDelayDisconnect()
@@ -684,6 +737,66 @@ namespace Disa.Framework.Telegram
             // do nothing
         }
 
+        private void FetchDifference(TelegramClient client)
+        {
+            var counter = 0;
+
+            DebugPrint("Fetching difference");
+
+            Again:
+
+            DebugPrint("Difference Page: " + counter);
+
+            var difference = RunSynchronously(
+                client.Methods.UpdatesGetDifferenceAsync(new UpdatesGetDifferenceArgs
+            {
+                Date = _mutableSettings.Date,
+                Pts = _mutableSettings.Pts,
+                Qts = _mutableSettings.Qts
+            }));
+
+            var empty = difference as UpdatesDifferenceEmpty;
+            var diff = difference as UpdatesDifference;
+            var slice = difference as UpdatesDifferenceSlice;
+
+            Action dispatchUpdates = () =>
+            {
+                var updates = new List<object>();
+                //TODO: encrypyed messages
+                if (diff != null)
+                {
+                    updates.AddRange(diff.NewMessages);
+                    updates.AddRange(diff.OtherUpdates);
+                }
+                else
+                {
+                    updates.AddRange(slice.NewMessages);
+                    updates.AddRange(slice.OtherUpdates);
+                }
+                DebugPrint(ObjectDumper.Dump(updates));
+                OnFullClientUpdate(null, updates);
+            };
+
+            if (diff != null)
+            {
+                dispatchUpdates();
+                var state = (UpdatesState)diff.State;
+                SaveState(state.Date, state.Pts, state.Qts, state.Seq);
+            }
+            else if (slice != null)
+            {
+                dispatchUpdates();
+                var state = (UpdatesState)slice.IntermediateState;
+                SaveState(state.Date, state.Pts, state.Qts, state.Seq);
+                counter++;
+                goto Again;
+            }
+            else if (empty != null)
+            {
+                SaveState(empty.Date, 0, 0, empty.Seq);
+            }
+        }
+
         public override void Connect(WakeLock wakeLock)
         {
             var sessionId = GetRandomId();
@@ -712,6 +825,16 @@ namespace Disa.Framework.Telegram
                 if (!registerDeviceResult)
                 {
                     throw new Exception("Failed to register long poller...");
+                }
+                if (_mutableSettings.Date == 0)
+                {
+                    DebugPrint("We need to fetch the state!");
+                    var state = (UpdatesState)RunSynchronously(client.Methods.UpdatesGetStateAsync(new UpdatesGetStateArgs()));
+                    SaveState(state.Date, state.Pts, state.Qts, state.Seq);
+                }
+                else
+                {
+                    FetchDifference(client);
                 }
             }
             DebugPrint("Starting long poller...");
@@ -883,6 +1006,10 @@ namespace Disa.Framework.Telegram
 
     public class TelegramMutableSettings : DisaMutableSettings
     {
+        public uint Date { get; set; }
+        public uint Pts { get; set; }
+        public uint Qts { get; set; }
+        public uint Seq { get; set; }
     }
 }
 

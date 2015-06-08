@@ -168,6 +168,18 @@ namespace SharpMTProto
             }
         }
 
+        public EventHandler<SharpMTProto.Messaging.Handlers.UpdatesHandler.State> OnUpdateState
+        {
+            get
+            {
+                return _updatesHandler.OnUpdateState;
+            }
+            set
+            {
+                _updatesHandler.OnUpdateState = value;
+            }
+        }
+
         /// <summary>
         ///     Start sender and receiver tasks.
         /// </summary>

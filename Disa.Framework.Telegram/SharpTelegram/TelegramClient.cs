@@ -75,6 +75,18 @@ namespace SharpTelegram
             }
         }
 
+        public EventHandler<SharpMTProto.Messaging.Handlers.UpdatesHandler.State> OnUpdateState
+        {
+            get
+            {
+                return _connection.OnUpdateState;
+            }
+            set
+            {
+                _connection.OnUpdateState = value;
+            }
+        }
+
         public IMTProtoAsyncMethods ProtoMethods
         {
             get { return _connection.Methods; }
