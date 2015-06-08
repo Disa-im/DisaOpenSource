@@ -273,6 +273,10 @@ namespace Disa.Framework.Telegram
         {
             if (_fullClient != null && _fullClient.IsConnected)
             {
+                RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
+                {
+                    Offline = true
+                }));
                 try
                 {
                     RunSynchronously(_fullClient.Disconnect());
@@ -872,11 +876,14 @@ namespace Disa.Framework.Telegram
             {
                 _hasPresence = presenceBubble.Available;
                 SetFullClientPingDelayDisconnect();
-                var users = await GetUsers(BubbleGroupManager.FindAll(this).Where(x => !x.IsParty).Select(x => x.Address).ToList());
-                foreach (var user in users)
+                if (_hasPresence)
                 {
-                    EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming, 
-                        TelegramUtils.GetUserId(user), false, this, TelegramUtils.GetAvailable(user)));
+                    var users = await GetUsers(BubbleGroupManager.FindAll(this).Where(x => !x.IsParty).Select(x => x.Address).ToList());
+                    foreach (var user in users)
+                    {
+                        EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming, 
+                            TelegramUtils.GetUserId(user), false, this, TelegramUtils.GetAvailable(user)));
+                    }
                 }
                 await _fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
                     {
