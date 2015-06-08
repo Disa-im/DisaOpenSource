@@ -238,7 +238,10 @@ namespace Disa.Framework.Telegram
 
         private void OnFullClientUpdateTooLong(object sender, EventArgs e)
         {
-            //TODO:
+            Task.Factory.StartNew(() =>
+            {
+                FetchState(_fullClient);
+            });
         }
 
         private async void SetFullClientPingDelayDisconnect()
@@ -801,6 +804,20 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private void FetchState(TelegramClient client)
+        {
+            if (_mutableSettings.Date == 0)
+            {
+                DebugPrint("We need to fetch the state!");
+                var state = (UpdatesState)RunSynchronously(client.Methods.UpdatesGetStateAsync(new UpdatesGetStateArgs()));
+                SaveState(state.Date, state.Pts, state.Qts, state.Seq);
+            }
+            else
+            {
+                FetchDifference(client);
+            }
+        }
+
         public override void Connect(WakeLock wakeLock)
         {
             var sessionId = GetRandomId();
@@ -830,16 +847,7 @@ namespace Disa.Framework.Telegram
                 {
                     throw new Exception("Failed to register long poller...");
                 }
-                if (_mutableSettings.Date == 0)
-                {
-                    DebugPrint("We need to fetch the state!");
-                    var state = (UpdatesState)RunSynchronously(client.Methods.UpdatesGetStateAsync(new UpdatesGetStateArgs()));
-                    SaveState(state.Date, state.Pts, state.Qts, state.Seq);
-                }
-                else
-                {
-                    FetchDifference(client);
-                }
+                FetchState(client);
             }
             DebugPrint("Starting long poller...");
             _longPollClient = new TelegramClient(transportConfig, 
