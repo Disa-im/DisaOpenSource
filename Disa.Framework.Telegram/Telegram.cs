@@ -16,6 +16,9 @@ using System.Timers;
 //RESEARCH TOPICS:
 //1) We're sending everything with InputContact/PeerUser ... does the server care if the user is not on our contacts list?
 
+//TODO:
+//1) Incoming messages FullClient should be set to UnixNowTime, whereas downloaded messages should use the provided timestamp
+
 namespace Disa.Framework.Telegram
 {
     [ServiceInfo("Telegram", true, false, false, false, false, typeof(TelegramSettings), 
