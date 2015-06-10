@@ -106,6 +106,13 @@ namespace Disa.Terminal
 
         private static async void DoCommand(string command)
         {
+			// Clean the input
+			command = command.Trim();
+			// Don't do anything if we have empty input
+			if(command == "")
+				return;
+
+			// Split and handle command
             var args = SplitCommandLine(command).ToList();
 
             switch (args[0].ToLower())
