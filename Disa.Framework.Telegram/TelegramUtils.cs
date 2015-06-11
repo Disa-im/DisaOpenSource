@@ -6,6 +6,56 @@ namespace Disa.Framework.Telegram
 {
     public static class TelegramUtils
     {
+        public static string GetNameForPartyConversation(IChat chat)
+        {
+            var chatEmpty = chat as ChatEmpty;
+            var chatForbidden = chat as ChatForbidden;
+            var chatChat = chat as Chat;
+            var geoChat = chat as GeoChat;
+            if (chatEmpty != null)
+            {
+                return chatEmpty.Id.ToString(CultureInfo.InvariantCulture);
+            }
+            if (chatForbidden != null)
+            {
+                return chatForbidden.Title;
+            }
+            if (chatChat != null)
+            {
+                return chatChat.Title;
+            }
+            if (geoChat != null)
+            {
+                return geoChat.Title;
+            }
+            return null;
+        }
+
+        public static string GetChatId(IChat chat)
+        {
+            var chatEmpty = chat as ChatEmpty;
+            var chatForbidden = chat as ChatForbidden;
+            var chatChat = chat as Chat;
+            var geoChat = chat as GeoChat;
+            if (chatEmpty != null)
+            {
+                return chatEmpty.Id.ToString(CultureInfo.InvariantCulture);
+            }
+            if (chatForbidden != null)
+            {
+                return chatForbidden.Id.ToString(CultureInfo.InvariantCulture);
+            }
+            if (chatChat != null)
+            {
+                return chatChat.Id.ToString(CultureInfo.InvariantCulture);
+            }
+            if (geoChat != null)
+            {
+                return geoChat.Id.ToString(CultureInfo.InvariantCulture);
+            }
+            return null;
+        }
+
         public static string GetNameForSoloConversation(IUser user)
         {
             var userEmpty = user as UserEmpty;
@@ -13,6 +63,7 @@ namespace Disa.Framework.Telegram
             var userContact = user as UserContact;
             var userRequest = user as UserRequest;
             var userDeleted = user as UserDeleted;
+            var userForeign = user as UserForeign;
             if (userEmpty != null)
             {
                 return userEmpty.Id.ToString(CultureInfo.InvariantCulture);
@@ -33,6 +84,10 @@ namespace Disa.Framework.Telegram
             {
                 return userDeleted.FirstName + " " + userDeleted.LastName;
             }
+            if (userForeign != null)
+            {
+                return userForeign.FirstName + " " + userForeign.LastName;
+            }
             return null;
         }
 
@@ -43,6 +98,7 @@ namespace Disa.Framework.Telegram
             var userContact = user as UserContact;
             var userRequest = user as UserRequest;
             var userDeleted = user as UserDeleted;
+            var userForeign = user as UserForeign;
             if (userEmpty != null)
             {
                 return userEmpty.Id.ToString(CultureInfo.InvariantCulture);
@@ -62,6 +118,10 @@ namespace Disa.Framework.Telegram
             if (userDeleted != null)
             {
                 return userDeleted.Id.ToString(CultureInfo.InvariantCulture);
+            }
+            if (userForeign != null)
+            {
+                return userForeign.Id.ToString(CultureInfo.InvariantCulture);
             }
             return null;
         }
@@ -90,6 +150,7 @@ namespace Disa.Framework.Telegram
             var userContact = user as UserContact;
             var userRequest = user as UserRequest;
             var userDeleted = user as UserDeleted;
+            var userForeign = user as UserForeign;
             if (userEmpty != null)
             {
                 return null;
@@ -109,6 +170,10 @@ namespace Disa.Framework.Telegram
             if (userDeleted != null)
             {
                 return null;
+            }
+            if (userForeign != null)
+            {
+                return userForeign.Status;
             }
             return null;
         }
