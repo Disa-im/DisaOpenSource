@@ -1122,7 +1122,17 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(null);
+                var user = GetUser(unknownPartyParticipant);
+                if (user == null)
+                {
+                    result(null);
+                }
+                else
+                {
+                    var participant = 
+                        new DisaParticipant(TelegramUtils.GetUserName(user), unknownPartyParticipant);
+                    result(participant);
+                }
             });
         }
 
@@ -1164,6 +1174,21 @@ namespace Disa.Framework.Telegram
 //                    Replace = false,
 //                });
             base.RefreshPhoneBookContacts();
+        }
+
+        private IUser GetUser(string userId)
+        {
+            if (_dialogs == null)
+                return null;
+            foreach (var user in _dialogs.Users)
+            {
+                var userIdInner = TelegramUtils.GetUserId(user);
+                if (userId == userIdInner)
+                {
+                    return user;
+                }
+            }
+            return null;
         }
 
         private List<IUser> GetUpdatedUsersOfAllDialogs()
