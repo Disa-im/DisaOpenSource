@@ -1137,6 +1137,51 @@ namespace Disa.Framework.Telegram
 //                });
             base.RefreshPhoneBookContacts();
         }
+
+        private class TelegramClientDisposable : IDisposable
+        {
+            private readonly bool _isFullClient;
+            private readonly TelegramClient _client;
+
+            public TelegramClient Client
+            {
+                get
+                {
+                    return _client;
+                }
+            }
+
+            public TelegramClientDisposable(Telegram telegram)
+            {
+                if (telegram.IsFullClientConnected)
+                {
+                    _client = telegram._fullClient;
+                    _isFullClient = true;
+                }
+                else
+                {
+                    var transportConfig = 
+                        new TcpClientTransportConfig(telegram._settings.NearestDcIp, telegram._settings.NearestDcPort);
+                    var client = new TelegramClient(transportConfig, 
+                        new ConnectionConfig(telegram._settings.AuthKey, telegram._settings.Salt), AppInfo);
+                    var result = RunSynchronously(client.Connect());
+                    if (result != MTProtoConnectResult.Success)
+                    {
+                        throw new Exception("Failed to connect: " + result);
+                    }
+                    _client = client;
+                    _isFullClient = false;
+                }
+            }
+
+            public void Dispose()
+            {
+                if (!_isFullClient)
+                {
+                    _client.Dispose();
+                }
+            }
+        }
     }
 
     public class TelegramSettings : DisaSettings
