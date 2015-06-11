@@ -6,7 +6,45 @@ namespace Disa.Framework.Telegram
 {
     public static class TelegramUtils
     {
-        public static string GetNameForPartyConversation(IChat chat)
+        public static IInputUser CastUserToInputUser(IUser user)
+        {
+            var userEmpty = user as UserEmpty;
+            var userSelf = user as UserSelf;
+            var userContact = user as UserContact;
+            var userForeign = user as UserForeign;
+            if (userEmpty != null)
+            {
+                return new InputUserEmpty
+                {
+                    // nothing
+                };
+            }
+            if (userSelf != null)
+            {
+                return new InputUserSelf
+                {
+                    // nothing
+                };
+            }
+            if (userContact != null)
+            {
+                return new InputUserContact
+                {
+                    UserId = userContact.Id
+                };
+            }
+            if (userForeign != null)
+            {
+                return new InputUserForeign
+                {
+                    UserId = userForeign.Id,
+                    AccessHash = userForeign.AccessHash,
+                };
+            }
+            return null;
+        }
+
+        public static string GetChatTitle(IChat chat)
         {
             var chatEmpty = chat as ChatEmpty;
             var chatForbidden = chat as ChatForbidden;
@@ -56,7 +94,7 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
-        public static string GetNameForSoloConversation(IUser user)
+        public static string GetUserName(IUser user)
         {
             var userEmpty = user as UserEmpty;
             var userSelf = user as UserSelf;
@@ -89,6 +127,26 @@ namespace Disa.Framework.Telegram
                 return userForeign.FirstName + " " + userForeign.LastName;
             }
             return null;
+        }
+
+        public static ulong GetAccessHash(IUser user)
+        {
+            var userContact = user as UserContact;
+            var userRequest = user as UserRequest;
+            var userForeign = user as UserForeign;
+            if (userContact != null)
+            {
+                return userContact.AccessHash;
+            }
+            if (userRequest != null)
+            {
+                return userRequest.AccessHash;
+            }
+            if (userForeign != null)
+            {
+                return userForeign.AccessHash;
+            }
+            return 0;
         }
 
         public static string GetUserId(IUser user)

@@ -13,9 +13,6 @@ using SharpMTProto.Schema;
 using System.Globalization;
 using System.Timers;
 
-//RESEARCH TOPICS:
-//1) We're sending everything with InputContact/PeerUser ... does the server care if the user is not on our contacts list?
-
 //TODO:
 //1) Incoming messages FullClient should be set to UnixNowTime, whereas downloaded messages should use the provided timestamp
 
@@ -113,6 +110,8 @@ namespace Disa.Framework.Telegram
                 return _fullClientInternal;
             }
         }
+
+        private MessagesDialogs _dialogs;
 
         private Dictionary<uint, Timer> _typingTimers = new Dictionary<uint, Timer>();
 
@@ -946,6 +945,7 @@ namespace Disa.Framework.Telegram
                     throw new Exception("Failed to register long poller...");
                 }
                 FetchState(client);
+                GetDialogs(client);
             }
             DebugPrint("Starting long poller...");
             if (_longPollClient != null)
@@ -993,11 +993,14 @@ namespace Disa.Framework.Telegram
                 SetFullClientPingDelayDisconnect();
                 if (_hasPresence)
                 {
-                    var users = await GetUsers(BubbleGroupManager.FindAll(this).Where(x => !x.IsParty).Select(x => x.Address).ToList());
-                    foreach (var user in users)
+                    var updatedUsers = GetUpdatedUsersOfAllDialogs();
+                    if (updatedUsers != null)
                     {
-                        EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming, 
-                            TelegramUtils.GetUserId(user), false, this, TelegramUtils.GetAvailable(user)));
+                        foreach (var updatedUser in updatedUsers)
+                        {
+                            EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming, 
+                                TelegramUtils.GetUserId(updatedUser), false, this, TelegramUtils.GetAvailable(updatedUser)));
+                        }
                     }
                 }
                 await _fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
@@ -1010,23 +1013,61 @@ namespace Disa.Framework.Telegram
             var textBubble = b as TextBubble;
             if (textBubble != null)
             {
-                var peer = textBubble.Party ? 
-                    (IInputPeer)new InputPeerChat
-                {
-                    ChatId = uint.Parse(textBubble.Address)
-                } :
-                    (IInputPeer)new InputPeerContact
-                {
-                    UserId = uint.Parse(textBubble.Address)
-                };
-                var message = (MessagesSentMessage)RunSynchronously(_fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
+                var peer = GetInputPeer(textBubble.Address, textBubble.Party);
+                RunSynchronously(_fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                     {
                         Peer = peer,
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService)
                     }));
-
             }
+        }
+
+        private IInputPeer GetInputPeer(string userId, bool groupChat)
+        {
+            if (groupChat)
+            {
+                return new InputPeerChat
+                {
+                    ChatId = uint.Parse(userId)
+                };
+            }
+            else
+            {
+                var accessHash = GetUserAccessHashIfForeign(userId);
+                if (accessHash != 0)
+                {
+                    return new InputPeerForeign
+                    {
+                        UserId = uint.Parse(userId),
+                        AccessHash = accessHash
+                    };
+                }
+                else
+                {
+                    return new InputPeerContact
+                    {
+                        UserId = uint.Parse(userId)
+                    };
+                }
+            }
+        }
+
+        private ulong GetUserAccessHashIfForeign(string userId)
+        {
+            if (_dialogs == null)
+                return 0;
+            foreach (var user in _dialogs.Users)
+            {
+                var userForeign = user as UserForeign;
+                if (userForeign != null)
+                {
+                    var userForeignId = TelegramUtils.GetUserId(userForeign);
+                    if (userForeignId == userId)
+                        return TelegramUtils.GetAccessHash(userForeign);
+                }
+            }
+            return 0;
         }
 
         public override bool BubbleGroupComparer(string first, string second)
@@ -1039,37 +1080,26 @@ namespace Disa.Framework.Telegram
             throw new NotImplementedException();
         }
 
-        private async Task<List<IUser>> GetUsers(List<string> userIds)
+        private async Task<List<IUser>> GetUsers(List<IInputUser> users, TelegramClient client)
         {
-            var response = await _fullClient.Methods.UsersGetUsersAsync(new UsersGetUsersArgs
-                {
-                    Id = userIds.Select(x => 
-                        new InputUserContact
-                        {
-                            UserId = uint.Parse(x)
-                        }).Cast<IInputUser>().ToList()
-                });
+            var response = await client.Methods.UsersGetUsersAsync(new UsersGetUsersArgs
+            {
+                Id = users
+            });
             return response;
         }
 
-        private async Task<IUser> GetUser(string userId)
+        private async Task<IUser> GetUser(IInputUser user, TelegramClient client)
         {
-            return (await GetUsers(new List<string> { userId })).First();
+            return (await GetUsers(new List<IInputUser> { user }, client)).First();
         }
 
         public override Task GetBubbleGroupName(BubbleGroup group, Action<string> result)
         {
-            return Task.Factory.StartNew(async () =>
-                {
-                    if (group.IsParty)
-                    {
-                        result("Party Chat");
-                    }
-                    else
-                    {
-                        result(TelegramUtils.GetNameForSoloConversation(await GetUser(group.Address)));
-                    }
-                });
+            return Task.Factory.StartNew(() =>
+            {
+                result(GetTitle(group.Address, group.IsParty));
+            });
         }
 
         public override Task GetBubbleGroupPhoto(BubbleGroup group, Action<DisaThumbnail> result)
@@ -1106,12 +1136,9 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
         {
-            return Task.Factory.StartNew(async () =>
+            return Task.Factory.StartNew(() =>
             {
-                if (IsFullClientConnected)
-                {
-                    result(TelegramUtils.GetLastSeenTime(await GetUser(group.Address)));
-                }
+                result(GetUpdatedLastOnline(group.Address));
             });
         }
 
@@ -1129,6 +1156,7 @@ namespace Disa.Framework.Telegram
         {
 //            Client.Methods.ContactsImportContactsAsync(new ContactsImportContactsArgs
 //                {
+
 //                    Contacts = new List<IInputContact>
 //                        {
 //                            
@@ -1136,6 +1164,133 @@ namespace Disa.Framework.Telegram
 //                    Replace = false,
 //                });
             base.RefreshPhoneBookContacts();
+        }
+
+        private List<IUser> GetUpdatedUsersOfAllDialogs()
+        {
+            if (_dialogs == null)
+                return null;
+            var peerUsers = _dialogs.Dialogs.Select(x => (x as Dialog).Peer).OfType<PeerUser>();
+            var users = new List<IUser>();
+            foreach (var peer in peerUsers)
+            {
+                var peerUserId = peer.UserId.ToString(CultureInfo.InvariantCulture);
+                foreach (var user in _dialogs.Users)
+                {
+                    var userId = TelegramUtils.GetUserId(user);
+                    if (peerUserId == userId)
+                    {
+                        users.Add(user);
+                    }
+                }
+            }
+            using (var clientDisposable = new TelegramClientDisposable(this))
+            {
+                var inputUsers = users.Select(x => TelegramUtils.CastUserToInputUser(x)).Where(d => d != null).ToList();
+                var updatedUsers = RunSynchronously(GetUsers(inputUsers, clientDisposable.Client));
+                return updatedUsers;
+            }
+        }
+
+        private long GetUpdatedLastOnline(string id)
+        {
+            if (_dialogs == null)
+                return 0;
+            foreach (var user in _dialogs.Users)
+            {
+                var userId = TelegramUtils.GetUserId(user);
+                if (userId == id)
+                {
+                    var inputUser = TelegramUtils.CastUserToInputUser(user);
+                    if (inputUser != null)
+                    {
+                        using (var clientDisposable = new TelegramClientDisposable(this))
+                        {
+                            var updatedUser = RunSynchronously(GetUser(inputUser, clientDisposable.Client));
+                            return TelegramUtils.GetLastSeenTime(updatedUser);
+                        }
+                    }
+                }
+            }
+            DebugPrint("Could not get last online for user: " + id);
+            return 0;
+        }
+
+        private string GetTitle(string id, bool group)
+        {
+            if (_dialogs == null)
+                return null;
+            if (group)
+            {
+                foreach (var chat in _dialogs.Chats)
+                {
+                    var chatId = TelegramUtils.GetChatId(chat);
+                    if (chatId == id)
+                    {
+                        return TelegramUtils.GetChatTitle(chat);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var user in _dialogs.Users)
+                {
+                    var userId = TelegramUtils.GetUserId(user);
+                    if (userId == id)
+                    {
+                        return TelegramUtils.GetUserName(user);
+                    }
+                }
+            }
+            DebugPrint("Could not get title for user: " + id);
+            return null;
+        }
+
+        private void GetDialogs(TelegramClient client)
+        {
+            DebugPrint("Fetching conversations");
+            _dialogs = new MessagesDialogs
+            {
+                Chats = new List<IChat>(),
+                Dialogs = new List<IDialog>(),
+                Messages = new List<SharpTelegram.Schema.Layer18.IMessage>(),
+                Users = new List<IUser>(),
+            };
+            uint limit = 10;
+            uint offset = 0;
+            Again:
+            var iDialogs = RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
+                {
+                    Limit = limit,
+                    Offset = offset,
+                    MaxId = 0,
+                }));
+            var dialogs = iDialogs as MessagesDialogs;
+            var dialogsSlice = iDialogs as MessagesDialogsSlice;
+            if (dialogs != null)
+            {
+                _dialogs.Chats.AddRange(dialogs.Chats);
+                _dialogs.Dialogs.AddRange(dialogs.Dialogs);
+                _dialogs.Messages.AddRange(dialogs.Messages);
+                _dialogs.Users.AddRange(dialogs.Users);
+            }
+            else if (dialogsSlice != null)
+            {
+                _dialogs.Chats.AddRange(dialogsSlice.Chats);
+                _dialogs.Dialogs.AddRange(dialogsSlice.Dialogs);
+                _dialogs.Messages.AddRange(dialogsSlice.Messages);
+                _dialogs.Users.AddRange(dialogsSlice.Users);
+                if (dialogsSlice.Count < offset + limit)
+                {
+                    Console.WriteLine("No need to fetch anymore slices. We've reached the end!");
+                    goto End;
+                }
+                DebugPrint("Obtained a dialog slice! ... fetching more!");
+                offset += limit;
+                goto Again;
+            }
+            End:
+            DebugPrint("Obtained conversations.");
         }
 
         private class TelegramClientDisposable : IDisposable
