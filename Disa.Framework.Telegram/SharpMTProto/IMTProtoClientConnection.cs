@@ -120,5 +120,7 @@ namespace SharpMTProto
         EventHandler OnUpdateTooLong { get; set; }
 
         EventHandler<SharpMTProto.Messaging.Handlers.UpdatesHandler.State> OnUpdateState { get; set; }
+
+        EventHandler OnClosedInternally { get; set; }
     }
 }

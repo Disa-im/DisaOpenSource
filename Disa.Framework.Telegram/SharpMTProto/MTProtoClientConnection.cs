@@ -75,6 +75,8 @@ namespace SharpMTProto
 
         private readonly UpdatesHandler _updatesHandler;
 
+        private EventHandler _onClosedInternally;
+
         public MTProtoClientConnection(
             [NotNull] IClientTransportConfig clientTransportConfig,
             [NotNull] IClientTransportFactory clientTransportFactory,
@@ -104,6 +106,11 @@ namespace SharpMTProto
             _clientTransport.RegisterOnDisconnectInternally(() =>
             {
                 Console.WriteLine("Client has been closed internally.");
+
+                if (_onClosedInternally != null)
+                {
+                    _onClosedInternally(this, null);
+                }
 
                 if (_state == MTProtoConnectionState.Disconnected)
                     
@@ -177,6 +184,18 @@ namespace SharpMTProto
             set
             {
                 _updatesHandler.OnUpdateState = value;
+            }
+        }
+
+        public EventHandler OnClosedInternally
+        {
+            get
+            {
+                return _onClosedInternally;
+            }
+            set
+            {
+                _onClosedInternally = value;
             }
         }
 

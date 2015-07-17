@@ -15,6 +15,8 @@ using System.Timers;
 
 //TODO:
 //1) Incoming messages FullClient should be set to UnixNowTime, whereas downloaded messages should use the provided timestamp
+//2) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
+//3) _dialogs have to be refetched whenever there is a new conversation created, participant added, etc, to update the client's local cache.
 
 namespace Disa.Framework.Telegram
 {
@@ -101,7 +103,7 @@ namespace Disa.Framework.Telegram
                 _fullClientInternal.OnUpdateState += OnUpdateState;
                 _fullClientInternal.OnUpdate += OnUpdate;
                 _fullClientInternal.OnUpdateTooLong += OnFullClientUpdateTooLong;
-                var result = RunSynchronously(_fullClientInternal.Connect());
+                var result = TelegramUtils.RunSynchronously(_fullClientInternal.Connect());
                 if (result != MTProtoConnectResult.Success)
                 {
                     throw new Exception("Failed to connect: " + result);
@@ -112,6 +114,7 @@ namespace Disa.Framework.Telegram
         }
 
         private MessagesDialogs _dialogs;
+        private Config _config;
 
         private Dictionary<uint, Timer> _typingTimers = new Dictionary<uint, Timer>();
 
@@ -327,7 +330,7 @@ namespace Disa.Framework.Telegram
                 using (var client = new TelegramClient(transportConfig, 
                     new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo))
                 {
-                    var result = RunSynchronously(client.Connect());
+                    var result = TelegramUtils.RunSynchronously(client.Connect());
                     if (result != MTProtoConnectResult.Success)
                     {
                         throw new Exception("Failed to connect: " + result);
@@ -369,13 +372,13 @@ namespace Disa.Framework.Telegram
         {
             if (_fullClient != null && _fullClient.IsConnected)
             {
-                RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
+                TelegramUtils.RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
                 {
                     Offline = true
                 }));
                 try
                 {
-                    RunSynchronously(_fullClient.Disconnect());
+                    TelegramUtils.RunSynchronously(_fullClient.Disconnect());
                 }
                 catch (Exception ex)
                 {
@@ -390,7 +393,7 @@ namespace Disa.Framework.Telegram
             {
                 try
                 {
-                    RunSynchronously(_longPollClient.Disconnect());
+                    TelegramUtils.RunSynchronously(_longPollClient.Disconnect());
                 }
                 catch (Exception ex)
                 {
@@ -435,20 +438,20 @@ namespace Disa.Framework.Telegram
             {
                 service.DebugPrint("Fetching nearest DC...");
                 var settings = new TelegramSettings();
-                var authInfo = RunSynchronously(FetchNewAuthentication(DefaultTransportConfig));
+                var authInfo = TelegramUtils.RunSynchronously(FetchNewAuthentication(DefaultTransportConfig));
                 using (var client = new TelegramClient(DefaultTransportConfig, 
                     new ConnectionConfig(authInfo.AuthKey, authInfo.Salt), AppInfo))
                 {
-                    RunSynchronously(client.Connect());
-                    var nearestDcId = (NearestDc)RunSynchronously(client.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
-                    var config = (Config)RunSynchronously(client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
+                    TelegramUtils.RunSynchronously(client.Connect());
+                    var nearestDcId = (NearestDc)TelegramUtils.RunSynchronously(client.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
+                    var config = (Config)TelegramUtils.RunSynchronously(client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
                     var dcOption = config.DcOptions.OfType<DcOption>().FirstOrDefault(x => x.Id == nearestDcId.NearestDcProperty);
                     settings.NearestDcId = nearestDcId.NearestDcProperty;
                     settings.NearestDcIp = dcOption.IpAddress;
                     settings.NearestDcPort = (int)dcOption.Port;
                 }
                 service.DebugPrint("Generating authentication on nearest DC...");
-                var authInfo2 = RunSynchronously(FetchNewAuthentication(
+                var authInfo2 = TelegramUtils.RunSynchronously(FetchNewAuthentication(
                                         new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort)));
                 settings.AuthKey = authInfo2.AuthKey;
                 settings.Salt = authInfo2.Salt;
@@ -481,13 +484,13 @@ namespace Disa.Framework.Telegram
                 using (var client = new TelegramClient(transportConfig,
                     new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
                 {
-                    RunSynchronously(client.Connect());
+                    TelegramUtils.RunSynchronously(client.Connect());
 
                     if (!call)
                     {
                         try
                         {
-                            var result = RunSynchronously(client.Methods.AuthSendCodeAsync(new AuthSendCodeArgs
+                            var result = TelegramUtils.RunSynchronously(client.Methods.AuthSendCodeAsync(new AuthSendCodeArgs
                             {
                                 PhoneNumber = number,
                                 SmsType = 0,
@@ -518,7 +521,7 @@ namespace Disa.Framework.Telegram
                             return cr;
                         }
                     }
-                    var result2 = (bool)RunSynchronously(client.Methods.AuthSendCallAsync(new AuthSendCallArgs
+                    var result2 = (bool)TelegramUtils.RunSynchronously(client.Methods.AuthSendCallAsync(new AuthSendCallArgs
                     {
                         PhoneNumber = number,
                         PhoneCodeHash = codeHash,
@@ -556,14 +559,14 @@ namespace Disa.Framework.Telegram
                 using (var client = new TelegramClient(transportConfig,
                     new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
                 {
-                    RunSynchronously(client.Connect());
+                    TelegramUtils.RunSynchronously(client.Connect());
 
                     try
                     {
                         IAuthAuthorization iresult = null;
                         if (signIn)
                         {
-                            iresult = RunSynchronously(client.Methods.AuthSignInAsync(new AuthSignInArgs
+                            iresult = TelegramUtils.RunSynchronously(client.Methods.AuthSignInAsync(new AuthSignInArgs
                                 {
                                     PhoneNumber = number,
                                     PhoneCodeHash = codeHash,
@@ -572,7 +575,7 @@ namespace Disa.Framework.Telegram
                         }
                         else
                         {
-                            iresult = RunSynchronously(client.Methods.AuthSignUpAsync(new AuthSignUpArgs
+                            iresult = TelegramUtils.RunSynchronously(client.Methods.AuthSignUpAsync(new AuthSignUpArgs
                                 {
                                     PhoneNumber = number,
                                     PhoneCodeHash = codeHash,
@@ -777,41 +780,16 @@ namespace Disa.Framework.Telegram
             return await authKeyNegotiater.CreateAuthKey();
         }
 
-        private static T RunSynchronously<T>(Task<T> task)
-        {
-            try
-            {
-                task.Wait();
-                return task.Result;
-            }
-            catch (AggregateException ex)
-            {
-                throw ex.Flatten().InnerException;
-            }
-        }
-
-        private static void RunSynchronously(Task task)
-        {
-            try
-            {
-                task.Wait();
-            }
-            catch (AggregateException ex)
-            {
-                throw ex.Flatten().InnerException;
-            }
-        }
-
         private uint GetNearestDc()
         {
-            var nearestDc = (NearestDc)RunSynchronously(
+            var nearestDc = (NearestDc)TelegramUtils.RunSynchronously(
                 _fullClient.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
             return nearestDc.NearestDcProperty;
         }
 
         private Tuple<string, uint> GetDcIPAndPort(uint id)
         {
-            var config = (Config)RunSynchronously(_fullClient.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
+            var config = (Config)TelegramUtils.RunSynchronously(_fullClient.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
             var dcOption = config.DcOptions.OfType<DcOption>().FirstOrDefault(x => x.Id == id);
             return Tuple.Create(dcOption.IpAddress, dcOption.Port);
         }
@@ -850,7 +828,7 @@ namespace Disa.Framework.Telegram
 
             DebugPrint("Difference Page: " + counter);
 
-            var difference = RunSynchronously(
+            var difference = TelegramUtils.RunSynchronously(
                 client.Methods.UpdatesGetDifferenceAsync(new UpdatesGetDifferenceArgs
             {
                 Date = _mutableSettings.Date,
@@ -906,7 +884,7 @@ namespace Disa.Framework.Telegram
             if (_mutableSettings.Date == 0)
             {
                 DebugPrint("We need to fetch the state!");
-                var state = (UpdatesState)RunSynchronously(client.Methods.UpdatesGetStateAsync(new UpdatesGetStateArgs()));
+                var state = (UpdatesState)TelegramUtils.RunSynchronously(client.Methods.UpdatesGetStateAsync(new UpdatesGetStateArgs()));
                 SaveState(state.Date, state.Pts, state.Qts, state.Seq);
             }
             else
@@ -923,13 +901,13 @@ namespace Disa.Framework.Telegram
             using (var client = new TelegramClient(transportConfig, 
                                     new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo))
             {
-                var result = RunSynchronously(client.Connect());
+                var result = TelegramUtils.RunSynchronously(client.Connect());
                 if (result != MTProtoConnectResult.Success)
                 {
                     throw new Exception("Failed to connect: " + result);
                 }   
                 DebugPrint("Registering long poller...");
-                var registerDeviceResult = RunSynchronously(client.Methods.AccountRegisterDeviceAsync(
+                var registerDeviceResult = TelegramUtils.RunSynchronously(client.Methods.AccountRegisterDeviceAsync(
                     new AccountRegisterDeviceArgs
                 {
                     TokenType = 7,
@@ -946,6 +924,7 @@ namespace Disa.Framework.Telegram
                 }
                 FetchState(client);
                 GetDialogs(client);
+                GetConfig(client);
             }
             DebugPrint("Starting long poller...");
             if (_longPollClient != null)
@@ -954,7 +933,7 @@ namespace Disa.Framework.Telegram
             }
             _longPollClient = new TelegramClient(transportConfig, 
                 new ConnectionConfig(_settings.AuthKey, _settings.Salt) { SessionId = sessionId }, AppInfo);
-            var result2 = RunSynchronously(_longPollClient.Connect());
+            var result2 = TelegramUtils.RunSynchronously(_longPollClient.Connect());
             if (result2 != MTProtoConnectResult.Success)
             {
                 throw new Exception("Failed to connect long poll client: " + result2);
@@ -1014,7 +993,7 @@ namespace Disa.Framework.Telegram
             if (textBubble != null)
             {
                 var peer = GetInputPeer(textBubble.Address, textBubble.Party);
-                RunSynchronously(_fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
+                TelegramUtils.RunSynchronously(_fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                     {
                         Peer = peer,
                         Message = textBubble.Message,
@@ -1212,7 +1191,7 @@ namespace Disa.Framework.Telegram
             using (var clientDisposable = new TelegramClientDisposable(this))
             {
                 var inputUsers = users.Select(x => TelegramUtils.CastUserToInputUser(x)).Where(d => d != null).ToList();
-                var updatedUsers = RunSynchronously(GetUsers(inputUsers, clientDisposable.Client));
+                var updatedUsers = TelegramUtils.RunSynchronously(GetUsers(inputUsers, clientDisposable.Client));
                 return updatedUsers;
             }
         }
@@ -1231,7 +1210,7 @@ namespace Disa.Framework.Telegram
                     {
                         using (var clientDisposable = new TelegramClientDisposable(this))
                         {
-                            var updatedUser = RunSynchronously(GetUser(inputUser, clientDisposable.Client));
+                            var updatedUser = TelegramUtils.RunSynchronously(GetUser(inputUser, clientDisposable.Client));
                             return TelegramUtils.GetLastSeenTime(updatedUser);
                         }
                     }
@@ -1271,6 +1250,14 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
+        private void GetConfig(TelegramClient client)
+        {
+            var config = (Config)TelegramUtils.RunSynchronously(client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs
+                {
+                }));
+            _config = config;
+        }
+
         private void GetDialogs(TelegramClient client)
         {
             DebugPrint("Fetching conversations");
@@ -1284,7 +1271,7 @@ namespace Disa.Framework.Telegram
             uint limit = 10;
             uint offset = 0;
             Again:
-            var iDialogs = RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
+            var iDialogs = TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
                 {
                     Limit = limit,
                     Offset = offset,
@@ -1344,7 +1331,7 @@ namespace Disa.Framework.Telegram
                         new TcpClientTransportConfig(telegram._settings.NearestDcIp, telegram._settings.NearestDcPort);
                     var client = new TelegramClient(transportConfig, 
                         new ConnectionConfig(telegram._settings.AuthKey, telegram._settings.Salt), AppInfo);
-                    var result = RunSynchronously(client.Connect());
+                    var result = TelegramUtils.RunSynchronously(client.Connect());
                     if (result != MTProtoConnectResult.Success)
                     {
                         throw new Exception("Failed to connect: " + result);

@@ -87,6 +87,18 @@ namespace SharpTelegram
             }
         }
 
+        public EventHandler OnClosedInternally
+        {
+            get
+            {
+                return _connection.OnClosedInternally;
+            }
+            set
+            {
+                _connection.OnClosedInternally = value;
+            }
+        }
+
         public IMTProtoAsyncMethods ProtoMethods
         {
             get { return _connection.Methods; }

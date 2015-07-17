@@ -1,18 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--Automatically generated-->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="check_cpu_fdfd2d5e-f2f5-42a4-9f6e-19d1f9d64c48" BeforeTargets="ResolveAssemblyReferences" Condition=" ( ($(Platform.ToLower()) != 'x86') AND ($(Platform.ToLower()) != 'x64') OR ($(OS) != 'Windows_NT') ) ">
-    <Warning Text="$(Platform) is not supported. The Platform configuration must be Windows x86 or x64" />
-  </Target>
   <Target Name="InjectReference_36dfbe83-9b2b-4cde-bbdb-00b49ceedbec" BeforeTargets="ResolveAssemblyReferences">
-    <ItemGroup Condition=" '$(Platform.ToLower())' == 'x86' ">
+    <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
       <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\winxp\x86\sqlite3.dll">
         <Link>x86\sqlite3.dll</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-	</ItemGroup>
-	<ItemGroup Condition=" '$(Platform.ToLower())' == 'x64' ">
-	  <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\winxp\x64\sqlite3.dll">
+      <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\winxp\x64\sqlite3.dll">
         <Link>x64\sqlite3.dll</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>

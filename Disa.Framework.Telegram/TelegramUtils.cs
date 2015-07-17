@@ -1,11 +1,37 @@
 ﻿using System;
 using SharpTelegram.Schema.Layer18;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Disa.Framework.Telegram
 {
     public static class TelegramUtils
     {
+        public static T RunSynchronously<T>(Task<T> task)
+        {
+            try
+            {
+                task.Wait();
+                return task.Result;
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.Flatten().InnerException;
+            }
+        }
+
+        public static void RunSynchronously(Task task)
+        {
+            try
+            {
+                task.Wait();
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.Flatten().InnerException;
+            }
+        }
+
         public static IInputUser CastUserToInputUser(IUser user)
         {
             var userEmpty = user as UserEmpty;
