@@ -85,6 +85,8 @@ namespace SharpMTProto.Authentication
 
         public async Task<AuthInfo> CreateAuthKey(CancellationToken cancellationToken)
         {
+            Restart:
+
             IMTProtoClientConnection connection = _mtProtoBuilder.BuildConnection(_clientTransportConfig);
             var methods = connection.Methods;
 
@@ -238,10 +240,19 @@ namespace SharpMTProto.Authentication
 
                         CheckNonce(nonce, dhGenOk.Nonce);
                         CheckNonce(serverNonce, dhGenOk.ServerNonce);
-                        Int128 newNonceHash1 = ComputeNewNonceHash(newNonce, 1, authKeyAuxHash);
-                        CheckNonce(newNonceHash1, dhGenOk.NewNonceHash1);
+                        var newNonceHash1 = ComputeNewNonceHash(newNonce, 1, authKeyAuxHash);
 
-                        Console.WriteLine(string.Format("Negotiated auth key: {0}.", authKey.ToHexString()));
+                        try
+                        {
+                            CheckNonce(newNonceHash1, dhGenOk.NewNonceHash1);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Failed to match new nonce hash. Restarting authentication.");
+                            goto Restart;
+                        }
+
+                        Console.WriteLine(string.Format("Negotiated auth key: {0}", authKey.ToHexString()));
 
                         var initialSalt = ComputeInitialSalt(newNonceBytes, serverNonceBytes);
                         return new AuthInfo(authKey, initialSalt);
@@ -254,7 +265,17 @@ namespace SharpMTProto.Authentication
                         CheckNonce(nonce, dhGenRetry.Nonce);
                         CheckNonce(serverNonce, dhGenRetry.ServerNonce);
                         Int128 newNonceHash2 = ComputeNewNonceHash(newNonce, 2, authKeyAuxHash);
-                        CheckNonce(newNonceHash2, dhGenRetry.NewNonceHash2);
+
+                        try
+                        {
+                            CheckNonce(newNonceHash2, dhGenRetry.NewNonceHash2);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Failed to match new nonce hash 2. Restarting authentication.");
+                            goto Restart;
+                        }
+
                         continue;
                     }
                     var dhGenFail = setClientDHParamsAnswer as DhGenFail;
@@ -265,7 +286,10 @@ namespace SharpMTProto.Authentication
                         CheckNonce(nonce, dhGenFail.Nonce);
                         CheckNonce(serverNonce, dhGenFail.ServerNonce);
                         Int128 newNonceHash3 = ComputeNewNonceHash(newNonce, 3, authKeyAuxHash);
-                        CheckNonce(newNonceHash3, dhGenFail.NewNonceHash3);
+
+                        // REDUNDANT, as we'll fail anyway
+                        //CheckNonce(newNonceHash3, dhGenFail.NewNonceHash3);
+
                         throw new MTProtoException("Failed to set client DH params.");
                     }
                 }
