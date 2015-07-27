@@ -7,6 +7,7 @@ using System.Linq;
 using SharpMTProto.Transport;
 using SharpMTProto;
 using SharpMTProto.Schema;
+using System.IO;
 
 namespace Disa.Framework.Telegram
 {
@@ -17,11 +18,61 @@ namespace Disa.Framework.Telegram
             [PrimaryKey]
             public int Dc { get; set; }
 
-            public int Id { get; set; }
-
             public byte[] Key { get; set; }
+
+            public byte[] Salt { get; set; }
         }
             
+        private class DcDatabase
+        {
+            private static object _lock = new object();
+
+            private static string Location
+            {
+                get
+                {
+                    var settingsPath
+                    = Platform.GetSettingsPath();
+                    var locationPath = Path.Combine(settingsPath, "TelegramDcs.db");
+                    return locationPath;
+                }
+            }
+
+            public static void Set(TelegramDc dc)
+            {
+                lock (_lock)
+                {
+                    using (var db = new SqlDatabase<TelegramDc>(Location))
+                    {
+                        foreach (var entry in db.Store.Where(x => x.Dc == dc.Dc))
+                        {
+                            entry.Key = dc.Key;
+                            entry.Salt = dc.Salt;
+                            db.Update(entry);
+                            return;
+                        }
+                            
+                        db.Add(dc);
+                    }
+                }
+            }
+
+            public static TelegramDc Get(int dc)
+            {
+                lock (_lock)
+                {
+                    using (var db = new SqlDatabase<TelegramDc>(Location))
+                    {
+                        foreach (var entry in db.Store.Where(x => x.Dc == dc))
+                        {
+                            return entry;
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+
         private readonly Dictionary<int, TelegramClient> _activeClients = new Dictionary<int, TelegramClient>();
         private readonly Dictionary<int, object> _spinUpLocks = new Dictionary<int, object>();
 
@@ -90,35 +141,47 @@ namespace Disa.Framework.Telegram
                     return null;
                 }
 
-                DebugPrint("Found DC to connect to: " + ObjectDumper.Dump(dcOption));
+                var dcCached = DcDatabase.Get(dc);
 
-                DebugPrint(">>>>>>>> Exporting auth...");
-
-                AuthExportedAuthorization exportedAuth = null;
-
-                using (var clientDisposable = new TelegramClientDisposable(this))
-                {
-                    exportedAuth = (AuthExportedAuthorization)TelegramUtils.RunSynchronously(clientDisposable.Client.Methods.AuthExportAuthorizationAsync(
-                        new SharpTelegram.Schema.Layer18.AuthExportAuthorizationArgs
-                        {
-                            DcId = (uint)dc,
-                        }));
-                }
-
-                DebugPrint(">>>>>>> Got exported auth.");
-
-                if (exportedAuth == null)
-                {
-                    DebugPrint("Exported auth is null for some weird reason. DC ID: " + dc);
-                    return null;
-                }
-
-                DebugPrint(">>>>>>> Fetching new authentication...");
-                    
                 var transportConfig = 
                     new TcpClientTransportConfig(dcOption.IpAddress, (int)dcOption.Port);
-                
-                var authInfo = TelegramUtils.RunSynchronously(FetchNewAuthentication(transportConfig));
+
+                SharpMTProto.Authentication.AuthInfo authInfo;
+                AuthExportedAuthorization exportedAuth = null;
+
+                if (dcCached == null)
+                {
+                    DebugPrint("Looks like we'll have to authenticate a new connection to: "
+                    + ObjectDumper.Dump(dcOption));
+
+                    DebugPrint(">>>>>>>> Exporting auth...");
+
+                    using (var clientDisposable = new TelegramClientDisposable(this))
+                    {
+                        exportedAuth = (AuthExportedAuthorization)TelegramUtils.RunSynchronously(clientDisposable.Client.Methods.AuthExportAuthorizationAsync(
+                            new SharpTelegram.Schema.Layer18.AuthExportAuthorizationArgs
+                            {
+                                DcId = (uint)dc,
+                            }));
+                    }
+
+                    DebugPrint(">>>>>>> Got exported auth.");
+
+                    if (exportedAuth == null)
+                    {
+                        DebugPrint("Exported auth is null for some weird reason. DC ID: " + dc);
+                        return null;
+                    }
+
+                    DebugPrint(">>>>>>> Fetching new authentication...");
+
+                    authInfo = TelegramUtils.RunSynchronously(FetchNewAuthentication(transportConfig));
+                }
+                else
+                {
+                    authInfo = new SharpMTProto.Authentication.AuthInfo(dcCached.Key,
+                        BitConverter.ToUInt64(dcCached.Salt, 0));
+                }
 
                 DebugPrint(">>>>>>>> Starting new client...");
 
@@ -141,17 +204,30 @@ namespace Disa.Framework.Telegram
                     return null;
                 }
 
-                TelegramUtils.RunSynchronously(newClient.Methods.AuthImportAuthorizationAsync(new AuthImportAuthorizationArgs
-                    {
-                        Id = exportedAuth.Id,
-                        Bytes = exportedAuth.Bytes,
-                    }));
+                if (exportedAuth != null)
+                {
+                    TelegramUtils.RunSynchronously(newClient.Methods.AuthImportAuthorizationAsync(new AuthImportAuthorizationArgs
+                        {
+                            Id = exportedAuth.Id,
+                            Bytes = exportedAuth.Bytes,
+                        }));
+                }
 
                 PingDelay(client, 60);
 
                 lock (_activeClients)
                 {
                     _activeClients[dc] = newClient;
+                }
+
+                if (dcCached == null)
+                {
+                    DcDatabase.Set(new TelegramDc
+                    {
+                        Dc = dc,
+                        Key = authInfo.AuthKey,
+                        Salt = BitConverter.GetBytes(authInfo.Salt),
+                    });
                 }
 
                 return newClient;
