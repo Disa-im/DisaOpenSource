@@ -340,7 +340,25 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        private async void SetFullClientPingDelayDisconnect()
+        //TODO: fix protoMethods bug where Tasks are cancelled.
+        //ATM, this is the only method we call in the ProtoMethods stack
+        private async void PingDelay(TelegramClient client, uint disconnectDelay)
+        {
+            try
+            {
+                await client.ProtoMethods.PingDelayDisconnectAsync(new PingDelayDisconnectArgs
+                {
+                    PingId = GetRandomId(),
+                    DisconnectDelay = disconnectDelay
+                });
+            }
+            catch
+            {
+                // fall-through
+            }
+        }
+
+        private void SetFullClientPingDelayDisconnect()
         {
             if (_fullClient == null || !_fullClient.IsConnected)
             {
@@ -350,21 +368,12 @@ namespace Disa.Framework.Telegram
             if (_hasPresence)
             {
                 DebugPrint("Telling full client that it can forever stay alive.");
-
-                iPong = await _fullClient.ProtoMethods.PingDelayDisconnectAsync(new PingDelayDisconnectArgs
-                {
-                    PingId = GetRandomId(),
-                    DisconnectDelay = uint.MaxValue,
-                });
+                PingDelay(_fullClient, uint.MaxValue);
             }
             else
             {
                 DebugPrint("Telling full client that it can only stay alive for a minute.");
-                iPong = await _fullClient.ProtoMethods.PingDelayDisconnectAsync(new PingDelayDisconnectArgs
-                {
-                    PingId = GetRandomId(),
-                    DisconnectDelay = 60,
-                });
+                PingDelay(_fullClient, 60);
             }
         }
 
@@ -1085,7 +1094,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(null);
+                result(GetThumbnail(group.Address, group.IsParty, true));
             });
         }
 
@@ -1248,6 +1257,79 @@ namespace Disa.Framework.Telegram
             }
             DebugPrint("Could not get title for user: " + id);
             return null;
+        }
+
+        private DisaThumbnail GetThumbnail(string id, bool group, bool small)
+        {
+            if (_dialogs == null)
+                return null;
+            if (group)
+            {
+                //TODO:
+            }
+            else
+            {
+                foreach (var user in _dialogs.Users)
+                {
+                    var userId = TelegramUtils.GetUserId(user);
+                    if (userId == id)
+                    {
+                        var fileLocation = TelegramUtils.GetUserPhotoLocation(user, small);
+                        if (fileLocation == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            var bytes = FetchFileBytes(fileLocation);
+                            return new DisaThumbnail(this, bytes, id);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        //TODO: chunk the download
+        private static byte[] FetchFileBytes(TelegramClient client, FileLocation fileLocation)
+        {
+            var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
+                new UploadGetFileArgs
+            {
+                Location = new InputFileLocation
+                {
+                    VolumeId = fileLocation.VolumeId,
+                    LocalId = fileLocation.LocalId,
+                    Secret = fileLocation.Secret
+                },
+                Offset = 0,
+                Limit = uint.MaxValue,
+            }));
+            return response.Bytes;
+        }
+            
+        private byte[] FetchFileBytes(FileLocation fileLocation)
+        {
+            if (fileLocation.DcId == _settings.NearestDcId)
+            {
+                using (var clientDisposable = new TelegramClientDisposable(this))
+                {
+                    return FetchFileBytes(clientDisposable.Client, fileLocation);
+                }   
+            }
+            else
+            {
+                try
+                {
+                    var client = GetClient((int)fileLocation.DcId);
+                    return FetchFileBytes(client, fileLocation);
+                }
+                catch (Exception ex)
+                {
+                    DebugPrint("Failed to obtain client from DC manager: " + ex);
+                    return null;
+                }
+            }
         }
 
         private void GetConfig(TelegramClient client)

@@ -27,6 +27,9 @@ namespace Disa.Framework.Telegram
 
         public TelegramClient GetClient(int dc)
         {
+            if (dc == _settings.NearestDcId)
+                throw new Exception("Cannot spin up a client that uses the primary DC!");
+
             var client = GetClientInternal(dc);
             if (client != null)
                 return client;
@@ -42,11 +45,7 @@ namespace Disa.Framework.Telegram
                 {
                     var client = _activeClients[dc];
 
-                    TelegramUtils.RunSynchronously(client.ProtoMethods.PingDelayDisconnectAsync(new PingDelayDisconnectArgs
-                        {
-                            PingId = GetRandomId(),
-                            DisconnectDelay = 60,
-                        }));
+                    PingDelay(client, 60);
 
                     return client;
                 }
@@ -91,6 +90,10 @@ namespace Disa.Framework.Telegram
                     return null;
                 }
 
+                DebugPrint("Found DC to connect to: " + ObjectDumper.Dump(dcOption));
+
+                DebugPrint(">>>>>>>> Exporting auth...");
+
                 AuthExportedAuthorization exportedAuth = null;
 
                 using (var clientDisposable = new TelegramClientDisposable(this))
@@ -102,16 +105,22 @@ namespace Disa.Framework.Telegram
                         }));
                 }
 
+                DebugPrint(">>>>>>> Got exported auth.");
+
                 if (exportedAuth == null)
                 {
                     DebugPrint("Exported auth is null for some weird reason. DC ID: " + dc);
                     return null;
                 }
+
+                DebugPrint(">>>>>>> Fetching new authentication...");
                     
                 var transportConfig = 
                     new TcpClientTransportConfig(dcOption.IpAddress, (int)dcOption.Port);
                 
                 var authInfo = TelegramUtils.RunSynchronously(FetchNewAuthentication(transportConfig));
+
+                DebugPrint(">>>>>>>> Starting new client...");
 
                 var newClient = new TelegramClient(transportConfig, 
                     new ConnectionConfig(authInfo.AuthKey, authInfo.Salt), AppInfo);
@@ -138,11 +147,7 @@ namespace Disa.Framework.Telegram
                         Bytes = exportedAuth.Bytes,
                     }));
 
-                TelegramUtils.RunSynchronously(newClient.ProtoMethods.PingDelayDisconnectAsync(new PingDelayDisconnectArgs
-                    {
-                        PingId = GetRandomId(),
-                        DisconnectDelay = 60,
-                    }));
+                PingDelay(client, 60);
 
                 lock (_activeClients)
                 {
@@ -151,8 +156,6 @@ namespace Disa.Framework.Telegram
 
                 return newClient;
             }
-
-            return null;
         }
     }
 }

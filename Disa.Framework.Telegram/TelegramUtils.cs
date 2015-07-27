@@ -175,6 +175,66 @@ namespace Disa.Framework.Telegram
             return 0;
         }
 
+        public static FileLocation GetUserPhotoLocation(IUser user, bool small)
+        {
+            var userEmpty = user as UserEmpty;
+            var userSelf = user as UserSelf;
+            var userContact = user as UserContact;
+            var userRequest = user as UserRequest;
+            var userDeleted = user as UserDeleted;
+            var userForeign = user as UserForeign;
+            if (userEmpty != null)
+            {
+                return null;
+            }
+            if (userSelf != null)
+            {
+                return GetFileLocationFromPhoto(userSelf.Photo, small);
+            }
+            if (userContact != null)
+            {
+                return GetFileLocationFromPhoto(userContact.Photo, small);
+            }
+            if (userRequest != null)
+            {
+                return GetFileLocationFromPhoto(userRequest.Photo, small);
+            }
+            if (userDeleted != null)
+            {
+                return null;
+            }
+            if (userForeign != null)
+            {
+                return GetFileLocationFromPhoto(userForeign.Photo, small);
+            }
+            return null;
+        }
+
+        private static FileLocation GetFileLocationFromPhoto(IUserProfilePhoto photo, bool small)
+        {
+            var empty = photo as UserProfilePhotoEmpty;
+            var full = photo as UserProfilePhoto;
+            if (empty != null)
+            {
+                return null;
+            }
+            else if (full != null)
+            {
+                var iFileLocation = small ? full.PhotoSmall : full.PhotoBig;
+                var fileLocation = iFileLocation as FileLocation;
+                if (fileLocation != null)
+                {
+                    return fileLocation;
+                }
+                else
+                {
+                    // If the file location is empty, then we assume the user hasn't set a photo.
+                    // Fall-through
+                }
+            }
+            return null;
+        }
+
         public static string GetUserId(IUser user)
         {
             var userEmpty = user as UserEmpty;
