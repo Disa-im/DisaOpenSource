@@ -31,8 +31,7 @@ namespace Disa.Framework.Telegram
             {
                 get
                 {
-                    var settingsPath
-                    = Platform.GetSettingsPath();
+                    var settingsPath = Platform.GetSettingsPath();
                     var locationPath = Path.Combine(settingsPath, "TelegramDcs.db");
                     return locationPath;
                 }
