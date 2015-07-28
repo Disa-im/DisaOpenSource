@@ -1102,6 +1102,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
+                
                 result(null);
             });
         }
@@ -1128,7 +1129,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(null);
+                result(GetThumbnail(participant.Address, false, true));
             });
         }
 
