@@ -175,6 +175,31 @@ namespace Disa.Framework.Telegram
             return 0;
         }
 
+        public static FileLocation GetChatThumbnailLocation(IChat chat, bool small)
+        {
+            var chatEmpty = chat as ChatEmpty;
+            var chatForbidden = chat as ChatForbidden;
+            var chatChat = chat as Chat;
+            var geoChat = chat as GeoChat;
+            if (chatEmpty != null)
+            {
+                return null;
+            }
+            if (chatForbidden != null)
+            {
+                return null;
+            }
+            if (chatChat != null)
+            {
+                return GetFileLocationFromPhoto(chatChat.Photo, small);
+            }
+            if (geoChat != null)
+            {
+                return GetFileLocationFromPhoto(geoChat.Photo, small);
+            }
+            return null;
+        }
+
         public static FileLocation GetUserPhotoLocation(IUser user, bool small)
         {
             var userEmpty = user as UserEmpty;
@@ -206,6 +231,31 @@ namespace Disa.Framework.Telegram
             if (userForeign != null)
             {
                 return GetFileLocationFromPhoto(userForeign.Photo, small);
+            }
+            return null;
+        }
+
+        private static FileLocation GetFileLocationFromPhoto(IChatPhoto photo, bool small)
+        {
+            var empty = photo as ChatPhotoEmpty;
+            var full = photo as ChatPhoto;
+            if (empty != null)
+            {
+                return null;
+            }
+            else if (full != null)
+            {
+                var iFileLocation = small ? full.PhotoSmall : full.PhotoBig;
+                var fileLocation = iFileLocation as FileLocation;
+                if (fileLocation != null)
+                {
+                    return fileLocation;
+                }
+                else
+                {
+                    // If the file location is empty, then we assume the chat hasn't set a photo.
+                    // Fall-through
+                }
             }
             return null;
         }

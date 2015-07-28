@@ -1265,7 +1265,22 @@ namespace Disa.Framework.Telegram
                 return null;
             if (group)
             {
-                //TODO:
+                foreach (var chat in _dialogs.Chats)
+                {
+                    if (id == TelegramUtils.GetChatId(chat))
+                    {
+                        var fileLocation = TelegramUtils.GetChatThumbnailLocation(chat, small);
+                        if (fileLocation == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            var bytes = FetchFileBytes(fileLocation);
+                            return new DisaThumbnail(this, bytes, id);
+                        }
+                    }
+                }
             }
             else
             {
