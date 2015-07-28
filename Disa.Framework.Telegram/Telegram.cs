@@ -1100,11 +1100,34 @@ namespace Disa.Framework.Telegram
             });
         }
 
+
         public override Task GetBubbleGroupPartyParticipants(BubbleGroup group, Action<DisaParticipant[]> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                result(null);
+                using (var clientDisposable = new TelegramClientDisposable(this))
+                {
+                    var fullChat = (MessagesChatFull)TelegramUtils.RunSynchronously(clientDisposable.Client.Methods.MessagesGetFullChatAsync(new MessagesGetFullChatArgs
+                    {
+                        ChatId = uint.Parse(group.Address) 
+                    }));
+                    var chatFull = (ChatFull)fullChat.FullChat;
+                    var participants = chatFull.Participants as ChatParticipants;
+                    if (participants == null)
+                    {
+                        result(null);
+                    }
+                    else
+                    {
+                        var users = participants.Participants.Select(x => 
+                            GetUser(fullChat.Users, ((ChatParticipant)x).UserId.ToString(CultureInfo.InvariantCulture)));
+                        var disaParticipants = users.Select(x => 
+                            new DisaParticipant(
+                                TelegramUtils.GetUserName(x), 
+                                TelegramUtils.GetUserId(x))).ToArray();
+                        result(disaParticipants);
+                    }
+                }
             });
         }
 
@@ -1112,17 +1135,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var user = GetUser(unknownPartyParticipant);
-                if (user == null)
-                {
-                    result(null);
-                }
-                else
-                {
-                    var participant = 
-                        new DisaParticipant(TelegramUtils.GetUserName(user), unknownPartyParticipant);
-                    result(participant);
-                }
+                result(null);
             });
         }
 
@@ -1130,6 +1143,9 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
+                //TODO: results from partyparticipants need to be cached
+                // GetThumbnails should then search those as well,
+                // because _dialog.Users does not contain all users in participant list
                 result(GetThumbnail(participant.Address, false, true));
             });
         }
@@ -1166,11 +1182,11 @@ namespace Disa.Framework.Telegram
             base.RefreshPhoneBookContacts();
         }
 
-        private IUser GetUser(string userId)
+        private IUser GetUser(List<IUser> users, string userId)
         {
             if (_dialogs == null)
                 return null;
-            foreach (var user in _dialogs.Users)
+            foreach (var user in users)
             {
                 var userIdInner = TelegramUtils.GetUserId(user);
                 if (userId == userIdInner)
