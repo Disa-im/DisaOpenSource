@@ -24,6 +24,8 @@ namespace Disa.Framework.Telegram
         ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(PresenceBubble))]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
+        private Dictionary<string, DisaThumbnail> _cachedThumbnails = new Dictionary<string, DisaThumbnail>();
+
         private static TcpClientTransportConfig DefaultTransportConfig = 
             new TcpClientTransportConfig("149.154.167.50", 443);
 
@@ -1102,7 +1104,6 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                
                 result(null);
             });
         }
@@ -1262,6 +1263,22 @@ namespace Disa.Framework.Telegram
 
         private DisaThumbnail GetThumbnail(string id, bool group, bool small)
         {
+            Func<DisaThumbnail, DisaThumbnail> rturn = thumbnail =>
+            {
+                lock (_cachedThumbnails)
+                {
+                    _cachedThumbnails[id] = thumbnail;
+                }
+                return thumbnail;
+            };
+
+            lock (_cachedThumbnails)
+            {
+                if (_cachedThumbnails.ContainsKey(id))
+                {
+                    return _cachedThumbnails[id];
+                }
+            }
             if (_dialogs == null)
                 return null;
             if (group)
@@ -1273,12 +1290,12 @@ namespace Disa.Framework.Telegram
                         var fileLocation = TelegramUtils.GetChatThumbnailLocation(chat, small);
                         if (fileLocation == null)
                         {
-                            return null;
+                            return rturn(null);
                         }
                         else
                         {
                             var bytes = FetchFileBytes(fileLocation);
-                            return new DisaThumbnail(this, bytes, id);
+                            return rturn(new DisaThumbnail(this, bytes, id));
                         }
                     }
                 }
@@ -1293,12 +1310,12 @@ namespace Disa.Framework.Telegram
                         var fileLocation = TelegramUtils.GetUserPhotoLocation(user, small);
                         if (fileLocation == null)
                         {
-                            return null;
+                            return rturn(null);
                         }
                         else
                         {
                             var bytes = FetchFileBytes(fileLocation);
-                            return new DisaThumbnail(this, bytes, id);
+                            return rturn(new DisaThumbnail(this, bytes, id));
                         }
                     }
                 }
