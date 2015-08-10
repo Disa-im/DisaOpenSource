@@ -1,0 +1,44 @@
+@media only screen and (min-width: 0px) {
+	/* GENERAL STYLES */
+	* { font-family: 'Open Sans', 'Raleway', sans-serif !important; }
+	body { background-color: #F9F9F9; }
+
+	/* PAGE HEADER */
+	.page-header { border-bottom: none; color: #0098A6 !important; text-align: center; }
+
+	/* CHANGELOGS */
+	.version { 
+		background-color: #fff;
+		color: #000; 
+		
+		border-radius: 0 !important;
+		webkit-box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12); 
+		-moz-box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12); 
+		box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+		
+		font-size: 16px;
+		width: 100%;		
+		margin: 0 auto 15px auto;
+		padding: 20px 10px 20px 20px;
+		position: relative;
+	}
+
+	.version-changes { font-size: 14px; padding-top: 20px; font-weight: 400; }
+	
+	.version-changes ul { padding: 0 30px; }
+  
+	/* REMOVE THIS IF YOU DON'T LIKE THE SHADOW UNDER THE VERSION CARD */
+  .version:hover { box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.19), 0 8px 17px 0 rgba(0, 0, 0, 0.2); }
+}
+
+@media only screen and (min-width: 680px) {
+	.version { font-size: 16px; width: 80%;	}
+
+	.version-changes { font-size: 14px; }
+}
+
+@media only screen and (min-width: 960px) {
+	.version { font-size: 18px; width: 70%; }
+
+	.version-changes { font-size: 15px; }
+}
