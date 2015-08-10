@@ -1,7 +1,7 @@
 @media only screen and (min-width: 0px) {
 	/* GENERAL STYLES */
 	* { font-family: 'Open Sans', 'Raleway', sans-serif !important; }
-	body { background-color: #F9F9F9; }
+	body { background-color: #F9F9F9; margin-top: 15px; }
 
 	/* PAGE HEADER */
 	.page-header { border-bottom: none; color: #0098A6 !important; text-align: center; }
