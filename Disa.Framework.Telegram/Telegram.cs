@@ -84,6 +84,10 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        //TODO: when the client dies when its not on a ping delay (user has Disa open),
+        //      we may need to relaunch the client.
+        private bool _fullClientWillDieBecauseOfPingDelay;
+
         private TelegramClient _fullClient
         {
             get
@@ -361,7 +365,7 @@ namespace Disa.Framework.Telegram
 
         //TODO: fix protoMethods bug where Tasks are cancelled.
         //ATM, this is the only method we call in the ProtoMethods stack
-        private async void PingDelay(TelegramClient client, uint disconnectDelay)
+        private async void PingDelay(TelegramClient client, uint disconnectDelay, Action<Exception> exception = null)
         {
             try
             {
@@ -371,9 +375,12 @@ namespace Disa.Framework.Telegram
                     DisconnectDelay = disconnectDelay
                 });
             }
-            catch
+            catch (Exception ex)
             {
-                // fall-through
+                if (exception != null)
+                {
+                    exception(ex);
+                }
             }
         }
 
@@ -388,12 +395,14 @@ namespace Disa.Framework.Telegram
             {
                 DebugPrint("Telling full client that it can forever stay alive.");
                 PingDelay(_fullClient, uint.MaxValue);
+                _fullClientWillDieBecauseOfPingDelay = false;
                 ScheduleFullClientPing();
             }
             else
             {
                 DebugPrint("Telling full client that it can only stay alive for a minute.");
                 PingDelay(_fullClient, 60);
+                _fullClientWillDieBecauseOfPingDelay = true;
                 RemoveFullClientPingIfPossible();
             }
         }
