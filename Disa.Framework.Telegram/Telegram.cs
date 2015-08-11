@@ -17,7 +17,6 @@ using System.Timers;
 //1) Incoming messages FullClient should be set to UnixNowTime, whereas downloaded messages should use the provided timestamp
 //2) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
 //3) _dialogs have to be refetched whenever there is a new conversation created, participant added, etc, to update the client's local cache.
-//4) Implement heartbeats
 
 namespace Disa.Framework.Telegram
 {
