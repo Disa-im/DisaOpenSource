@@ -17,6 +17,7 @@ using System.Timers;
 //1) Incoming messages FullClient should be set to UnixNowTime, whereas downloaded messages should use the provided timestamp
 //2) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
 //3) _dialogs have to be refetched whenever there is a new conversation created, participant added, etc, to update the client's local cache.
+//4) Implement heartbeats
 
 namespace Disa.Framework.Telegram
 {
@@ -342,6 +343,22 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        private void Ping(TelegramClient client)
+        {
+            try
+            {
+                TelegramUtils.RunSynchronously(client.ProtoMethods.PingAsync(new PingArgs
+                {
+                    PingId = GetRandomId(),
+                }));
+            }
+            catch (Exception ex)
+            {
+                Utils.DebugPrint("Failed to ping client: " + ex);
+                //TODO: perhaps restart the service if this fails
+            }
+        }
+
         //TODO: fix protoMethods bug where Tasks are cancelled.
         //ATM, this is the only method we call in the ProtoMethods stack
         private async void PingDelay(TelegramClient client, uint disconnectDelay)
@@ -371,11 +388,41 @@ namespace Disa.Framework.Telegram
             {
                 DebugPrint("Telling full client that it can forever stay alive.");
                 PingDelay(_fullClient, uint.MaxValue);
+                ScheduleFullClientPing();
             }
             else
             {
                 DebugPrint("Telling full client that it can only stay alive for a minute.");
                 PingDelay(_fullClient, 60);
+                RemoveFullClientPingIfPossible();
+            }
+        }
+
+        private WakeLockBalancer.GracefulWakeLock _fullClientHeartbeat;
+
+        private void ScheduleFullClientPing()
+        {
+            RemoveFullClientPingIfPossible();
+            _fullClientHeartbeat = new WakeLockBalancer.GracefulWakeLock(new WakeLockBalancer.ActionObject(() =>
+            {
+                if (_fullClient == null || !_fullClient.IsConnected)
+                {
+                    RemoveFullClientPingIfPossible();   
+                }
+                else
+                {
+                    Ping(_fullClient);
+                }
+            }, WakeLockBalancer.ActionObject.ExecuteType.TaskWithWakeLock), 240, 60, true);
+            Platform.ScheduleAction(_fullClientHeartbeat);
+        }
+
+        private void RemoveFullClientPingIfPossible()
+        {
+            if (_fullClientHeartbeat != null)
+            {
+                Platform.RemoveAction(_fullClientHeartbeat);
+                _fullClientHeartbeat = null;
             }
         }
 
