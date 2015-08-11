@@ -326,6 +326,12 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        private void OnLongPollClientClosed(object sender, EventArgs e)
+        {
+            Utils.DebugPrint("Looks like a long poll client closed itself internally. Restarting Telegram...");
+            RestartTelegram(null);
+        }
+
         private void OnLongPollClientUpdateTooLong(object sender, EventArgs e)
         {
             if (IsFullClientConnected)
@@ -410,38 +416,39 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private void RestartTelegram(Exception exception)
+        {
+            if (exception != null)
+            {
+                Utils.DebugPrint("Restarting Telegram: " + exception);
+            }
+            else
+            {
+                Utils.DebugPrint("Restarting Telegram");
+            }
+            // start a new task, freeing the possibility that there could be a wake lock being held
+            Task.Factory.StartNew(() =>
+            {
+                ServiceManager.Restart(this);
+            });
+        }
+
         private WakeLockBalancer.GracefulWakeLock _longPollHeartbeart;
         private WakeLockBalancer.GracefulWakeLock _fullClientHeartbeat;
 
         private void ScheduleLongPollPing()
         {
-            Action<Exception> restartTelegram = exception =>
-            {
-                if (exception != null)
-                {
-                    Utils.DebugPrint("Restarting Telegram: " + exception);
-                }
-                else
-                {
-                    Utils.DebugPrint("Restarting Telegram");
-                }
-                // start a new task, freeing the possibility that there could be a wake lock being held
-                Task.Factory.StartNew(() =>
-                {
-                    ServiceManager.Restart(this);
-                });
-            };
             RemoveLongPollPingIfPossible();
             _longPollHeartbeart = new WakeLockBalancer.GracefulWakeLock(new WakeLockBalancer.ActionObject(() =>
             {
                 if (_longPollClient == null || !_longPollClient.IsConnected)
                 {
                     RemoveLongPollPingIfPossible();
-                    restartTelegram(null);
+                    RestartTelegram(null);
                 }
                 else
                 {
-                    Ping(_longPollClient, restartTelegram);
+                    Ping(_longPollClient, RestartTelegram);
                 }
             }, WakeLockBalancer.ActionObject.ExecuteType.TaskWithWakeLock), 240, 60, true);
             Platform.ScheduleAction(_longPollHeartbeart);
@@ -498,6 +505,7 @@ namespace Disa.Framework.Telegram
                 {
                     DebugPrint("Failed to disconnect full client: " + ex);
                 }
+                RemoveFullClientPingIfPossible();
             }
         }
 
@@ -513,6 +521,7 @@ namespace Disa.Framework.Telegram
                 {
                     DebugPrint("Failed to disconnect full client: " + ex);
                 }
+                RemoveLongPollPingIfPossible();
             }
         }
 
@@ -1053,6 +1062,8 @@ namespace Disa.Framework.Telegram
                 throw new Exception("Failed to connect long poll client: " + result2);
             } 
             _longPollClient.OnUpdateTooLong += OnLongPollClientUpdateTooLong;
+            _longPollClient.OnClosedInternally += OnLongPollClientClosed;
+            ScheduleLongPollPing();
             DebugPrint("Long poller started!");
         }
 
