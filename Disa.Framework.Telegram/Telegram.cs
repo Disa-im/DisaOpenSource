@@ -347,7 +347,7 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        private void Ping(TelegramClient client)
+        private void Ping(TelegramClient client, Action<Exception> exception = null)
         {
             try
             {
@@ -359,7 +359,10 @@ namespace Disa.Framework.Telegram
             catch (Exception ex)
             {
                 Utils.DebugPrint("Failed to ping client: " + ex);
-                //TODO: perhaps restart the service if this fails
+                if (exception != null)
+                {
+                    exception(ex);
+                }
             }
         }
 
@@ -407,7 +410,51 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private WakeLockBalancer.GracefulWakeLock _longPollHeartbeart;
         private WakeLockBalancer.GracefulWakeLock _fullClientHeartbeat;
+
+        private void ScheduleLongPollPing()
+        {
+            Action<Exception> restartTelegram = exception =>
+            {
+                if (exception != null)
+                {
+                    Utils.DebugPrint("Restarting Telegram: " + exception);
+                }
+                else
+                {
+                    Utils.DebugPrint("Restarting Telegram");
+                }
+                // start a new task, freeing the possibility that there could be a wake lock being held
+                Task.Factory.StartNew(() =>
+                {
+                    ServiceManager.Restart(this);
+                });
+            };
+            RemoveLongPollPingIfPossible();
+            _longPollHeartbeart = new WakeLockBalancer.GracefulWakeLock(new WakeLockBalancer.ActionObject(() =>
+            {
+                if (_longPollClient == null || !_longPollClient.IsConnected)
+                {
+                    RemoveLongPollPingIfPossible();
+                    restartTelegram(null);
+                }
+                else
+                {
+                    Ping(_longPollClient, restartTelegram);
+                }
+            }, WakeLockBalancer.ActionObject.ExecuteType.TaskWithWakeLock), 240, 60, true);
+            Platform.ScheduleAction(_longPollHeartbeart);
+        }
+
+        private void RemoveLongPollPingIfPossible()
+        {
+            if (_longPollHeartbeart != null)
+            {
+                Platform.RemoveAction(_longPollHeartbeart);
+                _longPollHeartbeart = null;
+            }
+        }
 
         private void ScheduleFullClientPing()
         {
