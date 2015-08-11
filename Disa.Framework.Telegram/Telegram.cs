@@ -379,7 +379,7 @@ namespace Disa.Framework.Telegram
 
         private void SetFullClientPingDelayDisconnect()
         {
-            if (_fullClient == null || !_fullClient.IsConnected)
+            if (!IsFullClientConnected)
             {
                 return;   
             }
@@ -405,7 +405,7 @@ namespace Disa.Framework.Telegram
             RemoveFullClientPingIfPossible();
             _fullClientHeartbeat = new WakeLockBalancer.GracefulWakeLock(new WakeLockBalancer.ActionObject(() =>
             {
-                if (_fullClient == null || !_fullClient.IsConnected)
+                if (!IsFullClientConnected)
                 {
                     RemoveFullClientPingIfPossible();   
                 }
@@ -428,7 +428,7 @@ namespace Disa.Framework.Telegram
 
         private void DisconnectFullClientIfPossible()
         {
-            if (_fullClient != null && _fullClient.IsConnected)
+            if (IsFullClientConnected)
             {
                 TelegramUtils.RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
                 {
