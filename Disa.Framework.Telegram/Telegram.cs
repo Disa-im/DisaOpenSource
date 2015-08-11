@@ -356,10 +356,12 @@ namespace Disa.Framework.Telegram
         {
             try
             {
-                TelegramUtils.RunSynchronously(client.ProtoMethods.PingAsync(new PingArgs
+                Utils.DebugPrint("Sending ping!");
+                var pong = (Pong)TelegramUtils.RunSynchronously(client.ProtoMethods.PingAsync(new PingArgs
                 {
                     PingId = GetRandomId(),
                 }));
+                Utils.DebugPrint("Got pong (from ping): " + pong.MsgId);
             }
             catch (Exception ex)
             {
@@ -370,18 +372,18 @@ namespace Disa.Framework.Telegram
                 }
             }
         }
-
-        //TODO: fix protoMethods bug where Tasks are cancelled.
-        //ATM, this is the only method we call in the ProtoMethods stack
+            
         private async void PingDelay(TelegramClient client, uint disconnectDelay, Action<Exception> exception = null)
         {
             try
             {
-                await client.ProtoMethods.PingDelayDisconnectAsync(new PingDelayDisconnectArgs
+                Utils.DebugPrint("Sending pingDelay!");
+                var pong = (Pong)await client.ProtoMethods.PingDelayDisconnectAsync(new PingDelayDisconnectArgs
                 {
                     PingId = GetRandomId(),
                     DisconnectDelay = disconnectDelay
                 });
+                Utils.DebugPrint("Got pong (from pingDelay): " + pong.MsgId);
             }
             catch (Exception ex)
             {

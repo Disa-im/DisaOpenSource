@@ -410,6 +410,7 @@ namespace SharpMTProto
             responseDispatcher.AddHandler(new BadMsgNotificationHandler(this, _requestsManager));
             responseDispatcher.AddHandler(new MessageContainerHandler(_responseDispatcher));
             responseDispatcher.AddHandler(new RpcResultHandler(_requestsManager, _tlRig));
+            responseDispatcher.AddHandler(new PongHandler(_requestsManager));
             responseDispatcher.AddHandler(new SessionHandler());
             responseDispatcher.AddHandler(_updatesHandler);
         }
