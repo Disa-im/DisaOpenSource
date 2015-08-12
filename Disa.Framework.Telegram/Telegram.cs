@@ -207,7 +207,7 @@ namespace Disa.Framework.Telegram
             {
                 using (var disposableClient = new TelegramClientDisposable(this))
                 {
-                    markAsReceived(disposableClient);
+                    markAsReceived(disposableClient.Client);
                 }
             }
             else
@@ -1185,7 +1185,7 @@ namespace Disa.Framework.Telegram
                         }
                     }
                 }
-                TelegramUtils.RunSynchronously(await _fullClient.Methods.AccountUpdateStatusAsync(
+                TelegramUtils.RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(
                     new AccountUpdateStatusArgs
                 {
                     Offline = !presenceBubble.Available
@@ -1200,7 +1200,8 @@ namespace Disa.Framework.Telegram
                     new MessagesSetTypingArgs
                 {
                     Peer = peer,
-                    Action = typingBubble.IsAudio ? new SendMessageRecordAudioAction() : new SendMessageTypingAction()
+                    Action = typingBubble.IsAudio ? 
+                        (ISendMessageAction)new SendMessageRecordAudioAction() : (ISendMessageAction)new SendMessageTypingAction()
                 }));
             }
 
