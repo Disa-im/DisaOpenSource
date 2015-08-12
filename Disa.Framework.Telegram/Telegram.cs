@@ -15,7 +15,6 @@ using System.Timers;
 
 //TODO:
 //1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
-//2) _dialogs have to be refetched whenever there is a new conversation created, participant added, etc, to update the client's local cache.
 //3) Implement contact syncing
 
 namespace Disa.Framework.Telegram
@@ -209,6 +208,8 @@ namespace Disa.Framework.Telegram
                 var userStatus = update as UpdateUserStatus;
                 var readMessages = update as UpdateReadMessages;
                 var message = update as SharpTelegram.Schema.Layer18.Message;
+                var user = update as IUser;
+                var chat = update as IChat;
 
                 if (shortMessage != null)
                 {
@@ -239,24 +240,24 @@ namespace Disa.Framework.Telegram
 
                     TextBubble tb = null;
 
-                    var user = message.ToId as PeerUser;
-                    var chat = message.ToId as PeerChat;
+                    var peerUser = message.ToId as PeerUser;
+                    var peerChat = message.ToId as PeerChat;
 
                     var direction = message.FromId == _settings.AccountId 
                         ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
 
-                    if (user != null)
+                    if (peerUser != null)
                     {
-                        var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : user.UserId;
+                        var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : peerUser.UserId;
                         var addressStr = address.ToString(CultureInfo.InvariantCulture);
                         tb = new TextBubble(
                             useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
                             direction, addressStr, null, false, this, message.MessageProperty,
                             message.Id.ToString(CultureInfo.InvariantCulture));
                     }
-                    else if (chat != null)
+                    else if (peerChat != null)
                     {
-                        var address = chat.ChatId.ToString(CultureInfo.InvariantCulture);
+                        var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
                         var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
                         tb = new TextBubble(
                             useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
@@ -308,10 +309,61 @@ namespace Disa.Framework.Telegram
                         _typingTimers[typing.UserId] = newTimer;
                         newTimer.Start();
                     }
-
                     else
                     {
                         Console.WriteLine("Unknown typing action: " + typing.Action.GetType().Name);
+                    }
+                }
+                else if (user != null)
+                {
+                    if (_dialogs == null)
+                        return;
+                    var userId = TelegramUtils.GetUserId(user);
+                    if (userId != null)
+                    {
+                        var updatedUser = false;
+                        for (int i = 0; i < _dialogs.Users.Count; i++)
+                        {
+                            var userInnerId = TelegramUtils.GetUserId(_dialogs.Users[i]);
+                            if (userInnerId != null && userInnerId == userId)
+                            {
+                                Console.WriteLine("Updating user with new updates information: " + userId);
+                                _dialogs.Users[i] = user;
+                                updatedUser = true;
+                                break;
+                            }
+                        }
+                        if (!updatedUser)
+                        {
+                            Console.WriteLine("New user information: " + userId + " adding to dialogs!");
+                            _dialogs.Users.Add(user);
+                        }
+                    }
+                }
+                else if (chat != null)
+                {
+                    if (_dialogs == null)
+                        return;
+                    var chatId = TelegramUtils.GetChatId(chat);
+                    if (chatId != null)
+                    {
+                        var updatedChat = false;
+                        for (int i = 0; i < _dialogs.Chats.Count; i++)
+                        {
+                            var chatInnerId = TelegramUtils.GetChatId(_dialogs.Chats[i]);
+                            if (chatInnerId != null && chatInnerId == chatId)
+                            {
+                                Console.WriteLine("Updating chat with new updates information: " + chatId);
+                                _dialogs.Chats[i] = chat;
+                                updatedChat = true;
+                                break;
+                            }
+                        }
+                        if (!updatedChat)
+                        {
+                            Console.WriteLine("New chat information: " + chatId + " adding to dialogs!");
+                            _dialogs.Chats.Add(chat);
+                        }
                     }
                 }
                 else
