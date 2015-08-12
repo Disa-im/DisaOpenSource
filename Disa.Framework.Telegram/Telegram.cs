@@ -14,9 +14,9 @@ using System.Globalization;
 using System.Timers;
 
 //TODO:
-//1) Incoming messages FullClient should be set to UnixNowTime, whereas downloaded messages should use the provided timestamp
-//2) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
-//3) _dialogs have to be refetched whenever there is a new conversation created, participant added, etc, to update the client's local cache.
+//1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
+//2) _dialogs have to be refetched whenever there is a new conversation created, participant added, etc, to update the client's local cache.
+//3) Implement contact syncing
 
 namespace Disa.Framework.Telegram
 {
@@ -195,13 +195,13 @@ namespace Disa.Framework.Telegram
             return obj;
         }
 
-        private void OnUpdate(object sender, List<object> updates)
+        private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime)
         {
             //NOTE: multiple client connects will call this event. Do not call upon _fullClient or any
             //      other connections in here.
-            foreach (var updatez in updates)
+            foreach (var payload in payloads)
             {
-                var update = NormalizeUpdateIfNeeded(updatez);
+                var update = NormalizeUpdateIfNeeded(payload);
 
                 var shortMessage = update as UpdateShortMessage;
                 var shortChatMessage = update as UpdateShortChatMessage;
@@ -216,7 +216,8 @@ namespace Disa.Framework.Telegram
                     EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                         Bubble.BubbleDirection.Incoming,
                         fromId, false, this, false, false));
-                    EventBubble(new TextBubble((long)shortMessage.Date, 
+                    EventBubble(new TextBubble(
+                        useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date, 
                         Bubble.BubbleDirection.Incoming, 
                         fromId, null, false, this, shortMessage.Message,
                         shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
@@ -226,7 +227,8 @@ namespace Disa.Framework.Telegram
                 {
                     var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
                     var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
-                    EventBubble(new TextBubble((long)shortChatMessage.Date, 
+                    EventBubble(new TextBubble(
+                        useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortChatMessage.Date, 
                         Bubble.BubbleDirection.Incoming, 
                         address, participantAddress, true, this, shortChatMessage.Message,
                         shortChatMessage.Id.ToString(CultureInfo.InvariantCulture)));
@@ -247,15 +249,17 @@ namespace Disa.Framework.Telegram
                     {
                         var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : user.UserId;
                         var addressStr = address.ToString(CultureInfo.InvariantCulture);
-                        tb = new TextBubble((long)message.Date,
-                                     direction, addressStr, null, false, this, message.MessageProperty,
-                                     message.Id.ToString(CultureInfo.InvariantCulture));
+                        tb = new TextBubble(
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                            direction, addressStr, null, false, this, message.MessageProperty,
+                            message.Id.ToString(CultureInfo.InvariantCulture));
                     }
                     else if (chat != null)
                     {
                         var address = chat.ChatId.ToString(CultureInfo.InvariantCulture);
                         var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
-                        tb = new TextBubble((long)message.Date,
+                        tb = new TextBubble(
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
                             direction, address, participantAddress, true, this, message.MessageProperty,
                             message.Id.ToString(CultureInfo.InvariantCulture));
                     }
@@ -314,7 +318,12 @@ namespace Disa.Framework.Telegram
                 {
                     Console.WriteLine("Unknown update: " + ObjectDumper.Dump(update));
                 }
-            }
+            }            
+        }
+
+        private void OnUpdate(object sender, List<object> updates)
+        {
+            ProcessIncomingPayload(updates, true);
         }
 
         private void OnFullClientUpdateTooLong(object sender, EventArgs e)
@@ -979,7 +988,7 @@ namespace Disa.Framework.Telegram
                     updates.AddRange(slice.OtherUpdates);
                 }
                 DebugPrint(ObjectDumper.Dump(updates));
-                OnUpdate(null, updates);
+                ProcessIncomingPayload(updates, false);
             };
 
             if (diff != null)
@@ -1001,7 +1010,6 @@ namespace Disa.Framework.Telegram
                 SaveState(empty.Date, 0, 0, empty.Seq);
             }
         }
-
 
         private void FetchState(TelegramClient client)
         {
