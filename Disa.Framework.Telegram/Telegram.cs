@@ -1376,7 +1376,7 @@ namespace Disa.Framework.Telegram
 
         public override void RefreshPhoneBookContacts()
         {
-            Utils.DebugPrint("Phone book contacts have been updated! Sending information to Telegram servers!");
+            Utils.DebugPrint("Phone book contacts have been updated! Sending information to Telegram servers...");
             var contacts = PhoneBook.PhoneBookContacts;
             var inputContacts = new List<IInputContact>();
             foreach (var contact in contacts)
@@ -1407,6 +1407,8 @@ namespace Disa.Framework.Telegram
                             Contacts = inputContacts,
                             Replace = false,
                         }));
+                    Utils.DebugPrint("Fetching newest dialogs...");
+                    GetDialogs(client.Client);
                 }
             }
             catch (Exception ex)
@@ -1625,7 +1627,7 @@ namespace Disa.Framework.Telegram
         private void GetDialogs(TelegramClient client)
         {
             DebugPrint("Fetching conversations");
-            _dialogs = new MessagesDialogs
+            var masterDialogs = new MessagesDialogs
             {
                 Chats = new List<IChat>(),
                 Dialogs = new List<IDialog>(),
@@ -1645,17 +1647,17 @@ namespace Disa.Framework.Telegram
             var dialogsSlice = iDialogs as MessagesDialogsSlice;
             if (dialogs != null)
             {
-                _dialogs.Chats.AddRange(dialogs.Chats);
-                _dialogs.Dialogs.AddRange(dialogs.Dialogs);
-                _dialogs.Messages.AddRange(dialogs.Messages);
-                _dialogs.Users.AddRange(dialogs.Users);
+                masterDialogs.Chats.AddRange(dialogs.Chats);
+                masterDialogs.Dialogs.AddRange(dialogs.Dialogs);
+                masterDialogs.Messages.AddRange(dialogs.Messages);
+                masterDialogs.Users.AddRange(dialogs.Users);
             }
             else if (dialogsSlice != null)
             {
-                _dialogs.Chats.AddRange(dialogsSlice.Chats);
-                _dialogs.Dialogs.AddRange(dialogsSlice.Dialogs);
-                _dialogs.Messages.AddRange(dialogsSlice.Messages);
-                _dialogs.Users.AddRange(dialogsSlice.Users);
+                masterDialogs.Chats.AddRange(dialogsSlice.Chats);
+                masterDialogs.Dialogs.AddRange(dialogsSlice.Dialogs);
+                masterDialogs.Messages.AddRange(dialogsSlice.Messages);
+                masterDialogs.Users.AddRange(dialogsSlice.Users);
                 if (dialogsSlice.Count < offset + limit)
                 {
                     Console.WriteLine("No need to fetch anymore slices. We've reached the end!");
@@ -1666,6 +1668,7 @@ namespace Disa.Framework.Telegram
                 goto Again;
             }
             End:
+            _dialogs = masterDialogs;
             DebugPrint("Obtained conversations.");
         }
 
