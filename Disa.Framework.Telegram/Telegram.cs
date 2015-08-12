@@ -1010,20 +1010,6 @@ namespace Disa.Framework.Telegram
             return Tuple.Create(dcOption.IpAddress, dcOption.Port);
         }
 
-//        public void ChangeDcIfNeeded()
-//        {
-//            var nearestDc = GetNearestDc();
-//            if (_mutableSettings.NearestDcId != nearestDc) // what if the first DC is zero? fix this case
-//            {
-//                var ipAndPort = GetDcIPAndPort(nearestDc);
-//                _mutableSettings.NearestDcIp = ipAndPort.Item1;
-//                _mutableSettings.NearestDcPort = ipAndPort.Item2;
-//
-//                MutableSettingsManager.Save(_mutableSettings);
-//                throw new ServiceSpecialRestartException("Changing DCs");
-//            }
-//        }
-
         public override bool Authenticate(WakeLock wakeLock)
         {
             return true;
