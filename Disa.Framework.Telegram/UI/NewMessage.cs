@@ -52,8 +52,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
                 {
-                    //TODO: thumbnail maangement system
-                    result(null);
+                    result(GetThumbnail(contact.Ids[0].Id, false, preview));
                 });
         }
 
