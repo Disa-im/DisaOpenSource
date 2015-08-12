@@ -19,7 +19,7 @@ using System.Timers;
 namespace Disa.Framework.Telegram
 {
     [ServiceInfo("Telegram", true, false, false, false, false, typeof(TelegramSettings), 
-        ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(PresenceBubble))]
+        ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(TypingBubble), typeof(PresenceBubble))]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
         private Dictionary<string, DisaThumbnail> _cachedThumbnails = new Dictionary<string, DisaThumbnail>();
@@ -1174,12 +1174,24 @@ namespace Disa.Framework.Telegram
                         }
                     }
                 }
-                await _fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
-                    {
-                        Offline = !presenceBubble.Available
-                    });
+                TelegramUtils.RunSynchronously(await _fullClient.Methods.AccountUpdateStatusAsync(
+                    new AccountUpdateStatusArgs
+                {
+                    Offline = !presenceBubble.Available
+                }));
             }
 
+            var typingBubble = b as TypingBubble;
+            if (typingBubble != null)
+            {
+                var peer = GetInputPeer(typingBubble.Address, typingBubble.Party);
+                TelegramUtils.RunSynchronously(_fullClient.Methods.MessagesSetTypingAsync(
+                    new MessagesSetTypingArgs
+                {
+                    Peer = peer,
+                    Action = typingBubble.IsAudio ? new SendMessageRecordAudioAction() : new SendMessageTypingAction()
+                }));
+            }
 
             var textBubble = b as TextBubble;
             if (textBubble != null)
