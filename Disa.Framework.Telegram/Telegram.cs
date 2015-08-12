@@ -1345,16 +1345,43 @@ namespace Disa.Framework.Telegram
 
         public override void RefreshPhoneBookContacts()
         {
-//            Client.Methods.ContactsImportContactsAsync(new ContactsImportContactsArgs
-//                {
-
-//                    Contacts = new List<IInputContact>
-//                        {
-//                            
-//                        };
-//                    Replace = false,
-//                });
-            base.RefreshPhoneBookContacts();
+            Utils.DebugPrint("Phone book contacts have been updated! Sending information to Telegram servers!");
+            var contacts = PhoneBook.PhoneBookContacts;
+            var inputContacts = new List<IInputContact>();
+            foreach (var contact in contacts)
+            {
+                foreach (var phoneNumber in contact.PhoneNumbers)
+                {
+                    inputContacts.Add(new InputPhoneContact
+                    {
+                        ClientId = ulong.Parse(contact.ContactId),
+                        Phone = phoneNumber.Number,
+                        FirstName = contact.FirstName,
+                        LastName = contact.LastName,
+                    });
+                }
+            }
+            if (!inputContacts.Any())
+            {
+                Utils.DebugPrint("There are no input contacts!");
+                return;
+            }
+            try
+            {
+                using (var client = new TelegramClientDisposable(this))
+                {
+                    TelegramUtils.RunSynchronously(client.Client.Methods.ContactsImportContactsAsync(
+                        new ContactsImportContactsArgs
+                        {
+                            Contacts = inputContacts,
+                            Replace = false,
+                        }));
+                }
+            }
+            catch (Exception ex)
+            {
+                Utils.DebugPrint("Failed to update contacts: " + ex);
+            }
         }
 
         private IUser GetUser(List<IUser> users, string userId)
