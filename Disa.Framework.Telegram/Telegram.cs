@@ -193,10 +193,32 @@ namespace Disa.Framework.Telegram
             return obj;
         }
 
-        private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime)
+        private void MarkMessageAsRecevied(uint messageId, TelegramClient client = null)
         {
-            //NOTE: multiple client connects will call this event. Do not call upon _fullClient or any
-            //      other connections in here.
+            Action<TelegramClient> markAsReceived = theClient =>
+            {
+                TelegramUtils.RunSynchronously(theClient.Methods.MessagesReceivedMessagesAsync(
+                    new MessagesReceivedMessagesArgs
+                    {
+                        MaxId = messageId
+                    }));
+            };
+            if (client == null)
+            {
+                using (var disposableClient = new TelegramClientDisposable(this))
+                {
+                    markAsReceived(disposableClient);
+                }
+            }
+            else
+            {
+                markAsReceived(client);
+            }
+        }
+
+        private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime, TelegramClient optionalClient = null)
+        {
+            //NOTE: Only client disposable should be called in this method
             foreach (var payload in payloads)
             {
                 var update = NormalizeUpdateIfNeeded(payload);
@@ -225,6 +247,7 @@ namespace Disa.Framework.Telegram
                             shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
                         CancelTypingTimer(shortMessage.FromId);
                     }
+                    MarkMessageAsRecevied(shortMessage.Id, optionalClient);
                 }
                 else if (shortChatMessage != null)
                 {
@@ -238,6 +261,7 @@ namespace Disa.Framework.Telegram
                             address, participantAddress, true, this, shortChatMessage.Message,
                             shortChatMessage.Id.ToString(CultureInfo.InvariantCulture)));
                     }
+                    MarkMessageAsRecevied(shortChatMessage.Id, optionalClient);
                 }
                 else if (message != null)
                 {
@@ -277,6 +301,7 @@ namespace Disa.Framework.Telegram
 
                         EventBubble(tb);
                     }
+                    MarkMessageAsRecevied(message.Id, optionalClient);
                 }
                 else if (readMessages != null)
                 {
