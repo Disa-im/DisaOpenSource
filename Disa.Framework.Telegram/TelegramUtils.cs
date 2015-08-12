@@ -120,6 +120,46 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
+        public static string ConvertTelegramPhoneNumberIntoInternational(string phoneNumber)
+        {
+            return PhoneBook.TryGetPhoneNumberLegible("+" + phoneNumber);
+        }
+
+        public static string GetUserPhoneNumber(IUser user)
+        {
+            var userEmpty = user as UserEmpty;
+            var userSelf = user as UserSelf;
+            var userContact = user as UserContact;
+            var userRequest = user as UserRequest;
+            var userDeleted = user as UserDeleted;
+            var userForeign = user as UserForeign;
+            if (userEmpty != null)
+            {
+                return null;
+            }
+            if (userSelf != null)
+            {
+                return userSelf.Phone;
+            }
+            if (userContact != null)
+            {
+                return userContact.Phone;
+            }
+            if (userRequest != null)
+            {
+                return userRequest.Phone;
+            }
+            if (userDeleted != null)
+            {
+                return null;
+            }
+            if (userForeign != null)
+            {
+                return null;
+            }
+            return null;
+        }
+
         public static string GetUserName(IUser user)
         {
             var userEmpty = user as UserEmpty;
