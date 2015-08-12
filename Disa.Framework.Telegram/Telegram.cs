@@ -212,64 +212,71 @@ namespace Disa.Framework.Telegram
 
                 if (shortMessage != null)
                 {
-                    var fromId = shortMessage.FromId.ToString(CultureInfo.InvariantCulture);
-                    EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
-                        Bubble.BubbleDirection.Incoming,
-                        fromId, false, this, false, false));
-                    EventBubble(new TextBubble(
-                        useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date, 
-                        Bubble.BubbleDirection.Incoming, 
-                        fromId, null, false, this, shortMessage.Message,
-                        shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
-                    CancelTypingTimer(shortMessage.FromId);
+                    if (!string.IsNullOrWhiteSpace(shortMessage.Message))
+                    {
+                        var fromId = shortMessage.FromId.ToString(CultureInfo.InvariantCulture);
+                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+                            Bubble.BubbleDirection.Incoming,
+                            fromId, false, this, false, false));
+                        EventBubble(new TextBubble(
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date, 
+                            Bubble.BubbleDirection.Incoming, 
+                            fromId, null, false, this, shortMessage.Message,
+                            shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
+                        CancelTypingTimer(shortMessage.FromId);
+                    }
                 }
                 else if (shortChatMessage != null)
                 {
-                    var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
-                    var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
-                    EventBubble(new TextBubble(
-                        useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortChatMessage.Date, 
-                        Bubble.BubbleDirection.Incoming, 
-                        address, participantAddress, true, this, shortChatMessage.Message,
-                        shortChatMessage.Id.ToString(CultureInfo.InvariantCulture)));
+                    if (!string.IsNullOrWhiteSpace(shortChatMessage.Message))
+                    {
+                        var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
+                        var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
+                        EventBubble(new TextBubble(
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortChatMessage.Date, 
+                            Bubble.BubbleDirection.Incoming, 
+                            address, participantAddress, true, this, shortChatMessage.Message,
+                            shortChatMessage.Id.ToString(CultureInfo.InvariantCulture)));
+                    }
                 }
                 else if (message != null)
                 {
-                    //TODO: media messages
+                    if (!string.IsNullOrWhiteSpace(message.MessageProperty))
+                    {
+                        TextBubble tb = null;
 
-                    TextBubble tb = null;
+                        var peerUser = message.ToId as PeerUser;
+                        var peerChat = message.ToId as PeerChat;
 
-                    var peerUser = message.ToId as PeerUser;
-                    var peerChat = message.ToId as PeerChat;
-
-                    var direction = message.FromId == _settings.AccountId 
+                        var direction = message.FromId == _settings.AccountId 
                         ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
 
-                    if (peerUser != null)
-                    {
-                        var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : peerUser.UserId;
-                        var addressStr = address.ToString(CultureInfo.InvariantCulture);
-                        tb = new TextBubble(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                            direction, addressStr, null, false, this, message.MessageProperty,
-                            message.Id.ToString(CultureInfo.InvariantCulture));
-                    }
-                    else if (peerChat != null)
-                    {
-                        var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
-                        var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
-                        tb = new TextBubble(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                            direction, address, participantAddress, true, this, message.MessageProperty,
-                            message.Id.ToString(CultureInfo.InvariantCulture));
-                    }
+                        if (peerUser != null)
+                        {
+                            var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : peerUser.UserId;
+                            var addressStr = address.ToString(CultureInfo.InvariantCulture);
+                            tb = new TextBubble(
+                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                direction, addressStr, null, false, this, message.MessageProperty,
+                                message.Id.ToString(CultureInfo.InvariantCulture));
+                        }
+                        else if (peerChat != null)
+                        {
+                            var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
+                            var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
+                            tb = new TextBubble(
+                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                direction, address, participantAddress, true, this, message.MessageProperty,
+                                message.Id.ToString(CultureInfo.InvariantCulture));
+                        }
 
-                    if (direction == Bubble.BubbleDirection.Outgoing)
-                    {
-                        tb.Status = Bubble.BubbleStatus.Sent;
-                    }
+                        if (direction == Bubble.BubbleDirection.Outgoing)
+                        {
+                            tb.Status = Bubble.BubbleStatus.Sent;
+                        }
 
-                    EventBubble(tb);
+                        EventBubble(tb);
+                    }
                 }
                 else if (readMessages != null)
                 {
