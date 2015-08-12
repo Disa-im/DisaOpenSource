@@ -1071,7 +1071,7 @@ namespace Disa.Framework.Telegram
                     updates.AddRange(slice.OtherUpdates);
                 }
                 DebugPrint(ObjectDumper.Dump(updates));
-                ProcessIncomingPayload(updates, false);
+                ProcessIncomingPayload(updates, false, client);
             };
 
             if (diff != null)
