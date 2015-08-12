@@ -15,6 +15,7 @@ using System.Timers;
 
 //TODO:
 //1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
+//2) do a lock on the _dialogs access
 
 namespace Disa.Framework.Telegram
 {
