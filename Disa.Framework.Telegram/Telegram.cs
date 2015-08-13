@@ -16,6 +16,7 @@ using System.Timers;
 //TODO:
 //1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
 //2) do a lock on the _dialogs access
+//3) lock full client & disposable to prevent multiple connections being made at once
 
 namespace Disa.Framework.Telegram
 {
