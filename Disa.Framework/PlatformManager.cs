@@ -18,7 +18,7 @@ namespace Disa.Framework
             "Xamarin.Android.Support.v7.CardView.dll", "Xamarin.Android.Support.v7.MediaRouter.dll", "Xamarin.Android.Support.v7.RecyclerView.dll", "Xamarin.Forms.Core.dll", 
             "Xamarin.Forms.Labs.dll", "Xamarin.Forms.Labs.Droid.dll", "Xamarin.Forms.Platform.Android.dll", "Xamarin.Forms.Platform.dll", "Xamarin.Forms.Xaml.dll", 
             "Xamarin.GooglePlayServices.Analytics.dll", "Xamarin.GooglePlayServices.Base.dll", "Xamarin.GooglePlayServices.Gcm.dll", "Xamarin.GooglePlayServices.Location.dll", 
-            "Xamarin.GooglePlayServices.Maps.dll", "Xamarin.Insights.dll", "zxing.monoandroid.dll", "ZXing.Net.Mobile.dll", 
+            "Xamarin.GooglePlayServices.Maps.dll", "Xamarin.Insights.dll", "zxing.monoandroid.dll", "ZXing.Net.Mobile.dll",
         };
 
         public static void InitializePlatform(PlatformImplementation platform)
@@ -43,7 +43,7 @@ namespace Disa.Framework
         {
             get
             {
-                return "6";
+                return "9";
             }
         }
 
