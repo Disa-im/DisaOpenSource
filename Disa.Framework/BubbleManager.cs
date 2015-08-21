@@ -153,6 +153,11 @@ namespace Disa.Framework
                                 
                             queued.CancelQueueIfInsertable();
 
+                            lock (BubbleGroupManager.LastBubbleSentTimestamps)
+                            {
+                                BubbleGroupManager.LastBubbleSentTimestamps[group.ID] = Time.GetNowUnixTimestamp();
+                            }
+
                             if (vb.Status == Bubble.BubbleStatus.Delivered)
                             {
                                 Utils.DebugPrint(
@@ -536,16 +541,36 @@ namespace Disa.Framework
             return false;
         }
 
+        private static bool IsBubbleSending(VisualBubble bubble)
+        {
+            if (bubble.Status == Bubble.BubbleStatus.Waiting 
+                && bubble.Direction == Bubble.BubbleDirection.Outgoing)
+            {
+                return true;
+            }
+            return false;
+        }
+
         internal static IEnumerable<VisualBubble> FetchAllSendingAndDownloading(BubbleGroup group)
         {
             foreach (var bubble in @group)
             {
-                if (bubble.Status == Bubble.BubbleStatus.Waiting 
-                    && bubble.Direction == Bubble.BubbleDirection.Outgoing)
+                if (IsBubbleSending(bubble))
                 {
                     yield return bubble;
                 }
                 else if (IsBubbleDownloading(bubble))
+                {
+                    yield return bubble;
+                }
+            }
+        }
+
+        internal static IEnumerable<VisualBubble> FetchAllSending(BubbleGroup group)
+        {
+            foreach (var bubble in @group)
+            {
+                if (IsBubbleSending(bubble))
                 {
                     yield return bubble;
                 }

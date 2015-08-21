@@ -11,6 +11,8 @@ namespace Disa.Framework
     {
         public static List<Tuple<BubbleGroup, bool>> UpdateLastOnlineQueue { get; private set; }
 
+        internal static Dictionary<string, long> LastBubbleSentTimestamps { get; private set; }
+
         private static readonly object BubbleGroupsLock = new object();
 
         private static List<BubbleGroup> BubbleGroups
@@ -44,8 +46,8 @@ namespace Disa.Framework
         public static List<BubbleGroup> DisplayImmutable
         {
             get
-            {
-                lock (BubbleGroupDatabase.OperationLock)
+            {   
+                lock (BubbleGroupsLock)
                 {
                     return BubbleGroups.Where(x => !x.IsUnified).ToList();
                 }
@@ -96,6 +98,7 @@ namespace Disa.Framework
         {
             BubbleGroups = new List<BubbleGroup>();
             UpdateLastOnlineQueue = new List<Tuple<BubbleGroup, bool>>();
+            LastBubbleSentTimestamps = new Dictionary<string, long>();
         }
 
         public static bool Contains(BubbleGroup parent, BubbleGroup child)
@@ -464,11 +467,6 @@ namespace Disa.Framework
 
                     if (updateUi)
                         BubbleGroupEvents.RaiseInformationUpdated(bubbleGroup);
-
-                    //we constantly need to subscribe to a bubble group. doing it
-                    //in last online method is the most effective.
-                    BubbleManager.SendSubscribe(bubbleGroup, true);
-                    //Presence(service, true);
                 });
             }
             catch (Exception ex)

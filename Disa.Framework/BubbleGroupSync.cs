@@ -179,29 +179,6 @@ namespace Disa.Framework
         public const int SearchDepth = 1000;
         public static readonly object SyncLock = new object();
 
-        public static void ResetSyncsIfHasAgent(BubbleGroup group)
-        {
-            var groupsToReset = new List<BubbleGroup>();
-
-            var unifiedGroup = group as UnifiedBubbleGroup;
-            if (unifiedGroup != null)
-            {
-                groupsToReset.AddRange(unifiedGroup.Groups);
-            }
-            else
-            {
-                groupsToReset.Add(group);
-            }
-
-            foreach (var groupToReset in groupsToReset)
-            {
-                if (SupportsSync(groupToReset.Service))
-                {
-                    groupToReset.NeedsSync = true;
-                }
-            }
-        }
-
         public static void ResetSyncsIfHasAgent(Service service)
         {
             if (!SupportsSync(service))
@@ -223,6 +200,7 @@ namespace Disa.Framework
                 if (service.BubbleGroupComparer(group.Address, bubbleGroupAddress))
                 {
                     group.NeedsSync = true;
+                    BubbleGroupEvents.RaiseSyncReset(group);
                     return true;
                 }
             }
@@ -454,9 +432,12 @@ namespace Disa.Framework
             {
                 return Task<bool>.Factory.StartNew(() =>
                 {
-                    lock (_lock)
+                    lock (SyncLock)
                     {
-                        return _enumerator.MoveNext();
+                        lock (_lock)
+                        {
+                            return _enumerator.MoveNext();
+                        }
                     }
                 });
             }
@@ -559,199 +540,194 @@ namespace Disa.Framework
 
             Utils.DebugPrint("Loading into convo " + group.ID);
 
-            lock (SyncLock)
+            var unifiedGroup = group as UnifiedBubbleGroup;
+            var groups = unifiedGroup != null ? unifiedGroup.Groups : new List<BubbleGroup>() { group };
+
+            const int MaxLoadPerGroup = 100;
+            var currentTime = listToLoadInto.Min(x => x.Time);
+
+            var bubbleGroupStates = new Dictionary<BubbleGroup, LoadBubblesIntoStateHolder>();
+            foreach (var innerGroup in groups)
             {
-                Utils.DebugPrint("Loading into convo " + group.ID + " (after lock)");
+                bubbleGroupStates[innerGroup] = new LoadBubblesIntoStateHolder();
+            }
 
-                var unifiedGroup = group as UnifiedBubbleGroup;
-                var groups = unifiedGroup != null ? unifiedGroup.Groups : new List<BubbleGroup>() { group };
+            EventHandler<Service> serviceStarted = (sender, e) =>
+            {
+                foreach (var state in bubbleGroupStates)
+                {
+                    if (state.Key.Service == e)
+                    {
+                        state.Value.Dead = false;
+                    }
+                }
+            };
 
-                const int MaxLoadPerGroup = 100;
-                var currentTime = listToLoadInto.Min(x => x.Time);
+            ServiceEvents.Started += serviceStarted;
+            instance.ServiceStarted = serviceStarted;
 
-                var bubbleGroupStates = new Dictionary<BubbleGroup, LoadBubblesIntoStateHolder>();
+            while (true)
+            {
+                var listToLoadIntoCount = listToLoadInto.Count;
+                var bubbleLoads = new Dictionary<BubbleGroup, List<Tuple<VisualBubble, bool>>>();
+
                 foreach (var innerGroup in groups)
                 {
-                    bubbleGroupStates[innerGroup] = new LoadBubblesIntoStateHolder();
-                }
+                    var innerGroupState = bubbleGroupStates[innerGroup];
 
-                EventHandler<Service> serviceStarted = (sender, e) =>
-                {
-                    foreach (var state in bubbleGroupStates)
+                    if (innerGroupState.Dead)
                     {
-                        if (state.Key.Service == e)
-                        {
-                            state.Value.Dead = false;
-                        }
+                        bubbleLoads[innerGroup] = null;
+                        continue;
                     }
-                };
 
-                ServiceEvents.Started += serviceStarted;
-                instance.ServiceStarted = serviceStarted;
-
-                while (true)
-                {
-                    var listToLoadIntoCount = listToLoadInto.Count;
-                    var bubbleLoads = new Dictionary<BubbleGroup, List<Tuple<VisualBubble, bool>>>();
-
-                    foreach (var innerGroup in groups)
+                    if (innerGroupState.LocalFinished)
                     {
-                        var innerGroupState = bubbleGroupStates[innerGroup];
-
-                        if (innerGroupState.Dead)
+                        var agentBubbles = LoadBubblesIntoDoAgent(innerGroup, currentTime, MaxLoadPerGroup, innerGroupState);
+                        if (agentBubbles != null)
                         {
-                            bubbleLoads[innerGroup] = null;
-                            continue;
-                        }
-
-                        if (innerGroupState.LocalFinished)
-                        {
-                            var agentBubbles = LoadBubblesIntoDoAgent(innerGroup, currentTime, MaxLoadPerGroup, innerGroupState);
-                            if (agentBubbles != null)
-                            {
-                                bubbleLoads[innerGroup] = agentBubbles.Select(x => 
-                                    new Tuple<VisualBubble, bool>(x, true)).ToList();
-                            }
-                            else
-                            {
-                                bubbleLoads[innerGroup] = null;
-                            }
+                            bubbleLoads[innerGroup] = agentBubbles.Select(x => 
+                                new Tuple<VisualBubble, bool>(x, true)).ToList();
                         }
                         else
                         {
-                            var localBubbles = new List<VisualBubble>();
-                            innerGroupState.LocalCursor = BubbleGroupDatabase.FetchBubblesAt(innerGroup, 
-                                currentTime, MaxLoadPerGroup, ref localBubbles, innerGroupState.LocalCursor);
-                            if (innerGroupState.LocalCursor == 0 || localBubbles.Count == 0)
+                            bubbleLoads[innerGroup] = null;
+                        }
+                    }
+                    else
+                    {
+                        var localBubbles = new List<VisualBubble>();
+                        innerGroupState.LocalCursor = BubbleGroupDatabase.FetchBubblesAt(innerGroup, 
+                            currentTime, MaxLoadPerGroup, ref localBubbles, innerGroupState.LocalCursor);
+                        if (innerGroupState.LocalCursor == 0 || localBubbles.Count == 0)
+                        {
+                            innerGroupState.LocalFinished = true;
+                        }
+
+                        if (localBubbles.Count == MaxLoadPerGroup)
+                        {
+                            bubbleLoads[innerGroup] = localBubbles.Select(x => 
+                                new Tuple<VisualBubble, bool>(x, false)).ToList();
+                        }
+                        else
+                        {
+                            var innerGroupComparer = innerGroup.Service as Comparer;
+
+                            if (innerGroupComparer != null)
                             {
-                                innerGroupState.LocalFinished = true;
-                            }
+                                var agentBubbles = LoadBubblesIntoDoAgent(innerGroup, currentTime, MaxLoadPerGroup, innerGroupState);
 
-                            if (localBubbles.Count == MaxLoadPerGroup)
-                            {
-                                bubbleLoads[innerGroup] = localBubbles.Select(x => 
-                                    new Tuple<VisualBubble, bool>(x, false)).ToList();
-                            }
-                            else
-                            {
-                                var innerGroupComparer = innerGroup.Service as Comparer;
-
-                                if (innerGroupComparer != null)
-                                {
-                                    var agentBubbles = LoadBubblesIntoDoAgent(innerGroup, currentTime, MaxLoadPerGroup, innerGroupState);
-
-                                    if (agentBubbles == null)
-                                    {
-                                        bubbleLoads[innerGroup] = localBubbles.Select(x => 
-                                            new Tuple<VisualBubble, bool>(x, false)).ToList();
-                                    }
-                                    else
-                                    {
-                                        var innerGroupAgent = innerGroup.Service as Agent;
-                                        var combined = new List<Tuple<VisualBubble, bool>>();
-
-                                        // combine them: take all agent bubbles, and then try to replace the clouds with the locals.
-                                        // what can't be replaced becomes the inserts.
-
-                                        for (int i = 0; i < agentBubbles.Count; i++)
-                                        {
-                                            var agentBubble = agentBubbles[i];
-                                            var localBubble = 
-                                                localBubbles.FirstOrDefault(x => innerGroupComparer.LoadBubblesComparer(x, agentBubble));
-                                            if (localBubble != null)
-                                            {
-                                                combined.Add(new Tuple<VisualBubble, bool>(localBubble, false));
-                                            }
-                                            else
-                                            {
-                                                combined.Add(new Tuple<VisualBubble, bool>(agentBubble, true));
-                                            }
-                                        }
-
-                                        bubbleLoads[innerGroup] = combined;
-                                    }
-                                }
-                                else
+                                if (agentBubbles == null)
                                 {
                                     bubbleLoads[innerGroup] = localBubbles.Select(x => 
                                         new Tuple<VisualBubble, bool>(x, false)).ToList();
                                 }
+                                else
+                                {
+                                    var innerGroupAgent = innerGroup.Service as Agent;
+                                    var combined = new List<Tuple<VisualBubble, bool>>();
+
+                                    // combine them: take all agent bubbles, and then try to replace the clouds with the locals.
+                                    // what can't be replaced becomes the inserts.
+
+                                    for (int i = 0; i < agentBubbles.Count; i++)
+                                    {
+                                        var agentBubble = agentBubbles[i];
+                                        var localBubble = 
+                                            localBubbles.FirstOrDefault(x => innerGroupComparer.LoadBubblesComparer(x, agentBubble));
+                                        if (localBubble != null)
+                                        {
+                                            combined.Add(new Tuple<VisualBubble, bool>(localBubble, false));
+                                        }
+                                        else
+                                        {
+                                            combined.Add(new Tuple<VisualBubble, bool>(agentBubble, true));
+                                        }
+                                    }
+
+                                    bubbleLoads[innerGroup] = combined;
+                                }
                             }
-                        }
-                    }
-
-                    // if all the sync agents failed, then obviously loading more bubbles in trivially failed
-                    if (bubbleGroupStates.Count(x => x.Value.Dead) == groups.Count)
-                    {
-                        yield break;
-                    }
-
-                    // insert the bubbles into the disa bubble group with two conditions
-                    // a) must not be bubble retreived from disa bubble group
-                    // b) must not be a duplicate already in the list to load into
-                    var listToLoadIntoBubblesOnTime = listToLoadInto.Where(x => x.Time == currentTime).ToList();
-                    foreach (var bubbleLoad in bubbleLoads)
-                    {
-                        if (bubbleLoad.Value == null)
-                            continue;
-
-                        var bubbleGroup = bubbleLoad.Key;
-                        var bubblesToInsert = LoadBubblesIntoRemoveDuplicates(bubbleLoad.Value.Where(x => x.Item2)
-                            .Select(x => x.Item1).ToList(), listToLoadIntoBubblesOnTime);
-                        if (bubblesToInsert.Any())
-                        {
-                            BubbleGroupDatabase.InsertBubblesByTime(bubbleGroup, 
-                                bubblesToInsert.ToArray(), int.MaxValue, true, true);
-                        }
-                    }
-                        
-                    // find the greatest minimum time of all the bubble loads
-                    // and merge the bubble loads against that
-
-                    var greatestMin = 0L;
-                    foreach (var bubbleLoad in bubbleLoads)
-                    {
-                        if (bubbleLoad.Value == null || !bubbleLoad.Value.Any())
-                            continue;
-
-                        var min = bubbleLoad.Value.Min(x => x.Item1.Time);
-                        if (min > greatestMin)
-                        {
-                            greatestMin = min;
-                        }
-                    }
-
-                    var mergedBubbles = new List<VisualBubble>();
-                    foreach (var bubbleLoad in bubbleLoads)
-                    {
-                        if (bubbleLoad.Value != null)
-                        {
-                            var bubblesToMerge = bubbleLoad.Value.Where(x => 
-                                x.Item1.Time >= greatestMin).Select(x => x.Item1).ToList();
-                            foreach (var bubbleToMerge in bubblesToMerge)
+                            else
                             {
-                                bubbleToMerge.BubbleGroupReference = bubbleLoad.Key;
+                                bubbleLoads[innerGroup] = localBubbles.Select(x => 
+                                    new Tuple<VisualBubble, bool>(x, false)).ToList();
                             }
-                            mergedBubbles.AddRange(bubblesToMerge);
                         }
                     }
-                    mergedBubbles.TimSort((x, y) => x.Time.CompareTo(y.Time));
-
-                    // insert the merged bubbles into the list to load into, making sure to 
-                    // remove and duplicates encountered.
-                    listToLoadInto.InsertRange(0, mergedBubbles);
-                    LoadBubblesIntoRemoveDuplicates(listToLoadInto, currentTime);
-
-                    currentTime = mergedBubbles.First().Time;
-
-                    // if the count wasn't altered, we've hit the end
-                    if (listToLoadIntoCount == listToLoadInto.Count)
-                    {
-                        yield break;
-                    }
-
-                    yield return true;
                 }
+
+                // if all the sync agents failed, then obviously loading more bubbles in trivially failed
+                if (bubbleGroupStates.Count(x => x.Value.Dead) == groups.Count)
+                {
+                    yield break;
+                }
+
+                // insert the bubbles into the disa bubble group with two conditions
+                // a) must not be bubble retreived from disa bubble group
+                // b) must not be a duplicate already in the list to load into
+                var listToLoadIntoBubblesOnTime = listToLoadInto.Where(x => x.Time == currentTime).ToList();
+                foreach (var bubbleLoad in bubbleLoads)
+                {
+                    if (bubbleLoad.Value == null)
+                        continue;
+
+                    var bubbleGroup = bubbleLoad.Key;
+                    var bubblesToInsert = LoadBubblesIntoRemoveDuplicates(bubbleLoad.Value.Where(x => x.Item2)
+                        .Select(x => x.Item1).ToList(), listToLoadIntoBubblesOnTime);
+                    if (bubblesToInsert.Any())
+                    {
+                        BubbleGroupDatabase.InsertBubblesByTime(bubbleGroup, 
+                            bubblesToInsert.ToArray(), int.MaxValue, true, true);
+                    }
+                }
+                    
+                // find the greatest minimum time of all the bubble loads
+                // and merge the bubble loads against that
+
+                var greatestMin = 0L;
+                foreach (var bubbleLoad in bubbleLoads)
+                {
+                    if (bubbleLoad.Value == null || !bubbleLoad.Value.Any())
+                        continue;
+
+                    var min = bubbleLoad.Value.Min(x => x.Item1.Time);
+                    if (min > greatestMin)
+                    {
+                        greatestMin = min;
+                    }
+                }
+
+                var mergedBubbles = new List<VisualBubble>();
+                foreach (var bubbleLoad in bubbleLoads)
+                {
+                    if (bubbleLoad.Value != null)
+                    {
+                        var bubblesToMerge = bubbleLoad.Value.Where(x => 
+                            x.Item1.Time >= greatestMin).Select(x => x.Item1).ToList();
+                        foreach (var bubbleToMerge in bubblesToMerge)
+                        {
+                            bubbleToMerge.BubbleGroupReference = bubbleLoad.Key;
+                        }
+                        mergedBubbles.AddRange(bubblesToMerge);
+                    }
+                }
+                mergedBubbles.TimSort((x, y) => x.Time.CompareTo(y.Time));
+
+                // insert the merged bubbles into the list to load into, making sure to 
+                // remove and duplicates encountered.
+                listToLoadInto.InsertRange(0, mergedBubbles);
+                LoadBubblesIntoRemoveDuplicates(listToLoadInto, currentTime);
+
+                currentTime = mergedBubbles.First().Time;
+
+                // if the count wasn't altered, we've hit the end
+                if (listToLoadIntoCount == listToLoadInto.Count)
+                {
+                    yield break;
+                }
+
+                yield return true;
             }
         }
 
@@ -796,6 +772,8 @@ namespace Disa.Framework
 
                         try
                         {
+                            ReSync:
+                            var syncTime = Time.GetNowUnixTimestamp();
                             var syncTask = groupToSyncAgent.Sync(groupToSync, Database.GetActionId(groupToSync));
                             syncTask.Wait();
                             var syncResult = syncTask.Result;
@@ -805,6 +783,18 @@ namespace Disa.Framework
                                 {
                                     if (syncResult.ResultType == Result.Type.Purge)
                                     {
+                                        if (BubbleGroupManager.LastBubbleSentTimestamps.ContainsKey(groupToSync.ID))
+                                        {
+                                            lock (BubbleGroupManager.LastBubbleSentTimestamps)
+                                            {
+                                                var lastBubbleSentTime = BubbleGroupManager.LastBubbleSentTimestamps[groupToSync.ID];
+                                                if (lastBubbleSentTime >= syncTime)
+                                                {
+                                                    Utils.DebugPrint("Sync has detected that a bubble was sent during the time the sync was fetched. Redoing sync...");
+                                                    goto ReSync;
+                                                }
+                                            }
+                                        }
                                         Utils.DebugPrint("Sync is purging the database for bubble group " + groupToSync.ID 
                                             + " on service " + groupToSync.Service.Information.ServiceName);
                                         BubbleGroupDatabase.Kill(groupToSync);
@@ -817,6 +807,22 @@ namespace Disa.Framework
                                         {
                                             syncResult.Inserts.TimSort((x, y) => x.Time.CompareTo(y.Time));
                                             BubbleGroupDatabase.AddBubbles(groupToSync, syncResult.Inserts);
+                                            // If a purge is issued, then we need to carry over all sending bubbles to the new BubbleGroup being created.
+                                            // Additionally, we need to remove any sending bubbles that are already on the insert list to avoid duplicates.
+                                            var sendingBubbles = BubbleManager.FetchAllSending(groupToSync).ToList();
+                                            var sendingBubblesFiltered = new List<VisualBubble>();
+                                            foreach (var sendingBubble in sendingBubbles)
+                                            {
+                                                var hasInsertBubble = syncResult.Inserts.FirstOrDefault(x => x.ID == sendingBubble.ID) != null;
+                                                if (!hasInsertBubble)
+                                                {
+                                                    sendingBubblesFiltered.Add(sendingBubble);
+                                                }
+                                            }
+                                            if (sendingBubblesFiltered.Any())
+                                            {
+                                                BubbleGroupDatabase.InsertBubblesByTime(groupToSync, sendingBubblesFiltered.ToArray(), SearchDepth);
+                                            }
                                         }
                                         else
                                         {
@@ -853,6 +859,9 @@ namespace Disa.Framework
                     {
                         lock (BubbleGroupDatabase.OperationLock)
                         {
+                            // Here we need to replace all the sending or downloading bubbles with the 'real' ones.
+                            // If this is never done, then on the UI, a 'sending' will never be set to 'sent', and any download
+                            // progress will never be updated. Why? Different memory objects.
                             var sendingBubbles = BubbleManager.FetchAllSendingAndDownloading(group).ToList();
                             BubbleGroupFactory.UnloadFullLoad(group);
                             BubbleGroupFactory.LoadFullyIfNeeded(group, true);
