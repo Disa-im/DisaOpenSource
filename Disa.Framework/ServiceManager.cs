@@ -490,10 +490,6 @@ namespace Disa.Framework
                         {
                             var oldPresence = @group.PresenceType;
                             @group.PresenceType = PresenceBubble.PresenceType.Unavailable;
-                            if (oldPresence != prescenceBubble.Presence)
-                            {
-                                BubbleGroupManager.UpdateLastOnline(@group);
-                            }
                         }
                         else
                         {
@@ -574,6 +570,7 @@ namespace Disa.Framework
 
             lock (ServicesBindings) ServicesBindings.Remove(ServicesBindings.FirstOrDefault(s => s.Service == service));
             ServiceEvents.RaiseServiceUnRegistered(service);
+            SettingsChangedManager.SetNeedsContactSync(service, true);
         }
 
         public static void StartUnified(UnifiedService unifiedService, WakeLock wakeLock)
@@ -615,6 +612,10 @@ namespace Disa.Framework
                 {
                 }
                 catch (ServiceSpecialRestartException)
+                {
+                    throw;
+                }
+                catch (ServiceExpiredException)
                 {
                     throw;
                 }
@@ -925,20 +926,20 @@ namespace Disa.Framework
                             epilogue();
                             return;
                         }
-                        catch (ServiceSpecialRestartException)
+                        catch (ServiceSpecialRestartException ex)
                         {
                             Utils.DebugPrint("Service " + service.Information.ServiceName +
                                              " is asking to be restarted on connect/authenticate. This should be called sparingly, Disa can easily " +
-                                             "break under these circumstances. Restarting...");
+                                "break under these circumstances. Reason: " + ex + ". Restarting...");
                             StopInternal(service);
                             epilogue();
                             Start(service, smartStart, smartStartSeconds);
                             return;
                         }
-                        catch (ServiceExpiredException)
+                        catch (ServiceExpiredException ex)
                         {
                             Utils.DebugPrint("The service " + service.Information.ServiceName +
-                                             " has expired. :(");
+                                             " has expired: " + ex);
                             GetFlags(service).Aborted = true;
                             GetFlags(service).Expired = true;
                             ServiceEvents.RaiseServiceExpired(service);
@@ -1046,6 +1047,7 @@ namespace Disa.Framework
                             BubbleGroupUpdater.Update(service);
                             BubbleQueueManager.Send(new[] {service.Information.ServiceName});
                             BubbleGroupManager.ProcessUpdateLastOnlineQueue(service);
+                            SettingsChangedManager.SyncContactsIfNeeded(service);
                         });
                     }
                 }
