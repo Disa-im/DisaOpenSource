@@ -30,14 +30,20 @@ namespace Disa.Framework
             lock (Lock)
             {
                 var path = GetPath(service);
-                using (var sw = new StreamWriter(path))
+                MemoryStream sw2;
+                using (var sw = new MemoryStream())
                 {
                     Save(sw, service.Information.Settings, settings);
+                    sw2 = sw;
+                }
+                if (sw2 != null)
+                {
+                    File.WriteAllBytes(path, sw2.ToArray());
                 }
             }
         }
 
-        public static void Save(StreamWriter fs, Type settingsType, DisaSettings settings)
+        public static void Save(Stream fs, Type settingsType, DisaSettings settings)
         {
             try
             {
