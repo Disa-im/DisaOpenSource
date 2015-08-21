@@ -18,6 +18,11 @@ namespace Disa.Framework
     {
         public static bool Logging { get; set; }
 
+        static Utils()
+        {
+            Logging = true;
+        }
+
         public static Task GcCollect()
         {
             return Task.Factory.StartNew(() =>
@@ -195,29 +200,44 @@ namespace Disa.Framework
 
         public static IEnumerable<Type> GetAllTypes(IEnumerable<Assembly> assemblies)
         {
+            var types = new List<Type>();
             foreach (var assembly in assemblies)
             {
-                Type[] types;
+                Type[] assemblyTypes = null;
                 try
                 {
-                    types = assembly.GetTypes();
+                    assemblyTypes = assembly.GetTypes();
                 }
-                catch
+                catch (ReflectionTypeLoadException ex)
                 {
-                    types = null;
-                }
-                if (types != null)
-                {
-                    foreach (var type in types)
+                    Utils.DebugPrint("Failed to load some types in the assembly " + assembly.FullName + ". They are printed below: ");
+                    if (ex.LoaderExceptions != null)
                     {
-                        yield return type;
+                        foreach (var exception in ex.LoaderExceptions)
+                        {
+                            Utils.DebugPrint(exception.ToString());
+                        }
+                    }
+                    assemblyTypes = ex.Types;
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint("Failed to load assembly " + assembly.FullName + ": " + ex);
+                    assemblyTypes = null;
+                }
+                if (assemblyTypes != null)
+                {
+                    foreach (var type in assemblyTypes)
+                    {
+                        if (type == null)
+                        {
+                            continue;
+                        }
+                        types.Add(type);
                     }
                 }
-                else
-                {
-                    Utils.DebugPrint("Failed to get types out of assembly: " + assembly.FullName);
-                }
             }
+            return types;
         }
     }
 }
