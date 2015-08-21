@@ -13,9 +13,22 @@ namespace Disa.Framework
         public SqlDatabase(string fileLocation)
         {                
             _fileLocation = fileLocation;
-            _connection = new SQLiteConnection(_fileLocation);
-            CreateTable();
-        }
+            Retry:
+            try
+            {
+                _connection = new SQLiteConnection(_fileLocation);
+                _connection.CreateTable<T>();
+            }
+            catch (Exception ex)
+            {
+                Utils.DebugPrint("Failed to load SqlDatabase: " + ex + ". Nuking database if possible...");
+                if (File.Exists(_fileLocation))
+                {
+                    File.Delete(_fileLocation);
+                }
+                goto Retry;
+            }
+        }  
 
         public void Dispose()
         {
@@ -27,11 +40,6 @@ namespace Disa.Framework
             {
                 Utils.DebugPrint("Problem in DisaSqlDatabase close: " + ex);
             }
-        }
-
-        private void CreateTable()
-        {
-            _connection.CreateTable<T>();
         }
 
         public TableQuery<T> Store
