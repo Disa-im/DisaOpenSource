@@ -72,11 +72,17 @@ namespace Disa.Framework
 				var path = GetPath(name);
 				try
 				{
-                    using (var sw = new StreamWriter(path))
+                    MemoryStream sw2 = null;
+                    using (var sw = new MemoryStream())
 					{
 						var serializer = new XmlSerializer(settings.GetType());
 						serializer.Serialize(sw, settings);
+                        sw2 = sw;
 					}
+                    if (sw2 != null)
+                    {
+                        File.WriteAllBytes(path, sw2.ToArray());
+                    }
 					return true;
 				}
 				catch (Exception ex)
