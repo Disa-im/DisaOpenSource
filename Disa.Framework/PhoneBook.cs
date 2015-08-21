@@ -23,12 +23,27 @@ namespace Disa.Framework
 
         private static bool _isUpdating;
 
+        private static Action _refreshMncMcc;
+
         static PhoneBook()
         {
             Mnc = "000";
             Mcc = "000";
             Country = "US";
             Language = "en";
+        }
+
+        public static void RegisterMncMccRefresher(Action refreshMncMcc)
+        {
+            _refreshMncMcc = refreshMncMcc;
+        }
+
+        public static void RefreshMncMcc()
+        {
+            if (_refreshMncMcc != null)
+            {
+                _refreshMncMcc();
+            }
         }
 
         private class PhoneContactsUpdatingDisposable : IDisposable
@@ -132,26 +147,42 @@ namespace Disa.Framework
 
         public static Task ForceUpdate(Service service)
         {
+            return ForceUpdate(new [] { service });
+        }
+
+        public static Task ForceUpdate(Service[] services)
+        {
             return Task.Factory.StartNew(() =>
             {
                 Utils.DebugPrint("Querying phone contacts...");
                 _phoneBookContacts = Platform.GetPhoneBookContacts();
-                if (service != null)
+                if (services != null)
                 {
-                    if (ServiceManager.IsRunning(service))
+                    foreach (var service in services)
                     {
-                        Utils.DebugPrint("Refreshing service contacts...");
-                        service.RefreshPhoneBookContacts();
+                        if (service != null)
+                        {
+                            SyncService(service);
+                        }
                     }
-                    else
-                    {
-                        Utils.DebugPrint("Force refreshing service " + service.Information.ServiceName +
-                                                 " isn't possible. Why? It isn't running!");
-                    }
-    				Utils.DebugPrint("Finished refreshing service contacts. Calling contacts update and bubble group update.");
-    				BubbleGroupUpdater.Update(service);
                 }
             });
+        }
+
+        internal static void SyncService(Service service)
+        {
+            if (ServiceManager.IsRunning(service))
+            {
+                Utils.DebugPrint("Refreshing service contacts...");
+                service.RefreshPhoneBookContacts();
+            }
+            else
+            {
+                Utils.DebugPrint("Force refreshing service " + service.Information.ServiceName +
+                    " isn't possible. Why? It isn't running!");
+            }
+            Utils.DebugPrint("Finished refreshing service contacts. Calling contacts update and bubble group update.");
+            BubbleGroupUpdater.Update(service);
         }
 
         public static void OnPhoneContactsUpdated()
