@@ -22,10 +22,12 @@ namespace Disa.Framework
             var pictures = GetDisaPicturesPath();
             var videos = GetDisaVideosPath();
             var audios = GetDisaAudioPath();
+            var files = GetDisaFilesPath();
 
             var picturesNoMedia = Path.Combine(pictures, noMedia);
             var videosNoMedia = Path.Combine(videos, noMedia);
             var audiosNoMedia = Path.Combine(audios, noMedia);
+            var filesNoMedia = Path.Combine(files, noMedia);
 
             if (File.Exists(picturesNoMedia))
             {
@@ -38,6 +40,10 @@ namespace Disa.Framework
             if (File.Exists(audiosNoMedia))
             {
                 File.Delete(audiosNoMedia);
+            }
+            if (File.Exists(filesNoMedia))
+            {
+                File.Delete(filesNoMedia);
             }
 
             #else
@@ -64,10 +70,12 @@ namespace Disa.Framework
             var pictures = GetDisaPicturesPath();
             var videos = GetDisaVideosPath();
             var audios = GetDisaAudioPath();
+            var files = GetDisaFilesPath();
 
             var picturesNoMedia = Path.Combine(pictures, noMedia);
             var videosNoMedia = Path.Combine(videos, noMedia);
             var audiosNoMedia = Path.Combine(audios, noMedia);
+            var filesNoMedia = Path.Combine(files, noMedia);
 
             if (!File.Exists(picturesNoMedia))
             {
@@ -81,6 +89,11 @@ namespace Disa.Framework
             {
                 File.Create(audiosNoMedia);
             }
+            if (!File.Exists(filesNoMedia))
+            {
+                File.Create(filesNoMedia);
+            }
+
 #else
             Utils.DebugPrint("Not running on Android. No need to insert no medias.");
 #endif
