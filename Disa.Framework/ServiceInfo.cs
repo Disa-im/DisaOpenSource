@@ -34,6 +34,11 @@ namespace Disa.Framework
             DelayedNotifications = delayedNotifications;
         }
 
+        internal void SetServiceName(string name)
+        {
+            ServiceName = name;
+        }
+
         public bool DoesSupport(Type bubble)
         {
             if (SupportedBubbles == null)

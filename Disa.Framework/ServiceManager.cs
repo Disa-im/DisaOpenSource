@@ -398,6 +398,8 @@ namespace Disa.Framework
             }
             else if (b is AbstractBubble)
             {
+                var skipEvent = false;
+
                 Utils.DebugPrint("We got an abstract bubble: " + b.GetType().Name + " Address: " + b.Address);
 
                 BubbleGroup group = null;
@@ -486,20 +488,26 @@ namespace Disa.Framework
 
                     if (@group != null)
                     {
-                        if (!@group.IsParty && !prescenceBubble.Available)
+                        if (group.Presence == prescenceBubble.Available)
                         {
-                            var oldPresence = @group.PresenceType;
-                            @group.PresenceType = PresenceBubble.PresenceType.Unavailable;
+                            skipEvent = true;
                         }
                         else
                         {
-                            @group.PresenceType = prescenceBubble.Presence;
-                            @group.PresencePlatformType = prescenceBubble.Platform;
-                        }
+                            if (!@group.IsParty && !prescenceBubble.Available)
+                            {
+                                @group.PresenceType = PresenceBubble.PresenceType.Unavailable;
+                            }
+                            else
+                            {
+                                @group.PresenceType = prescenceBubble.Presence;
+                                @group.PresencePlatformType = prescenceBubble.Platform;
+                            }
 
-                        if (!prescenceBubble.Available)
-                        {
-                            @group.Typing = false;
+                            if (!prescenceBubble.Available)
+                            {
+                                @group.Typing = false;
+                            }
                         }
                     }
                 }
@@ -531,7 +539,7 @@ namespace Disa.Framework
 
                 try
                 {
-                    if (@group != null)
+                    if (@group != null && !skipEvent)
                     {
                         BubbleGroupEvents.RaiseNewAbstractBubble(b as AbstractBubble, @group);
                     }
@@ -699,8 +707,8 @@ namespace Disa.Framework
                 {
                     GetFlags(registeredService).DeauthenticationFailed = true;
                     Utils.DebugPrint(registeredService.Information.ServiceName +
-                                     "service failed to deauthenticate. "
-                                     + "This may lead to a memory leak. Problem: " + ex.Message);
+                                     " service failed to deauthenticate. "
+                                     + "This may lead to a memory leak. Problem: " + ex);
                 }
             };
 
@@ -717,8 +725,8 @@ namespace Disa.Framework
                 {
                     GetFlags(registeredService).DisconnectionFailed = true;
                     Utils.DebugPrint(registeredService.Information.ServiceName +
-                                     "service failed to disconnect. "
-                                     + "This may lead to a memory leak. Problem: " + ex.Message);
+                                     " service failed to disconnect. "
+                                     + "This may lead to a memory leak. Problem: " + ex);
                 }
             };
 
@@ -916,6 +924,13 @@ namespace Disa.Framework
                             {
                                 throw new Exception("No internet connection. Cannot connect service: "
                                                     + service.Information.ServiceName);
+                            }
+
+                            if (service.Information.UsesInternet && 
+                                !Platform.ShouldAttemptInternetConnection())
+                            {
+                                throw new Exception("We shouldn't attempt to connect service: "
+                                    + service.Information.ServiceName);
                             }
 
                             StartInternal(service, wakeLock);

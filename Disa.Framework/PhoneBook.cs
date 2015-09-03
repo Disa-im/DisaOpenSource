@@ -59,13 +59,45 @@ namespace Disa.Framework
             }
         }
 
-        public static bool TryConvertToInternationalNumber(string numberIn, out string numberOut)
+        public static string GetCountryLocaleFromInternationalNumber(string internationalNumber)
         {
             try
             {
                 #if __ANDROID__
                 var phoneUtil = Com.Google.I18n.Phonenumbers.PhoneNumberUtil.Instance;
-                var phoneNumber = phoneUtil.ParseAndKeepRawInput(numberIn, Country);
+                var phoneNumber = phoneUtil.ParseAndKeepRawInput(internationalNumber, Country);
+                if (phoneNumber == null)
+                {
+                    goto End;
+                }
+                var region = phoneUtil.GetRegionCodeForNumber(phoneNumber);
+                if (string.IsNullOrWhiteSpace(region))
+                {
+                    goto End;
+                }
+                return region;
+                #else
+                throw new NotImplementedException("Not implemented");
+                #endif
+
+            }
+            catch (Exception ex)
+            {
+                Utils.DebugPrint("Could not get country locale from international number. " + ex);
+            }
+
+            End:
+
+            return Country;
+        }
+
+        public static bool TryConvertToInternationalNumber(string numberIn, out string numberOut, string localeCountry)
+        {
+            try
+            {
+                #if __ANDROID__
+                var phoneUtil = Com.Google.I18n.Phonenumbers.PhoneNumberUtil.Instance;
+                var phoneNumber = phoneUtil.ParseAndKeepRawInput(numberIn, localeCountry);
                 if (phoneUtil.IsValidNumber(phoneNumber))
                 {
                     numberOut = phoneUtil.Format(phoneNumber, 
@@ -83,44 +115,59 @@ namespace Disa.Framework
             return false;
         }
 
-        public static string TryGetPhoneNumberLegible(string number)
+        public static bool TryConvertToInternationalNumber(string numberIn, out string numberOut)
+        {
+            return TryConvertToInternationalNumber(numberIn, out numberOut, Country);
+        }
+
+        public static string TryGetPhoneNumberLegible(string number, string localeCountry)
         {
             try
             {
-#if __ANDROID__
+                #if __ANDROID__
                 var phoneUtil = Com.Google.I18n.Phonenumbers.PhoneNumberUtil.Instance;
-                var phoneNumber = phoneUtil.ParseAndKeepRawInput(number, Country);
+                var phoneNumber = phoneUtil.ParseAndKeepRawInput(number, localeCountry);
                 return phoneUtil.Format(phoneNumber, 
                     Com.Google.I18n.Phonenumbers.PhoneNumberUtil.PhoneNumberFormat.International);
-#else
+                #else
                 throw new NotImplementedException("Not implemented");
-#endif
+                #endif
             }
             catch (Exception ex)
             {
                 Utils.DebugPrint("Could not get legible phone number. " + ex.Message);
             }
 
-            return number;
+            return number;   
         }
 
-        public static bool IsPossibleNumber(string address)
+        public static string TryGetPhoneNumberLegible(string number)
+        {
+            return TryGetPhoneNumberLegible(number, Country);
+        }
+
+        public static bool IsPossibleNumber(string address, string localeCountry)
         {
 #if __ANDROID__
-            return Com.Google.I18n.Phonenumbers.PhoneNumberUtil.Instance.IsPossibleNumber(address, Country);
+            return Com.Google.I18n.Phonenumbers.PhoneNumberUtil.Instance.IsPossibleNumber(address, localeCountry);
 #else
             throw new NotImplementedException("Not implemented");
 #endif
         }
 
-        public static Tuple<string, string> FormatPhoneNumber(string number)
+        public static bool IsPossibleNumber(string address)
+        {
+            return IsPossibleNumber(address, Country);
+        }
+
+        public static Tuple<string, string> FormatPhoneNumber(string number, string localeCountry)
         {
             try
             {
 
 #if __ANDROID__
                 var phoneUtil = Com.Google.I18n.Phonenumbers.PhoneNumberUtil.Instance;
-                var phoneNumber = phoneUtil.ParseAndKeepRawInput(number, Country);
+                var phoneNumber = phoneUtil.ParseAndKeepRawInput(number, localeCountry);
                 if (phoneNumber == null)
                     return null;
                 var cc = phoneNumber.CountryCode.ToString(CultureInfo.InvariantCulture);
@@ -143,6 +190,11 @@ namespace Disa.Framework
             }
 
             return null;
+        }
+
+        public static Tuple<string, string> FormatPhoneNumber(string number)
+        {
+            return FormatPhoneNumber(number, Country);
         }
 
         public static Task ForceUpdate(Service service)

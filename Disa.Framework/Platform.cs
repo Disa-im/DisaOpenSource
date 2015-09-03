@@ -121,6 +121,11 @@ namespace Disa.Framework
             return PlatformImplementation.HasInternetConnection();
         }
 
+        public static bool ShouldAttemptInternetConnection()
+        {
+            return PlatformImplementation.ShouldAttemptInternetConnection();
+        }
+
         public static string GetMimeTypeFromPath(string path)
         {
             return PlatformImplementation.GetMimeTypeFromPath(path);

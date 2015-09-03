@@ -49,6 +49,8 @@ namespace Disa.Framework
 
         public abstract bool HasInternetConnection();
 
+        public abstract bool ShouldAttemptInternetConnection();
+
         public abstract string GetMimeTypeFromPath(string path);
 
         public abstract byte[] GenerateJpegBytes(byte[] bytes, int toWidth, int toHeight, int quality = 100);

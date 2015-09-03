@@ -66,10 +66,7 @@ namespace Disa.Framework
 
         public virtual Task OpenedBubbleGroup(BubbleGroup group)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                Utils.DebugPrint("Opened bubble group not overidden.");
-            });
+            return Task.FromResult(0);
         }
 
         public void EventBubble(Bubble b)
@@ -121,11 +118,24 @@ namespace Disa.Framework
         }
     }
 
-    [ServiceInfo("Unified", 
+    [ServiceInfo(null, 
         true, false, false, false, false, typeof(DisaSettings), 
         ServiceInfo.ProcedureType.ConnectAuthenticate, null)]
     public class UnifiedService : Service
     {
+        public static string Name = "Unified";
+
+        public UnifiedService()
+        {
+            Information.SetServiceName(Name);
+        }
+
+        public void SetServiceName(string name)
+        {
+            Name = name;
+            Information.SetServiceName(Name);
+        }
+
         public override bool Initialize(DisaSettings settings)
         {
             return true;
@@ -178,12 +188,12 @@ namespace Disa.Framework
 
         public override Task GetBubbleGroupLegibleId(BubbleGroup @group, Action<string> result)
         {
-            return Task.Factory.StartNew(() => result("Unified"));
+            return Task.Factory.StartNew(() => result(Name));
         }
 
         public override Task GetBubbleGroupName(BubbleGroup @group, Action<string> result)
         {
-            return Task.Factory.StartNew(() => result("Unified"));
+            return Task.Factory.StartNew(() => result(Name));
         }
 
         public override Task GetBubbleGroupPhoto(BubbleGroup @group, Action<DisaThumbnail> result)

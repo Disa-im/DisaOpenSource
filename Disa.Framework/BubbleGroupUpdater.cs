@@ -300,7 +300,7 @@ namespace Disa.Framework
             }
         }
 
-        public static bool UpdaterUnknownPartyParticipant(BubbleGroup bubbleGroup, string participantAddress, Action onAdded = null)
+        public static bool UpdateUnknownPartyParticipant(BubbleGroup bubbleGroup, string participantAddress, Action onAdded = null)
         {
             var service = bubbleGroup.Service;
 
