@@ -191,6 +191,11 @@ namespace Disa.Framework
             throw new NotImplementedException();
         }
 
+        public bool HasSession(string address, int deviceId)
+        {
+            throw new NotImplementedException();
+        }
+
         public void ProcessPreKey(string address, int deviceId, PreKeyBundle bundle)
         {
             throw new NotImplementedException();
