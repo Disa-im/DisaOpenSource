@@ -59,6 +59,37 @@ namespace Disa.Framework
             }
         }
 
+        public static string GetAreaCodeFromFromInternationalNumber(string internationalNumber, string localeCountry)
+        {
+            try
+            {
+                #if __ANDROID__
+                var phoneUtil = Com.Google.I18n.Phonenumbers.PhoneNumberUtil.Instance;
+                var parsedNumber = phoneUtil.ParseAndKeepRawInput(internationalNumber, localeCountry);
+                String nationalSignificantNumber = phoneUtil.GetNationalSignificantNumber(parsedNumber);
+                int nationalDestinationCodeLength = phoneUtil.GetLengthOfNationalDestinationCode(parsedNumber);
+
+                if (nationalDestinationCodeLength > 0) 
+                {
+                    var nationalDestinationCode = nationalSignificantNumber.Substring(0, nationalDestinationCodeLength);
+                    return nationalDestinationCode;
+                }
+                #else
+                throw new NotImplementedException("Not implemented");
+                #endif
+            }
+            catch (Exception ex)
+            {
+                Utils.DebugPrint("Could not get area code from international number; " + ex);
+            }
+            return null;
+        }
+
+        public static string GetAreaCodeFromFromInternationalNumber(string internationalNumber)
+        {
+            return GetAreaCodeFromFromInternationalNumber(internationalNumber, Country);
+        }
+
         public static string GetCountryLocaleFromInternationalNumber(string internationalNumber)
         {
             try
@@ -681,6 +712,21 @@ namespace Disa.Framework
 
                 if (matchTrunkPrefix(b, ib + 1)
                     && matchIntlPrefixAndCC(a, ia + 1))
+                {
+                    return true;
+                }
+
+                /*
+                 * Last resort: if the number of unmatched characters on both sides is less than or equal
+                 * to the length of the longest country code and only one number starts with a + accept
+                 * the match. This is because some countries like France and Russia have an extra prefix
+                 * digit that is used when dialing locally in country that does not show up when you dial
+                 * the number using the country code. In France this prefix digit is used to determine
+                 * which land line carrier to route the call over.
+                 */
+                bool aPlusFirst = (a[0] == '+');
+                bool bPlusFirst = (b[0] == '+');
+                if (ia < 4 && ib < 4 && (aPlusFirst || bPlusFirst) && !(aPlusFirst && bPlusFirst)) 
                 {
                     return true;
                 }
