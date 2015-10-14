@@ -11,9 +11,6 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(1)]
         public string Message {get; set;}
 
-        [NonSerialized]
-        public List<Emoji.Span> EmojiSpans;
-
         public TextBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string message, string idService = null) :
             base(time, direction, address, participantAddress, party, service, null, idService)
