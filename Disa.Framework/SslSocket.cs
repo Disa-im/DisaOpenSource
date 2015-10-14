@@ -32,11 +32,15 @@ namespace Disa.Framework
 
 		public int Receive(byte[] buffer)
 		{
+            if (_socket == null)
+                throw new Exception("Underlying socket connecion is null.");
 			return _socket.InputStream.Read(buffer, 0, buffer.Length);
 		}
 
 		public int Send(byte[] buffer)
 		{
+            if (_socket == null)
+                throw new Exception("Underlying socket connecion is null.");
 			_socket.OutputStream.Write(buffer, 0, buffer.Length);
 			_socket.OutputStream.Flush();
 			return buffer.Length;
@@ -44,12 +48,17 @@ namespace Disa.Framework
 
         public void SetTimeout(int timeout)
         {
+            if (_socket == null)
+                throw new Exception("Underlying socket connecion is null.");
             _socket.SoTimeout = timeout == -1 ? 0 : timeout;
         }
 
 		public void Close()
 		{
-			_socket.Close();
+            if (_socket != null)
+            {
+                _socket.Close();
+            }
 		}
 
 		public void Connect(int sendTimeout = -1, int receiveTimeout = -1)
