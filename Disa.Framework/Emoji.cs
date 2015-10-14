@@ -32,20 +32,6 @@ namespace Disa.Framework
             }
         }
 
-        public class Span
-        {
-            public int Position { get; set; }
-            public int Length { get; set; }
-            public Map Emoji { get; set; }
-
-            public Span(int position, int length, Map emoji)
-            {
-                Position = position;
-                Length = length;
-                Emoji = emoji;
-            }
-        }
-
         internal static void Initalize(string location)
         {
             Location = location;
@@ -91,7 +77,35 @@ namespace Disa.Framework
             return null;
         }
 
-        public static List<Map> EmojiMaps = new List<Map>
+        public static string Utf16ToUnified(string utf16)
+        {
+            if (!Utf16UnifiedMap.ContainsKey(utf16))
+            {
+                return null;
+            }
+            return Utf16UnifiedMap[utf16];
+        }
+
+        static Emoji()
+        {
+            Utf16UnifiedMap = new Dictionary<string, string>();
+            foreach (var map in EmojiMaps)
+            {
+                Utf16UnifiedMap.Add(map.Utf16, map.Unified);
+            }
+        }
+
+        private static readonly Dictionary<string, string> Utf16UnifiedMap;
+
+        public static IEnumerable<Map> EmojiMaps
+        {
+            get
+            {
+                return _emojiMaps;
+            }
+        }
+
+        private static readonly List<Map> _emojiMaps = new List<Map>
             {
                 new Map("black sun with rays", "2600", "e63e", "e488", "e04a", "fe000", "\u2600"),
                 new Map("cloud", "2601", "e63f", "e48d", "e049", "fe001", "\u2601"),
