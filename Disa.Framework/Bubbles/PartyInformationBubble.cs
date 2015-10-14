@@ -55,6 +55,13 @@ namespace Disa.Framework.Bubbles
                 service, idService, InformationType.ParticipantRemoved, participantWhomRemoved, participantRemoved);
         }
 
+        public static PartyInformationBubble CreateParticipantLeft(long time, string address,
+            Service service, string idService, string participantLeft)
+        {
+            return new PartyInformationBubble(time, BubbleDirection.Incoming, address, null, true, 
+                service, idService, InformationType.ParticipantRemoved, participantLeft, participantLeft);
+        }
+
         public static PartyInformationBubble CreateTitleChanged(long time, string address,
             Service service, string idService, string participantWhomChangedTitle, string newTitle)
         {
