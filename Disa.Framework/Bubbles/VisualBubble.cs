@@ -15,6 +15,7 @@ namespace Disa.Framework.Bubbles
     [ProtoInclude(207, typeof(PartyInformationBubble))]
     [ProtoInclude(208, typeof(FileBubble))]
     [ProtoInclude(209, typeof(StickerBubble))]
+    [ProtoInclude(210, typeof(ContactBubble))]
     public abstract class VisualBubble : Bubble
     {
         [ProtoMember(251)]

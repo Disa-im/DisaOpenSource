@@ -219,7 +219,9 @@ namespace Disa.Framework
 				return;
 			if (vb is LocationBubble)
 				return;
-
+            if (vb is ContactBubble)
+                return;
+            
 			var videoBubble = vb as VideoBubble;
 			if (videoBubble != null)
 			{
@@ -470,6 +472,13 @@ namespace Disa.Framework
         {
             mime = mime.ToLower().Trim();
             return mime.IndexOf("text", StringComparison.Ordinal) == 0;
+        }
+
+        public static bool IsVCardType(string mime)
+        {
+            mime = mime.ToLower().Trim();
+            return mime.IndexOf("text/x-vcard", StringComparison.Ordinal) == 0 || 
+                mime.IndexOf("text/vcard", StringComparison.Ordinal) == 0;
         }
 
         public static string GetExtensionWithoutPeriod(string path)
