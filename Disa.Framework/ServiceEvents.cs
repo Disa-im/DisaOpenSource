@@ -9,9 +9,11 @@ namespace Disa.Framework
         public static event EventHandler<Service> UnRegistered;
         public static event EventHandler<Service> Expired;
         public static event EventHandler<Service> Started;
+        public static event EventHandler<Service> ContactsUpdated;
 
         private static Action<ComposeBubbleGroup, BubbleGroup> _composeFinished;
         private static Action _privacyListUpdated;
+        private static Action<Service> _contactsUpdated;
 
         internal static void RaiseComposeFinished(ComposeBubbleGroup composeGroup, 
             BubbleGroup actualGroup)
@@ -74,6 +76,14 @@ namespace Disa.Framework
                 return;
 
             SettingsLoaded(null, service);
+        }
+
+        internal static void RaiseContactsUpdated(Service service)
+        {
+            if (ContactsUpdated == null)
+                return;
+
+            ContactsUpdated(null, service);
         }
     }
 }

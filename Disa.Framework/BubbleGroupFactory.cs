@@ -9,18 +9,6 @@ namespace Disa.Framework
 {
     public class BubbleGroupFactory
     {
-        internal static SimpleDatabase<UnifiedBubbleGroup, DisaUnifiedBubbleGroupEntry> UnifiedBubbleGroupsDatabase
-        {
-            get;
-            private set;
-        }
-
-        internal static void Initialize()
-        {
-            UnifiedBubbleGroupsDatabase =
-                new SimpleDatabase<UnifiedBubbleGroup, DisaUnifiedBubbleGroupEntry>("UnifiedBubbleGroups");
-        }
-
         private static Tuple<List<VisualBubble>, List<Tuple<BubbleGroup, long>>> LoadDatabaseBubblesOnUnitInto
         (List<BubbleGroup> groups, int day, List<Tuple<BubbleGroup, Stream>> handles, 
             List<Tuple<BubbleGroup, long>> cursors, string[] bubbleTypes = null, Func<VisualBubble, bool> comparer = null)
@@ -246,19 +234,16 @@ namespace Disa.Framework
                 {
                     BubbleGroupManager.BubbleGroupsRemove(unifiedGroup);
                 }
-                UnifiedBubbleGroupsDatabase.Remove(unifiedGroupsToKill);
+                BubbleGroupIndex.RemoveUnified(unifiedGroupsToKill.Select(x => x.ID).ToArray());
 
                 var unified = CreateUnifiedInternal(groups, primaryGroup);
-                UnifiedBubbleGroupsDatabase.Add(unified,
-                    new DisaUnifiedBubbleGroupEntry(unified.ID,
-                        unified.Groups.Select(innerGroup => innerGroup.ID)
-                        .ToArray(), primaryGroup.ID, primaryGroup.ID));
+                BubbleGroupIndex.AddUnified(unified);
                 BubbleGroupManager.BubbleGroupsAdd(unified);
                 return unified;
             }
         }
 
-        private static UnifiedBubbleGroup CreateUnifiedInternal(List<BubbleGroup> groups, BubbleGroup primaryGroup, string id = null)
+        internal static UnifiedBubbleGroup CreateUnifiedInternal(List<BubbleGroup> groups, BubbleGroup primaryGroup, string id = null)
         {
             var service = ServiceManager.GetUnified();
             if (service == null)
@@ -320,17 +305,54 @@ namespace Disa.Framework
                 var associatedPartiallyLoadedGroups = associatedGroups.Where(x => x.PartiallyLoaded).ToList();
                 foreach (var partiallyLoadedGroup in associatedPartiallyLoadedGroups)
                 {
-                    loadedSomething = true;
                     var partiallyLoadedBubblesToRemove = partiallyLoadedGroup.Bubbles.ToList();
-                    foreach (var bubble in BubbleGroupDatabase.FetchBubbles(partiallyLoadedGroup).Reverse())
+                    var rollingBack = false;
+                    TryAgain:
+                    try
                     {
-                        partiallyLoadedGroup.Bubbles.Add(bubble);
+                        loadedSomething = true;
+                        partiallyLoadedGroup.PartiallyLoaded = false;
+                        foreach (var bubble in BubbleGroupDatabase.FetchBubbles(partiallyLoadedGroup).Reverse())
+                        {
+                            partiallyLoadedGroup.Bubbles.Add(bubble);
+                        }
+                        foreach (var partiallyLoadedBubbleToRemove in partiallyLoadedBubblesToRemove)
+                        {
+                            partiallyLoadedGroup.Bubbles.Remove(partiallyLoadedBubbleToRemove);
+                        }
                     }
-                    foreach (var partiallyLoadedBubbleToRemove in partiallyLoadedBubblesToRemove)
+                    catch (Exception ex)
                     {
-                        partiallyLoadedGroup.Bubbles.Remove(partiallyLoadedBubbleToRemove);
+                        Utils.DebugPrint("Failed to fully load partially loaded group " + partiallyLoadedGroup.ID + ": " + ex);
+                        if (!rollingBack)
+                        {
+                            Utils.DebugPrint("Attempting to roll back the last transaction....");
+                            rollingBack = true;
+                            var lastModifiedIndex = BubbleGroupIndex.GetLastModifiedIndex(partiallyLoadedGroup.ID);
+                            if (lastModifiedIndex.HasValue)
+                            {
+                                try
+                                {
+                                    BubbleGroupDatabase.RollBackTo(partiallyLoadedGroup, lastModifiedIndex.Value);
+                                    goto TryAgain;
+                                }
+                                catch (Exception ex2)
+                                {
+                                    Utils.DebugPrint("Failed to rollback: " + ex2);
+                                    // fall-through. It's unrecoverable!
+                                }
+                            }
+                            else
+                            {
+                                // fall-through. It's unrecoverable!
+                            }
+                        }
+                        Utils.DebugPrint("Partially loaded group is dead. Killing and restarting (lost data occurred).");
+                        BubbleGroupDatabase.Kill(partiallyLoadedGroup);
+                        BubbleGroupSync.RemoveFromSync(partiallyLoadedGroup);
+                        BubbleGroupDatabase.AddBubbles(partiallyLoadedGroup, 
+                            partiallyLoadedBubblesToRemove.ToArray());
                     }
-                    partiallyLoadedGroup.PartiallyLoaded = false;
                 }
 
                 if (unifiedGroup != null && !unifiedGroup.UnifiedGroupLoaded)
@@ -353,192 +375,18 @@ namespace Disa.Framework
                     {
                         BubbleQueueManager.Send(new[] { @group.Service.Information.ServiceName });
                     }
-                    BubbleManager.SetNotQueuedToFailures(@group);
+                    BubbleQueueManager.SetNotQueuedToFailures(@group);
                 });
             }
 
             return loadedSomething;
         }
 
-        internal static void LoadAllPartiallyIfPossible(int bubblesPerGroup = 100)
+        internal static void LoadAllPartiallyIfPossible()
         {
-            var corruptedGroups = new List<string>();
-
-            var bubbleGroupsLocations = Directory.GetFiles(BubbleGroupDatabase.GetBaseLocation(), "*.*", SearchOption.AllDirectories);
-            var bubbleGroupsLocationsSorted =
-                bubbleGroupsLocations.OrderByDescending(x => Time.GetUnixTimestamp(File.GetLastWriteTime(x))).ToList();
-
-            foreach (var bubbleGroupLocation in bubbleGroupsLocationsSorted)
-            {
-                String groupId = null;
-                try
-                {
-                    var groupHeader = Path.GetFileNameWithoutExtension(bubbleGroupLocation);
-
-                    var groupDelimeter = groupHeader.IndexOf("^", StringComparison.Ordinal);
-                    var serviceName = groupHeader.Substring(0, groupDelimeter);
-                    groupId = groupHeader.Substring(groupDelimeter + 1);
-
-                    var service = ServiceManager.GetByName(serviceName);
-
-                    if (service == null)
-                    {
-                        Utils.DebugPrint("Service " + serviceName +
-                                                 " not found in AllServices!");
-                        continue;
-                    }
-
-                    var deserializedBubbleGroup = LoadPartiallyIfPossible(bubbleGroupLocation, service, groupId, bubblesPerGroup);
-                    if (deserializedBubbleGroup == null)
-                    {
-                        throw new Exception("DeserializedBubbleGroup is nothing.");
-                    }
-                    BubbleGroupManager.BubbleGroupsAdd(deserializedBubbleGroup);
-                }
-                catch (Exception ex)
-                {
-                    Utils.DebugPrint("Group " + bubbleGroupLocation + " is corrupt. Deleting. " + ex);
-                    File.Delete(bubbleGroupLocation);
-                    if (groupId != null)
-                        corruptedGroups.Add(groupId);
-                }
-            }
-
-            var migrationResaveNeeded = false;
-            var corruptedUnifiedGroups =
-                new List<SimpleDatabase<UnifiedBubbleGroup, DisaUnifiedBubbleGroupEntry>.Container>();
-            var removeFromRuntime =
-                new List<SimpleDatabase<UnifiedBubbleGroup, DisaUnifiedBubbleGroupEntry>.Container>();
-            foreach (var group in UnifiedBubbleGroupsDatabase)
-            {
-                var innerGroupCorrupt = false;
-                var innerGroups = new List<BubbleGroup>();
-                foreach (var innerGroupId in @group.Serializable.GroupIds)
-                {
-                    var innerGroup = BubbleGroupManager.Find(innerGroupId);
-                    if (innerGroup == null)
-                    {
-                        Utils.DebugPrint("Unified group, inner group " + innerGroupId +
-                                                 " could not be related.");
-                        if (corruptedGroups.Contains(innerGroupId))
-                        {
-                            Utils.DebugPrint(
-                                "It was detected that this inner group was corrupted and deleted. Will delete unified group.");
-                            innerGroupCorrupt = true;
-                            corruptedUnifiedGroups.Add(@group);
-                        }
-                    }
-                    else
-                    {
-                        innerGroups.Add(innerGroup);
-                    }
-                }
-                if (!innerGroups.Any())
-                {
-                    Utils.DebugPrint("Yuck. This unified group has no inner groups. Removing from runtime.");
-                    removeFromRuntime.Add(@group);
-                    continue;
-                }
-                if (innerGroupCorrupt)
-                    continue;
-
-                var primaryGroup = innerGroups.FirstOrDefault(x => x.ID == @group.Serializable.PrimaryGroupId);
-                if (primaryGroup == null)
-                {
-                    Utils.DebugPrint("Unified group, primary group " + @group.Serializable.PrimaryGroupId +
-                                             " could not be related. Removing from runtime.");
-                    removeFromRuntime.Add(@group);
-                    continue;
-                }
-
-                var id = @group.Serializable.Id;
-
-                var unifiedGroup = CreateUnifiedInternal(innerGroups, primaryGroup, id);
-                if (id == null)
-                {
-                    migrationResaveNeeded = true;
-                    @group.Serializable.Id = unifiedGroup.ID;
-                }
-
-                var sendingGroup = innerGroups.FirstOrDefault(x => x.ID == @group.Serializable.SendingGroupId);
-                if (sendingGroup != null)
-                {
-                    unifiedGroup.SendingGroup = sendingGroup;
-                }
-
-                @group.Object = unifiedGroup;
-                BubbleGroupManager.BubbleGroupsAdd(unifiedGroup);
-            }
-            if (removeFromRuntime.Any())
-            {
-                foreach (var group in removeFromRuntime)
-                {
-                    UnifiedBubbleGroupsDatabase.Remove(@group);
-                }
-            }
-            if (corruptedUnifiedGroups.Any())
-            {
-                foreach (var group in corruptedUnifiedGroups)
-                {
-                    UnifiedBubbleGroupsDatabase.Remove(@group);
-                }
-            }
-            if (migrationResaveNeeded)
-            {
-                Utils.DebugPrint("It was detected that we need to save migration changes for UnifiedBubbleGroups.");
-                UnifiedBubbleGroupsDatabase.SaveChanges();
-            }
-
-            try
-            {
-                foreach (var groupCache in BubbleGroupCacheManager.Load())
-                {
-                    var associatedGroup = BubbleGroupManager.Find(groupCache.Guid);
-                    if (associatedGroup == null)
-                        continue;
-
-                    var unifiedGroup = associatedGroup as UnifiedBubbleGroup;
-                    if (unifiedGroup != null)
-                    {
-                        associatedGroup = unifiedGroup.PrimaryGroup;
-                    }
-
-                    associatedGroup.Title = groupCache.Name;
-                    associatedGroup.Photo = groupCache.Photo;
-                    associatedGroup.IsPhotoSetInitiallyFromCache = true;
-                    if (groupCache.Participants != null)
-                    {
-                        associatedGroup.Participants = groupCache.Participants.ToSynchronizedCollection();
-                        foreach (var participant in associatedGroup.Participants)
-                        {
-                            participant.IsPhotoSetInitiallyFromCache = true;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Utils.DebugPrint("Failed to load bubble groups!: " + ex);
-            }
-
+            BubbleGroupIndex.Load();
             BubbleGroupSettingsManager.Load();
-        }
-
-        private static BubbleGroup LoadPartiallyIfPossible(string location, Service service, string groupId, int bubblesPerGroup = 100)
-        {
-            using (var stream = File.Open(location, FileMode.Open, FileAccess.Read))
-            {
-                stream.Seek(stream.Length, SeekOrigin.Begin);
-
-                var mostRecentVisualBubble = BubbleGroupDatabase.FetchNewestBubbleIfNotWaiting(stream, service);
-                if (mostRecentVisualBubble != null)
-                {
-                    return new BubbleGroup(mostRecentVisualBubble, groupId, true);
-                }
-            }
-
-            var bubbles = BubbleGroupDatabase.FetchBubbles(location, service, bubblesPerGroup).Reverse().ToList();
-            return new BubbleGroup(bubbles, groupId);
+            BubbleGroupCacheManager.LoadAll();
         }
 
         internal static void UnloadFullLoad(BubbleGroup group)
@@ -567,7 +415,7 @@ namespace Disa.Framework
                 }
 
                 BubbleGroupManager.BubbleGroupsRemove(unifiedGroup);
-                UnifiedBubbleGroupsDatabase.Remove(unifiedGroup);
+                BubbleGroupIndex.RemoveUnified(unifiedGroup.ID);
 
                 return deleteInnerGroups ? null : unifiedGroup.Groups;
             }

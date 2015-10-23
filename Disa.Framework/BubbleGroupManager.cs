@@ -66,10 +66,10 @@ namespace Disa.Framework
         {
             get
             {
-                if (BubbleGroupFactory.UnifiedBubbleGroupsDatabase == null)
-                    return new List<UnifiedBubbleGroup>();
-
-                return BubbleGroupFactory.UnifiedBubbleGroupsDatabase.Select(x => x.Object).ToList();
+                lock (BubbleGroupsLock)
+                {
+                    return BubbleGroups.OfType<UnifiedBubbleGroup>().ToList();
+                }
             }
         }
 
@@ -78,11 +78,15 @@ namespace Disa.Framework
             get { return BubbleGroups.Count; }
         }
 
-        public static void BubbleGroupsAdd(BubbleGroup group)
+        public static void BubbleGroupsAdd(BubbleGroup group, bool initialLoad = false)
         {
             lock (BubbleGroupsLock)
             {
                 BubbleGroups.Add(group);
+                if (!initialLoad && !(group is UnifiedBubbleGroup))
+                {
+                    BubbleGroupIndex.Add(group);
+                }
             }
         }
 
@@ -91,6 +95,10 @@ namespace Disa.Framework
             lock (BubbleGroupsLock)
             {
                 BubbleGroups.Remove(group);
+                if (!(group is UnifiedBubbleGroup))
+                {
+                    BubbleGroupIndex.Remove(group.ID);
+                }
             }
         }
 

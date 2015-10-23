@@ -13,6 +13,7 @@ namespace Disa.Framework
         private static readonly object _dbLock = new object();
         private static readonly object _sendLock = new object();
         private const string FileName = "QueuedBubbles.db";
+        private const string NotQueuedFileName = "NotQueuedBubbles.db";
         private static int _resendInterval = 5;
         private static WakeLockBalancer.CruelWakeLock _resend;
         private static string[] _resendServices;
@@ -28,7 +29,217 @@ namespace Disa.Framework
             }
         }
 
-        private static Entry Add(VisualBubble bubble)
+        private static string NotQueuedLocation
+        {
+            get
+            {
+                var databasePath = Platform.GetDatabasePath();
+                var queuedBubblesLocation = Path.Combine(databasePath, NotQueuedFileName);
+
+                return queuedBubblesLocation;
+            }
+        }
+
+        private static bool HasNotQueued(BubbleGroup group)
+        {
+            lock (_dbLock)
+            {
+                var groupId = group.ID;
+                using (var db = new SqlDatabase<NotQueuedEntry>(NotQueuedLocation))
+                {
+                    // don't add a duplicate group into the queue
+                    foreach (var possibleGroup in db.Store.Where(x => 
+                        x.BubbleGroupGuid == groupId))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        private static void NotQueuedSanityCheckup()
+        {
+            lock (_dbLock)
+            {
+                using (var db = new SqlDatabase<NotQueuedEntry>(NotQueuedLocation))
+                {
+                    const int secondsInWeek = 604800;
+                    var nowTime = Time.GetNowUnixTimestamp();
+                    var truncateTime = nowTime - secondsInWeek;
+                    var removing = false;
+                    var bubblesToTruncate = new List<NotQueuedEntry>();
+                    foreach (var possibleBubble in db.Store.Where(x => x.Time < truncateTime))
+                    {
+                        if (!removing)
+                        {
+                            Utils.DebugPrint("Pruning not queued bubbles database. Some bubbles are too old!");
+                        }
+                        removing = true;
+                        bubblesToTruncate.Add(possibleBubble);
+                    }
+                    foreach (var possibleBubble in bubblesToTruncate)
+                    {
+                        db.Remove(possibleBubble);
+                    }
+                }
+            }
+        }
+
+        private static void SanityCheckup()
+        {
+            lock (_dbLock)
+            {
+                using (var db = new SqlDatabase<Entry>(Location))
+                {
+                    const int secondsInWeek = 604800;
+                    var nowTime = Time.GetNowUnixTimestamp();
+                    var truncateTime = nowTime - secondsInWeek;
+                    var removing = false;
+                    var bubblesToTruncate = new List<Entry>();
+                    foreach (var possibleBubble in db.Store.Where(x => x.Time < truncateTime))
+                    {
+                        if (!removing)
+                        {
+                            Utils.DebugPrint("Pruning queued bubbles database. Some bubbles are too old!");
+                        }
+                        removing = true;
+                        bubblesToTruncate.Add(possibleBubble);
+                    }
+                    foreach (var possibleBubble in bubblesToTruncate)
+                    {
+                        db.Remove(possibleBubble);
+                    }
+                }
+            }
+        }
+
+        public static void SetNotQueuedToFailures(Service service)
+        {
+            if (service is UnifiedService)
+                return;
+
+            if (service.QueuedBubblesParameters == null 
+                || service.QueuedBubblesParameters.BubblesNotToQueue == null
+                || !service.QueuedBubblesParameters.BubblesNotToQueue.Any())
+                return;
+
+            foreach (var group in BubbleGroupManager.FindAll(service))
+            {
+                SetNotQueuedToFailures(@group);
+            }
+        }
+
+        public static void SetNotQueuedToFailures(BubbleGroup group)
+        {
+            var nowUnixTimeStamp = Time.GetNowUnixTimestamp();
+
+            var groups = BubbleGroupManager.GetInner(@group).Where(x => 
+                    (x.Service.QueuedBubblesParameters != null && 
+                    x.Service.QueuedBubblesParameters.BubblesNotToQueue != null && 
+                    x.Service.QueuedBubblesParameters.BubblesNotToQueue.Any()));
+
+            if (!groups.Any())
+                return;
+
+            foreach (var innerGroup in groups)
+            {
+                if (HasNotQueued(innerGroup))
+                {
+                    if (innerGroup.PartiallyLoaded)
+                    {
+                        BubbleGroupFactory.LoadFullyIfNeeded(innerGroup);
+                    }
+
+                    var bubblesSetToFailed = new List<VisualBubble>();
+
+                    foreach (var bubble in innerGroup)
+                    {                        
+                        if (bubble.Direction == Bubble.BubbleDirection.Outgoing &&
+                            bubble.Status == Bubble.BubbleStatus.Waiting)
+                        {
+                            if (innerGroup
+                                .Service.QueuedBubblesParameters.BubblesNotToQueue
+                                .FirstOrDefault(x => x == bubble.GetType()) != null)
+                            {
+                                var failBubble = innerGroup
+                                    .Service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart
+                                    .FirstOrDefault(x => x == bubble.GetType()) != null;
+
+                                // Older than 10 minutes, fail it regardless.
+                                if (!failBubble && bubble.Time < (nowUnixTimeStamp - 600))
+                                {
+                                    failBubble = true;
+                                }
+
+                                if (failBubble)
+                                {
+                                    RemoveNotQueued(bubble);
+                                    bubble.Status = Bubble.BubbleStatus.Failed;
+                                    bubblesSetToFailed.Add(bubble);
+                                }
+                            }
+                        }
+                    }
+
+                    if (bubblesSetToFailed.Any())
+                    {
+                        BubbleGroupDatabase.UpdateBubble(innerGroup, bubblesSetToFailed.ToArray(), 100);
+                        foreach (var bubble in bubblesSetToFailed)
+                        {
+                            BubbleGroupEvents.RaiseBubbleFailed(bubble, innerGroup);
+                        }
+                        BubbleGroupEvents.RaiseBubblesUpdated(innerGroup);
+                        BubbleGroupEvents.RaiseRefreshed(innerGroup);
+                    }
+                }
+            }
+
+            NotQueuedSanityCheckup();
+        }
+
+        private static NotQueuedEntry AddNotQueued(VisualBubble bubble, BubbleGroup group)
+        {
+            lock (_dbLock)
+            {
+                var bubbleId = bubble.ID;
+                using (var db = new SqlDatabase<NotQueuedEntry>(NotQueuedLocation))
+                {
+                    // don't add a duplicate group into the queue
+                    foreach (var possibleGroup in db.Store.Where(x => x.Guid == bubbleId))
+                    {
+                        return possibleGroup;
+                    }
+                    var entry = new NotQueuedEntry
+                    {
+                        ServiceName = group.Service.Information.ServiceName,
+                        BubbleGroupGuid = group.ID,
+                        Guid = bubble.ID,
+                        Time = bubble.Time,
+                    };
+                    db.Add(entry);
+                    return entry;
+                }
+            }
+        }
+
+        private static void RemoveNotQueued(VisualBubble bubble)
+        {
+            lock (_dbLock)
+            {
+                var bubbleId = bubble.ID;
+                using (var db = new SqlDatabase<NotQueuedEntry>(NotQueuedLocation))
+                {
+                    // don't add a duplicate group into the queue
+                    foreach (var possibleGroup in db.Store.Where(x => x.Guid == bubbleId))
+                    {
+                        db.Remove(possibleGroup);
+                    }
+                }
+            }
+        }
+
+        private static Entry Add(BubbleGroup group, VisualBubble bubble)
         {
             lock (_dbLock)
             {
@@ -40,11 +251,12 @@ namespace Disa.Framework
                         if (possibleBubble.Guid == bubble.ID)
                             return possibleBubble;
                     }
-                    var entry = new Entry()
+                    var entry = new Entry
                     {
                         ServiceName = bubble.Service.Information.ServiceName,
                         Guid = bubble.ID,
-                        Time = bubble.Time
+                        Time = bubble.Time,
+                        BubbleGroupGuid = group.ID,
                     };
                     db.Add(entry);
                     return entry;
@@ -59,6 +271,20 @@ namespace Disa.Framework
                 using (var db = new SqlDatabase<Entry>(Location))
                 {
                     db.Remove(entry);
+                }
+            }
+        }
+
+        private static void Remove(Entry[] entries)
+        {
+            lock (_dbLock)
+            {
+                using (var db = new SqlDatabase<Entry>(Location))
+                {
+                    foreach (var entry in entries)
+                    {
+                        db.Remove(entry);
+                    }
                 }
             }
         }
@@ -79,6 +305,23 @@ namespace Disa.Framework
                         if (sending != null)
                         {
                             InsertBubble.Sending.Remove(sending);
+                        }
+                    }
+                }
+            });
+        }
+
+        public static Task PurgeNotQueuedBubble(string bubbleId)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                lock (_dbLock)
+                {
+                    using (var db = new SqlDatabase<NotQueuedEntry>(NotQueuedLocation))
+                    {
+                        foreach (var entry in db.Store.Where(x => x.Guid == bubbleId))
+                        {
+                            db.Remove(entry);
                         }
                     }
                 }
@@ -130,34 +373,6 @@ namespace Disa.Framework
                                 }
                             }
                         }
-                    }
-                }
-            }
-        }
-
-        private static void SanityCheckup()
-        {
-            lock (_dbLock)
-            {
-                using (var db = new SqlDatabase<Entry>(Location))
-                {
-                    const int secondsInWeek = 604800;
-                    var nowTime = Time.GetNowUnixTimestamp();
-                    var truncateTime = nowTime - secondsInWeek;
-                    var removing = false;
-                    var bubblesToTruncate = new List<Entry>();
-                    foreach (var possibleBubble in db.Store.Where(x => x.Time < truncateTime))
-                    {
-                        if (!removing)
-                        {
-                            Utils.DebugPrint("Pruning queued bubbles database. Some bubbles are too old!");
-                        }
-                        removing = true;
-                        bubblesToTruncate.Add(possibleBubble);
-                    }
-                    foreach (var possibleBubble in bubblesToTruncate)
-                    {
-                        db.Remove(possibleBubble);
                     }
                 }
             }
@@ -241,6 +456,8 @@ namespace Disa.Framework
 
                 lock (_sendLock)
                 {
+                    var nowUnixTimestamp = Time.GetNowUnixTimestamp();
+
                     var possibleBubblesFromDatabase = new List<Entry>();
 
                     lock (_dbLock)
@@ -260,21 +477,52 @@ namespace Disa.Framework
                     var possibleBubblesInDisa = new List<Tuple<Entry, VisualBubble>>();
                     foreach (var bubbleGroup in BubbleGroupManager.BubbleGroupsNonUnified)
                     {
-                        if (bubbleGroup.PartiallyLoaded)
+                        var hasPossibleBubble = possibleBubblesFromDatabase.FirstOrDefault(x => 
+                            x.BubbleGroupGuid != null && x.BubbleGroupGuid == bubbleGroup.ID) != null;
+                        if (!hasPossibleBubble)
                         {
                             continue;
                         }
 
+                        if (bubbleGroup.PartiallyLoaded)
+                        {
+                            BubbleGroupFactory.LoadFullyIfNeeded(bubbleGroup);
+                        }
+
+                        var bubblesToSetToFail = new List<Tuple<Entry, VisualBubble>>();
                         foreach (var bubble in bubbleGroup)
                         {
                             if (bubble.Status != Bubble.BubbleStatus.Waiting)
                                 continue;
 
+                            if (bubble.Direction != Bubble.BubbleDirection.Outgoing)
+                                continue;
+
                             var possibleBubbleFromDatabase = possibleBubblesFromDatabase.FirstOrDefault(x => x.Guid == bubble.ID);
                             if (possibleBubbleFromDatabase != null)
                             {
+                                // older than 10 minutes, fail
+                                if (bubble.Time < (nowUnixTimestamp - 600))
+                                {
+                                    bubble.Status = Bubble.BubbleStatus.Failed;
+                                    bubblesToSetToFail.Add(Tuple.Create(possibleBubbleFromDatabase, bubble));
+                                    continue;
+                                }
+
                                 possibleBubblesInDisa.Add(new Tuple<Entry, VisualBubble>(possibleBubbleFromDatabase, bubble));
                             }
+                        }
+                        if (bubblesToSetToFail.Any())
+                        {
+                            BubbleGroupDatabase.UpdateBubble(bubbleGroup, 
+                                bubblesToSetToFail.Select(x => x.Item2).ToArray(), 100);
+                            Remove(bubblesToSetToFail.Select(x => x.Item1).ToArray());
+                            foreach (var bubble in bubblesToSetToFail)
+                            {
+                                BubbleGroupEvents.RaiseBubbleFailed(bubble.Item2, bubbleGroup);
+                            }
+                            BubbleGroupEvents.RaiseBubblesUpdated(bubbleGroup);
+                            BubbleGroupEvents.RaiseRefreshed(bubbleGroup);
                         }
                     }
 
@@ -321,8 +569,6 @@ namespace Disa.Framework
                         }
                     });
 
-                    SanityCheckup();
-
                     var receipts = sent.Select(x => new Receipt(x.Item1.Guid, x.Item2)).ToList();
 
                     if (!scheduled)
@@ -341,16 +587,18 @@ namespace Disa.Framework
                         }
                     }
 
+                    SanityCheckup();
+
                     return receipts;
                 }
             });
         }
 
-        public static Task JustQueue(VisualBubble visualBubble)
+        public static Task JustQueue(BubbleGroup group, VisualBubble visualBubble)
         {
             return Task.Factory.StartNew(() =>
             {
-                var entry = Add(visualBubble);
+                var entry = Add(group, visualBubble);
             });
         }
 
@@ -374,23 +622,37 @@ namespace Disa.Framework
             public string ServiceName { get; set; }
             public string Guid { get; set; }
             public long Time { get; set; } 
+            public string BubbleGroupGuid { get; set; }
         }
 
+        private class NotQueuedEntry
+        {
+            [PrimaryKey, AutoIncrement] 
+            public int Id { get; set; }
+
+            public string ServiceName { get; set; }
+            public string Guid { get; set; }
+            public long Time { get; set; } 
+            public string BubbleGroupGuid { get; set; }
+        }
+            
         public class InsertBubble : IDisposable
         {
+            // This list is to prevent the possibility of the QueueManager sending the same bubble twice. Therefore, it is only applicable
+            // to bubbles being queued, and not the ones not queued (a.k.a those inserted with NotQueuedEntry).
             public static readonly List<VisualBubble> Sending = new List<VisualBubble>();
             private readonly Entry _entry;
             private bool _cancelQueue;
             private readonly bool _shouldInsert;
             private readonly VisualBubble _visualBubble;
 
-            public InsertBubble(VisualBubble visualBubble, bool shouldInsert)
+            public InsertBubble(BubbleGroup group, VisualBubble visualBubble, bool shouldInsert)
             {
                 _shouldInsert = shouldInsert;
                 _visualBubble = visualBubble;
                 if (_shouldInsert)
                 {
-                    _entry = Add(_visualBubble);
+                    _entry = Add(group, _visualBubble);
                     lock (Sending)
                     {
                         Sending.Add(_visualBubble);
@@ -398,6 +660,7 @@ namespace Disa.Framework
                 }
                 else
                 {
+                    AddNotQueued(visualBubble, group);
                     _entry = null;
                 }
             }
@@ -410,12 +673,9 @@ namespace Disa.Framework
                 }
             }
 
-            public void CancelQueueIfInsertable()
+            public void CancelQueue()
             {
-                if (_shouldInsert)
-                {
-                    _cancelQueue = true;
-                }
+                _cancelQueue = true;
             }
 
             public void Dispose()
@@ -434,6 +694,10 @@ namespace Disa.Framework
                     {
                         Sending.Remove(_visualBubble);
                     }
+                }
+                else if (!_shouldInsert && _cancelQueue)
+                {
+                    RemoveNotQueued(_visualBubble);
                 }
             }
         }

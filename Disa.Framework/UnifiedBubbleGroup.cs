@@ -9,17 +9,14 @@ namespace Disa.Framework
     {
         public List<BubbleGroup> Groups { get; private set; }
         public BubbleGroup PrimaryGroup { get; private set; }
-        private BubbleGroup _sendingGroup;
+        internal BubbleGroup _sendingGroup;
         public BubbleGroup SendingGroup
         {
             get { return _sendingGroup; }
             set
             {
                 _sendingGroup = value;
-                var databaseRelation = BubbleGroupFactory.UnifiedBubbleGroupsDatabase.FirstOrDefault(x => x.Object == this);
-                if (databaseRelation == null) return;
-                databaseRelation.Serializable.SendingGroupId = value.ID;
-                Task.Factory.StartNew(() => BubbleGroupFactory.UnifiedBubbleGroupsDatabase.SaveChanges());
+                BubbleGroupIndex.SetUnifiedSendingBubbleGroup(ID, value.ID);
             }
         }
         internal bool UnifiedGroupLoaded { get; set; }
@@ -33,7 +30,7 @@ namespace Disa.Framework
             _unifiedService = initialBubble.Service;
             Groups = groups;
             PrimaryGroup = primaryGroup;
-            SendingGroup = primaryGroup;
+            _sendingGroup = primaryGroup;
         }
 
         public void UnloadFullUnifiedLoad()

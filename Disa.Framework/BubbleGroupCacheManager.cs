@@ -10,145 +10,133 @@ namespace Disa.Framework
 {
     public class BubbleGroupCacheManager
     {
-        private static readonly object BubbleGroupNamesLock = new object();
+        private static readonly object Lock = new object();
 
         private static string GetLocation()
         {
-            var settingsPath = Platform.GetSettingsPath();
-            var groupNamesPath = Path.Combine(settingsPath, "BubbleGroupCache.xml");
-            return groupNamesPath;
+            var databasePath = Platform.GetDatabasePath();
+            var cachePath = Path.Combine(databasePath, "BubbleGroupCache.db");
+            return cachePath;
+        }
+
+        private static BubbleGroupCache Generate(BubbleGroup group, string guid)
+        {
+            var bubbleGroupCache = new BubbleGroupCache
+            {
+                Name = group.Title,
+                Photo = group.Photo,
+                Participants = group.Participants.ToList(),
+                Guid = guid,
+            };
+            return bubbleGroupCache;
         }
 
         public static void Save()
         {
-            try
+            lock (Lock)
             {
-                lock (BubbleGroupNamesLock)
+                var sw = new Stopwatch();
+                sw.Start();
+
+                var location = GetLocation();
+
+                try
                 {
-                    var location = GetLocation();
-                    var sw = new Stopwatch();
-                    sw.Start();
-                    using (var xmlWriter = XmlWriter.Create((string) location))
+                    var items = new List<BubbleGroupCache>();
+
+                    foreach (var group in BubbleGroupManager.BubbleGroupsImmutable)
                     {
-                        xmlWriter.WriteStartDocument();
-                        xmlWriter.WriteStartElement("BubbleGroupNames");
-                        foreach (var group in BubbleGroupManager.BubbleGroupsImmutable)
+                        var workingGroup = group;
+                        var unifiedGroup = workingGroup as UnifiedBubbleGroup;
+                        if (unifiedGroup != null)
                         {
-                            var workingGroup = @group;
-
-                            var unifiedGroup = workingGroup as UnifiedBubbleGroup;
-                            if (unifiedGroup != null)
-                            {
-                                workingGroup = unifiedGroup.PrimaryGroup;
-                            }
-
-                            xmlWriter.WriteStartElement("BubbleGroupName");
-
-                            if (workingGroup.Title != null)
-                            {
-                                xmlWriter.WriteAttributeString("Name", workingGroup.Title);
-                            }
-
-                            if (workingGroup.Participants.Any())
-                            {
-                                using (var ms = new MemoryStream())
-                                {
-                                    Serializer.Serialize(ms, workingGroup.Participants);
-                                    xmlWriter.WriteAttributeString("Participants",
-                                        Convert.ToBase64String(ms.ToArray()));
-                                }
-                            }
-
-                            if (workingGroup.Photo != null)
-                            {
-                                using (var ms = new MemoryStream())
-                                {
-                                    Serializer.Serialize(ms, workingGroup.Photo);
-                                    xmlWriter.WriteAttributeString("Photo",
-                                        Convert.ToBase64String(ms.ToArray()));
-                                }
-                            }
-
-                            xmlWriter.WriteAttributeString("Guid", @group.ID);
-
-                            xmlWriter.WriteEndElement();
+                            workingGroup = unifiedGroup.PrimaryGroup;
                         }
-                        xmlWriter.WriteEndElement();
-                        xmlWriter.WriteEndDocument();
+                        var groupGuid = group.ID;
+                        var cache = Generate(workingGroup, groupGuid);
+                        items.Add(cache);
                     }
-                    sw.Stop();
-                    Utils.DebugPrint("Saving bubble group names took " + sw.ElapsedMilliseconds + "ms.");
+
+                    using (var ms = new MemoryStream())
+                    {
+                        Serializer.Serialize(ms, items);
+                        var bytes = ms.ToArray();
+                        File.WriteAllBytes(location, bytes);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Utils.DebugPrint("Failed to save bubble groups " + ex);
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint("Failed to save bubble group cache: " + ex);
+                    if (File.Exists(location))
+                    {
+                        File.Delete(location);
+                    }
+                }
+
+                sw.Stop();
+                Utils.DebugPrint("Saving bubble group cache took " + sw.ElapsedMilliseconds + "ms.");
             }
         }
 
-        internal static IEnumerable<BubbleGroupCache> Load()
+        private static void Bind(BubbleGroup associatedGroup, BubbleGroupCache item)
         {
-            var location = GetLocation();
-            if (!File.Exists(location))
-                yield break;
-
-            lock (BubbleGroupNamesLock)
+            associatedGroup.Title = item.Name;
+            associatedGroup.Photo = item.Photo;
+            associatedGroup.IsPhotoSetInitiallyFromCache = true;
+            if (item.Participants != null)
             {
-                using (var xmlReader = XmlReader.Create(location))
+                associatedGroup.Participants = item.Participants.ToSynchronizedCollection();
+                foreach (var participant in associatedGroup.Participants)
                 {
-                    while (true)
+                    participant.IsPhotoSetInitiallyFromCache = true;
+                }
+            }
+        }
+
+        internal static void LoadAll()
+        {
+            lock (Lock)
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+
+                var location = GetLocation();
+
+                try
+                {
+                    using (var fs = File.OpenRead(location))
                     {
-                        bool read;
-                        try
+                        var items = Serializer.Deserialize<List<BubbleGroupCache>>(fs);
+
+                        foreach (var item in items)
                         {
-                            read = xmlReader.Read();
-                        }
-                        catch
-                        {
-                            Utils.DebugPrint(
-                                "Failed to read bubble group names in. Something must've corrupt. Nuking file.");
-                            File.Delete(location);
-                            yield break;
-                        }
+                            var associatedGroup = BubbleGroupManager.Find(item.Guid);
 
-                        if (!read)
-                            break;
+                            if (associatedGroup == null)
+                            {
+                                continue;
+                            }
 
-                        if (!xmlReader.IsStartElement()) continue;
-
-                        switch (xmlReader.Name)
-                        {
-                            case "BubbleGroupName":
-
-                                var name = xmlReader["Name"];
-                                var guid = xmlReader["Guid"];
-
-                                DisaThumbnail photo = null;
-                                var encodedPhoto = xmlReader["Photo"];
-                                if (encodedPhoto != null)
-                                {
-                                    using (var ms = new MemoryStream(Convert.FromBase64String(encodedPhoto)))
-                                    {
-                                        photo = Serializer.Deserialize<DisaThumbnail>(ms);
-                                    }
-                                }
-
-                                var encodedParticipants = xmlReader["Participants"];
-                                List<DisaParticipant> participants = null;
-                                if (encodedParticipants != null)
-                                {
-                                    using (var ms = new MemoryStream(Convert.FromBase64String(encodedParticipants)))
-                                    {
-                                        participants = Serializer.Deserialize<List<DisaParticipant>>(ms);
-                                    }
-                                }
-
-                                yield return new BubbleGroupCache(guid, name, photo, participants);
-
-                                break;
+                            var unifiedGroup = associatedGroup as UnifiedBubbleGroup;
+                            if (unifiedGroup != null)
+                            {
+                                associatedGroup = unifiedGroup.PrimaryGroup;
+                            }
+                            Bind(associatedGroup, item);
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint("Failed to load bubble group cache: " + ex);
+                    if (File.Exists(location))
+                    {
+                        File.Delete(location);
+                    }
+                }
+
+                sw.Stop();
+                Utils.DebugPrint("Loading bubble group cache took " + sw.ElapsedMilliseconds + "ms.");
             }
         }
     }

@@ -12,7 +12,6 @@ namespace Disa.Framework
         public static string Mcc { get; set; }
         public static string Country { get; set; }
         public static string Language { get; set; }
-        public static long LastUpdate { get; private set; }
 
         private static readonly object PhoneBookContactsLock = new object();
         private static List<PhoneBookContact> _phoneBookContacts;
@@ -289,9 +288,7 @@ namespace Disa.Framework
                                 Utils.DebugPrint("Phone contacts have not yet been used by the framework/services. Therefore, and update doesn't make sense. Skipping.");
                                 return;
                             }
-
-                            LastUpdate = Time.GetNowUnixTimestamp();
-
+                                
                             Utils.DebugPrint("Phone contacts have been updated! Querying phone contacts...");
 
                             var updatedPhoneContacts = Platform.GetPhoneBookContacts();
@@ -335,12 +332,13 @@ namespace Disa.Framework
 
                             foreach (
                                 var service in
-                                ServiceManager.Running)
+                                ServiceManager.RunningNoUnified)
                             {
                                 try
                                 {
                                     service.RefreshPhoneBookContacts();
                                     BubbleGroupUpdater.Update(service);
+                                    ServiceEvents.RaiseContactsUpdated(service);
                                 }
                                 catch (Exception ex)
                                 {
@@ -352,21 +350,9 @@ namespace Disa.Framework
                     }
                 };
 
-                if (Time.GetNowUnixTimestamp() - LastUpdate < 10)
+                using (Platform.AquireWakeLock("DisaContactsUpdate"))
                 {
-                    Utils.DebugPrint(
-                        "Contacts were updated less than 10 seconds ago... Waiting 10 seconds...");
-                    Platform.ScheduleAction(10000, new WakeLockBalancer.ActionObject(() =>
-                    {
-                        action();
-                    }, WakeLockBalancer.ActionObject.ExecuteType.TaskWithWakeLock));
-                }
-                else
-                {
-                    using (Platform.AquireWakeLock("DisaContactsUpdate"))
-                    {
-                        action();
-                    }
+                    action();
                 }
             });
         }

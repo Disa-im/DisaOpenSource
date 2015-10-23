@@ -1054,7 +1054,7 @@ namespace Disa.Framework
 
                         GetFlags(service).Starting = false;
 
-                        BubbleManager.SetNotQueuedToFailures(service);
+                        BubbleQueueManager.SetNotQueuedToFailures(service);
 
                         Utils.Delay(1000).ContinueWith(x =>
                         {

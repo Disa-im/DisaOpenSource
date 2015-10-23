@@ -5,6 +5,8 @@ namespace Disa.Framework
 {
     public static class PlatformManager
     {
+        public static PlatformImplementation PlatformImplementation { get; private set; }
+
         public static readonly string[] AndroidLinkedAssemblies = new []
         {
             "AuditApp.Android.dll", "Cropper.dll", "Crouton.dll", "Disa.Android.Common.dll", "Disa.Android.dll", "Disa.Framework.dll", "Disa.Framework.Mobile.dll", 
@@ -22,6 +24,7 @@ namespace Disa.Framework
 
         public static void InitializePlatform(PlatformImplementation platform)
         {
+            PlatformImplementation = platform;
             Platform.PlatformImplementation = platform;
         }
 
@@ -33,7 +36,6 @@ namespace Disa.Framework
             }
             ServiceManager.Initialize(allServices.ToList());
             ServiceUserSettingsManager.LoadAll();
-            BubbleGroupFactory.Initialize();
             Emoji.Initalize(Platform.GetEmojisPath());
             BubbleGroupFactory.LoadAllPartiallyIfPossible();
         }
@@ -42,7 +44,7 @@ namespace Disa.Framework
         {
             get
             {
-                return "14";
+                return "15";
             }
         }
 

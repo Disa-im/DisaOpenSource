@@ -51,7 +51,7 @@ namespace Disa.Framework
 
         public static void LoadAll()
         {
-            foreach (var service in ServiceManager.All)
+            foreach (var service in ServiceManager.AllNoUnified)
             {
                 var userSettings = Load(service);
                 service.UserSettings = userSettings ?? DisaServiceUserSettings.Default;

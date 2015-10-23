@@ -63,7 +63,7 @@ namespace Disa.Framework
 
                     try
                     {
-                        @group = Group(vb, resend);
+                        @group = Group(vb, resend, true);
                     }
                     catch (Exception ex)
                     {
@@ -88,7 +88,7 @@ namespace Disa.Framework
                             BubbleQueueManager.HasQueuedBubbles(vb.Service.Information.ServiceName, 
                                 true, false))
                         {
-                            BubbleQueueManager.JustQueue(vb);
+                            BubbleQueueManager.JustQueue(group, vb);
                             restartServiceIfNeeded();
                             return false;
                         }
@@ -98,7 +98,7 @@ namespace Disa.Framework
                             Monitor.Enter(vb.Service.SendBubbleLock);
                         }
 
-                        using (var queued = new BubbleQueueManager.InsertBubble(vb, shouldQueue))
+                        using (var queued = new BubbleQueueManager.InsertBubble(group, vb, shouldQueue))
                         {
                             Action checkForQueued = () =>
                             {
@@ -130,7 +130,7 @@ namespace Disa.Framework
                             }
                             catch (Exception ex)
                             {
-                                queued.CancelQueueIfInsertable();
+                                queued.CancelQueue();
 
                                 Utils.DebugPrint("Visual bubble on " + 
                                                          vb.Service.Information.ServiceName + " failed to be sent: " +
@@ -151,7 +151,7 @@ namespace Disa.Framework
                                 return false;
                             }
                                 
-                            queued.CancelQueueIfInsertable();
+                            queued.CancelQueue();
 
                             lock (BubbleGroupManager.LastBubbleSentTimestamps)
                             {
@@ -217,7 +217,7 @@ namespace Disa.Framework
                                 composeBubble.BubbleToSend.Address = ex.Address;
                                 composeBubble.BubbleToSend.Status = Bubble.BubbleStatus.Sent;
 
-                                var actualGroup = Group(composeBubble.BubbleToSend, resend);
+                                var actualGroup = Group(composeBubble.BubbleToSend, resend, true);
 
                                 ServiceEvents.RaiseComposeFinished(
                                     @group as ComposeBubbleGroup, actualGroup);
@@ -404,78 +404,6 @@ namespace Disa.Framework
             BubbleGroupEvents.RaiseRefreshed(@group);
         }
 
-        public static void SetNotQueuedToFailures(Service service)
-        {
-            if (service is UnifiedService)
-                return;
-
-            if (service.QueuedBubblesParameters == null 
-                || service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart == null
-                || !service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart.Any())
-                return;
-
-            foreach (var group in BubbleGroupManager.FindAll(service))
-            {
-                SetNotQueuedToFailures(@group);
-            }
-        }
-
-        public static void SetNotQueuedToFailures(BubbleGroup group)
-        {
-            var groups = BubbleGroupManager.GetInner(@group).Where(x => !x.PartiallyLoaded && 
-                (x.Service.QueuedBubblesParameters != null 
-                && x.Service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart != null
-                && x.Service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart.Any()));
-
-            var failed = new List<Tuple<BubbleGroup, VisualBubble>>();
-
-            foreach (var innerGroup in groups)
-            {
-                foreach (var bubble in innerGroup)
-                {                        
-                    if (bubble.Direction == Bubble.BubbleDirection.Outgoing && 
-                        bubble.Status == Bubble.BubbleStatus.Waiting)
-                    {
-                        if (innerGroup
-                            .Service.QueuedBubblesParameters.SendingBubblesToFailOnServiceStart
-                            .FirstOrDefault(x => x == bubble.GetType()) != null)
-                        {
-                            failed.Add(new Tuple<BubbleGroup, VisualBubble>(innerGroup, bubble));
-                        }
-                    }
-                }
-            }
-
-            if (!failed.Any())
-                return;
-
-            var somethingUpdated = false;
-
-            var failuresGroupedByBubbleGroup = failed.GroupBy(x => x.Item1);
-            foreach (var failureGroup in failuresGroupedByBubbleGroup)
-            {
-                var groupOfBubbles = failureGroup.First().Item1;
-                var bubbles = failureGroup.Select(x => x.Item2).ToArray();
-
-                foreach (var bubble in bubbles)
-                {
-                    bubble.Status = Bubble.BubbleStatus.Failed;
-                }
-                BubbleGroupDatabase.UpdateBubble(groupOfBubbles, bubbles, groupOfBubbles.Bubbles.Count + 100); // 100 is really a tolerance here (just in case)
-                foreach (var bubble in bubbles)
-                {
-                    BubbleGroupEvents.RaiseBubbleFailed(bubble, groupOfBubbles);
-                }
-                somethingUpdated = true;
-            }
-                
-            if (somethingUpdated)
-            {
-                BubbleGroupEvents.RaiseBubblesUpdated(@group);
-                BubbleGroupEvents.RaiseRefreshed(@group);
-            }
-        }
-
         internal static void Replace(BubbleGroup group, IEnumerable<VisualBubble> bubbles)
         {
             var unifiedGroup = @group as UnifiedBubbleGroup;
@@ -543,6 +471,10 @@ namespace Disa.Framework
 
         private static bool IsBubbleSending(VisualBubble bubble)
         {
+            if (bubble is NewBubble)
+            {
+                return false;
+            }
             if (bubble.Status == Bubble.BubbleStatus.Waiting 
                 && bubble.Direction == Bubble.BubbleDirection.Outgoing)
             {
@@ -606,7 +538,7 @@ namespace Disa.Framework
             return null;
         }
 
-        internal static BubbleGroup Group(VisualBubble vb, bool resend = false)
+        internal static BubbleGroup Group(VisualBubble vb, bool resend = false, bool insertAtBottom = false)
         {
             lock (BubbleGroupDatabase.OperationLock)
             {
@@ -667,6 +599,15 @@ namespace Disa.Framework
                     if (!duplicate)
                     {
                         Utils.DebugPrint(vb.Service.Information.ServiceName + " found a group. Adding.");
+
+                        if (insertAtBottom)
+                        {
+                            var lastBubble = theGroup.LastBubbleSafe();
+                            if (lastBubble.Time > vb.Time)
+                            {
+                                vb.Time = lastBubble.Time;
+                            }
+                        }
 
                         theGroup.InsertByTime(vb);
                     }

@@ -64,6 +64,25 @@ namespace Disa.Framework
             }
         }
 
+        internal static void RollBackTo(BubbleGroup group, long index)
+        {
+            if (index <= 0)
+            {
+                throw new ArgumentException("Index can't be <= 0!");
+            }
+
+            var groupDatabaseLocation = GetLocation(@group);
+
+            using (var stream = File.Open(groupDatabaseLocation, FileMode.Open, FileAccess.ReadWrite))
+            {
+                if (index > stream.Length)
+                {
+                    throw new Exception("File length can't be greater than index.");
+                }
+                stream.SetLength(index);
+            }
+        }
+
         public static void AddBubble(BubbleGroup group, VisualBubble b)
         {
             lock (OperationLock)
@@ -79,6 +98,7 @@ namespace Disa.Framework
 
                     using (var stream = File.Open(file, FileMode.Append, FileAccess.Write))
                     {
+                        BubbleGroupIndex.UpdateLastBubbleOrAndLastModifiedIndex(group.ID, b, stream.Position);
                         BubbleGroupDatabasePrimitives.WriteBubbleData(stream, bubbleData);
                         BubbleGroupDatabasePrimitives.WriteBubbleHeader(stream, bubbleHeader);
                     }
@@ -94,6 +114,8 @@ namespace Disa.Framework
 
                 using (var stream = File.Open(file, FileMode.Append, FileAccess.Write))
                 {
+                    BubbleGroupIndex.UpdateLastBubbleOrAndLastModifiedIndex(group.ID, bubbles.Last(), stream.Position);
+
                     foreach (var b in bubbles)
                     {
                         using (var ms = new MemoryStream())
@@ -124,6 +146,9 @@ namespace Disa.Framework
                 var groupDatabaseLocation = GetLocation(@group);
                 var bubbleTuples = bubbles.Select(x => new Tuple<long, VisualBubble>(x.Time, x)).ToList();
 
+                VisualBubble lastBubble = null;
+                long insertPosition = -1;
+
                 using (var stream = File.Open(groupDatabaseLocation, FileMode.Open, FileAccess.ReadWrite))
                 {
                     stream.Seek(stream.Length, SeekOrigin.Begin);
@@ -134,6 +159,8 @@ namespace Disa.Framework
                         {
                             if (insertAtTop)
                             {
+                                insertPosition = 0;
+
                                 var cut = new byte[(int)stream.Length];
                                 stream.Read(cut, 0, (int)stream.Length);
                                 stream.Position = 0;
@@ -157,8 +184,6 @@ namespace Disa.Framework
 
                                 stream.Write(cut, 0, cut.Length);
                                 stream.SetLength(stream.Position);
-
-                                return true;
                             }
                             else
                             {
@@ -208,6 +233,8 @@ namespace Disa.Framework
 
                             stream.Seek(insertLocation, SeekOrigin.Begin);
 
+                            insertPosition = stream.Position;
+
                             foreach (var bubbleToInsert in bubblesToInsert.Select(x => x.Item2))
                             {
                                 using (var ms = new MemoryStream())
@@ -226,6 +253,12 @@ namespace Disa.Framework
                             stream.Write(cut, 0, cut.Length);
                             stream.SetLength(stream.Position);
 
+                            // adding to end
+                            if (cut.Length == 0)
+                            {
+                                lastBubble = bubblesToInsert.Last().Item2;
+                            }
+
                             foreach (var bubbleToInsert in bubblesToInsert)
                             {
                                 bubbleTuples.Remove(bubbleToInsert);
@@ -233,10 +266,17 @@ namespace Disa.Framework
 
                             if (!bubbleTuples.Any())
                             {
-                                return true;
+                                break;
                             }
                         }
                     }
+
+                    BubbleGroupIndex.UpdateLastBubbleOrAndLastModifiedIndex(group.ID, lastBubble, insertPosition);
+                }
+
+                if (!bubbleTuples.Any())
+                {
+                    return true;
                 }
 
                 return false;
@@ -255,6 +295,9 @@ namespace Disa.Framework
             {
                 var groupDatabaseLocation = GetLocation(@group);
                 var bubbleTuples = bubbles.Select(x => new Tuple<string, VisualBubble>(x.ID, x)).ToList();
+
+                VisualBubble lastBubble = null;
+                long insertPosition = -1;
 
                 using (var stream = File.Open(groupDatabaseLocation, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -290,6 +333,8 @@ namespace Disa.Framework
                         var cutStart = stream.Position + bubbleSize;
                         var cutLength = stream.Length - cutStart;
 
+                        insertPosition = stream.Position;
+
                         using (var ms = new MemoryStream())
                         {
                             Serializer.Serialize(ms, b);
@@ -316,7 +361,7 @@ namespace Disa.Framework
                                 stream.Write(cut, 0, cut.Length);
                                 stream.SetLength(stream.Position);
                             }
-                                //they're the same!
+                            //they're the same!
                             else if (bubbleInjectDelta == 0)
                             {
                                 //var bw = new BinaryWriter(stream, Encoding.ASCII);
@@ -324,17 +369,29 @@ namespace Disa.Framework
                                 BubbleGroupDatabasePrimitives.WriteBubbleHeader(stream, updatedBubbleHeader);
                             }
                         }
+                            
+                        if (cutLength == 0)
+                        {
+                            lastBubble = b;
+                        }
 
                         bubbleTuples.Remove(bubbleTuple);
                         if (!bubbleTuples.Any())
                         {
-                            return true;
+                            break;
                         }
                     }
-                }
-            }
 
-            return false;
+                    BubbleGroupIndex.UpdateLastBubbleOrAndLastModifiedIndex(group.ID, lastBubble, insertPosition);
+                }
+
+                if (!bubbleTuples.Any())
+                {
+                    return true;
+                }
+
+                return false;
+            }
         }
 
         public static long FetchBubblesOnDay(BubbleGroup group, Stream stream, Action<VisualBubble> updateCallback,
