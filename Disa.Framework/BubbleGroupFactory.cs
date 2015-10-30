@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
+using Newtonsoft.Json;
 
 namespace Disa.Framework
 {
@@ -498,6 +499,29 @@ namespace Disa.Framework
             BubbleGroupUpdater.Update(@group);
 
             return @group;
+        }
+
+        public static void OutputBubblesInJsonFormat(string bubbleGroupLocation, string jsonOutputLocation, 
+            int count = int.MaxValue, bool skipDeleted = true)
+        {
+            lock (BubbleGroupDatabase.OperationLock)
+            {
+                using (var fs = File.OpenWrite(jsonOutputLocation))
+                {
+                    using (var sw = new StreamWriter(fs))
+                    {
+                        using (var writer = new JsonTextWriter(sw))
+                        {
+                            writer.WriteStartArray();
+                            foreach (var bubble in BubbleGroupDatabase.FetchBubbles(bubbleGroupLocation, null, count, skipDeleted))
+                            {
+                                writer.WriteRawValue(JsonConvert.SerializeObject(bubble));
+                            }
+                            writer.WriteEndArray();
+                        }
+                    }
+                }
+            }
         }
     }
 }
