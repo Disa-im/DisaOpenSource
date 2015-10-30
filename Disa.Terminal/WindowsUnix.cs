@@ -10,6 +10,11 @@ namespace Disa.Terminal
 {
     public class WindowsUnix : PlatformImplementation
     {
+        public override bool ShouldAttemptInternetConnection()
+        {
+            return true;
+        }
+
         public override byte[] GetIcon(IconType iconType)
         {
             //TODO:
