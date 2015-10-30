@@ -120,7 +120,7 @@ namespace Disa.Terminal
                 case "help":
                     PrintHelp();
                     break;
-                case "export":
+                case "export-conversation":
                     var bubbleGroupLocation = args[1];
                     var jsonExportLocation = args[2];
                     BubbleGroupFactory.OutputBubblesInJsonFormat(bubbleGroupLocation, jsonExportLocation);
