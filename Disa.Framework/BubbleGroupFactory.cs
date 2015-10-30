@@ -503,6 +503,44 @@ namespace Disa.Framework
             return @group;
         }
 
+        private class BubbleGroupJson
+        {
+            public string Title { get; set; }
+            public DisaThumbnail Photo { get; set; }
+            public DisaParticipant[] Participants { get; set; }
+            public string Guid { get; set; }
+        }
+
+        public static void OutputInJsonFormat(BubbleGroup group, string jsonOutputLocation)
+        {
+            lock (BubbleGroupDatabase.OperationLock)
+            {
+                using (var fs = File.OpenWrite(jsonOutputLocation))
+                {
+                    using (var sw = new StreamWriter(fs))
+                    {
+                        using (var writer = new JsonTextWriter(sw))
+                        {
+                            sw.Write("var json_bubblegroup = '");
+                            writer.WriteStartObject();
+                            writer.WritePropertyName("bubblegroup");
+                            var bubbleGroupJson = new BubbleGroupJson
+                            {
+                                Title = group.Title,
+                                Photo = group.Photo,
+                                Participants = group.Participants.ToArray(),
+                                Guid = group.ID,
+                            };
+                            var jobject = JObject.FromObject(bubbleGroupJson);
+                            writer.WriteValue(Convert.ToBase64String(Encoding.UTF8.GetBytes(jobject.ToString(Formatting.None))));
+                            writer.WriteEndObject();
+                            sw.Write("'");
+                        }
+                    }
+                }
+            }
+        }
+
         public static void OutputBubblesInJsonFormat(string bubbleGroupLocation, string jsonOutputLocation, 
             int count = int.MaxValue, bool skipDeleted = true)
         {
