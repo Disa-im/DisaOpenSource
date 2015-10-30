@@ -534,7 +534,7 @@ namespace Disa.Framework
                             var jobject = JObject.FromObject(bubbleGroupJson);
                             writer.WriteValue(Convert.ToBase64String(Encoding.UTF8.GetBytes(jobject.ToString(Formatting.None))));
                             writer.WriteEndObject();
-                            sw.Write("'");
+                            sw.Write("';");
                         }
                     }
                 }
@@ -565,7 +565,7 @@ namespace Disa.Framework
                                 writer.WriteEndObject();
                             }
                             writer.WriteEndArray();
-                            sw.Write("'");
+                            sw.Write("';");
                         }
                     }
                 }
