@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace Disa.Framework
 {
@@ -512,12 +514,21 @@ namespace Disa.Framework
                     {
                         using (var writer = new JsonTextWriter(sw))
                         {
+                            sw.Write("var json_bubbles = '");
+                            writer.StringEscapeHandling = StringEscapeHandling.EscapeHtml;
                             writer.WriteStartArray();
                             foreach (var bubble in BubbleGroupDatabase.FetchBubbles(bubbleGroupLocation, null, count, skipDeleted))
                             {
-                                writer.WriteRawValue(JsonConvert.SerializeObject(bubble));
+                                var jobject = JObject.FromObject(bubble);
+                                jobject.Add("ID", bubble.ID);
+                                jobject.Add("Type", bubble.GetType().Name);
+                                writer.WriteStartObject();
+                                writer.WritePropertyName("bubble");
+                                writer.WriteValue(Convert.ToBase64String(Encoding.UTF8.GetBytes(jobject.ToString(Formatting.None))));
+                                writer.WriteEndObject();
                             }
                             writer.WriteEndArray();
+                            sw.Write("'");
                         }
                     }
                 }
