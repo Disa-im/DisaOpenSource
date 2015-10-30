@@ -17,7 +17,7 @@ Thus, if done correctly, your plugin will run on any platform that Disa.Framewor
 
 ## Documentation, Roadmap & Contributing
 
-Head over to the Wiki where you'll find this information.
+Head over to the [Wiki](//github.com/Disa-im/DisaOpenSource/wiki) where you'll find this information.
 
 ## Requesting Features
 
