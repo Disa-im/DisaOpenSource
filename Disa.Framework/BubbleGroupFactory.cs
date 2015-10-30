@@ -515,7 +515,6 @@ namespace Disa.Framework
                         using (var writer = new JsonTextWriter(sw))
                         {
                             sw.Write("var json_bubbles = '");
-                            writer.StringEscapeHandling = StringEscapeHandling.EscapeHtml;
                             writer.WriteStartArray();
                             foreach (var bubble in BubbleGroupDatabase.FetchBubbles(bubbleGroupLocation, null, count, skipDeleted))
                             {
