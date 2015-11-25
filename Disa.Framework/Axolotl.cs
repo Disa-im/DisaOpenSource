@@ -1,16 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Globalization;
-using Org.Whispersystems.Libaxolotl.Util;
-using Org.Whispersystems.Libaxolotl;
-using Org.Whispersystems.Libaxolotl.State;
 using SQLite;
 using System.Linq;
 using System.Collections.Generic;
-using Org.Whispersystems.Libaxolotl.Protocol;
-using Java.Interop;
-using Org.Whispersystems.Libaxolotl.Groups.State;
-using Org.Whispersystems.Libaxolotl.Groups;
 
 namespace Disa.Framework
 {
