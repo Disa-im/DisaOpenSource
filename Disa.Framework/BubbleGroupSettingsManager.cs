@@ -89,11 +89,23 @@ namespace Disa.Framework
                             Guid = group.ID,
                             LastUnreadSetTime = 0,
                             ReadTimes = null,
+                            NotificationLed = DefaultNotificationLedColor,
+                            VibrateOption = null,
+                            VibrateOptionCustomPattern = null,
+                            Ringtone = null,
                         };
                         db.Add(settings);
                         group.Settings = settings;
                     }
                 }
+            }
+        }        
+
+        public static int DefaultNotificationLedColor
+        {
+            get
+            {
+                return 0xffffff;
             }
         }
 
@@ -118,10 +130,62 @@ namespace Disa.Framework
             Update(group.Settings);
         }
 
+        public static void SetNotificationLed(BubbleGroup group, int notificationLed)
+        {
+            InsertDefaultIfNull(group);
+            group.Settings.NotificationLed = notificationLed;
+            Update(group.Settings);
+        }
+
+        public static void SetVibrateOption(BubbleGroup group, string vibrateOption)
+        {
+            InsertDefaultIfNull(group);
+            group.Settings.VibrateOption = vibrateOption;
+            Update(group.Settings);
+        }
+
+        public static void SetVibrateOptionCustomPattern(BubbleGroup group, string vibrateOptionCustomPattern)
+        {
+            InsertDefaultIfNull(group);
+            group.Settings.VibrateOptionCustomPattern = vibrateOptionCustomPattern;
+            Update(group.Settings);
+        }
+
+        public static void SetRingtone(BubbleGroup group, string ringtone)
+        {
+            InsertDefaultIfNull(group);
+            group.Settings.Ringtone = ringtone;
+            Update(group.Settings);
+        }
+
         public static bool GetMute(BubbleGroup group)
         {
             InsertDefaultIfNull(group);
             return group.Settings.Mute;
+        }
+
+        public static int GetNotificationLed(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            return group.Settings.NotificationLed;
+        }
+
+        public static string GetVibrateOption(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            return group.Settings.VibrateOption;
+        }
+
+        public static string GetVibrateOptionCustomPattern(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            return group.Settings.VibrateOptionCustomPattern;
+        }
+
+        public static string GetRingtone(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            return group.Settings.Ringtone;
         }
 
         public static bool GetUnread(BubbleGroup group)

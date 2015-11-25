@@ -1,7 +1,6 @@
 using System;
 using System.Xml.Serialization;
 using ProtoBuf;
-using Newtonsoft.Json;
 
 namespace Disa.Framework
 {
@@ -16,18 +15,12 @@ namespace Disa.Framework
         public string Address { get; set; }
 
         [XmlIgnore]
-        [JsonIgnore]
         public bool IsPhotoSetFromService { get; set; }
-
         [XmlIgnore]
-        [JsonIgnore]
         public bool IsPhotoSetInitiallyFromCache { get; set; }
-
         [ProtoMember(3)]
         public DisaThumbnail Photo { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool Unknown { get; set; }
 
         public DisaParticipant(string name, string address)
@@ -38,7 +31,7 @@ namespace Disa.Framework
 
         public DisaParticipant()
         {
-
+            
         }
     }
 }

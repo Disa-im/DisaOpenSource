@@ -172,7 +172,7 @@ namespace Disa.Framework
             // try to find it.
             foreach (var innerGroup in unifiedGroup.Groups)
             {
-                foreach (var bubble in innerGroup)
+                foreach (var bubble in innerGroup.Bubbles)
                 {
                     if (bubble.ID != visualBubble.ID) continue;
 
@@ -222,7 +222,7 @@ namespace Disa.Framework
                 var unifiedGroups = BubbleGroups.OfType<UnifiedBubbleGroup>();
                 foreach (var unifiedGroup in unifiedGroups)
                 {
-                    if (unifiedGroup.Any(unifiedGroupBubble => unifiedGroupBubble == bubble))
+                    if (unifiedGroup.Bubbles.Any(unifiedGroupBubble => unifiedGroupBubble == bubble))
                     {
                         return unifiedGroup;
                     }
@@ -230,7 +230,7 @@ namespace Disa.Framework
 
                 return
                 BubbleGroups.FirstOrDefault(
-                    group => @group.FirstOrDefault(secondBubble => secondBubble == bubble) != null);
+                        group => @group.Bubbles.FirstOrDefault(secondBubble => secondBubble == bubble) != null);
             }
         }
 

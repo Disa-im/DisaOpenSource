@@ -30,6 +30,8 @@ namespace Disa.Framework
 
         private static readonly object _migrationLock = new object();
 
+        private static readonly object _dbLock = new object();
+
         private static string Location
         {
             get
@@ -43,62 +45,86 @@ namespace Disa.Framework
 
         private static void Save(Entry[] entries)
         {
-            using (var db = new SqlDatabase<Entry>(Location))
+            lock (_dbLock)
             {
-                foreach (var entry in entries)
+                using (var db = new SqlDatabase<Entry>(Location, false))
                 {
-                    db.Add(entry);
+                    if (!db.Failed)
+                    {
+                        foreach (var entry in entries)
+                        {
+                            db.Add(entry);
+                        }
+                    }
                 }
             }
         }
 
         internal static long? GetLastModifiedIndex(string bubbleGroupId)
         {
-            using (var db = new SqlDatabase<Entry>(Location))
+            lock (_dbLock)
             {
-                foreach (var item in db.Store.Where(x => !x.Unified && x.Guid == bubbleGroupId))
+                using (var db = new SqlDatabase<Entry>(Location, false))
                 {
-                    if (item.LastModifiedIndex <= 0)
+                    if (!db.Failed)
                     {
-                        return null;
+                        foreach (var item in db.Store.Where(x => !x.Unified && x.Guid == bubbleGroupId))
+                        {
+                            if (item.LastModifiedIndex <= 0)
+                            {
+                                return null;
+                            }
+                            return item.LastModifiedIndex;
+                        }
                     }
-                    return item.LastModifiedIndex;
                 }
+                return null;
             }
-            return null;
         }
 
-        internal static void UpdateLastBubbleOrAndLastModifiedIndex(string bubbleGroupId, VisualBubble lastBubble = null, long lastModifiedIndex = -1)
+        public static void UpdateLastBubbleOrAndLastModifiedIndex(string bubbleGroupId, VisualBubble lastBubble = null, long lastModifiedIndex = -1)
         {
-            if (lastBubble == null && lastModifiedIndex == -1)
-                return;
-            
-            using (var db = new SqlDatabase<Entry>(Location))
+            lock (_dbLock)
             {
-                foreach (var item in db.Store.Where(x => !x.Unified && x.Guid == bubbleGroupId))
+                if (lastBubble == null && lastModifiedIndex == -1)
+                    return;
+            
+                using (var db = new SqlDatabase<Entry>(Location, false))
                 {
-                    if (lastBubble != null)
+                    if (!db.Failed)
                     {
-                        item.LastBubble = SerializeBubble(lastBubble);
-                        item.LastBubbleGuid = lastBubble.ID;
+                        foreach (var item in db.Store.Where(x => !x.Unified && x.Guid == bubbleGroupId))
+                        {
+                            if (lastBubble != null)
+                            {
+                                item.LastBubble = SerializeBubble(lastBubble);
+                                item.LastBubbleGuid = lastBubble.ID;
+                            }
+                            if (lastModifiedIndex != -1)
+                            {
+                                item.LastModifiedIndex = lastModifiedIndex;
+                            }
+                            db.Update(item);
+                        }
                     }
-                    if (lastModifiedIndex != -1)
-                    {
-                        item.LastModifiedIndex = lastModifiedIndex;
-                    }
-                    db.Update(item);
                 }
             }
         }
 
         internal static void SetUnifiedSendingBubbleGroup(string unifiedGroupId, string sendingGroupId)
         {
-            using (var db = new SqlDatabase<Entry>(Location))
+            lock (_dbLock)
             {
-                foreach (var item in db.Store.Where(x => x.Unified && x.Guid == unifiedGroupId))
+                using (var db = new SqlDatabase<Entry>(Location, false))
                 {
-                    item.UnifiedSendingBubbleGroupGuid = sendingGroupId;
-                    db.Update(item);
+                    if (!db.Failed)
+                    {
+                        foreach (var item in db.Store.Where(x => x.Unified && x.Guid == unifiedGroupId))
+                        {
+                            item.UnifiedSendingBubbleGroupGuid = sendingGroupId;
+                            db.Update(item);
+                        }
+                    }
                 }
             }
         }
@@ -110,13 +136,19 @@ namespace Disa.Framework
 
         internal static void RemoveUnified(string[] unifiedGroupIds)
         {
-            using (var db = new SqlDatabase<Entry>(Location))
+            lock (_dbLock)
             {
-                foreach (var unifiedGroupId in unifiedGroupIds)
+                using (var db = new SqlDatabase<Entry>(Location, false))
                 {
-                    foreach (var item in db.Store.Where(x => x.Unified && x.Guid == unifiedGroupId))
+                    if (!db.Failed)
                     {
-                        db.Remove(item);
+                        foreach (var unifiedGroupId in unifiedGroupIds)
+                        {
+                            foreach (var item in db.Store.Where(x => x.Unified && x.Guid == unifiedGroupId))
+                            {
+                                db.Remove(item);
+                            }
+                        }
                     }
                 }
             }
@@ -124,49 +156,67 @@ namespace Disa.Framework
 
         internal static void AddUnified(UnifiedBubbleGroup unifiedGroup)
         {
-            RemoveUnified(unifiedGroup.ID);
-            using (var db = new SqlDatabase<Entry>(Location))
+            lock (_dbLock)
             {
-                db.Add(new Entry
+                RemoveUnified(unifiedGroup.ID);
+                using (var db = new SqlDatabase<Entry>(Location, false))
                 {
-                    Guid = unifiedGroup.ID,
-                    Unified = true,
-                    UnifiedBubbleGroupsGuids = unifiedGroup.Groups.Select(x => x.ID).
-                        Aggregate((current, next) => current + "," + next),
-                    UnifiedPrimaryBubbleGroupGuid = unifiedGroup.PrimaryGroup.ID,
-                    UnifiedSendingBubbleGroupGuid = unifiedGroup.SendingGroup.ID,
-                });
+                    if (!db.Failed)
+                    {
+                        db.Add(new Entry
+                        {
+                            Guid = unifiedGroup.ID,
+                            Unified = true,
+                            UnifiedBubbleGroupsGuids = unifiedGroup.Groups.Select(x => x.ID).
+                                Aggregate((current, next) => current + "," + next),
+                            UnifiedPrimaryBubbleGroupGuid = unifiedGroup.PrimaryGroup.ID,
+                            UnifiedSendingBubbleGroupGuid = unifiedGroup.SendingGroup.ID,
+                        });
+                    }
+                }
             }
         }
 
         internal static void Add(BubbleGroup group)
         {
-            if (group is UnifiedBubbleGroup)
-                return;
-            Remove(group.ID);
-            using (var db = new SqlDatabase<Entry>(Location))
+            lock (_dbLock)
             {
-                var lastBubble = group.LastBubbleSafe();
-                var serviceName = group.Service.Information.ServiceName;
-                db.Add(new Entry
+                if (group is UnifiedBubbleGroup)
+                    return;
+                Remove(group.ID);
+                using (var db = new SqlDatabase<Entry>(Location, false))
                 {
-                    Guid = group.ID,
-                    Service = serviceName,
-                    LastBubble = SerializeBubble(lastBubble),
-                    LastBubbleGuid = lastBubble.ID
-                });
+                    if (!db.Failed)
+                    {
+                        var lastBubble = group.LastBubbleSafe();
+                        var serviceName = group.Service.Information.ServiceName;
+                        db.Add(new Entry
+                        {
+                            Guid = group.ID,
+                            Service = serviceName,
+                            LastBubble = SerializeBubble(lastBubble),
+                            LastBubbleGuid = lastBubble.ID
+                        });
+                    }
+                }
             }
         }
 
         internal static void Remove(string[] groupIds)
         {
-            using (var db = new SqlDatabase<Entry>(Location))
+            lock (_dbLock)
             {
-                foreach (var groupId in groupIds)
+                using (var db = new SqlDatabase<Entry>(Location, false))
                 {
-                    foreach (var item in db.Store.Where(x => !x.Unified && x.Guid == groupId))
+                    if (!db.Failed)
                     {
-                        db.Remove(item);
+                        foreach (var groupId in groupIds)
+                        {
+                            foreach (var item in db.Store.Where(x => !x.Unified && x.Guid == groupId))
+                            {
+                                db.Remove(item);
+                            }
+                        }
                     }
                 }
             }
@@ -177,17 +227,32 @@ namespace Disa.Framework
             Remove(new [] { groupId });
         }
 
-        private static List<Entry> GetAllEntries()
+        private static List<Entry> GetAllEntries(SqlDatabase<Entry> db)
         {
-            using (var db = new SqlDatabase<Entry>(Location))
+            if (!db.Failed)
             {
                 return db.Store.ToList();
             }
+            return null;
         }
 
-        private static void LoadInternal()
+        private static bool LoadInternal(SqlDatabase<Entry> db)
         {
-            var entries = GetAllEntries();
+            var entries = GetAllEntries(db);
+
+            if (entries == null)
+            {
+                return false;
+            }
+
+            var bubbleGroupsActualCount = Directory.GetFiles(BubbleGroupDatabase.GetBaseLocation(), "*.*", SearchOption.AllDirectories).Length;
+            var entriesCount = entries.Count(x => !x.Unified);
+            if (!(bubbleGroupsActualCount > entriesCount - 5 
+                && bubbleGroupsActualCount < entriesCount + 5))
+            {
+                Utils.DebugPrint("Actual count does not match index count (+-5 tolerance). We'll have to re-generate index.");
+                return false;
+            }
 
             foreach (var entry in entries)
             {
@@ -265,18 +330,38 @@ namespace Disa.Framework
 
                 BubbleGroupManager.BubbleGroupsAdd(unifiedGroup, true);
             }
+
+            return true;
         }
 
         internal static void Load()
         {
-            if (!File.Exists(Location))
+            var location = Location;
+            Redo:
+            if (!File.Exists(location))
             {
-                Migrate();
+                Generate();
             }
-            LoadInternal();
+            lock (_dbLock)
+            {
+                bool success;
+                using (var db = new SqlDatabase<Entry>(location, false))
+                {
+                    success = LoadInternal(db);
+                }
+                if (!success)
+                {
+                    Utils.DebugPrint("Failed to open up index. Perhaps its corrupt. Nuking and re-generating...");
+                    if (File.Exists(location))
+                    {
+                        File.Delete(location);
+                    }
+                    goto Redo;
+                }
+            }
         }
 
-        private static void Migrate()
+        private static void Generate()
         {
             lock (_migrationLock)
             {
@@ -314,7 +399,11 @@ namespace Disa.Framework
                     }
                     catch (Exception ex)
                     {
-                        Utils.DebugPrint("[Migration] Group " + bubbleGroupLocation + " is corrupt." + ex);
+                        Utils.DebugPrint("[Migration] Group " + bubbleGroupLocation + " is corrupt (deleting): " + ex);
+                        if (File.Exists(bubbleGroupLocation))
+                        {
+                            File.Delete(bubbleGroupLocation);
+                        }
                     }
                 }
 

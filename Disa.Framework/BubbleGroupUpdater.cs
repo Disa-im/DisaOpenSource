@@ -205,7 +205,7 @@ namespace Disa.Framework
                             newParticipants.Add(unknownParticipant);
                         }
                     }
-                    bubbleGroup.Participants = newParticipants.ToSynchronizedCollection();
+                    bubbleGroup.Participants = new ThreadSafeList<DisaParticipant>(newParticipants);
                     bubbleGroup.IsParticipantsSetFromService = true;
                     if (finished == null)
                     {
@@ -305,6 +305,9 @@ namespace Disa.Framework
             var service = bubbleGroup.Service;
 
             if (!ServiceManager.IsRunning(service)) return false;
+
+            if (string.IsNullOrWhiteSpace(participantAddress))
+                return false;
 
             if (bubbleGroup.FailedUnknownParticipants.FirstOrDefault(x => 
                 bubbleGroup.Service.BubbleGroupComparer(x, participantAddress)) != null)

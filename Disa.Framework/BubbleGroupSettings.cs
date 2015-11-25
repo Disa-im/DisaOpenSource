@@ -11,6 +11,14 @@ namespace Disa.Framework
 
         public bool Mute { get; set; }
 
+        public int NotificationLed { get; set; }
+
+        public string VibrateOption { get; set; }
+
+        public string VibrateOptionCustomPattern { get; set; }
+
+        public string Ringtone { get; set; }
+
         public bool Unread { get; set; }
 
         public long LastUnreadSetTime { get; set; }

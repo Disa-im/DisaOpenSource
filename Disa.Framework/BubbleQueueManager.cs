@@ -153,7 +153,7 @@ namespace Disa.Framework
 
                     var bubblesSetToFailed = new List<VisualBubble>();
 
-                    foreach (var bubble in innerGroup)
+                    foreach (var bubble in innerGroup.Bubbles)
                     {                        
                         if (bubble.Direction == Bubble.BubbleDirection.Outgoing &&
                             bubble.Status == Bubble.BubbleStatus.Waiting)
@@ -357,7 +357,7 @@ namespace Disa.Framework
                                 continue;
                             }
 
-                            foreach (var bubble in bubbleGroup)
+                            foreach (var bubble in bubbleGroup.Bubbles)
                             {
                                 if (bubble.Status != Bubble.BubbleStatus.Waiting)
                                     continue;
@@ -490,7 +490,7 @@ namespace Disa.Framework
                         }
 
                         var bubblesToSetToFail = new List<Tuple<Entry, VisualBubble>>();
-                        foreach (var bubble in bubbleGroup)
+                        foreach (var bubble in bubbleGroup.Bubbles)
                         {
                             if (bubble.Status != Bubble.BubbleStatus.Waiting)
                                 continue;

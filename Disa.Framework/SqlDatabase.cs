@@ -7,11 +7,17 @@ namespace Disa.Framework
 {
     public class SqlDatabase<T> : IDisposable where T : new()
     {
+        public bool Failed { get; private set; }
+
         private readonly string _fileLocation;
         private readonly SQLiteConnection _connection;
 
-        public SqlDatabase(string fileLocation)
-        {                
+        public SqlDatabase(string fileLocation) : this(fileLocation, true)
+        {               
+        }  
+
+        public SqlDatabase(string fileLocation, bool deleteAndRecreateOnException)
+        {
             _fileLocation = fileLocation;
             Retry:
             try
@@ -21,14 +27,22 @@ namespace Disa.Framework
             }
             catch (Exception ex)
             {
-                Utils.DebugPrint("Failed to load SqlDatabase: " + ex + ". Nuking database if possible...");
-                if (File.Exists(_fileLocation))
+                if (deleteAndRecreateOnException)
                 {
-                    File.Delete(_fileLocation);
+                    Utils.DebugPrint("Failed to load SqlDatabase: " + ex + ". Nuking database if possible...");
+                    if (File.Exists(_fileLocation))
+                    {
+                        File.Delete(_fileLocation);
+                    }
+                    goto Retry;
                 }
-                goto Retry;
+                else
+                {
+                    Utils.DebugPrint("Failed to load SqlDatabase: " + ex);
+                    Failed = true;
+                }
             }
-        }  
+        }
 
         public void Dispose()
         {

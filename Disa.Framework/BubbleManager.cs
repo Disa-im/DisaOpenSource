@@ -382,7 +382,7 @@ namespace Disa.Framework
 
             foreach (var innerGroup in unifiedGroup.Groups)
             {
-                foreach (var bubble in innerGroup)
+                foreach (var bubble in innerGroup.Bubbles)
                 {
                     if (bubble.ID != visualBubble.ID) continue;
 
@@ -427,20 +427,24 @@ namespace Disa.Framework
             }
         }
 
-        public static void UpdateStatus(Service service, string bubbleId, Bubble.BubbleStatus status)
+        public static bool UpdateStatus(Service service, string bubbleGroupAddress,
+            string bubbleId, Bubble.BubbleStatus status)
         {
-            var serviceGroups = BubbleGroupManager.FindAll(service);
-            foreach (var group in serviceGroups)
+            var group = BubbleGroupManager.FindWithAddress(service, bubbleGroupAddress);
+            if (group == null)
             {
-                foreach (var bubble in @group)
+                return false;
+            }
+            BubbleGroupFactory.LoadFullyIfNeeded(group);
+            foreach (var bubble in @group.Bubbles)
+            {
+                if (bubble.ID == bubbleId)
                 {
-                    if (bubble.ID == bubbleId)
-                    {
-                        UpdateStatus(bubble, status, @group);
-                        return;
-                    }
+                    UpdateStatus(bubble, status, @group);
+                    return true;
                 }
             }
+            return false;
         }
 
         private static bool IsBubbleDownloading(VisualBubble bubble)
@@ -485,7 +489,7 @@ namespace Disa.Framework
 
         internal static IEnumerable<VisualBubble> FetchAllSendingAndDownloading(BubbleGroup group)
         {
-            foreach (var bubble in @group)
+            foreach (var bubble in @group.Bubbles)
             {
                 if (IsBubbleSending(bubble))
                 {
@@ -500,7 +504,7 @@ namespace Disa.Framework
 
         internal static IEnumerable<VisualBubble> FetchAllSending(BubbleGroup group)
         {
-            foreach (var bubble in @group)
+            foreach (var bubble in @group.Bubbles)
             {
                 if (IsBubbleSending(bubble))
                 {
@@ -588,11 +592,11 @@ namespace Disa.Framework
                     {
                         if (vb.IdService != null)
                         {
-                            duplicate = theGroup.FirstOrDefault(x => x.GetType() == vb.GetType() && x.IdService == vb.IdService) != null;
+                            duplicate = theGroup.Bubbles.FirstOrDefault(x => x.GetType() == vb.GetType() && x.IdService == vb.IdService) != null;
                         }
                         if (!duplicate && vb.IdService2 != null)
                         {
-                            duplicate = theGroup.FirstOrDefault(x => x.GetType() == vb.GetType() && x.IdService2 == vb.IdService2) != null;
+                            duplicate = theGroup.Bubbles.FirstOrDefault(x => x.GetType() == vb.GetType() && x.IdService2 == vb.IdService2) != null;
                         }
                     }
 
@@ -669,7 +673,8 @@ namespace Disa.Framework
             var bubbleGroup = BubbleGroupManager.FindWithAddress(service, address);
             if (bubbleGroup != null)
             {
-                foreach (var bubble in bubbleGroup)
+                BubbleGroupFactory.LoadFullyIfNeeded(bubbleGroup);
+                foreach (var bubble in bubbleGroup.Bubbles)
                 {
                     if (bubble.Direction == Bubble.BubbleDirection.Incoming && 
                         bubble.Time >= BubbleGroupSettingsManager.GetLastUnreadSetTime(bubbleGroup))

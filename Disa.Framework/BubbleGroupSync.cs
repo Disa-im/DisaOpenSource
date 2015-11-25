@@ -176,7 +176,7 @@ namespace Disa.Framework
             }
         }
 
-        public const int SearchDepth = 1000;
+        public const int SearchDepth = int.MaxValue;
         public static readonly object SyncLock = new object();
 
         public static void ResetSyncsIfHasAgent(Service service)

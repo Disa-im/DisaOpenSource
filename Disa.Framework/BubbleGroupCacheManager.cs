@@ -85,7 +85,7 @@ namespace Disa.Framework
             associatedGroup.IsPhotoSetInitiallyFromCache = true;
             if (item.Participants != null)
             {
-                associatedGroup.Participants = item.Participants.ToSynchronizedCollection();
+                associatedGroup.Participants = new ThreadSafeList<DisaParticipant>(item.Participants);
                 foreach (var participant in associatedGroup.Participants)
                 {
                     participant.IsPhotoSetInitiallyFromCache = true;

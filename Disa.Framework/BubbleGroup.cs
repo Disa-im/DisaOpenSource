@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
 using ProtoBuf;
@@ -16,7 +15,7 @@ namespace Disa.Framework
         public string LegibleId { get; internal set; }
         public bool PartiallyLoaded { get; internal set; }
 
-        internal SynchronizedCollection<VisualBubble> Bubbles { get; private set; }
+        internal ThreadSafeList<VisualBubble> Bubbles { get; private set; }
 
         public bool IsTitleSetFromService { get; internal set; }
         public string Title { get; internal set; }
@@ -26,8 +25,8 @@ namespace Disa.Framework
         public DisaThumbnail Photo { get; internal set; }
 
         public bool IsParticipantsSetFromService { get; internal set; }
-        public SynchronizedCollection<DisaParticipant> Participants = new SynchronizedCollection<DisaParticipant>();
-        public SynchronizedCollection<string> FailedUnknownParticipants = new SynchronizedCollection<string>();
+        public ThreadSafeList<DisaParticipant> Participants = new ThreadSafeList<DisaParticipant>();
+        public ThreadSafeList<string> FailedUnknownParticipants = new ThreadSafeList<string>();
 
         public bool NeedsSync { get; internal set; }
 
@@ -215,19 +214,14 @@ namespace Disa.Framework
         public BubbleGroup(VisualBubble initialBubble, string id = null, bool partiallyLoaded = false)
         {
             PartiallyLoaded = partiallyLoaded;
-            Bubbles = new SynchronizedCollection<VisualBubble> { initialBubble };
+            Bubbles = new ThreadSafeList<VisualBubble> { initialBubble };
             Setup(id);
         }
 
         public BubbleGroup(List<VisualBubble> initialBubbles, string id = null)
         {
             PartiallyLoaded = false;
-            var collection = new SynchronizedCollection<VisualBubble>();
-            foreach (var bubble in initialBubbles)
-            {
-                collection.Add(bubble);
-            }
-            Bubbles = collection;
+            Bubbles = new ThreadSafeList<VisualBubble>(initialBubbles);
             Setup(id);
         }
 
@@ -265,6 +259,11 @@ namespace Disa.Framework
         public void RemoveBubble(VisualBubble bubble)
         {
             Bubbles.Remove(bubble);
+        }
+
+        public int CountExcludingNewBubbles()
+        {
+            return Bubbles.CountEx(x => !(x is NewBubble));
         }
 
         public IEnumerator<VisualBubble> GetEnumerator()

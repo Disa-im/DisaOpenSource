@@ -1,9 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Globalization;
+using Org.Whispersystems.Libaxolotl.Util;
+using Org.Whispersystems.Libaxolotl;
+using Org.Whispersystems.Libaxolotl.State;
 using SQLite;
 using System.Linq;
 using System.Collections.Generic;
+using Org.Whispersystems.Libaxolotl.Protocol;
+using Java.Interop;
+using Org.Whispersystems.Libaxolotl.Groups.State;
+using Org.Whispersystems.Libaxolotl.Groups;
 
 namespace Disa.Framework
 {
@@ -80,7 +87,7 @@ namespace Disa.Framework
             }
         }
 
-        public enum MessageType { PreKeyMessage, Message }
+        public enum MessageType { PreKeyMessage, Message, SenderKeyMessage }
 
         public class Message
         {
@@ -175,15 +182,10 @@ namespace Disa.Framework
             {
             }
         }
-            
+
         public Axolotl(int registrationId)
         {
 
-        }
-
-        private void ProcessException(Exception ex)
-        {
-            throw new NotImplementedException();
         }
 
         public Message EncryptMessage(string address, int deviceId, byte[] data)
@@ -201,12 +203,22 @@ namespace Disa.Framework
             throw new NotImplementedException();
         }
 
-        public byte[] DecryptMessage(string address, int deviceId, Message message)
+        public void ProcessSenderKey(string groupId, string address, int deviceId, byte[] senderKeyDistributionMessage)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] DecryptMessage(string groupId, string address, int deviceId, Message message)
         {
             throw new NotImplementedException();
         }
 
         public byte[] DecryptPreKeyMessage(string address, int deviceId, byte[] data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] DecryptSenderKeyMessage(string groupId, string address, int deviceId, byte[] data)
         {
             throw new NotImplementedException();
         }

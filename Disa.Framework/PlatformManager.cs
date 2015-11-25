@@ -15,7 +15,7 @@ namespace Disa.Framework
             "OkHttpCustom.dll", "PagerSlidingTabStrip.dll", "PhotoView.dll", "PicassoRoundedTransformation.dll", "protobuf-net.dll", "PushBullet.dll", "RenderScript.dll",
             "RSAx.dll", "SlidingMenu.dll", "SQLite-net.dll", "SQLitePCL.raw.dll", "SquareUp.dll", "System.Core.dll", "System.Diagnostics.Tracing.dll", "System.dll", 
             "System.Net.Http.dll", "System.Numerics.dll", "System.Reflection.Emit.dll", "System.Reflection.Emit.ILGeneration.dll", "System.Reflection.Emit.Lightweight.dll", 
-            "System.Runtime.Serialization.dll", "System.ServiceModel.dll", "System.ServiceModel.Security.dll", "System.Threading.Timer.dll", "System.Web.Services.dll", 
+            "System.Runtime.Serialization.dll", "System.Threading.Timer.dll", "System.Web.Services.dll", 
             "System.Xml.dll", "SystemBarTint.dll", "TimSort.dll", "Xamarin.Android.Support.v13.dll", "Xamarin.Android.Support.v4.dll", "Xamarin.Android.Support.v7.AppCompat.dll",
             "Xamarin.Android.Support.v7.CardView.dll", "Xamarin.Android.Support.v7.MediaRouter.dll", "Xamarin.Android.Support.v7.RecyclerView.dll", "Xamarin.Forms.Core.dll", 
             "Xamarin.Forms.Platform.Android.dll", "Xamarin.Forms.Platform.dll", "Xamarin.Forms.Xaml.dll", "Xamarin.GooglePlayServices.Analytics.dll", "Xamarin.GooglePlayServices.Base.dll", 
@@ -44,7 +44,7 @@ namespace Disa.Framework
         {
             get
             {
-                return "15";
+                return "19";
             }
         }
 

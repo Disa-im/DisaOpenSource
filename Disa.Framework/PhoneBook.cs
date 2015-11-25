@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using ProtoBuf;
 
 namespace Disa.Framework
 {
@@ -17,7 +19,24 @@ namespace Disa.Framework
         private static List<PhoneBookContact> _phoneBookContacts;
         public static List<PhoneBookContact> PhoneBookContacts
         {
-            get { lock (PhoneBookContactsLock) return _phoneBookContacts ?? (_phoneBookContacts = Platform.GetPhoneBookContacts()); }
+            get 
+            { 
+                lock (PhoneBookContactsLock)
+                {
+                    if (_phoneBookContacts == null)
+                    {
+                        var phoneBookContacts = GetCachedPhoneBooksContacts();
+                        if (phoneBookContacts == null)
+                        {
+                            phoneBookContacts = Platform.GetPhoneBookContacts();
+                            SaveCachedPhoneBookContacts(phoneBookContacts);
+                        }
+                        _phoneBookContacts = phoneBookContacts;
+                        OnPhoneContactsUpdated();
+                    }
+                    return _phoneBookContacts;
+                }
+            }
         }
 
         private static bool _isUpdating;
@@ -30,6 +49,76 @@ namespace Disa.Framework
             Mcc = "000";
             Country = "US";
             Language = "en";
+        }
+
+        private static readonly object _contactsCacheLock = new object();
+
+        private static string GetPhoneBookContactsCachePath()
+        {
+            var settingsPath = Platform.GetSettingsPath();
+            var phoneBooksContactsCache = Path.Combine(settingsPath, "PhoneBookContactsCache.db");
+
+            return phoneBooksContactsCache;
+        }
+
+        private static List<PhoneBookContact> GetCachedPhoneBooksContacts()
+        {
+            lock (_contactsCacheLock)
+            {
+                var path = GetPhoneBookContactsCachePath();
+                try
+                {
+                    if (!File.Exists(path))
+                    {
+                        return null;
+                    }
+                    using (var fs = File.OpenRead(path))
+                    {
+                        return Serializer.Deserialize<List<PhoneBookContact>>(fs);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint("Failed to get cached phonebook contacts (nuking): " + ex);
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
+                }
+                return null;
+            }
+        }
+            
+        private static void SaveCachedPhoneBookContacts(List<PhoneBookContact> phoneBookContacts)
+        {
+            lock (_contactsCacheLock)
+            {
+                var path = GetPhoneBookContactsCachePath();
+                if (phoneBookContacts == null)
+                {
+                    Utils.DebugPrint("Nuking cached phone book contacts as we're trying to save nothing.");
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
+                    return;
+                }
+                try
+                {
+                    using (var fs = File.Create(path))
+                    {
+                        Serializer.Serialize(fs, phoneBookContacts);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint("Failed to save cached phonebook contacts (nuking): " + ex);
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
+                }
+            }
         }
 
         public static void RegisterMncMccRefresher(Action refreshMncMcc)
@@ -325,10 +414,12 @@ namespace Disa.Framework
                                     "Phone books are equal. No need to update contacts!");
                                 return;
                             }
-
+                                
                             _phoneBookContacts = updatedPhoneContacts;
 
                             Utils.DebugPrint("Got phone contacts... updating running services...");
+
+                            var notRunningServices = ServiceManager.AllNoUnified.ToList();
 
                             foreach (
                                 var service in
@@ -339,6 +430,7 @@ namespace Disa.Framework
                                     service.RefreshPhoneBookContacts();
                                     BubbleGroupUpdater.Update(service);
                                     ServiceEvents.RaiseContactsUpdated(service);
+                                    notRunningServices.Remove(service);
                                 }
                                 catch (Exception ex)
                                 {
@@ -346,6 +438,12 @@ namespace Disa.Framework
                                         " failed to refresh it contacts. " + ex.Message);
                                 }
                             }
+
+                            if (notRunningServices.Any())
+                            {
+                                SettingsChangedManager.SetNeedsContactSync(notRunningServices.ToArray(), true);
+                            }
+                            SaveCachedPhoneBookContacts(updatedPhoneContacts);
                         }
                     }
                 };

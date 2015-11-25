@@ -43,16 +43,28 @@ namespace Disa.Framework
             });
         }
 
-        public static SynchronizedCollection<T> ToSynchronizedCollection<T>(this List<T> list)
+        public static int ColorRgbToColorArgbIfPossible(int rgb)
         {
-            if (list == null)
-                return null;
-            var synchronizedCollection = new SynchronizedCollection<T>();
-            foreach (var participant in list)
+            try
             {
-                synchronizedCollection.Add(participant);
+                var rgbString = ColorIntToString(rgb);
+                rgbString = rgbString.Remove(0, 1);
+                if (rgbString.Length <= 6)
+                {
+                    rgbString = "FF" + rgbString;
+                }
+                rgbString = "#" + rgbString;
+                #if __ANDROID__
+                var argb = global::Android.Graphics.Color.ParseColor(rgbString).ToArgb();
+                #else
+                var argb = ColorStringToInt(rgbString);
+                #endif
+                return argb;
             }
-            return synchronizedCollection;
+            catch
+            {
+                return rgb;
+            }
         }
 
         public static string ColorIntToString(int argb)

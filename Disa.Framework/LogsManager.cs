@@ -22,38 +22,45 @@ namespace Disa.Framework
 
         public static void WriteLine(string line)
         {
-            lock (LogLock)
+            try
             {
-                LogCache.Add(DateTime.Now.ToString("F") + " | " + line);
+                lock (LogLock)
+                {
+                    LogCache.Add(DateTime.Now.ToString("F") + " | " + line);
 
-				if (LogCache.Count > PrintsBeforeWrite)
-				{
-                    var path = GetDebugPath();
-                    if (path == null)
-                        return;
+    				if (LogCache.Count > PrintsBeforeWrite)
+    				{
+                        var path = GetDebugPath();
+                        if (path == null)
+                            return;
 
-					if (_writeLineCounter > 1000)
-					{
-						_writeLineCounter = 0;
-						var debugFile = new FileInfo(path);
-						if (debugFile.Length > 10485760) //10mb
-						{
-							Utils.DebugPrintNoLog("Huge log file. Killing.");
-							debugFile.Delete();
-						}
-					}
+    					if (_writeLineCounter > 1000)
+    					{
+    						_writeLineCounter = 0;
+    						var debugFile = new FileInfo(path);
+    						if (debugFile.Length > 10485760) //10mb
+    						{
+    							Utils.DebugPrintNoLog("Huge log file. Killing.");
+    							debugFile.Delete();
+    						}
+    					}
 
-					using (var fs = File.AppendText(path))
-					{
-						foreach (var log in LogCache)
-						{
-							fs.WriteLine(log);
-						}
-						LogCache.Clear();
-					}
-				}
+    					using (var fs = File.AppendText(path))
+    					{
+    						foreach (var log in LogCache)
+    						{
+    							fs.WriteLine(log);
+    						}
+    						LogCache.Clear();
+    					}
+    				}
 
-                _writeLineCounter++;
+                    _writeLineCounter++;
+                }
+            }
+            catch (Exception ex)
+            {
+                Utils.DebugPrintNoLog("Failed to writeline to log: " + ex);
             }
         }
 
