@@ -41,6 +41,9 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(155)]
         public BubbleStatus Status { get; set; }
 
+        [ProtoMember(156)]
+        public string ParticipantAddressNickname { get; set; }
+
         [NonSerialized]
         public Service Service;
 
