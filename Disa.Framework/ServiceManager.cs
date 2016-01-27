@@ -400,7 +400,7 @@ namespace Disa.Framework
             {
                 var skipEvent = false;
 
-                Utils.DebugPrint("We got an abstract bubble: " + b.GetType().Name + " Address: " + b.Address);
+                Utils.DebugPrint("We got an abstract bubble: " + b.GetType().Name + " Address: " + b.Address + " ParticipantAddress: " + b.ParticipantAddress);
 
                 BubbleGroup group = null;
 
@@ -494,7 +494,7 @@ namespace Disa.Framework
                         }
                         else
                         {
-                            if (!@group.IsParty && !prescenceBubble.Available)
+                            if (!prescenceBubble.Available)
                             {
                                 @group.PresenceType = PresenceBubble.PresenceType.Unavailable;
                             }
@@ -506,7 +506,7 @@ namespace Disa.Framework
 
                             if (!prescenceBubble.Available)
                             {
-                                @group.Typing = false;
+                                group.SendBubbleActions.Clear();
                             }
                         }
                     }
@@ -516,7 +516,6 @@ namespace Disa.Framework
                 if (typingBubble != null)
                 {
                     @group = BubbleGroupManager.Find(bubbleGroup =>
-                        !bubbleGroup.IsParty &&
                         bubbleGroup.Service ==
                         typingBubble.Service &&
                         typingBubble.Service.BubbleGroupComparer(
@@ -525,14 +524,49 @@ namespace Disa.Framework
 
                     if (@group != null)
                     {
-                        if (@group.Presence)
+                        if (!group.IsParty)
                         {
-                            @group.Typing = typingBubble.Typing;
-                            @group.TypingIsAudio = typingBubble.IsAudio;
+                            group.SendBubbleActions.Clear();
+                            if (group.Presence)
+                            {
+                                group.SendBubbleActions.Add(new SendBubbleAction
+                                {
+                                    Type = typingBubble.Typing ? (typingBubble.IsAudio ? 
+                                        SendBubbleAction.ActionType.Recording : SendBubbleAction.ActionType.Typing) : 
+                                        SendBubbleAction.ActionType.Nothing,
+                                    Address = group.Address,
+                                });
+                            }
                         }
                         else
                         {
-                            @group.Typing = false;
+                            var sendBubbleAction = new SendBubbleAction
+                            {
+                                Address = typingBubble.ParticipantAddress,
+                                Type = typingBubble.Typing ? (typingBubble.IsAudio ? 
+                                    SendBubbleAction.ActionType.Recording : SendBubbleAction.ActionType.Typing) : 
+                                    SendBubbleAction.ActionType.Nothing,
+                            };
+                            var skipAdd = false;
+                            foreach (var item in group.SendBubbleActions)
+                            {
+                                if (group.Service.BubbleGroupComparer(item.Address, sendBubbleAction.Address))
+                                {
+                                    if (sendBubbleAction.Type == item.Type)
+                                    {
+                                       skipAdd = true;
+                                    }
+                                    else
+                                    {
+                                        group.SendBubbleActions.Remove(item);
+                                    }
+                                    break;
+                                }
+                            }
+                            if (!skipAdd && sendBubbleAction.Type != SendBubbleAction.ActionType.Nothing)
+                            {
+                                group.SendBubbleActions.Add(sendBubbleAction);
+                            }
                         }
                     }
                 }
@@ -751,8 +785,11 @@ namespace Disa.Framework
                     BubbleGroupManager.FindAll(
                         x => x.Service == registeredService && !(x is UnifiedBubbleGroup)))
             {
-                @group.Typing = false;
-                @group.PresenceType = PresenceBubble.PresenceType.Unavailable;
+                @group.SendBubbleActions.Clear();
+                if (!group.IsParty)
+                {
+                    @group.PresenceType = PresenceBubble.PresenceType.Unavailable;
+                }
             }
         }
 

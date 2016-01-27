@@ -30,8 +30,7 @@ namespace Disa.Framework
 
         public bool NeedsSync { get; internal set; }
 
-        public bool Typing  { get; internal set; }
-		public bool TypingIsAudio { get; internal set; }
+        public readonly ThreadSafeList<SendBubbleAction> SendBubbleActions = new ThreadSafeList<SendBubbleAction>();
         public long LastSeen { get; internal set; }
 
         public PresenceBubble.PresenceType PresenceType { get; internal set; }
@@ -64,6 +63,18 @@ namespace Disa.Framework
             internal set
             {
                 BubbleGroupSettingsManager.SetReadTimes(this, value);
+            }
+        }
+
+        internal DisaParticipantNickname[] ParticipantNicknames
+        {
+            get
+            {
+                return BubbleGroupSettingsManager.GetParticipantNicknames(this);
+            }
+            set
+            {
+                BubbleGroupSettingsManager.SetParticipantNicknames(this, value);
             }
         }
 

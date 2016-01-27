@@ -36,7 +36,6 @@ namespace Disa.Framework
             }
             ServiceManager.Initialize(allServices.ToList());
             ServiceUserSettingsManager.LoadAll();
-            Emoji.Initalize(Platform.GetEmojisPath());
             BubbleGroupFactory.LoadAllPartiallyIfPossible();
         }
 
@@ -44,7 +43,7 @@ namespace Disa.Framework
         {
             get
             {
-                return "20";
+                return "22";
             }
         }
 

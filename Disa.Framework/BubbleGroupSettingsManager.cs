@@ -89,6 +89,7 @@ namespace Disa.Framework
                             Guid = group.ID,
                             LastUnreadSetTime = 0,
                             ReadTimes = null,
+                            ParticipantNicknames = null,
                             NotificationLed = DefaultNotificationLedColor,
                             VibrateOption = null,
                             VibrateOptionCustomPattern = null,
@@ -200,6 +201,32 @@ namespace Disa.Framework
             return group.Settings.LastUnreadSetTime;
         }
 
+        internal static DisaParticipantNickname[] GetParticipantNicknames(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            if (group.Settings.ParticipantNicknamesCachedSet)
+            {
+                return group.Settings.ParticipantNicknamesCached;
+            }
+            else
+            {
+                if (group.Settings.ParticipantNicknames == null)
+                {
+                    group.Settings.ParticipantNicknamesCachedSet = true;
+                }
+                else
+                {
+                    using (var ms = new MemoryStream(group.Settings.ParticipantNicknames))
+                    {
+                        var participantNicknames = Serializer.Deserialize<DisaParticipantNickname[]>(ms);
+                        group.Settings.ParticipantNicknamesCached = participantNicknames;
+                        group.Settings.ParticipantNicknamesCachedSet = true;
+                    }
+                }
+                return group.Settings.ParticipantNicknamesCached;
+            }
+        }
+
         internal static DisaReadTime[] GetReadTimes(BubbleGroup group)
         {
             InsertDefaultIfNull(group);
@@ -224,6 +251,25 @@ namespace Disa.Framework
                 }
                 return group.Settings.ReadTimesCached;
             }
+        }
+
+        internal static void SetParticipantNicknames(BubbleGroup group, DisaParticipantNickname[] nicknames)
+        {
+            InsertDefaultIfNull(group);
+            group.Settings.ParticipantNicknamesCached = nicknames;
+            if (nicknames != null)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    Serializer.Serialize(ms, nicknames);
+                    group.Settings.ParticipantNicknames = ms.ToArray();
+                }
+            }
+            else
+            {
+                group.Settings.ParticipantNicknames = null;
+            }
+            Update(group.Settings);
         }
 
         internal static void SetReadTimes(BubbleGroup group, DisaReadTime[] readTimes)

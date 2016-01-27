@@ -25,8 +25,6 @@ namespace Disa.Framework
 
         public abstract string GetDatabasePath();
 
-        public abstract string GetEmojisPath();
-
         public abstract string GetDeviceId(int minimumLength = 5);
 
         public abstract List<PhoneBookContact> GetPhoneBookContacts();

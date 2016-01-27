@@ -61,11 +61,6 @@ namespace Disa.Framework
             return PlatformImplementation.GetDatabasePath();
         }
 
-        public static string GetEmojisPath()
-        {
-            return PlatformImplementation.GetEmojisPath();
-        }
-
         public static string GetDeviceId(int minimumLength = 5)
         {
             return PlatformImplementation.GetDeviceId(minimumLength);

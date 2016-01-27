@@ -5,8 +5,6 @@ namespace Disa.Framework
 {
     public static class Emoji
     {
-        public static string Location { get; private set; }
-
         public class Map
         {
             public string Unified { get; set; }
@@ -30,11 +28,6 @@ namespace Disa.Framework
                 Utf16 = utf16;
                 Avoid = avoid;
             }
-        }
-
-        internal static void Initalize(string location)
-        {
-            Location = location;
         }
 
         public static string ConvertSoftbankEmojis(string str)

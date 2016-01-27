@@ -325,7 +325,6 @@ namespace Disa.Framework
             foreach (var group in BubbleGroupManager.FindAll(service))
             {
                 @group.PresenceType = PresenceBubble.PresenceType.Unavailable;
-                //@group.Typing = false;
             }
         }
 
@@ -619,6 +618,50 @@ namespace Disa.Framework
                     {
                         Utils.DebugPrint("Yuck. It's a duplicate bubble. No need to readd: " + vb.IdService + ", " + vb.IdService2);
                     }
+                }
+
+                try
+                {
+                    if (theGroup.IsParty && !string.IsNullOrWhiteSpace(vb.ParticipantAddressNickname))
+                    {
+                        var participantAddressNicknamesArray = theGroup.ParticipantNicknames;
+                        if (participantAddressNicknamesArray == null)
+                        {
+                            participantAddressNicknamesArray = new DisaParticipantNickname[0];
+                        }
+                        var participantAddressNicknames = participantAddressNicknamesArray.ToList();
+                        var changed = false;
+                        var adding = true;
+                        foreach (var participantAddressNickname in participantAddressNicknames)
+                        {
+                            if (theGroup.Service.BubbleGroupComparer(participantAddressNickname.Address, vb.ParticipantAddress))
+                            {
+                                if (participantAddressNickname.Nickname != vb.ParticipantAddressNickname)
+                                {
+                                    participantAddressNickname.Nickname = vb.ParticipantAddressNickname;
+                                    changed = true;
+                                }
+                                adding = false;
+                                break;
+                            }
+                        }
+                        if (adding)
+                        {
+                            participantAddressNicknames.Add(new DisaParticipantNickname
+                            {
+                                Address = vb.ParticipantAddress,
+                                Nickname = vb.ParticipantAddressNickname,
+                            });
+                        }
+                        if (changed || adding)
+                        {
+                            theGroup.ParticipantNicknames = participantAddressNicknames.ToArray();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint("Failed to insert/update participant nickname into cache: " + ex);   
                 }
 
                 if (!duplicate)

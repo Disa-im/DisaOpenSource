@@ -65,11 +65,12 @@ namespace Disa.Framework
 		{
 			SSLSocket sslSocket = null;
             var f = SSLSocketFactory.Default as SSLSocketFactory;
-            sslSocket = f.CreateSocket(_remoteHostName, _remotePort) as SSLSocket;
+            sslSocket = f.CreateSocket() as SSLSocket;
             _socket = sslSocket;
 
             _socket.SoTimeout = receiveTimeout == -1 ? 0 : receiveTimeout;
 
+            sslSocket.Connect(new InetSocketAddress(_remoteHostName, _remotePort), 15000);
             sslSocket.StartHandshake();
 
 			_socket.SoTimeout = 0;

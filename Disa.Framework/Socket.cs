@@ -33,7 +33,7 @@ namespace Disa.Framework
 
         public void Connect(string host, int port)
         {
-            _socket.Connect(new InetSocketAddress(host, port));
+            _socket.Connect(new InetSocketAddress(host, port), 15000);
         }
 
         public bool Connected

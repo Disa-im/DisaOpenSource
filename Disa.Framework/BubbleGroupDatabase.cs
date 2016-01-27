@@ -184,6 +184,8 @@ namespace Disa.Framework
 
                                 stream.Write(cut, 0, cut.Length);
                                 stream.SetLength(stream.Position);
+
+                                break;
                             }
                             else
                             {

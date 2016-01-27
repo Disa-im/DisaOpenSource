@@ -23,6 +23,13 @@ namespace Disa.Framework
 
         public long LastUnreadSetTime { get; set; }
 
+        public byte[] ParticipantNicknames { get; set; }
+
+        [Ignore]
+        public DisaParticipantNickname[] ParticipantNicknamesCached { get; set; }
+        [Ignore]
+        public bool ParticipantNicknamesCachedSet { get; set; }
+
         public byte[] ReadTimes { get; set; }
 
         [Ignore]

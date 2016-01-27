@@ -54,16 +54,6 @@ namespace Disa.Framework
 
         }
 
-        public static void InsertNoMediaInEmojiDirectoryIfNeeded()
-        {
-            var emojis = Platform.GetEmojisPath();
-            var path = Path.Combine(emojis, noMedia);
-            if (!File.Exists(path))
-            {
-                File.Create(path);
-            }
-        }
-
         public static void InsertNoMediasIfNeeded()
         {
 #if __ANDROID__
@@ -206,70 +196,22 @@ namespace Disa.Framework
             return Path.Combine(newBase, end);
         }
 
-		private static bool IsInMediaLocation(string path)
-		{
-			var directoryPath = Path.GetDirectoryName(path);
-			return directoryPath == GetDisaAudioPath() || directoryPath == GetDisaPicturesPath() || 
-				directoryPath == GetDisaVideosPath();
-		}
-
-		public static void ForwardCopyToMediaDirectoryIfNeeded(VisualBubble vb)
-		{
-			if (vb is TextBubble)
-				return;
-			if (vb is LocationBubble)
-				return;
-            if (vb is ContactBubble)
-                return;
-            
-			var videoBubble = vb as VideoBubble;
-			if (videoBubble != null)
-			{
-				if (IsInMediaLocation(videoBubble.VideoPath))
-					return;
-				var path = CopyVideoToDisaVideoLocation(videoBubble.VideoPath);
-				if (path == null)
-					return;
-				videoBubble.VideoPath = path;
-			}
-
-			var audioBubble = vb as AudioBubble;
-			if (audioBubble != null)
-			{
-				if (IsInMediaLocation(audioBubble.AudioPath))
-					return;
-				var path = CopyAudioToDisaAudioLocation(audioBubble.AudioPath);
-				audioBubble.AudioPath = path;
-			}
-
-			var imageBubble = vb as ImageBubble;
-			if (imageBubble != null)
-			{
-				if (IsInMediaLocation(imageBubble.ImagePath))
-					return;
-				var path = CopyPhotoToDisaPictureLocation(imageBubble.ImagePath);
-				if (path == null)
-					return;
-				imageBubble.ImagePath = path;
-			}
-		}
-
-        public static string CopyPhotoToDisaPictureLocation(string file)
+        public static Tuple<bool, string> CopyPhotoToDisaPictureLocation(string file)
         {
 			return CopyFileToDirectoryIfNeeded(GetDisaPicturesPath, file);
         }
 
-        public static string CopyVideoToDisaVideoLocation(string file)
+        public static Tuple<bool, string> CopyVideoToDisaVideoLocation(string file)
         {
 			return CopyFileToDirectoryIfNeeded(GetDisaVideosPath, file);
         }
 
-        public static string CopyAudioToDisaAudioLocation(string file)
+        public static Tuple<bool, string> CopyAudioToDisaAudioLocation(string file)
         {
 			return CopyFileToDirectoryIfNeeded(GetDisaAudioPath, file);
         }
 
-        public static string CopyFileToDisaFileLocation(string file)
+        public static Tuple<bool, string> CopyFileToDisaFileLocation(string file)
         {
             return CopyFileToDirectoryIfNeeded(GetDisaFilesPath, file);
         }
@@ -419,21 +361,40 @@ namespace Disa.Framework
             return Path.Combine(picturesLocation, fileName);
         }
 
-		private static string CopyFileToDirectoryIfNeeded(Func<string> directory, string oldPath)
+        public static bool IsFileInDisaDirectory(Func<string> disaDirectory, string pathToTest)
+        {
+            var newPath = Path.Combine(disaDirectory(), Path.GetFileName(pathToTest));
+            return pathToTest == newPath;
+        }
+
+		private static Tuple<bool, string> CopyFileToDirectoryIfNeeded(Func<string> directory, string oldPath)
 		{
 			try
 			{ 
+                bool newFile;
 				var newPath = Path.Combine(directory(), Path.GetFileName(oldPath));
                 if (oldPath != newPath)
                 {
+                    if (File.Exists(newPath))
+                    {
+                        newFile = false;
+                    }
+                    else
+                    {
+                        newFile = true;
+                    }
                     File.Copy(oldPath, newPath, true);
                 }
-				return newPath;
+                else
+                {
+                    newFile = false;
+                }
+                return Tuple.Create(newFile, newPath);
 			}
 			catch (Exception ex)
 			{
 				Utils.DebugPrint("File " + oldPath + " could not be copied to the Disa gallery location: " + ex.Message);
-				return null;
+                return Tuple.Create(false, (string)null);
 			}
 		}
 

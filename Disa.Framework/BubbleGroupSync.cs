@@ -657,12 +657,6 @@ namespace Disa.Framework
                     }
                 }
 
-                // if all the sync agents failed, then obviously loading more bubbles in trivially failed
-                if (bubbleGroupStates.Count(x => x.Value.Dead) == groups.Count)
-                {
-                    yield break;
-                }
-
                 // insert the bubbles into the disa bubble group with two conditions
                 // a) must not be bubble retreived from disa bubble group
                 // b) must not be a duplicate already in the list to load into
@@ -719,7 +713,10 @@ namespace Disa.Framework
                 listToLoadInto.InsertRange(0, mergedBubbles);
                 LoadBubblesIntoRemoveDuplicates(listToLoadInto, currentTime);
 
-                currentTime = mergedBubbles.First().Time;
+                if (mergedBubbles.Any())
+                {
+                    currentTime = mergedBubbles.First().Time;
+                }
 
                 // if the count wasn't altered, we've hit the end
                 if (listToLoadIntoCount == listToLoadInto.Count)

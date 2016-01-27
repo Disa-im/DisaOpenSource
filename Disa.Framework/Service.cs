@@ -120,7 +120,7 @@ namespace Disa.Framework
 
     [ServiceInfo(null, 
         true, false, false, false, false, typeof(DisaSettings), 
-        ServiceInfo.ProcedureType.ConnectAuthenticate, null)]
+        ServiceInfo.ProcedureType.ConnectAuthenticate)]
     public class UnifiedService : Service
     {
         public static string Name = "Unified";

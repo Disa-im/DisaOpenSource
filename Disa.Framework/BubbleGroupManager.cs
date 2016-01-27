@@ -119,6 +119,50 @@ namespace Disa.Framework
             return unifiedGroup != null && unifiedGroup.Groups.Any(innerGroup => innerGroup == child);
         }
 
+        public static string GetParticipantNicknameOrName(BubbleGroup group, DisaParticipant participant)
+        {
+            var fetchNickname = false;
+            var name = participant.Name;
+            if (!string.IsNullOrWhiteSpace(participant.Name))
+            {
+                if (!PhoneBook.IsPossibleNumber(participant.Name))
+                {
+                    //fall-through
+                }
+                else
+                {
+                    fetchNickname = true;
+                }
+            }
+            else
+            {
+                fetchNickname = true;
+            }
+            var prependParticipantName = false;
+            if (fetchNickname)
+            {
+                var participantNicknames = group.ParticipantNicknames;
+                if (participantNicknames != null)
+                {
+                    var participantNickname = participantNicknames.FirstOrDefault(x => 
+                        group.Service.BubbleGroupComparer(participant.Address, x.Address));
+                    if (participantNickname != null)
+                    {
+                        name = participantNickname.Nickname;   
+                        if (participant.Unknown)
+                        {
+                            prependParticipantName = true;
+                        }
+                    }
+                }
+            }
+            if (prependParticipantName && !string.IsNullOrWhiteSpace(participant.Name))
+            {
+                return name + " (" + participant.Name + ")";
+            }
+            return name;
+        }
+
         public static BubbleGroup FindInnerFast(VisualBubble visualBubble, BubbleGroup group)
         {
             if (visualBubble.BubbleGroupReference != null)
@@ -204,6 +248,15 @@ namespace Disa.Framework
             lock (BubbleGroupsLock)
             {
                 return BubbleGroups.FirstOrDefault(x => x.Service == service && x.Service.BubbleGroupComparer(bubbleGroupAddress, x.Address));
+            }
+        }
+
+        public static List<BubbleGroup> FindWithParticipantAddress(Service service, string participantAddress)
+        {
+            lock (BubbleGroupsLock)
+            {
+                return BubbleGroups.Where(x => x.Service == service && x.IsParty &&
+                    x.Participants.FirstOrDefault(b => service.BubbleGroupComparer(participantAddress, b.Address)) != null).ToList();
             }
         }
 
@@ -365,39 +418,65 @@ namespace Disa.Framework
             return unifiedGroup == null ? @group : unifiedGroup.SendingGroup;
         }
 
-        public class TypingContainer
+        public static SendBubbleAction[] GetSendBubbleActions(BubbleGroup group)
         {
-            public bool Typing { get; private set; }
-            public bool IsAudio { get; private set; }
-            public bool Available { get; private set; }
-            public DisaThumbnail Photo { get; private set; }
-
-            public TypingContainer(bool typing, bool available, bool isAudio, DisaThumbnail photo)
-            {
-                Typing = typing;
-                Available = available;
-                IsAudio = isAudio;
-                Photo = photo;
-            }
-        }
-
-        public static TypingContainer GetTypingContainer(BubbleGroup group)
-        {
-            TypingContainer container;
+            BubbleGroup sendBubbleGroup;
 
             var unifiedGroup = @group as UnifiedBubbleGroup;
             if (unifiedGroup != null)
             {
-                var typingGroup = unifiedGroup.Groups.FirstOrDefault(innerGroup => innerGroup.Typing);
-                container = new TypingContainer (typingGroup != null, typingGroup != null && typingGroup.Presence,
-                    typingGroup != null && typingGroup.TypingIsAudio, unifiedGroup.PrimaryGroup.Photo);
+                sendBubbleGroup = unifiedGroup.Groups.FirstOrDefault(innerGroup =>
+                {
+                    return innerGroup.SendBubbleActions.FirstOrDefault(x => x.Type
+                        != SendBubbleAction.ActionType.Nothing) != null;
+                });
             }
             else
             {
-                container = new TypingContainer(@group.Typing, @group.Presence, @group.TypingIsAudio, @group.Photo);
+                sendBubbleGroup = group;
             }
 
-            return container;
+            Func<SendBubbleAction[]> generateNullReturn = () =>
+            {
+                return new SendBubbleAction[]
+                {
+                    new SendBubbleAction
+                    {
+                        Address = group.Address,
+                        Type = SendBubbleAction.ActionType.Nothing
+                    }
+                };  
+            };
+
+            if (sendBubbleGroup == null)
+            {
+                return generateNullReturn();
+            }
+
+            SendBubbleAction[] rturn = null;
+
+            if (sendBubbleGroup.IsParty)
+            {
+                rturn = sendBubbleGroup.SendBubbleActions.Where(x => 
+                    x.Type != SendBubbleAction.ActionType.Nothing).ToArray();
+            }
+            else
+            {
+                var value = sendBubbleGroup.SendBubbleActions.FirstOrDefault(x => 
+                    x.Type != SendBubbleAction.ActionType.Nothing);
+                if (value != null)
+                {
+                    rturn = new SendBubbleAction[1];
+                    rturn[0] = value;
+                }
+            }
+
+            if (rturn == null || !rturn.Any())
+            {
+                return generateNullReturn();
+            }
+
+            return rturn;
         }
 
         public static BubbleGroup GetUnifiedIfPossible(BubbleGroup group)
