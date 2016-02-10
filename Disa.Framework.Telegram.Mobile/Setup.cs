@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Disa.Framework.Mobile;
 using Xamarin.Forms;
-using Xamarin.Forms.Labs.Controls;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using System.Linq;
@@ -117,7 +116,7 @@ namespace Disa.Framework.Telegram.Mobile
             private PhoneEntry _phoneNumber;
             private Label _phoneNumberPlus;
             private StackLayout _phoneNumberContainer;
-            private CheckBox _loadConversations;
+            //private CheckBox _loadConversations;
 
             private Entry _firstName;
             private Entry _lastName;
@@ -142,13 +141,13 @@ namespace Disa.Framework.Telegram.Mobile
                 _lastName = new Entry();
                 _lastName.Placeholder = Localize.GetString("TelegramLastName");
 
-                _loadConversations = new CheckBox();
-                _loadConversations.DefaultText = Localize.GetString("TelegramLoadConversations");
-                _loadConversations.CheckedChanged += (sender, e) =>
-                    {
-                        //TODO:
-                    };
-                _loadConversations.Checked = true;
+//                _loadConversations = new CheckBox();
+//                _loadConversations.DefaultText = Localize.GetString("TelegramLoadConversations");
+//                _loadConversations.CheckedChanged += (sender, e) =>
+//                    {
+//                        //TODO:
+//                    };
+//                _loadConversations.Checked = true;
 
                 _next = new Button();
                 _next.HorizontalOptions = LayoutOptions.FillAndExpand;
@@ -276,7 +275,7 @@ namespace Disa.Framework.Telegram.Mobile
                 children.Add(_firstName);
                 children.Add(_lastName);
                 children.Add(_phoneNumberContainer);
-                children.Add(_loadConversations);
+                //children.Add(_loadConversations);
                 var nextLayout = new StackLayout();
                 nextLayout.Spacing = 20;
                 nextLayout.Orientation = StackOrientation.Horizontal;
