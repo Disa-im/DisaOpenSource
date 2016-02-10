@@ -26,19 +26,23 @@ namespace Disa.Terminal
 
             Console.WriteLine("What would you like to do?");
 
-            while (true)
+            Action a = async () =>
             {
-                var command = Console.ReadLine();
-                try
+                while (true)
                 {
-                    DoCommand(command);
+                    var command = Console.ReadLine();
+                    try
+                    {
+                        await DoCommand(command);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Unable to perform that command: " + ex);
+                        Console.WriteLine("Type 'help' to get help");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Unable to perform that command: " + ex);
-                    Console.WriteLine("Type 'help' to get help");
-                }
-            }
+            };
+            a();
         }
 
         [Serializable]
@@ -104,7 +108,7 @@ namespace Disa.Terminal
             yield return str.Substring(nextPiece);
         }
 
-        private static async void DoCommand(string command)
+        private static async Task DoCommand(string command)
         {
 			// Clean the input
 			command = command.Trim();
