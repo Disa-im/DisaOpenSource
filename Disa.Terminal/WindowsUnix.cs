@@ -76,11 +76,6 @@ namespace Disa.Terminal
             return GetDisaPath("Database");
         }
 
-        public override string GetEmojisPath()
-        {
-            return GetDisaPath("Emojis");
-        }
-
         public override string GetDeviceId(int minimumLength = 5)
         {
             //TODO
