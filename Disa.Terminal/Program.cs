@@ -5,10 +5,10 @@ using System.Linq;
 using Disa.Framework.Bubbles;
 using Disa.Framework.Telegram;
 using System.IO;
-using Managed.Adb;
 using Mono.Cecil;
 using System.Threading.Tasks;
 using System.Text;
+using RegawMOD.Android;
 
 namespace Disa.Terminal
 {
@@ -274,7 +274,8 @@ namespace Disa.Terminal
                         }
                         deployment.Assemblies = newAssemblies;
                         MutableSettingsManager.Save(Settings);
-                        var devices = AdbHelper.Instance.GetDevices(AndroidDebugBridge.SocketAddress);
+                        var instance = AndroidController.Instance;
+                        var devices = instance.ConnectedDevices;
                         Device selectedDevice;
                         if (devices.Count > 1)
                         {
@@ -282,36 +283,39 @@ namespace Disa.Terminal
                             var counter = 0;
                             foreach (var device in devices)
                             {
-                                Console.WriteLine(counter++ + ") " + device.SerialNumber);
+                                Console.WriteLine(counter++ + ") " + device);
                             }
                             Console.Write("Selection: ");
                             var selection = int.Parse(Console.ReadLine().Trim());
-                            selectedDevice = devices[selection];
+                            selectedDevice = instance.GetConnectedDevice(devices[selection]);
                         }
                         else
                         {
-                            selectedDevice = devices.First();
+                            selectedDevice = instance.GetConnectedDevice();
                         }
                         var remotePath = "/sdcard/Disa/plugins/" + deployment.Name;
-                        if (!selectedDevice.FileSystem.Exists(remotePath))
+                        if (selectedDevice.FileSystem.FileOrDirectory(remotePath) == ListingType.NONE)
                         {
                             selectedDevice.FileSystem.MakeDirectory(remotePath);
                         }
+
                         foreach (var assemblyToDeploy in assembliesToDeploy)
                         {
                             Console.WriteLine("Transferring " + assemblyToDeploy.Name + "...");
                             var remoteAssembly = remotePath + "/" + assemblyToDeploy.Name;
-                            if (selectedDevice.FileSystem.Exists(remoteAssembly))
+                            if (selectedDevice.FileSystem.FileOrDirectory(remoteAssembly) != ListingType.NONE)
                             {
                                 selectedDevice.FileSystem.Delete(remoteAssembly);
+
                             }
-                            selectedDevice.SyncService.PushFile(Path.Combine(deployment.Path, assemblyToDeploy.Name),
-                                remoteAssembly, new SyncServiceProgressMonitor());
+                            selectedDevice.PushFile(Path.Combine(deployment.Path, assemblyToDeploy.Name), remoteAssembly);
                         }
                         Console.WriteLine("Plugin deployed! Restarting Disa...");
-                        selectedDevice.ExecuteShellCommand("am force-stop com.disa", new ShellOutputReceiver());
+                        var cmd = Adb.FormAdbShellCommand(selectedDevice, false, "am", "force-stop", "com.disa");
+                        Adb.ExecuteAdbCommand(cmd);
                         Task.Delay(250).Wait();
-                        selectedDevice.ExecuteShellCommand("monkey -p com.disa -c android.intent.category.LAUNCHER 1", new ShellOutputReceiver());
+                        cmd = Adb.FormAdbShellCommand(selectedDevice, false, "monkey", "-p com.disa", "-c android.intent.category.LAUNCHER 1");
+                        Adb.ExecuteAdbCommand(cmd);
                         Console.WriteLine("Disa restarted!");
                     }
                     break;
@@ -354,46 +358,6 @@ namespace Disa.Terminal
                         }           
                     }
                     break;
-            }
-        }
-
-        private class ShellOutputReceiver : IShellOutputReceiver
-        {
-            public void AddOutput(byte[] data, int offset, int length)
-            {
-            }
-            public void Flush()
-            {
-            }
-            public bool IsCancelled
-            {
-                get
-                {
-                    return false;
-                }
-            }
-        }
-
-        private class SyncServiceProgressMonitor : ISyncProgressMonitor
-        {
-            public void Start(long totalWork)
-            {
-            }
-            public void Stop()
-            {
-            }
-            public void StartSubTask(string source, string destination)
-            {
-            }
-            public void Advance(long work)
-            {
-            }
-            public bool IsCanceled
-            {
-                get
-                {
-                    return false;
-                }
             }
         }
 
