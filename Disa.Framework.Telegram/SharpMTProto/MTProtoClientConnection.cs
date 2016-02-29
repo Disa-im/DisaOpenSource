@@ -412,6 +412,7 @@ namespace SharpMTProto
             responseDispatcher.AddHandler(new RpcResultHandler(_requestsManager, _tlRig));
             responseDispatcher.AddHandler(new PongHandler(_requestsManager));
             responseDispatcher.AddHandler(new SessionHandler());
+            responseDispatcher.AddHandler(new GzipPackedHandler(_tlRig, _updatesHandler));
             responseDispatcher.AddHandler(_updatesHandler);
         }
 
