@@ -55,6 +55,8 @@ namespace Disa.Framework.Telegram
 
         private bool _hasPresence;
 
+        private bool _longPollerAborted;
+
         private Random _random = new Random(System.Guid.NewGuid().GetHashCode());
 
         private TelegramSettings _settings;
@@ -316,8 +318,11 @@ namespace Disa.Framework.Telegram
             
         private void OnLongPollClientClosed(object sender, EventArgs e)
         {
-            Utils.DebugPrint("Looks like a long poll client closed itself internally. Restarting Telegram...");
-            RestartTelegram(null);
+            if (!_longPollerAborted)
+            {
+                Utils.DebugPrint("Looks like a long poll client closed itself internally. Restarting Telegram...");
+                RestartTelegram(null);
+            }
         }
 
         private void OnLongPollClientUpdateTooLong(object sender, EventArgs e)
@@ -431,6 +436,7 @@ namespace Disa.Framework.Telegram
         {
             if (_longPollClient != null && _longPollClient.IsConnected)
             {
+                _longPollerAborted = true;
                 try
                 {
                     TelegramUtils.RunSynchronously(_longPollClient.Disconnect());
@@ -594,7 +600,9 @@ namespace Disa.Framework.Telegram
             if (_longPollClient != null)
             {
                 _longPollClient.OnUpdateTooLong -= OnLongPollClientUpdateTooLong;
+                _longPollClient.OnClosedInternally -= OnLongPollClientClosed;
             }
+            _longPollerAborted = false;
             _longPollClient = new TelegramClient(transportConfig, 
                 new ConnectionConfig(_settings.AuthKey, _settings.Salt) { SessionId = sessionId }, AppInfo);
             var result2 = TelegramUtils.RunSynchronously(_longPollClient.Connect());
