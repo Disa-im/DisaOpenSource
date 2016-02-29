@@ -11,8 +11,13 @@ using System.IO;
 
 namespace Disa.Framework.Telegram
 {
+    // Manages all data centre connections that's not the primary data centre. Each connection will disconnect
+    // after 60 seconds of not being used.
     public partial class Telegram
     {
+        private readonly Dictionary<int, TelegramClient> _activeClients = new Dictionary<int, TelegramClient>();
+        private readonly Dictionary<int, object> _spinUpLocks = new Dictionary<int, object>();
+
         public class TelegramDc
         {
             [PrimaryKey]
@@ -71,9 +76,6 @@ namespace Disa.Framework.Telegram
                 return null;
             }
         }
-
-        private readonly Dictionary<int, TelegramClient> _activeClients = new Dictionary<int, TelegramClient>();
-        private readonly Dictionary<int, object> _spinUpLocks = new Dictionary<int, object>();
 
         public TelegramClient GetClient(int dc)
         {
@@ -155,7 +157,7 @@ namespace Disa.Framework.Telegram
 
                     DebugPrint(">>>>>>>> Exporting auth...");
 
-                    using (var clientDisposable = new TelegramClientDisposable(this))
+                    using (var clientDisposable = new FullClientDisposable(this))
                     {
                         exportedAuth = (AuthExportedAuthorization)TelegramUtils.RunSynchronously(clientDisposable.Client.Methods.AuthExportAuthorizationAsync(
                             new SharpTelegram.Schema.Layer18.AuthExportAuthorizationArgs

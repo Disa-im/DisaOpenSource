@@ -12,9 +12,11 @@ namespace Disa.Framework.Telegram
         public Task GetContacts(string query, bool searchForParties, Action<List<Contact>> result)
         {
             return Task.Factory.StartNew(async () =>
+            {
+                //TODO: search for parties
+                using (var client = new FullClientDisposable(this))
                 {
-                    //TODO: search for parties
-                    var response = (ContactsContacts)await _fullClient.Methods.ContactsGetContactsAsync(
+                    var response = (ContactsContacts)await client.Client.Methods.ContactsGetContactsAsync(
                         new ContactsGetContactsArgs
                         {
                             Hash = string.Empty
@@ -37,7 +39,8 @@ namespace Disa.Framework.Telegram
                                 },
                         }).OfType<Contact>().OrderBy(x => x.FirstName).ToList();
                     result(contacts);
-                });
+                }
+            });
         }
 
         public Task GetContactsFavorites(Action<List<Contact>> result)

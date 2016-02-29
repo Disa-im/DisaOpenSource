@@ -116,7 +116,9 @@ namespace Disa.Framework.Telegram.Mobile
             private PhoneEntry _phoneNumber;
             private Label _phoneNumberPlus;
             private StackLayout _phoneNumberContainer;
-            //private CheckBox _loadConversations;
+            private StackLayout _loadConversationsLayout;
+            private Label _loadConversationsTitle;
+            private Switch _loadConversationsSwitch;
 
             private Entry _firstName;
             private Entry _lastName;
@@ -141,13 +143,22 @@ namespace Disa.Framework.Telegram.Mobile
                 _lastName = new Entry();
                 _lastName.Placeholder = Localize.GetString("TelegramLastName");
 
-//                _loadConversations = new CheckBox();
-//                _loadConversations.DefaultText = Localize.GetString("TelegramLoadConversations");
-//                _loadConversations.CheckedChanged += (sender, e) =>
-//                    {
-//                        //TODO:
-//                    };
-//                _loadConversations.Checked = true;
+                _loadConversationsLayout = new StackLayout();
+                _loadConversationsLayout.Orientation = StackOrientation.Horizontal;
+                _loadConversationsLayout.HorizontalOptions = LayoutOptions.End;
+                _loadConversationsLayout.Padding = new Thickness(15, 0);
+                _loadConversationsLayout.Spacing = 10;
+
+                _loadConversationsTitle = new Label();
+                _loadConversationsTitle.Text = Localize.GetString("TelegramLoadConversations");
+                _loadConversationsSwitch = new Switch();
+                _loadConversationsSwitch.Toggled += (sender, e) =>
+                {
+                    (service as Telegram).LoadConversations = e.Value;
+                };
+                _loadConversationsSwitch.IsToggled = true;
+                _loadConversationsLayout.Children.Add(_loadConversationsTitle);
+                _loadConversationsLayout.Children.Add(_loadConversationsSwitch);
 
                 _next = new Button();
                 _next.HorizontalOptions = LayoutOptions.FillAndExpand;
@@ -275,7 +286,7 @@ namespace Disa.Framework.Telegram.Mobile
                 children.Add(_firstName);
                 children.Add(_lastName);
                 children.Add(_phoneNumberContainer);
-                //children.Add(_loadConversations);
+                children.Add(_loadConversationsLayout);
                 var nextLayout = new StackLayout();
                 nextLayout.Spacing = 20;
                 nextLayout.Orientation = StackOrientation.Horizontal;

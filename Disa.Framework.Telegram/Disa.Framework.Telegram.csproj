@@ -1314,9 +1314,14 @@
     <Compile Include="TelegramUtils.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\GenericRequestResponseHandler.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\UpdatesHandler.cs" />
-    <Compile Include="TelegramDcManager.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\PongHandler.cs" />
     <Compile Include="UI\UserInformation.cs" />
+    <Compile Include="DcManager.cs" />
+    <Compile Include="FullClient.cs" />
+    <Compile Include="TestCommands.cs" />
+    <Compile Include="Authentication.cs" />
+    <Compile Include="TelegramSettings.cs" />
+    <Compile Include="TelegramMutableSettings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SQLitePCL.raw.0.8.6\build\net45\SQLitePCL.raw.targets" Condition="Exists('..\packages\SQLitePCL.raw.0.8.6\build\net45\SQLitePCL.raw.targets')" />

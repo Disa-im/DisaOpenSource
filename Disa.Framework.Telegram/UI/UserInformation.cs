@@ -139,29 +139,32 @@ namespace Disa.Framework.Telegram
                     var userId = TelegramUtils.GetUserId(user);
                     if (userId == address)
                     {
-                        var inputUser = TelegramUtils.CastUserToInputUser(user);
-                        var updatedUser = await GetUser(inputUser, _fullClient);
-                        var name = TelegramUtils.GetUserName(updatedUser);
-                        var lastSeen = TelegramUtils.GetLastSeenTime(updatedUser);
-                        var presence = TelegramUtils.GetAvailable(updatedUser);
-                        var phoneNumber = TelegramUtils.GetUserPhoneNumber(updatedUser);
-
-                        if (string.IsNullOrWhiteSpace(name))
+                        using (var client = new FullClientDisposable(this))
                         {
-                            result(null);  //TODO: ensure this doesn't crash Disa
+                            var inputUser = TelegramUtils.CastUserToInputUser(user);
+                            var updatedUser = await GetUser(inputUser, client.Client);
+                            var name = TelegramUtils.GetUserName(updatedUser);
+                            var lastSeen = TelegramUtils.GetLastSeenTime(updatedUser);
+                            var presence = TelegramUtils.GetAvailable(updatedUser);
+                            var phoneNumber = TelegramUtils.GetUserPhoneNumber(updatedUser);
+
+                            if (string.IsNullOrWhiteSpace(name))
+                            {
+                                result(null);  //TODO: ensure this doesn't crash Disa
+                                return;
+                            }
+                            result(new UserInformation
+                            {
+                                Title = name,
+                                SubtitleType = string.IsNullOrWhiteSpace(phoneNumber) ? 
+                                    UserInformation.TypeSubtitle.Other : UserInformation.TypeSubtitle.PhoneNumber,
+                                Subtitle = string.IsNullOrWhiteSpace(phoneNumber) ? 
+                                    address : TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber),
+                                LastSeen = lastSeen,
+                                Presence = presence,
+                            });
                             return;
                         }
-                        result(new UserInformation
-                        {
-                            Title = name,
-                            SubtitleType = string.IsNullOrWhiteSpace(phoneNumber) ? 
-                                UserInformation.TypeSubtitle.Other : UserInformation.TypeSubtitle.PhoneNumber,
-                            Subtitle = string.IsNullOrWhiteSpace(phoneNumber) ? 
-                                address : TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber),
-                            LastSeen = lastSeen,
-                            Presence = presence,
-                        });
-                        return;
                     }
                 }
                 result(null);  //TODO: ensure this doesn't crash Disa

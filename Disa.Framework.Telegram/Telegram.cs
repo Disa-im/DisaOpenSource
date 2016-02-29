@@ -16,7 +16,6 @@ using System.Timers;
 //TODO:
 //1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
 //2) do a lock on the _dialogs access
-//3) lock full client & disposable to prevent multiple connections being made at once
 
 namespace Disa.Framework.Telegram
 {
@@ -29,18 +28,11 @@ namespace Disa.Framework.Telegram
         private static TcpClientTransportConfig DefaultTransportConfig = 
             new TcpClientTransportConfig("149.154.167.50", 443);
 
-        private static TelegramAppInfo AppInfo = new TelegramAppInfo
-        {
-            ApiId = 19606,
-            DeviceModel = "LG",
-            SystemVersion = "5.0",
-            AppVersion = "0.8.2",
-            LangCode = PhoneBook.Language, //TODO: works?
-        };
-
         private readonly object _baseMessageIdCounterLock = new object();
         private string _baseMessageId = "0000000000";
         private int _baseMessageIdCounter;
+
+        public bool LoadConversations;
 
         public string CurrentMessageId
         {
@@ -71,58 +63,14 @@ namespace Disa.Framework.Telegram
 
         private TelegramClient _longPollClient;
 
-        private TelegramClient _fullClientInternal;
-
         private readonly object _mutableSettingsLock = new object();
-
-        private bool IsFullClientConnected
-        {
-            get
-            {
-                return _fullClientInternal != null && _fullClientInternal.IsConnected;
-            }
-        }
-
-        //TODO: when the client dies when its not on a ping delay (user has Disa open),
-        //      we may need to relaunch the client.
-        private bool _fullClientWillDieBecauseOfPingDelay;
-
-        private TelegramClient _fullClient
-        {
-            get
-            {
-                if (_fullClientInternal != null && _fullClientInternal.IsConnected)
-                {
-                    return _fullClientInternal;
-                }
-                Console.WriteLine(System.Environment.StackTrace);
-                var transportConfig = 
-                    new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
-                if (_fullClientInternal != null)
-                {
-                    _fullClientInternal.OnUpdateState -= OnUpdateState;
-                    _fullClientInternal.OnUpdate -= OnUpdate;
-                    _fullClientInternal.OnUpdateTooLong -= OnFullClientUpdateTooLong;
-                }
-                _fullClientInternal = new TelegramClient(transportConfig, 
-                    new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo);
-                _fullClientInternal.OnUpdateState += OnUpdateState;
-                _fullClientInternal.OnUpdate += OnUpdate;
-                _fullClientInternal.OnUpdateTooLong += OnFullClientUpdateTooLong;
-                var result = TelegramUtils.RunSynchronously(_fullClientInternal.Connect());
-                if (result != MTProtoConnectResult.Success)
-                {
-                    throw new Exception("Failed to connect: " + result);
-                }
-                SetFullClientPingDelayDisconnect();
-                return _fullClientInternal;
-            }
-        }
 
         private MessagesDialogs _dialogs;
         private Config _config;
 
         private Dictionary<uint, Timer> _typingTimers = new Dictionary<uint, Timer>();
+
+        private WakeLockBalancer.GracefulWakeLock _longPollHeartbeart;
 
         private void CancelTypingTimer(uint userId)
         {
@@ -132,14 +80,6 @@ namespace Disa.Framework.Telegram
                 timer.Stop();
                 timer.Dispose();
             }
-        }
-
-        private void OnUpdateState(object sender, SharpMTProto.Messaging.Handlers.UpdatesHandler.State s)
-        {
-            Task.Factory.StartNew(() =>
-            {
-                SaveState(s.Date, s.Pts, s.Qts, s.Seq);
-            });
         }
 
         private void SaveState(uint date, uint pts, uint qts, uint seq)
@@ -207,7 +147,7 @@ namespace Disa.Framework.Telegram
             };
             if (client == null)
             {
-                using (var disposableClient = new TelegramClientDisposable(this))
+                using (var disposableClient = new FullClientDisposable(this))
                 {
                     markAsReceived(disposableClient.Client);
                 }
@@ -220,7 +160,6 @@ namespace Disa.Framework.Telegram
 
         private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime, TelegramClient optionalClient = null)
         {
-            //NOTE: Only client disposable should be called in this method
             foreach (var payload in payloads)
             {
                 var update = NormalizeUpdateIfNeeded(payload);
@@ -405,20 +344,7 @@ namespace Disa.Framework.Telegram
                 }
             }            
         }
-
-        private void OnUpdate(object sender, List<object> updates)
-        {
-            ProcessIncomingPayload(updates, true);
-        }
-
-        private void OnFullClientUpdateTooLong(object sender, EventArgs e)
-        {
-            Task.Factory.StartNew(() =>
-            {
-                FetchState(_fullClient);
-            });
-        }
-
+            
         private void OnLongPollClientClosed(object sender, EventArgs e)
         {
             Utils.DebugPrint("Looks like a long poll client closed itself internally. Restarting Telegram...");
@@ -488,29 +414,6 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private void SetFullClientPingDelayDisconnect()
-        {
-            if (!IsFullClientConnected)
-            {
-                return;   
-            }
-            IPong iPong;
-            if (_hasPresence)
-            {
-                DebugPrint("Telling full client that it can forever stay alive.");
-                PingDelay(_fullClient, uint.MaxValue);
-                _fullClientWillDieBecauseOfPingDelay = false;
-                ScheduleFullClientPing();
-            }
-            else
-            {
-                DebugPrint("Telling full client that it can only stay alive for a minute.");
-                PingDelay(_fullClient, 60);
-                _fullClientWillDieBecauseOfPingDelay = true;
-                RemoveFullClientPingIfPossible();
-            }
-        }
-
         private void RestartTelegram(Exception exception)
         {
             if (exception != null)
@@ -527,9 +430,6 @@ namespace Disa.Framework.Telegram
                 ServiceManager.Restart(this);
             });
         }
-
-        private WakeLockBalancer.GracefulWakeLock _longPollHeartbeart;
-        private WakeLockBalancer.GracefulWakeLock _fullClientHeartbeat;
 
         private void ScheduleLongPollPing()
         {
@@ -555,52 +455,6 @@ namespace Disa.Framework.Telegram
             {
                 Platform.RemoveAction(_longPollHeartbeart);
                 _longPollHeartbeart = null;
-            }
-        }
-
-        private void ScheduleFullClientPing()
-        {
-            RemoveFullClientPingIfPossible();
-            _fullClientHeartbeat = new WakeLockBalancer.GracefulWakeLock(new WakeLockBalancer.ActionObject(() =>
-            {
-                if (!IsFullClientConnected)
-                {
-                    RemoveFullClientPingIfPossible();   
-                }
-                else
-                {
-                    Ping(_fullClient);
-                }
-            }, WakeLockBalancer.ActionObject.ExecuteType.TaskWithWakeLock), 240, 60, true);
-            Platform.ScheduleAction(_fullClientHeartbeat);
-        }
-
-        private void RemoveFullClientPingIfPossible()
-        {
-            if (_fullClientHeartbeat != null)
-            {
-                Platform.RemoveAction(_fullClientHeartbeat);
-                _fullClientHeartbeat = null;
-            }
-        }
-
-        private void DisconnectFullClientIfPossible()
-        {
-            if (IsFullClientConnected)
-            {
-                TelegramUtils.RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
-                {
-                    Offline = true
-                }));
-                try
-                {
-                    TelegramUtils.RunSynchronously(_fullClient.Disconnect());
-                }
-                catch (Exception ex)
-                {
-                    DebugPrint("Failed to disconnect full client: " + ex);
-                }
-                RemoveFullClientPingIfPossible();
             }
         }
 
@@ -648,368 +502,6 @@ namespace Disa.Framework.Telegram
         public override bool InitializeDefault()
         {
             return false;
-        }
-
-        public static TelegramSettings GenerateAuthentication(Service service)
-        {
-            try
-            {
-                service.DebugPrint("Fetching nearest DC...");
-                var settings = new TelegramSettings();
-                var authInfo = TelegramUtils.RunSynchronously(FetchNewAuthentication(DefaultTransportConfig));
-                using (var client = new TelegramClient(DefaultTransportConfig, 
-                    new ConnectionConfig(authInfo.AuthKey, authInfo.Salt), AppInfo))
-                {
-                    TelegramUtils.RunSynchronously(client.Connect());
-                    var nearestDcId = (NearestDc)TelegramUtils.RunSynchronously(client.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
-                    var config = (Config)TelegramUtils.RunSynchronously(client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
-                    var dcOption = config.DcOptions.OfType<DcOption>().FirstOrDefault(x => x.Id == nearestDcId.NearestDcProperty);
-                    settings.NearestDcId = nearestDcId.NearestDcProperty;
-                    settings.NearestDcIp = dcOption.IpAddress;
-                    settings.NearestDcPort = (int)dcOption.Port;
-                }
-                service.DebugPrint("Generating authentication on nearest DC...");
-                var authInfo2 = TelegramUtils.RunSynchronously(FetchNewAuthentication(
-                                        new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort)));
-                settings.AuthKey = authInfo2.AuthKey;
-                settings.Salt = authInfo2.Salt;
-                service.DebugPrint("Great! Ready for the service to start.");
-                return settings;
-            }
-            catch (Exception ex)
-            {
-                service.DebugPrint("Error in GenerateAuthentication: " + ex);
-            }
-            return null;
-        }
-
-        public class CodeRequest
-        {
-            public enum Type { Success, Failure, NumberInvalid, Migrate }
-
-            public bool Registered { get; set; }
-            public string CodeHash { get; set; }
-            public Type Response { get; set; }
-        }
-
-        public static CodeRequest RequestCode(Service service, string number, string codeHash, TelegramSettings settings, bool call)
-        {
-            try
-            {
-                service.DebugPrint("Requesting code...");
-                var transportConfig = 
-                    new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort);
-                using (var client = new TelegramClient(transportConfig,
-                    new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
-                {
-                    TelegramUtils.RunSynchronously(client.Connect());
-
-                    if (!call)
-                    {
-                        try
-                        {
-                            var result = TelegramUtils.RunSynchronously(client.Methods.AuthSendCodeAsync(new AuthSendCodeArgs
-                            {
-                                PhoneNumber = number,
-                                SmsType = 0,
-                                ApiId = AppInfo.ApiId,
-                                ApiHash = "f8f2562579817ddcec76a8aae4cd86f6",
-                                LangCode = PhoneBook.Language
-                            })) as AuthSentCode;
-                            return new CodeRequest
-                            {
-                                Registered = result.PhoneRegistered,
-                                CodeHash = result.PhoneCodeHash,
-                            };
-                        }
-                        catch (RpcErrorException ex)
-                        {
-                            var error = (RpcError)ex.Error;
-                            var cr = new CodeRequest();
-                            var response = CodeRequest.Type.Failure;
-                            switch (error.ErrorCode)
-                            {
-                                case 400:
-                                    cr.Response = CodeRequest.Type.NumberInvalid;
-                                    break;
-                                default:
-                                    cr.Response = CodeRequest.Type.Failure;
-                                    break;
-                            }
-                            return cr;
-                        }
-                    }
-                    var result2 = (bool)TelegramUtils.RunSynchronously(client.Methods.AuthSendCallAsync(new AuthSendCallArgs
-                    {
-                        PhoneNumber = number,
-                        PhoneCodeHash = codeHash,
-                    }));
-                    return new CodeRequest
-                    {
-                        Response = result2 ? CodeRequest.Type.Success : CodeRequest.Type.Failure
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                service.DebugPrint("Error in CodeRequest: " + ex);
-            }
-            return null;
-        }
-
-        public class CodeRegister
-        {
-            public enum Type { Success, Failure, NumberInvalid, CodeEmpty, CodeExpired, CodeInvalid, FirstNameInvalid, LastNameInvalid }
-
-            public uint AccountId { get; set; }
-
-            public long Expires { get; set; }
-            public Type Response { get; set; }
-        }
-
-        public static CodeRegister RegisterCode(Service service, TelegramSettings settings, string number, string codeHash, string code, string firstName, string lastName, bool signIn)
-        {
-            try
-            {
-                service.DebugPrint("Registering code...");
-                var transportConfig = 
-                    new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort);
-                using (var client = new TelegramClient(transportConfig,
-                    new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
-                {
-                    TelegramUtils.RunSynchronously(client.Connect());
-
-                    try
-                    {
-                        IAuthAuthorization iresult = null;
-                        if (signIn)
-                        {
-                            iresult = TelegramUtils.RunSynchronously(client.Methods.AuthSignInAsync(new AuthSignInArgs
-                                {
-                                    PhoneNumber = number,
-                                    PhoneCodeHash = codeHash,
-                                    PhoneCode = code,
-                                }));
-                        }
-                        else
-                        {
-                            iresult = TelegramUtils.RunSynchronously(client.Methods.AuthSignUpAsync(new AuthSignUpArgs
-                                {
-                                    PhoneNumber = number,
-                                    PhoneCodeHash = codeHash,
-                                    PhoneCode = code,
-                                    FirstName = firstName,
-                                    LastName = lastName,
-                                }));
-                        }
-                        var result = (AuthAuthorization)iresult;
-                        return new CodeRegister
-                        {
-                            AccountId = (result.User as UserSelf).Id,
-                            Expires = result.Expires,
-                            Response = CodeRegister.Type.Success,
-                        };
-                    }
-                    catch (RpcErrorException ex)
-                    {
-                        var error = (RpcError)ex.Error;
-                        var cr = new CodeRegister();
-                        var response = CodeRegister.Type.Failure;
-                        switch (error.ErrorMessage)
-                        {
-                            case "PHONE_NUMBER_INVALID":
-                                cr.Response = CodeRegister.Type.NumberInvalid;
-                                break;
-                            case "PHONE_CODE_EMPTY":
-                                cr.Response = CodeRegister.Type.CodeEmpty;
-                                break;
-                            case "PHONE_CODE_EXPIRED":
-                                cr.Response = CodeRegister.Type.CodeExpired;
-                                break;
-                            case "PHONE_CODE_INVALID":
-                                cr.Response = CodeRegister.Type.CodeInvalid;
-                                break;
-                            case "FIRSTNAME_INVALID":
-                                cr.Response = CodeRegister.Type.FirstNameInvalid;
-                                break;
-                            case "LASTNAME_INVALID":
-                                cr.Response = CodeRegister.Type.LastNameInvalid;
-                                break;
-                            default:
-                                cr.Response = CodeRegister.Type.Failure;
-                                break;
-                        }
-                        return cr;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                service.DebugPrint("Error in CodeRequest: " + ex);
-            }
-            return null;
-        }
-
-        public async void DoCommand(string[] args)
-        {
-            var command = args[0].ToLower();
-
-            switch (command)
-            {
-                case "setup":
-                    {
-                        DebugPrint("Fetching nearest DC...");
-                        var telegramSettings = new TelegramSettings();
-                        var authInfo = await FetchNewAuthentication(DefaultTransportConfig);
-                        using (var client = new TelegramClient(DefaultTransportConfig, 
-                            new ConnectionConfig(authInfo.AuthKey, authInfo.Salt), AppInfo))
-                        {
-                            await client.Connect();
-                            var nearestDcId = (NearestDc)await(client.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
-                            var config = (Config)await(client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
-                            var dcOption = config.DcOptions.OfType<DcOption>().FirstOrDefault(x => x.Id == nearestDcId.NearestDcProperty);
-                            telegramSettings.NearestDcId = nearestDcId.NearestDcProperty;
-                            telegramSettings.NearestDcIp = dcOption.IpAddress;
-                            telegramSettings.NearestDcPort = (int)dcOption.Port;
-                        }
-                        DebugPrint("Generating authentication on nearest DC...");
-                        var authInfo2 = await FetchNewAuthentication(
-                            new TcpClientTransportConfig(telegramSettings.NearestDcIp, telegramSettings.NearestDcPort));
-                        telegramSettings.AuthKey = authInfo2.AuthKey;
-                        telegramSettings.Salt = authInfo2.Salt;
-                        SettingsManager.Save(this, telegramSettings);
-                        DebugPrint("Great! Ready for the service to start.");
-                    }
-                    break;
-                case "sendcode":
-                    {
-                        var number = args[1];
-                        var transportConfig = 
-                            new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
-                        using (var client = new TelegramClient(transportConfig, 
-                                                new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo))
-                        {
-                            await client.Connect();
-                            var result = await client.Methods.AuthSendCodeAsync(new AuthSendCodeArgs
-                                {
-                                    PhoneNumber = number,
-                                    SmsType = 0,
-                                    ApiId = AppInfo.ApiId,
-                                    ApiHash = "f8f2562579817ddcec76a8aae4cd86f6",
-                                    LangCode = PhoneBook.Language
-                                });
-                            DebugPrint(ObjectDumper.Dump(result));
-                        }
-                    }
-                    break;
-                case "signin":
-                    {
-                        var number = args[1];
-                        var hash = args[2];
-                        var code = args[3];
-                        var transportConfig = 
-                            new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
-                        using (var client = new TelegramClient(transportConfig, 
-                                                new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo))
-                        {
-                            await client.Connect();
-                            var result = (AuthAuthorization)await client.Methods.AuthSignInAsync(new AuthSignInArgs
-                            {
-                                PhoneNumber = number,
-                                PhoneCodeHash = hash,
-                                PhoneCode = code,
-                            });
-                            DebugPrint(ObjectDumper.Dump(result));
-                        }
-                    }
-                    break;
-                case "signup":
-                    {
-                        var number = args[1];
-                        var hash = args[2];
-                        var code = args[3];
-                        var firstName = args[4];
-                        var lastName = args[5];
-                        var transportConfig = 
-                            new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
-                        using (var client = new TelegramClient(transportConfig, 
-                            new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo))
-                        {
-                            await client.Connect();
-                            var result = (AuthAuthorization)await client.Methods.AuthSignUpAsync(new AuthSignUpArgs
-                            {
-                                PhoneNumber = number,
-                                PhoneCodeHash = hash,
-                                PhoneCode = code,
-                                FirstName = firstName,
-                                LastName = lastName,
-                            });
-                            DebugPrint(ObjectDumper.Dump(result));
-                        }
-                    }
-                    break;
-                case "getcontacts":
-                    {
-                        var result = await _fullClient.Methods.ContactsGetContactsAsync(new ContactsGetContactsArgs
-                        {
-                            Hash = string.Empty
-                        });
-                        DebugPrint(ObjectDumper.Dump(result));
-                    }
-                    break;
-                case "sendhello":
-                    {
-                        var contacts = (ContactsContacts)await _fullClient.Methods.ContactsGetContactsAsync(new ContactsGetContactsArgs
-                            {
-                                Hash = string.Empty
-                            });
-                        var counter = 0;
-                        Console.WriteLine("Pick a contact:");
-                        foreach (var icontact in contacts.Users)
-                        {
-                            var contact = icontact as UserContact;
-                            if (contact == null)
-                                continue;
-                            Console.WriteLine(counter++ + ") " + contact.FirstName + " " + contact.LastName);
-                        }
-                        var choice = int.Parse(Console.ReadLine());
-                        var chosenContact = (UserContact)contacts.Users[choice];
-                        var result = await _fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
-                            {
-                                Peer = new InputPeerContact
-                                    {
-                                        UserId = chosenContact.Id,
-                                    },
-                                Message = "Hello from Disa!",
-                                RandomId = (ulong)Time.GetNowUnixTimestamp(),
-                            });
-                        Console.WriteLine(ObjectDumper.Dump(result));
-                    }
-                    break;
-            }
-
-        }
-
-        private static async Task<AuthInfo> FetchNewAuthentication(TcpClientTransportConfig config)
-        {
-            var authKeyNegotiater = MTProtoClientBuilder.Default.BuildAuthKeyNegotiator(config);
-            authKeyNegotiater.KeyChain.Add(RSAPublicKey.Get());
-
-            return await authKeyNegotiater.CreateAuthKey();
-        }
-
-        private uint GetNearestDc()
-        {
-            var nearestDc = (NearestDc)TelegramUtils.RunSynchronously(
-                _fullClient.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
-            return nearestDc.NearestDcProperty;
-        }
-
-        private Tuple<string, uint> GetDcIPAndPort(uint id)
-        {
-            var config = (Config)TelegramUtils.RunSynchronously(_fullClient.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
-            var dcOption = config.DcOptions.OfType<DcOption>().FirstOrDefault(x => x.Id == id);
-            return Tuple.Create(dcOption.IpAddress, dcOption.Port);
         }
 
         public override bool Authenticate(WakeLock wakeLock)
@@ -1168,7 +660,7 @@ namespace Disa.Framework.Telegram
             throw new NotImplementedException();
         }
 
-        public override async void SendBubble(Bubble b)
+        public override void SendBubble(Bubble b)
         {
             var presenceBubble = b as PresenceBubble;
             if (presenceBubble != null)
@@ -1187,36 +679,45 @@ namespace Disa.Framework.Telegram
                         }
                     }
                 }
-                TelegramUtils.RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(
-                    new AccountUpdateStatusArgs
+                using (var client = new FullClientDisposable(this))
                 {
-                    Offline = !presenceBubble.Available
-                }));
+                    TelegramUtils.RunSynchronously(client.Client.Methods.AccountUpdateStatusAsync(
+                        new AccountUpdateStatusArgs
+                        {
+                            Offline = !presenceBubble.Available
+                        }));
+                }
             }
 
             var typingBubble = b as TypingBubble;
             if (typingBubble != null)
             {
                 var peer = GetInputPeer(typingBubble.Address, typingBubble.Party);
-                TelegramUtils.RunSynchronously(_fullClient.Methods.MessagesSetTypingAsync(
-                    new MessagesSetTypingArgs
+                using (var client = new FullClientDisposable(this))
                 {
-                    Peer = peer,
-                    Action = typingBubble.IsAudio ? 
+                    TelegramUtils.RunSynchronously(client.Client.Methods.MessagesSetTypingAsync(
+                        new MessagesSetTypingArgs
+                        {
+                            Peer = peer,
+                            Action = typingBubble.IsAudio ? 
                         (ISendMessageAction)new SendMessageRecordAudioAction() : (ISendMessageAction)new SendMessageTypingAction()
-                }));
+                        }));
+                }
             }
 
             var textBubble = b as TextBubble;
             if (textBubble != null)
             {
                 var peer = GetInputPeer(textBubble.Address, textBubble.Party);
-                TelegramUtils.RunSynchronously(_fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
+                using (var client = new FullClientDisposable(this))
+                {
+                    TelegramUtils.RunSynchronously(client.Client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                     {
                         Peer = peer,
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService)
                     }));
+                }
             }
         }
 
@@ -1312,7 +813,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                using (var clientDisposable = new TelegramClientDisposable(this))
+                using (var clientDisposable = new FullClientDisposable(this))
                 {
                     var fullChat = (MessagesChatFull)TelegramUtils.RunSynchronously(clientDisposable.Client.Methods.MessagesGetFullChatAsync(new MessagesGetFullChatArgs
                     {
@@ -1400,7 +901,7 @@ namespace Disa.Framework.Telegram
             }
             try
             {
-                using (var client = new TelegramClientDisposable(this))
+                using (var client = new FullClientDisposable(this))
                 {
                     TelegramUtils.RunSynchronously(client.Client.Methods.ContactsImportContactsAsync(
                         new ContactsImportContactsArgs
@@ -1451,7 +952,7 @@ namespace Disa.Framework.Telegram
                     }
                 }
             }
-            using (var clientDisposable = new TelegramClientDisposable(this))
+            using (var clientDisposable = new FullClientDisposable(this))
             {
                 var inputUsers = users.Select(x => TelegramUtils.CastUserToInputUser(x)).Where(d => d != null).ToList();
                 var updatedUsers = TelegramUtils.RunSynchronously(GetUsers(inputUsers, clientDisposable.Client));
@@ -1471,7 +972,7 @@ namespace Disa.Framework.Telegram
                     var inputUser = TelegramUtils.CastUserToInputUser(user);
                     if (inputUser != null)
                     {
-                        using (var clientDisposable = new TelegramClientDisposable(this))
+                        using (var clientDisposable = new FullClientDisposable(this))
                         {
                             var updatedUser = TelegramUtils.RunSynchronously(GetUser(inputUser, clientDisposable.Client));
                             return TelegramUtils.GetLastSeenTime(updatedUser);
@@ -1597,7 +1098,7 @@ namespace Disa.Framework.Telegram
         {
             if (fileLocation.DcId == _settings.NearestDcId)
             {
-                using (var clientDisposable = new TelegramClientDisposable(this))
+                using (var clientDisposable = new FullClientDisposable(this))
                 {
                     return FetchFileBytes(clientDisposable.Client, fileLocation);
                 }   
@@ -1673,68 +1174,6 @@ namespace Disa.Framework.Telegram
             DebugPrint("Obtained conversations.");
         }
 
-        private class TelegramClientDisposable : IDisposable
-        {
-            private readonly bool _isFullClient;
-            private readonly TelegramClient _client;
-
-            public TelegramClient Client
-            {
-                get
-                {
-                    return _client;
-                }
-            }
-
-            public TelegramClientDisposable(Telegram telegram)
-            {
-                if (telegram.IsFullClientConnected)
-                {
-                    _client = telegram._fullClient;
-                    _isFullClient = true;
-                }
-                else
-                {
-                    var transportConfig = 
-                        new TcpClientTransportConfig(telegram._settings.NearestDcIp, telegram._settings.NearestDcPort);
-                    var client = new TelegramClient(transportConfig, 
-                        new ConnectionConfig(telegram._settings.AuthKey, telegram._settings.Salt), AppInfo);
-                    var result = TelegramUtils.RunSynchronously(client.Connect());
-                    if (result != MTProtoConnectResult.Success)
-                    {
-                        throw new Exception("Failed to connect: " + result);
-                    }
-                    _client = client;
-                    _isFullClient = false;
-                }
-            }
-
-            public void Dispose()
-            {
-                if (!_isFullClient)
-                {
-                    _client.Dispose();
-                }
-            }
-        }
-    }
-
-    public class TelegramSettings : DisaSettings
-    {
-        public byte[] AuthKey { get; set; }
-        public ulong Salt { get; set; }
-        public uint NearestDcId { get; set; }
-        public string NearestDcIp { get; set; }
-        public int NearestDcPort { get; set; }
-        public uint AccountId { get; set; }
-    }
-
-    public class TelegramMutableSettings : DisaMutableSettings
-    {
-        public uint Date { get; set; }
-        public uint Pts { get; set; }
-        public uint Qts { get; set; }
-        public uint Seq { get; set; }
     }
 }
 
