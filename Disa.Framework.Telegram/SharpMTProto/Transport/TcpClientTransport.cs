@@ -230,27 +230,21 @@ namespace SharpMTProto.Transport
 
         private Task StartReceiver(CancellationToken token)
         {
-            
             return Task.Run(async () =>
             {
                 var args = new SocketAsyncEventArgs();
                 args.SetBuffer(_readerBuffer, 0, _readerBuffer.Length);
                 var awaitable = new SocketAwaitable(args);
-
                 while (!token.IsCancellationRequested && _socket.IsConnected())
                 {
                     try
                     {
-                        if (_socket.Available == 0)
-                        {
-                            await Task.Delay(10, token);
-                            continue;
-                        }
                         await _socket.ReceiveAsync(awaitable);
                     }
-                    catch (SocketException e)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine(e);
+                        Console.WriteLine("Error receiving: " + ex);
+                        break;
                     }
                     if (args.SocketError != SocketError.Success)
                     {
