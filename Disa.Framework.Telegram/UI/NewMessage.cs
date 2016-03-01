@@ -109,7 +109,7 @@ namespace Disa.Framework.Telegram
         {
             get
             {
-                return 200;
+                return 1000;
             }
         }
 
