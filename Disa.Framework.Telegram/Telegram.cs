@@ -71,15 +71,15 @@ namespace Disa.Framework.Telegram
         private bool _dialogsInitiallyRetrieved = false;
         private Config _config;
 
-        private Dictionary<uint, Timer> _typingTimers = new Dictionary<uint, Timer>();
+        private Dictionary<string, Timer> _typingTimers = new Dictionary<string, Timer>();
 
         private WakeLockBalancer.GracefulWakeLock _longPollHeartbeart;
 
-        private void CancelTypingTimer(uint userId)
+        private void CancelTypingTimer(string id)
         {
-            if (_typingTimers.ContainsKey(userId))
+            if (_typingTimers.ContainsKey(id))
             {
-                var timer = _typingTimers[userId];
+                var timer = _typingTimers[id];
                 timer.Stop();
                 timer.Dispose();
             }
@@ -166,6 +166,7 @@ namespace Disa.Framework.Telegram
                 var shortMessage = update as UpdateShortMessage;
                 var shortChatMessage = update as UpdateShortChatMessage;
                 var typing = update as UpdateUserTyping;
+                var typingChat = update as UpdateChatUserTyping;
                 var userStatus = update as UpdateUserStatus;
                 var readMessages = update as UpdateReadMessages;
                 var messageService = update as MessageService;
@@ -187,7 +188,6 @@ namespace Disa.Framework.Telegram
                             Bubble.BubbleDirection.Incoming, 
                             fromId, null, false, this, shortMessage.Message,
                             shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
-                        CancelTypingTimer(shortMessage.FromId);
                     }
                     if (shortMessage.Id > maxMessageId)
                     {
@@ -200,6 +200,9 @@ namespace Disa.Framework.Telegram
                     {
                         var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
                         var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
+                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+                            Bubble.BubbleDirection.Incoming,
+                            address, participantAddress, true, this, false, false));
                         EventBubble(new TextBubble(
                             useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortChatMessage.Date, 
                             Bubble.BubbleDirection.Incoming, 
@@ -221,7 +224,7 @@ namespace Disa.Framework.Telegram
                         var peerChat = message.ToId as PeerChat;
 
                         var direction = message.FromId == _settings.AccountId 
-                        ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
+                            ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
 
                         if (peerUser != null)
                         {
@@ -266,29 +269,45 @@ namespace Disa.Framework.Telegram
                         userStatus.UserId.ToString(CultureInfo.InvariantCulture),
                         false, this, available));
                 }
-                else if (typing != null)
+                else if (typing != null || typingChat != null)
                 {
-                    var isAudio = typing.Action is SendMessageRecordAudioAction;
-                    var isTyping = typing.Action is SendMessageTypingAction;
+                    var isAudio = false;
+                    var isTyping = false;
+                    if (typing != null)
+                    {
+                        isAudio = typing.Action is SendMessageRecordAudioAction;
+                        isTyping = typing.Action is SendMessageTypingAction;
+                    }
+                    if (typingChat != null)
+                    {
+                        isAudio = typingChat.Action is SendMessageRecordAudioAction;
+                        isTyping = typingChat.Action is SendMessageTypingAction;
+                    }
+                    var userId = typing != null ? typing.UserId : typingChat.UserId;
+                    var party = typingChat != null;
+                    var participantAddress = party ? userId.ToString(CultureInfo.InvariantCulture) : null;
+                    var address = party ? typingChat.ChatId.ToString(CultureInfo.InvariantCulture) : 
+                        userId.ToString(CultureInfo.InvariantCulture);
+                    var key = address + participantAddress;
 
                     if (isAudio || isTyping)
                     {
                         EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                             Bubble.BubbleDirection.Incoming,
-                            typing.UserId.ToString(CultureInfo.InvariantCulture),
-                            false, this, true, isAudio));
-                        CancelTypingTimer(typing.UserId);
+                            address, participantAddress, party,
+                            this, true, isAudio));
+                        CancelTypingTimer(key);
                         var newTimer = new Timer(6000) { AutoReset = false };
                         newTimer.Elapsed += (sender2, e2) =>
                         {
                             EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                                 Bubble.BubbleDirection.Incoming,
-                                typing.UserId.ToString(CultureInfo.InvariantCulture),
-                                false, this, false, isAudio));
+                                address, participantAddress, party,
+                                this, false, isAudio));
                             newTimer.Dispose();
-                            _typingTimers.Remove(typing.UserId);
+                            _typingTimers.Remove(key);
                         };
-                        _typingTimers[typing.UserId] = newTimer;
+                        _typingTimers[key] = newTimer;
                         newTimer.Start();
                     }
                     else
