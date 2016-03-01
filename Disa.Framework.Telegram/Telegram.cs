@@ -157,6 +157,8 @@ namespace Disa.Framework.Telegram
 
         private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime, TelegramClient optionalClient = null)
         {
+            uint maxMessageId = 0;
+
             foreach (var payload in AdjustUpdates(payloads))
             {
                 var update = NormalizeUpdateIfNeeded(payload);
@@ -187,6 +189,10 @@ namespace Disa.Framework.Telegram
                             shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
                         CancelTypingTimer(shortMessage.FromId);
                     }
+                    if (shortMessage.Id > maxMessageId)
+                    {
+                        maxMessageId = shortMessage.Id;
+                    }
                 }
                 else if (shortChatMessage != null)
                 {
@@ -199,6 +205,10 @@ namespace Disa.Framework.Telegram
                             Bubble.BubbleDirection.Incoming, 
                             address, participantAddress, true, this, shortChatMessage.Message,
                             shortChatMessage.Id.ToString(CultureInfo.InvariantCulture)));
+                    }
+                    if (shortChatMessage.Id > maxMessageId)
+                    {
+                        maxMessageId = shortChatMessage.Id;
                     }
                 }
                 else if (message != null)
@@ -238,6 +248,10 @@ namespace Disa.Framework.Telegram
                         }
 
                         EventBubble(tb);
+                    }
+                    if (message.Id > maxMessageId)
+                    {
+                        maxMessageId = message.Id;
                     }
                 }
                 else if (readMessages != null)
@@ -340,7 +354,7 @@ namespace Disa.Framework.Telegram
                             var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
                             DebugPrint("Updating chat participants: " + address);
                             RemoveFullChat(address);
-                            GetFullChat(address);
+                            GetFullChat(address, optionalClient);
                             BubbleGroupUpdater.Update(this, address);
                         });
                     }
@@ -397,7 +411,65 @@ namespace Disa.Framework.Telegram
                 {
                     Console.WriteLine("Unknown update: " + ObjectDumper.Dump(update));
                 }
-            }            
+            }
+
+            if (maxMessageId != 0)
+            {
+                SendReceivedMessages(optionalClient, maxMessageId);
+            }
+        }
+
+        private class OptionalClientDisposable : IDisposable
+        {
+            private readonly TelegramClient _optionalClient;
+            private readonly FullClientDisposable _fullClient;
+
+            public OptionalClientDisposable(Telegram telegram, TelegramClient optionalClient = null)
+            {
+                _optionalClient = optionalClient;
+                if (_optionalClient == null)
+                {
+                    _fullClient = new FullClientDisposable(telegram);
+                }
+            }
+
+            public TelegramClient Client
+            {
+                get
+                {
+                    if (_optionalClient != null)
+                    {
+                        return _optionalClient;
+                    }
+                    else
+                    {
+                        return _fullClient.Client;
+                    }
+                }
+            }
+
+            public void Dispose()
+            {
+                if (_fullClient != null)
+                {
+                    _fullClient.Dispose();
+                }
+            }
+        }
+
+        private void SendReceivedMessages(TelegramClient optionalClient, uint maxId)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                using (var disposable = new OptionalClientDisposable(this, optionalClient))
+                {
+                    var items = (List<uint>)TelegramUtils.RunSynchronously(disposable.Client.Methods
+                        .MessagesReceivedMessagesAsync(new MessagesReceivedMessagesArgs
+                    {
+                            MaxId = maxId,
+                    }));
+                }
+            });
         }
             
         private void OnLongPollClientClosed(object sender, EventArgs e)
@@ -1241,9 +1313,9 @@ namespace Disa.Framework.Telegram
             _config = config;
         }
  
-        private MessagesChatFull GetFullChat(string address)
+        private MessagesChatFull GetFullChat(string address, TelegramClient optionalClient = null)
         {
-            using (var disposable = new FullClientDisposable(this))
+            using (var disposable = new OptionalClientDisposable(this, optionalClient))
             {
                 return GetFullChat(disposable.Client, address);
             }
