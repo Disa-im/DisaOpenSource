@@ -19,7 +19,8 @@ using System.Timers;
 namespace Disa.Framework.Telegram
 {
     [ServiceInfo("Telegram", true, false, false, false, false, typeof(TelegramSettings), 
-        ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(TypingBubble), typeof(PresenceBubble))]
+        ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(ReadBubble), 
+        typeof(TypingBubble), typeof(PresenceBubble))]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
         private Dictionary<string, DisaThumbnail> _cachedThumbnails = new Dictionary<string, DisaThumbnail>();
@@ -763,8 +764,7 @@ namespace Disa.Framework.Telegram
                         new MessagesSetTypingArgs
                         {
                             Peer = peer,
-                            Action = typingBubble.IsAudio ? 
-                        (ISendMessageAction)new SendMessageRecordAudioAction() : (ISendMessageAction)new SendMessageTypingAction()
+                            Action = typingBubble.IsAudio ? (ISendMessageAction)new SendMessageRecordAudioAction() : (ISendMessageAction)new SendMessageTypingAction()
                         }));
                 }
             }
@@ -775,12 +775,47 @@ namespace Disa.Framework.Telegram
                 var peer = GetInputPeer(textBubble.Address, textBubble.Party);
                 using (var client = new FullClientDisposable(this))
                 {
-                    TelegramUtils.RunSynchronously(client.Client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
+                    var iMessagesSentMessage = TelegramUtils.RunSynchronously(
+                        client.Client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                     {
                         Peer = peer,
                         Message = textBubble.Message,
-                        RandomId = ulong.Parse(textBubble.IdService)
+                        RandomId = ulong.Parse(textBubble.IdService2)
                     }));
+                    var messagesSentMessage = iMessagesSentMessage as MessagesSentMessage;
+                    if (messagesSentMessage != null)
+                    {
+                        SaveState(messagesSentMessage.Date, messagesSentMessage.Pts, 0, messagesSentMessage.Seq);
+                        textBubble.IdService = messagesSentMessage.Id.ToString(CultureInfo.InvariantCulture);
+                    }
+                    var messagesSentMessageLink = iMessagesSentMessage as MessagesSentMessageLink;
+                    if (messagesSentMessageLink != null)
+                    {
+                        SaveState(messagesSentMessageLink.Date, messagesSentMessageLink.Pts, 0, messagesSentMessageLink.Seq);
+                        textBubble.IdService = messagesSentMessageLink.Id.ToString(CultureInfo.InvariantCulture);
+                    }
+                }
+            }
+
+            var readBubble = b as ReadBubble;
+            if (readBubble != null)
+            {
+                var peer = GetInputPeer(readBubble.Address, readBubble.Party);
+                using (var client = new FullClientDisposable(this))
+                {
+                    var messagesAffectedHistory =
+                        TelegramUtils.RunSynchronously(client.Client.Methods.MessagesReadHistoryAsync(
+                        new MessagesReadHistoryArgs
+                    {
+                        Peer = peer,
+                        MaxId = 0,
+                        Offset = 0,
+                        ReadContents = false,
+                    })) as MessagesAffectedHistory;
+                    if (messagesAffectedHistory != null)
+                    {
+                        SaveState(0, messagesAffectedHistory.Pts, 0, messagesAffectedHistory.Seq);
+                    }
                 }
             }
         }
@@ -939,7 +974,7 @@ namespace Disa.Framework.Telegram
 
         public void AddVisualBubbleIdServices(VisualBubble bubble)
         {
-            bubble.IdService = NextMessageId;
+            bubble.IdService2 = NextMessageId;
         }
 
         public bool DisctinctIncomingVisualBubbleIdServices()
