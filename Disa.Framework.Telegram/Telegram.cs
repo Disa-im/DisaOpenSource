@@ -317,11 +317,14 @@ namespace Disa.Framework.Telegram
                     var chatParicipants = updateChatParticipants.Participants as ChatParticipants;
                     if (chatParicipants != null)
                     {
-                        var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
-                        DebugPrint("Updating chat participants: " + address);
-                        RemoveFullChat(address);
-                        GetFullChat(address);
-                        BubbleGroupUpdater.Update(this, address);
+                        Task.Factory.StartNew(() =>
+                        {
+                            var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
+                            DebugPrint("Updating chat participants: " + address);
+                            RemoveFullChat(address);
+                            GetFullChat(address);
+                            BubbleGroupUpdater.Update(this, address);
+                        });
                     }
                 }
                 else if (messageService != null)
