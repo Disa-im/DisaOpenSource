@@ -136,10 +136,27 @@ namespace Disa.Framework.Telegram
 
             return obj;
         }
+            
+        private List<object> AdjustUpdates(List<object> updates)
+        {
+            var precedents = new List<object>();
+            var successors = updates.ToList();
+            foreach (var update in successors.ToList())
+            {
+                var user = update as IUser;
+                var chat = update as IChat;
+                if (user != null || chat != null)
+                {
+                    precedents.Add(update);
+                    successors.Remove(update);
+                }
+            }
+            return precedents.Concat(successors).ToList();
+        }
 
         private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime, TelegramClient optionalClient = null)
         {
-            foreach (var payload in payloads)
+            foreach (var payload in AdjustUpdates(payloads))
             {
                 var update = NormalizeUpdateIfNeeded(payload);
 
