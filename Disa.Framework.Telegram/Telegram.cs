@@ -67,6 +67,7 @@ namespace Disa.Framework.Telegram
         private readonly object _mutableSettingsLock = new object();
 
         private CachedDialogs _dialogs = new CachedDialogs();
+        private bool _dialogsInitiallyRetrieved = false;
         private Config _config;
 
         private Dictionary<uint, Timer> _typingTimers = new Dictionary<uint, Timer>();
@@ -147,6 +148,7 @@ namespace Disa.Framework.Telegram
                 var typing = update as UpdateUserTyping;
                 var userStatus = update as UpdateUserStatus;
                 var readMessages = update as UpdateReadMessages;
+                var updateChatParticipants = update as UpdateChatParticipants;
                 var message = update as SharpTelegram.Schema.Layer18.Message;
                 var user = update as IUser;
                 var chat = update as IChat;
@@ -307,6 +309,17 @@ namespace Disa.Framework.Telegram
                             Console.WriteLine("New chat information: " + chatId + " adding to dialogs!");
                             _dialogs.Chats.Add(chat);
                         }
+                    }
+                }
+                else if (updateChatParticipants != null)
+                {
+                    var chatParicipants = updateChatParticipants.Participants as ChatParticipants;
+                    if (chatParicipants != null)
+                    {
+                        var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
+                        RemoveFullChat(address);
+                        GetFullChat(address);
+                        BubbleGroupUpdater.Update(this, address);
                     }
                 }
                 else
@@ -593,7 +606,11 @@ namespace Disa.Framework.Telegram
                     throw new Exception("Failed to register long poller...");
                 }
                 FetchState(client);
-                GetDialogs(client);
+                if (!_dialogsInitiallyRetrieved)
+                {
+                    GetDialogs(client);
+                    _dialogsInitiallyRetrieved = true;
+                }
                 GetConfig(client);
             }
             DebugPrint("Starting long poller...");
@@ -1109,7 +1126,15 @@ namespace Disa.Framework.Telegram
                 }));
             _config = config;
         }
-            
+ 
+        private MessagesChatFull GetFullChat(string address)
+        {
+            using (var disposable = new FullClientDisposable(this))
+            {
+                return GetFullChat(disposable.Client, address);
+            }
+        }
+
         private MessagesChatFull GetFullChat(TelegramClient client, string address)
         {
             var id = uint.Parse(address);
@@ -1132,6 +1157,29 @@ namespace Disa.Framework.Telegram
             else
             {
                 return FetchAndCacheFullChat(client, _dialogs, address);
+            }
+        }
+
+        private void RemoveFullChat(string address)
+        {
+            var id = uint.Parse(address);
+            foreach (var iChatFull in _dialogs.FullChats)
+            {
+                var chatFull = iChatFull as MessagesChatFull;
+                if (chatFull != null)
+                {
+                    var chatFull2 = chatFull.FullChat as ChatFull;
+                    if (id == chatFull2.Id)
+                    {
+                        _dialogs.FullChats.Remove(iChatFull);
+                        break;
+                    }
+                }
+            }
+            var chatFailure = _dialogs.FullChatFailures.FirstOrDefault(x => address == x);
+            if (chatFailure != null)
+            {
+                _dialogs.FullChatFailures.Remove(chatFailure);
             }
         }
 

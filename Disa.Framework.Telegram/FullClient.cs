@@ -110,7 +110,10 @@ namespace Disa.Framework.Telegram
 
         private void OnFullClientUpdate(object sender, List<object> updates)
         {
-            ProcessIncomingPayload(updates, true);
+            Task.Factory.StartNew(() =>
+            {
+                ProcessIncomingPayload(updates, true);
+            });
         }
 
         private void SetFullClientPingDelayDisconnect()
