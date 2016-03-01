@@ -95,6 +95,40 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
+        public static void SetChatTitle(IChat chat, string title)
+        {
+            var chatForbidden = chat as ChatForbidden;
+            var chatChat = chat as Chat;
+            var geoChat = chat as GeoChat;
+            if (chatForbidden != null)
+            {
+                chatForbidden.Title = title;
+            }
+            if (chatChat != null)
+            {
+                chatChat.Title = title;
+            }
+            if (geoChat != null)
+            {
+                geoChat.Title = title;
+            }
+        }
+
+        public static string GetPeerId(IPeer peer)
+        {
+            var peerChat = peer as PeerChat;
+            var peerUser = peer as PeerUser;
+            if (peerChat != null)
+            {
+                return peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
+            }
+            if (peerUser != null)
+            {
+                return peerUser.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            return null;
+        }
+
         public static string GetChatId(IChat chat)
         {
             var chatEmpty = chat as ChatEmpty;

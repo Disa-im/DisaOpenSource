@@ -148,6 +148,7 @@ namespace Disa.Framework.Telegram
                 var typing = update as UpdateUserTyping;
                 var userStatus = update as UpdateUserStatus;
                 var readMessages = update as UpdateReadMessages;
+                var messageService = update as MessageService;
                 var updateChatParticipants = update as UpdateChatParticipants;
                 var message = update as SharpTelegram.Schema.Layer18.Message;
                 var user = update as IUser;
@@ -317,9 +318,58 @@ namespace Disa.Framework.Telegram
                     if (chatParicipants != null)
                     {
                         var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
+                        DebugPrint("Updating chat participants: " + address);
                         RemoveFullChat(address);
                         GetFullChat(address);
                         BubbleGroupUpdater.Update(this, address);
+                    }
+                }
+                else if (messageService != null)
+                {
+                    var editTitle = messageService.Action as MessageActionChatEditTitle;
+                    var deleteUser = messageService.Action as MessageActionChatDeleteUser;
+                    var addUser = messageService.Action as MessageActionChatAddUser;
+                    var created = messageService.Action as MessageActionChatCreate;
+
+                    var address = TelegramUtils.GetPeerId(messageService.ToId);
+                    var fromId = messageService.FromId.ToString(CultureInfo.InvariantCulture);
+                    if (editTitle != null)
+                    {
+                        var newTitle = editTitle.Title;
+                        for (int i = 0; i < _dialogs.Chats.Count; i++)
+                        {
+                            var chatInnerId = TelegramUtils.GetChatId(_dialogs.Chats[i]);
+                            if (chatInnerId != null && chatInnerId == address)
+                            {
+                                TelegramUtils.SetChatTitle(_dialogs.Chats[i], newTitle);
+                                break;
+                            }
+                        }
+                        EventBubble(PartyInformationBubble.CreateTitleChanged(Time.GetNowUnixTimestamp(), address, 
+                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, newTitle));
+                        BubbleGroupUpdater.Update(this, address);
+                    }
+                    else if (deleteUser != null)
+                    {
+                        var userDeleted = deleteUser.UserId.ToString(CultureInfo.InvariantCulture);
+                        EventBubble(PartyInformationBubble.CreateParticipantRemoved(Time.GetNowUnixTimestamp(), address,
+                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userDeleted));
+                    }
+                    else if (addUser != null)
+                    {
+                        var userAdded = addUser.UserId.ToString(CultureInfo.InvariantCulture);
+                        EventBubble(PartyInformationBubble.CreateParticipantAdded(Time.GetNowUnixTimestamp(), address,
+                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userAdded));
+                    }
+                    else if (created != null)
+                    {
+                        EventBubble(PartyInformationBubble.CreateParticipantAdded(Time.GetNowUnixTimestamp(), address,
+                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
+                            _settings.AccountId.ToString(CultureInfo.InvariantCulture)));
+                    }
+                    else
+                    {
+                        Console.WriteLine("Unknown message service: " + ObjectDumper.Dump(update));
                     }
                 }
                 else
