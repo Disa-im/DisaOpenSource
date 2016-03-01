@@ -888,7 +888,16 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(null);
+                //TODO: this may not actually get title always.
+                var name = GetTitle(unknownPartyParticipant, false);
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    result(new DisaParticipant(name, unknownPartyParticipant));
+                }
+                else
+                {
+                    result(null);
+                }
             });
         }
 
