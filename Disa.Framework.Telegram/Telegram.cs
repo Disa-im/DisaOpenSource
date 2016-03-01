@@ -521,6 +521,15 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        private void SendPresence(TelegramClient client)
+        {
+            TelegramUtils.RunSynchronously(client.Methods.AccountUpdateStatusAsync(
+                new AccountUpdateStatusArgs
+            {
+                Offline = !_hasPresence
+            }));
+        }
+
         private void Ping(TelegramClient client, Action<Exception> exception = null)
         {
             try
@@ -837,11 +846,7 @@ namespace Disa.Framework.Telegram
                 }
                 using (var client = new FullClientDisposable(this))
                 {
-                    TelegramUtils.RunSynchronously(client.Client.Methods.AccountUpdateStatusAsync(
-                        new AccountUpdateStatusArgs
-                        {
-                            Offline = !presenceBubble.Available
-                        }));
+                    SendPresence(client.Client);
                 }
             }
 

@@ -148,6 +148,15 @@ namespace Disa.Framework.Telegram
                 else
                 {
                     Ping(_fullClient);
+                    try
+                    {
+                        SendPresence(_fullClient);
+                    }
+                    catch (Exception ex)
+                    {
+                        Utils.DebugPrint("Failed to send presence in full client ping: " + ex);
+                        // fall-through
+                    }
                 }
             }, WakeLockBalancer.ActionObject.ExecuteType.TaskWithWakeLock), 240, 60, true);
             Platform.ScheduleAction(_fullClientHeartbeat);
