@@ -1210,20 +1210,22 @@ namespace Disa.Framework.Telegram
 
         private DisaThumbnail GetThumbnail(string id, bool group, bool small)
         {
+            var key = id + group + small;
+
             Func<DisaThumbnail, DisaThumbnail> cache = thumbnail =>
             {
                 lock (_cachedThumbnails)
                 {
-                    _cachedThumbnails[id] = thumbnail;
+                    _cachedThumbnails[key] = thumbnail;
                 }
                 return thumbnail;
             };
 
             lock (_cachedThumbnails)
             {
-                if (_cachedThumbnails.ContainsKey(id))
+                if (_cachedThumbnails.ContainsKey(key))
                 {
-                    return _cachedThumbnails[id];
+                    return _cachedThumbnails[key];
                 }
             }
             if (group)
@@ -1240,7 +1242,7 @@ namespace Disa.Framework.Telegram
                         else
                         {
                             var bytes = FetchFileBytes(fileLocation);
-                            return cache(new DisaThumbnail(this, bytes, id));
+                            return cache(new DisaThumbnail(this, bytes, key));
                         }
                     }
                 }
@@ -1257,7 +1259,7 @@ namespace Disa.Framework.Telegram
                     else
                     {
                         var bytes = FetchFileBytes(fileLocation);
-                        return cache(new DisaThumbnail(this, bytes, id));
+                        return cache(new DisaThumbnail(this, bytes, key));
                     }
                 };
                 foreach (var user in _dialogs.Users)
