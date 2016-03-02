@@ -2,6 +2,7 @@
 using SharpTelegram.Schema.Layer18;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Disa.Framework.Telegram
 {
@@ -30,6 +31,21 @@ namespace Disa.Framework.Telegram
             {
                 throw ex.Flatten().InnerException;
             }
+        }
+
+        public static IChat GetChatFromStatedMessage(IMessagesStatedMessage message)
+        {
+            var messagesStatedMessage = message as MessagesStatedMessage;
+            if (messagesStatedMessage != null)
+            {
+                return messagesStatedMessage.Chats.FirstOrDefault();
+            }
+            var messagesStatedMessageLink = message as MessagesStatedMessageLink;
+            if (messagesStatedMessageLink != null)
+            {
+                return messagesStatedMessageLink.Chats.FirstOrDefault();
+            }
+            return null;
         }
 
         public static IInputUser CastUserToInputUser(IUser user)

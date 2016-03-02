@@ -110,6 +110,41 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private void ProcessIncomingPayload(IMessagesStatedMessage message, bool useCurrentTime, 
+            TelegramClient optionalClient = null)
+        {
+            var objs = new List<object>();
+            var messagesStatedMessage = message as MessagesStatedMessage;
+            if (messagesStatedMessage != null)
+            {
+                //objs.Add(messagesStatedMessage.Message); TODO: fix new bubble group multiple created bug
+                objs.AddRange(messagesStatedMessage.Users);
+                objs.AddRange(messagesStatedMessage.Chats);
+            }
+            var messagesStatedMessageLink = message as MessagesStatedMessageLink;
+            if (messagesStatedMessageLink != null)
+            {
+                //objs.Add(messagesStatedMessageLink.Message); TODO: fix new bubble group multiple created bug
+                objs.AddRange(messagesStatedMessageLink.Users);
+                objs.AddRange(messagesStatedMessageLink.Chats);
+            }
+            ProcessIncomingPayload(objs, useCurrentTime, optionalClient);
+        }
+
+        private void SaveState(IMessagesStatedMessage message)
+        {
+            var messagesStatedMessage = message as MessagesStatedMessage;
+            if (messagesStatedMessage != null)
+            {
+                SaveState(0, messagesStatedMessage.Pts, 0, messagesStatedMessage.Seq);
+            }
+            var messagesStatedMessageLink = message as MessagesStatedMessageLink;
+            if (messagesStatedMessageLink != null)
+            {
+                SaveState(0, messagesStatedMessageLink.Pts, 0, messagesStatedMessageLink.Seq);
+            }
+        }
+
         private object NormalizeUpdateIfNeeded(object obj)
         {
             // flatten UpdateNewMessage to Message
@@ -985,6 +1020,19 @@ namespace Disa.Framework.Telegram
             return (await GetUsers(new List<IInputUser> { user }, client)).First();
         }
 
+        private async Task<List<UserContact>> FetchContacts()
+        {
+            using (var client = new FullClientDisposable(this))
+            {
+                var response = (ContactsContacts)await client.Client.Methods.ContactsGetContactsAsync(
+                    new ContactsGetContactsArgs
+                {
+                    Hash = string.Empty
+                });
+                return response.Users.OfType<UserContact>().ToList();
+            }
+        }
+
         public override Task GetBubbleGroupName(BubbleGroup group, Action<string> result)
         {
             return Task.Factory.StartNew(() =>
@@ -1469,7 +1517,6 @@ namespace Disa.Framework.Telegram
             _dialogs = masterDialogs;
             DebugPrint("Obtained conversations.");
         }
-
     }
 }
 

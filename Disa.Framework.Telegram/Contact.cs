@@ -9,5 +9,13 @@ namespace Disa.Framework.Telegram
             
         }
     }
+
+    public class TelegramPartyContact : Disa.Framework.PartyContact
+    {
+        public TelegramPartyContact()
+        {
+            
+        }
+    }
 }
 
