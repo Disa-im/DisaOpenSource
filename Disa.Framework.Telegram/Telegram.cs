@@ -434,25 +434,29 @@ namespace Disa.Framework.Telegram
                                 break;
                             }
                         }
-                        EventBubble(PartyInformationBubble.CreateTitleChanged(Time.GetNowUnixTimestamp(), address, 
+                        EventBubble(PartyInformationBubble.CreateTitleChanged(
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address, 
                             this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, newTitle));
                         BubbleGroupUpdater.Update(this, address);
                     }
                     else if (deleteUser != null)
                     {
                         var userDeleted = deleteUser.UserId.ToString(CultureInfo.InvariantCulture);
-                        EventBubble(PartyInformationBubble.CreateParticipantRemoved(Time.GetNowUnixTimestamp(), address,
+                        EventBubble(PartyInformationBubble.CreateParticipantRemoved(
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                             this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userDeleted));
                     }
                     else if (addUser != null)
                     {
                         var userAdded = addUser.UserId.ToString(CultureInfo.InvariantCulture);
-                        EventBubble(PartyInformationBubble.CreateParticipantAdded(Time.GetNowUnixTimestamp(), address,
+                        EventBubble(PartyInformationBubble.CreateParticipantAdded(
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                             this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userAdded));
                     }
                     else if (created != null)
                     {
-                        EventBubble(PartyInformationBubble.CreateParticipantAdded(Time.GetNowUnixTimestamp(), address,
+                        EventBubble(PartyInformationBubble.CreateParticipantAdded(
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                             this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
                             _settings.AccountId.ToString(CultureInfo.InvariantCulture)));
                     }
