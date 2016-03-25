@@ -181,6 +181,11 @@ namespace Disa.Framework
 
         }
 
+        public static byte[] DeriveHKDFv3Secrets(byte[] inputKeyMaterial, byte[] info, int outputLength)
+        {
+            throw new NotImplementedException();
+        }
+
         public Message EncryptMessage(string address, int deviceId, byte[] data)
         {
             throw new NotImplementedException();
