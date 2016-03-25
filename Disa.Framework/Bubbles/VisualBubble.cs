@@ -24,6 +24,8 @@ namespace Disa.Framework.Bubbles
         public string IdService { get; set; }
         [ProtoMember(254)]
         public string IdService2 { get; set; }
+        [ProtoMember(255)]
+        public byte[] AdditionalData { get; set; }
 
         [NonSerialized]
         public string ID;

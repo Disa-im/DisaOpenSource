@@ -507,9 +507,11 @@ namespace Disa.Framework
             {
                 lock (UpdateLastOnlineQueue)
                 {
+                    Utils.DebugPrint(">>>>>>>>>>>>>> Processing all last online times...");
                     foreach (var updateLastOnlineTuple in 
                         UpdateLastOnlineQueue.Where(x => x.Item1.Service == service).ToList())
                     {
+                        Utils.DebugPrint(">>>>>>>>>>>>>> Processing last online time (from stash) for service: " + service.Information.ServiceName);
                         UpdateLastOnline(updateLastOnlineTuple.Item1, updateLastOnlineTuple.Item2, true);
                         UpdateLastOnlineQueue.Remove(updateLastOnlineTuple);
                     }
@@ -525,6 +527,7 @@ namespace Disa.Framework
             {
                 if (!ServiceManager.IsRunning(service) && !bubbleGroup.IsParty)
                 {
+                    Utils.DebugPrint(">>>>>>>>>>>>>> Stashing UpdateLastOnline for later.");
                     lock (UpdateLastOnlineQueue)
                         UpdateLastOnlineQueue.Add(new Tuple<BubbleGroup, bool>(bubbleGroup, updateUi));
                     return;
@@ -541,6 +544,7 @@ namespace Disa.Framework
 
             try
             {
+                Utils.DebugPrint(">>>>>>>>>>>>>> Calling GetBubbleGroupLastOnline.");
                 service.GetBubbleGroupLastOnline(bubbleGroup, time =>
                 {
                     // reject the last online update if the Presence is currently available
@@ -565,6 +569,8 @@ namespace Disa.Framework
 
         public static void UpdateLastOnlineIfOffline(BubbleGroup group, bool updateUi = true)
         {
+            Utils.DebugPrint(">>>>>>>>>>>>>> UpdateLastOnlineIfOffline called.");
+
             var unifiedGroup = @group as UnifiedBubbleGroup;
             if (unifiedGroup != null)
             {

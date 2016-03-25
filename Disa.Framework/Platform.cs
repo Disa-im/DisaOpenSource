@@ -126,6 +126,11 @@ namespace Disa.Framework
             return PlatformImplementation.GetMimeTypeFromPath(path);
         }
 
+        public static string GetExtensionFromMimeType(string mimeType)
+        {
+            return PlatformImplementation.GetExtensionFromMimeType(mimeType);
+        }
+
         public static byte[] GenerateJpegBytes(byte[] bytes, int toWidth, int toHeight, int quality = 100)
         {
             return PlatformImplementation.GenerateJpegBytes(bytes, toWidth, toHeight, quality);

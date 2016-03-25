@@ -25,6 +25,10 @@ namespace Disa.Framework
 
         public byte[] ParticipantNicknames { get; set; }
 
+        public bool RingtoneDisabled { get; set; }
+
+        public bool VibrateOptionDisabled { get; set; }
+
         [Ignore]
         public DisaParticipantNickname[] ParticipantNicknamesCached { get; set; }
         [Ignore]

@@ -8,7 +8,7 @@ namespace Disa.Framework
 {
     public class LogsManager
     {
-        private static string GetDebugPath()
+        public static string GetDebugPath()
         {
             return !Platform.Ready
                        ? null

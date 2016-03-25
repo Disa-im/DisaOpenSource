@@ -71,13 +71,13 @@ namespace Disa.Framework.Bubbles
 		[NonSerialized]
 		public bool ControlPause = true;
 		[NonSerialized]
-		public int ControlPosition;
+		public long ControlPosition;
 		[NonSerialized]
 		public Action ControlPositionUpdated;
 		[NonSerialized]
 		public Action ControlStopped;
 		[NonSerialized]
-		public int ControlDuration;
+		public long ControlDuration;
 
 
         public AudioBubble(long time, BubbleDirection direction, string address,

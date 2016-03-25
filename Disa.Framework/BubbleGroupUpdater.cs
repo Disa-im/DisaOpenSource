@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Disa.Framework
 {
     public static class BubbleGroupUpdater
     {
-        internal static void UpdateGroupLegibleID(BubbleGroup bubbleGroup, Action finished = null)
+        internal static async void UpdateGroupLegibleID(BubbleGroup bubbleGroup, Action finished = null)
         {
             var service = bubbleGroup.Service;
 
@@ -14,7 +15,7 @@ namespace Disa.Framework
 
             try
             {
-                service.GetBubbleGroupLegibleId(bubbleGroup, legibleID =>
+                await service.GetBubbleGroupLegibleId(bubbleGroup, legibleID =>
                 {
                     bubbleGroup.LegibleId = legibleID;
                     if (finished == null)
@@ -29,8 +30,8 @@ namespace Disa.Framework
             }
             catch (Exception ex)
             {
-                Utils.DebugPrint("Error updating bubble group legible ID: " + service.Information.ServiceName + ": " +
-                                         ex.Message);
+                Utils.DebugPrint("Error updating bubble group legible ID: " + service.Information.ServiceName + 
+                    " - " + bubbleGroup.Address + ": " + ex);
                 if (finished != null)
                 {
                     finished();
@@ -38,7 +39,7 @@ namespace Disa.Framework
             }
         }
 
-        internal static void UpdateName(BubbleGroup bubbleGroup, Action finished = null)
+        internal static async void UpdateName(BubbleGroup bubbleGroup, Action finished = null)
         {
             var service = bubbleGroup.Service;
 
@@ -46,10 +47,18 @@ namespace Disa.Framework
 
             try
             {
-                service.GetBubbleGroupName(bubbleGroup, title =>
+                await service.GetBubbleGroupName(bubbleGroup, title =>
                 {
                     bubbleGroup.IsTitleSetFromService = true;
-                    bubbleGroup.Title = title;
+                    if (string.IsNullOrWhiteSpace(title))
+                    {
+                        Utils.DebugPrint("Update name title is null (rejecting): " + service.Information.ServiceName + 
+                            " - " + bubbleGroup.Address);
+                    }
+                    else
+                    {
+                        bubbleGroup.Title = title;
+                    }
                     if (finished == null)
                     {
                         BubbleGroupEvents.RaiseRefreshed(bubbleGroup);
@@ -63,8 +72,8 @@ namespace Disa.Framework
             }
             catch (Exception ex)
             {
-                Utils.DebugPrint("Error updating bubble group name: " + service.Information.ServiceName + ": " +
-                                         ex.Message);
+                Utils.DebugPrint("Error updating bubble group name: " + service.Information.ServiceName + 
+                    " - " + bubbleGroup.Address + ": " + ex);
                 if (finished != null)
                 {
                     finished();
@@ -72,19 +81,19 @@ namespace Disa.Framework
             }
         }
 
-        public static bool UpdatePhoto(BubbleGroup bubbleGroup, Action<DisaThumbnail> finished)
+        public static async void UpdatePhoto(BubbleGroup bubbleGroup, Action<DisaThumbnail> finished)
         {
             var service = bubbleGroup.Service;
 
             if (!ServiceManager.IsRunning(service))
-                return false;
+                return;
 
             if (bubbleGroup.Service.Information.UsesInternet && !Platform.HasInternetConnection())
-                return false;
+                return;
 
             try
             {
-                service.GetBubbleGroupPhoto(bubbleGroup, photo =>
+                await service.GetBubbleGroupPhoto(bubbleGroup, photo =>
                 {
                     if (photo != null && photo.Failed)
                     {
@@ -117,28 +126,27 @@ namespace Disa.Framework
             }
             catch (Exception ex)
             {
-                Utils.DebugPrint("Error updating bubble group photo: " + 
-                                         service.Information.ServiceName + ": " + ex.Message);
+                Utils.DebugPrint("Error updating bubble group photo: " + service.Information.ServiceName + 
+                    " - " + bubbleGroup.Address + ": " + ex);
                 if (finished != null)
                 {
                     finished(null);
                 }
             }
-
-            return true;
         }
 
-        public static bool UpdateParticipantPhoto(Service service, DisaParticipant participant, Action<DisaThumbnail> finished)
+        public static async void UpdateParticipantPhoto(Service service, DisaParticipant participant, Action<DisaThumbnail> finished)
         {
-            if (!ServiceManager.IsRunning(service)) return false;
+            if (!ServiceManager.IsRunning(service))
+                return;
 
             if (service.Information.UsesInternet && !Platform.HasInternetConnection())
-                return false;
+                return;
 
             var participantClosure = participant;
             try
             {
-                service.GetBubbleGroupPartyParticipantPhoto(participant, result =>
+                await service.GetBubbleGroupPartyParticipantPhoto(participant, result =>
                 {
                     if (result != null && result.Failed)
                     {
@@ -156,18 +164,18 @@ namespace Disa.Framework
             }
             catch (Exception ex)
             {
-                Utils.DebugPrint("Error updating bubble group participant photo: " +
-                                         service.Information.ServiceName + ": " + ex.Message);
+                Utils.DebugPrint("Error updating bubble group participant photo: " + service.Information.ServiceName + 
+                    " - " + participant.Address + ": " + ex);
                 if (finished != null)
                 {
                     finished(null);
                 }
             }
 
-            return true;
+            return;
         }
 
-        internal static void UpdatePartyParticipants(BubbleGroup bubbleGroup, Action finished = null)
+        internal static async void UpdatePartyParticipants(BubbleGroup bubbleGroup, Action finished = null)
         {
             var service = bubbleGroup.Service;
 
@@ -184,7 +192,7 @@ namespace Disa.Framework
 
             try
             {
-                service.GetBubbleGroupPartyParticipants(bubbleGroup, participants =>
+                await service.GetBubbleGroupPartyParticipants(bubbleGroup, participants =>
                 {
                     // we need to propogate the old participant photos to the new participant list
                     var newParticipants = participants == null ? new List<DisaParticipant>() : participants.ToList();
@@ -219,8 +227,8 @@ namespace Disa.Framework
             }
             catch (Exception ex)
             {
-                Utils.DebugPrint("Error updating bubble group participants: " + service.Information.ServiceName + ": " +
-                                         ex.Message);
+                Utils.DebugPrint("Error updating bubble group participants: " + service.Information.ServiceName + 
+                    " - " + bubbleGroup.Address + ": " + ex);
                 if (finished != null)
                 {
                     finished();
@@ -300,7 +308,7 @@ namespace Disa.Framework
             }
         }
 
-        public static bool UpdateUnknownPartyParticipant(BubbleGroup bubbleGroup, string participantAddress, Action onAdded = null)
+        public static async Task<bool> UpdateUnknownPartyParticipant(BubbleGroup bubbleGroup, string participantAddress, Action onAdded = null)
         {
             var service = bubbleGroup.Service;
 
@@ -315,7 +323,7 @@ namespace Disa.Framework
 
             try
             {
-                service.GetBubbleGroupUnknownPartyParticipant(bubbleGroup, participantAddress, participant =>
+                await service.GetBubbleGroupUnknownPartyParticipant(bubbleGroup, participantAddress, participant =>
                 {
                     if (participant != null)
                     {
@@ -341,8 +349,8 @@ namespace Disa.Framework
             }
             catch (Exception ex)
             {
-                Utils.DebugPrint("Error getting unknown bubble group participant: " + service.Information.ServiceName + ": " +
-                                         ex.Message);
+                Utils.DebugPrint("Error getting unknown bubble group participant: " + service.Information.ServiceName + 
+                    " - " + bubbleGroup.Address + ": " + ex);
                 return false;
             }
 

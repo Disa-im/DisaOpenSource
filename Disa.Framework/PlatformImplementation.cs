@@ -51,6 +51,8 @@ namespace Disa.Framework
 
         public abstract string GetMimeTypeFromPath(string path);
 
+        public abstract string GetExtensionFromMimeType(string mimeType);
+
         public abstract byte[] GenerateJpegBytes(byte[] bytes, int toWidth, int toHeight, int quality = 100);
 
         public abstract byte[] GenerateVideoThumbnail(string videoPath);

@@ -353,11 +353,15 @@ namespace Disa.Framework
             }
         }
 
+        public static string GenerateFileName(string extension)
+        {
+            return DateTime.Now.ToString("yyyyMMdd_HHmmssfff") + Spinner++ + extension;
+        }
+
         public static string GenerateDisaMediaLocationUsingExtension(Func<string> basePath, string extension)
         {
             var picturesLocation = basePath();
-            var fileName = DateTime.Now.ToString("yyyyMMdd_HHmmssfff") + Spinner++ + extension;
-
+            var fileName = GenerateFileName(extension);
             return Path.Combine(picturesLocation, fileName);
         }
 

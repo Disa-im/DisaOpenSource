@@ -4,9 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Text;
 
 namespace Disa.Framework
 {
@@ -501,75 +498,6 @@ namespace Disa.Framework
             BubbleGroupUpdater.Update(@group);
 
             return @group;
-        }
-
-        private class BubbleGroupJson
-        {
-            public string Title { get; set; }
-            public DisaThumbnail Photo { get; set; }
-            public DisaParticipant[] Participants { get; set; }
-            public string Guid { get; set; }
-        }
-
-        public static void OutputInJsonFormat(BubbleGroup group, string jsonOutputLocation)
-        {
-            lock (BubbleGroupDatabase.OperationLock)
-            {
-                using (var fs = File.OpenWrite(jsonOutputLocation))
-                {
-                    using (var sw = new StreamWriter(fs))
-                    {
-                        using (var writer = new JsonTextWriter(sw))
-                        {
-                            sw.Write("var json_bubblegroup = '");
-                            writer.WriteStartObject();
-                            writer.WritePropertyName("bubblegroup");
-                            var bubbleGroupJson = new BubbleGroupJson
-                            {
-                                Title = group.Title,
-                                Photo = group.Photo,
-                                Participants = group.Participants.ToArray(),
-                                Guid = group.ID,
-                            };
-                            var jobject = JObject.FromObject(bubbleGroupJson);
-                            writer.WriteValue(Convert.ToBase64String(Encoding.UTF8.GetBytes(jobject.ToString(Formatting.None))));
-                            writer.WriteEndObject();
-                            sw.Write("';");
-                        }
-                    }
-                }
-            }
-        }
-
-        public static void OutputBubblesInJsonFormat(string bubbleGroupLocation, string jsonOutputLocation, 
-            int count = int.MaxValue, bool skipDeleted = true)
-        {
-            lock (BubbleGroupDatabase.OperationLock)
-            {
-                using (var fs = File.OpenWrite(jsonOutputLocation))
-                {
-                    using (var sw = new StreamWriter(fs))
-                    {
-                        using (var writer = new JsonTextWriter(sw))
-                        {
-                            sw.Write("var json_bubbles = '");
-                            writer.WriteStartArray();
-                            foreach (var bubble in BubbleGroupDatabase.FetchBubbles(bubbleGroupLocation, null, count, skipDeleted))
-                            {
-                                var jobject = JObject.FromObject(bubble);
-                                jobject.Add("ID", bubble.ID);
-                                jobject.Add("Type", bubble.GetType().Name);
-                                writer.WriteStartObject();
-                                writer.WritePropertyName("bubble");
-                                writer.WriteValue(Convert.ToBase64String(Encoding.UTF8.GetBytes(jobject.ToString(Formatting.None))));
-                                writer.WriteEndObject();
-                            }
-                            writer.WriteEndArray();
-                            sw.Write("';");
-                        }
-                    }
-                }
-            }
         }
     }
 }

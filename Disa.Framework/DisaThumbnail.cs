@@ -24,7 +24,7 @@ namespace Disa.Framework
         {
             _name = name;
             _location = Path.Combine(GetThumbnailCachePath(),
-                service.Information.ServiceName + "^" + Convert.ToBase64String(Encoding.UTF8.GetBytes(name)) + ".cache");
+                service.Information.ServiceName + "^" + Convert.ToBase64String(Encoding.UTF8.GetBytes(name)).Replace("/", "_") + ".cache");
             try
             {
                 File.WriteAllBytes(_location, bytes);

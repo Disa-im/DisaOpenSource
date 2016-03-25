@@ -299,7 +299,7 @@ namespace Disa.Framework
             Send(subcribeBubble);
         }
 
-        public static void SendPresence(Service service, bool available, bool justAdd = false)
+        public static void SendPresence(Service service, bool available, bool justAddIfNoLastPresence = false)
         {
             if (!service.Information.DoesSupport(typeof(PresenceBubble)))
                 return;
@@ -314,14 +314,37 @@ namespace Disa.Framework
                                      presenceBubble.Service.Information.ServiceName);
             lock (LastPresenceBubbles)
             {
-                LastPresenceBubbles.RemoveAll(pb => pb.Service == presenceBubble.Service);
-                LastPresenceBubbles.Add(presenceBubble);
+                Action a = () =>
+                {
+                    LastPresenceBubbles.RemoveAll(pb => pb.Service == presenceBubble.Service);
+                    LastPresenceBubbles.Add(presenceBubble);
+                };
+                if (!justAddIfNoLastPresence)
+                {
+                    a();
+                }
+                else
+                {
+                    var hasPresence = LastPresenceBubbles.Any(x => x.Service == presenceBubble.Service);
+                    if (hasPresence)
+                    {
+                        // do-nothing
+                    }
+                    else
+                    {
+                        a();
+                    }
+                }
             }
 
-            if (!justAdd && ServiceManager.IsRunning(service))
+            if (!justAddIfNoLastPresence && ServiceManager.IsRunning(service))
                 Send(presenceBubble);
 
-            if (available) return;
+            if (justAddIfNoLastPresence)
+                return;
+            
+            if (available) 
+                return;
             foreach (var group in BubbleGroupManager.FindAll(service))
             {
                 @group.PresenceType = PresenceBubble.PresenceType.Unavailable;
@@ -340,11 +363,17 @@ namespace Disa.Framework
                 {
                     return;
                 }
-                LastPresenceBubbles.Remove(presenceBubble);
 
                 Utils.DebugPrint("Sending last presence for service " + service.Information.ServiceName + ". " +
                                          (presenceBubble.Available ? "Available." : "Unavailable."));
                 Send(presenceBubble);
+
+                if (presenceBubble.Available) 
+                    return;
+                foreach (var group in BubbleGroupManager.FindAll(presenceBubble.Service))
+                {
+                    @group.PresenceType = PresenceBubble.PresenceType.Unavailable;
+                }
             }
         }
 

@@ -55,9 +55,14 @@ namespace Disa.Framework
 							return serializer.Deserialize(sr) as DisaMutableSettings;
 						}
 					}
+                    catch (IOException ex)
+                    {
+                        Utils.DebugPrint("Failed to load mutable settings " + name + ". " + ex);
+                        throw;
+                    }
 					catch (Exception ex)
 					{
-						Utils.DebugPrint("Failed to load mutable settings (nuking) " + name + " " + ex);
+						Utils.DebugPrint("Failed to load mutable settings (nuking) " + name + ". " + ex);
                         File.Delete(path);
 					}
 				}

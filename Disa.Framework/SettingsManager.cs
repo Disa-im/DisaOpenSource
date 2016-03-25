@@ -94,10 +94,15 @@ namespace Disa.Framework
                     return loadedObj;
                 }
             }
+            catch (IOException ex)
+            {
+                Utils.DebugPrint("Failed (exception) to load settings for " + ds.Information.ServiceName + ". " + ex);
+                return null;
+            }
             catch (Exception ex)
             {
                 Utils.DebugPrint("Failed (exception) to load settings for "
-                + ds.Information.ServiceName + ". Nuking!");
+                    + ds.Information.ServiceName + " (nuking). " + ex);
                 File.Delete(path);
                 return null;
             }

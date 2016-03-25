@@ -94,6 +94,8 @@ namespace Disa.Framework
                             VibrateOption = null,
                             VibrateOptionCustomPattern = null,
                             Ringtone = null,
+                            RingtoneDisabled = false,
+                            VibrateOptionDisabled = false,
                         };
                         db.Add(settings);
                         group.Settings = settings;
@@ -145,6 +147,20 @@ namespace Disa.Framework
             Update(group.Settings);
         }
 
+        public static void SetVibrateOptionDisabled(BubbleGroup group, bool disabled)
+        {
+            InsertDefaultIfNull(group);
+            group.Settings.VibrateOptionDisabled = disabled;
+            Update(group.Settings);
+        }
+
+        public static void SetRingtoneDisabled(BubbleGroup group, bool disabled)
+        {
+            InsertDefaultIfNull(group);
+            group.Settings.RingtoneDisabled = disabled;
+            Update(group.Settings);
+        }
+
         public static void SetVibrateOptionCustomPattern(BubbleGroup group, string vibrateOptionCustomPattern)
         {
             InsertDefaultIfNull(group);
@@ -163,6 +179,18 @@ namespace Disa.Framework
         {
             InsertDefaultIfNull(group);
             return group.Settings.Mute;
+        }
+
+        public static bool GetRingtoneDisabled(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            return group.Settings.RingtoneDisabled;
+        }
+
+        public static bool GetVibrateOptionDisabled(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            return group.Settings.VibrateOptionDisabled;
         }
 
         public static int GetNotificationLed(BubbleGroup group)
