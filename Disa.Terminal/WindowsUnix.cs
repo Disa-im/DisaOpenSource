@@ -10,6 +10,11 @@ namespace Disa.Terminal
 {
     public class WindowsUnix : PlatformImplementation
     {
+        public override string GetExtensionFromMimeType(string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
         public override bool ShouldAttemptInternetConnection()
         {
             return true;
