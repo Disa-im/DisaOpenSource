@@ -16,6 +16,16 @@ namespace Disa.Framework
             }
         }
 
+        public static void MarkTemporaryFileForDeletion(string path)
+        {
+            PlatformImplementation.MarkTemporaryFileForDeletion(path);
+        }
+
+        public static void UnmarkTemporaryFileForDeletion(string path, bool purge)
+        {
+            PlatformImplementation.UnmarkTemporaryFileForDeletion(path, purge);
+        }
+
         public static byte[] GetIcon(IconType iconType)
         {
             return PlatformImplementation.GetIcon(iconType);

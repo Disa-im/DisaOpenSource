@@ -7,6 +7,10 @@ namespace Disa.Framework
 {
     public abstract class PlatformImplementation
     {
+        public abstract void MarkTemporaryFileForDeletion(string path);
+
+        public abstract void UnmarkTemporaryFileForDeletion(string path, bool purge);
+
         public abstract byte[] GetIcon(IconType iconType);
 
         public abstract string GetCurrentLocale();

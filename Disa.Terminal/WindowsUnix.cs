@@ -10,6 +10,16 @@ namespace Disa.Terminal
 {
     public class WindowsUnix : PlatformImplementation
     {
+        public override void MarkTemporaryFileForDeletion(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void UnmarkTemporaryFileForDeletion(string path, bool purge)
+        {
+            throw new NotImplementedException();
+        }
+
         public override string GetExtensionFromMimeType(string mimeType)
         {
             throw new NotImplementedException();
