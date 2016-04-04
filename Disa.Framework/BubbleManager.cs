@@ -422,6 +422,19 @@ namespace Disa.Framework
             return false;
         }
 
+        public static void UpdateStatus(VisualBubble[] bubbles, Bubble.BubbleStatus status, BubbleGroup group, 
+            bool updateBubbleGroupBubbles = true)
+        {
+            foreach (var bubble in bubbles)
+            {
+                bubble.Status = status;
+            }
+            BubbleGroupDatabase.UpdateBubble(@group, bubbles);
+            if (updateBubbleGroupBubbles)
+                BubbleGroupEvents.RaiseBubblesUpdated(@group);
+            BubbleGroupEvents.RaiseRefreshed(@group);
+        }
+
         public static void UpdateStatus(VisualBubble b, Bubble.BubbleStatus status, BubbleGroup group, 
             bool updateBubbleGroupBubbles = true)
         {
@@ -458,6 +471,12 @@ namespace Disa.Framework
         public static bool UpdateStatus(Service service, string bubbleGroupAddress,
             string bubbleId, Bubble.BubbleStatus status)
         {
+            return UpdateStatus(service, bubbleGroupAddress, bubbleId, status, null);
+        }
+
+        public static bool UpdateStatus(Service service, string bubbleGroupAddress,
+            string bubbleId, Bubble.BubbleStatus status, Action<VisualBubble> additional)
+        {
             var group = BubbleGroupManager.FindWithAddress(service, bubbleGroupAddress);
             if (group == null)
             {
@@ -468,6 +487,10 @@ namespace Disa.Framework
             {
                 if (bubble.ID == bubbleId)
                 {
+                    if (additional != null)
+                    {
+                        additional(bubble);
+                    }
                     UpdateStatus(bubble, status, @group);
                     return true;
                 }
