@@ -371,6 +371,32 @@ namespace Disa.Framework
             Update(selectedGroup);
         }
 
+        public static void UpdatePartyParticipants(Service service, 
+            string bubbleGroupAddress, Action<bool> finished = null)
+        {
+            var bubbleGroup =
+                BubbleGroupManager.FindWithAddress(service, bubbleGroupAddress);
+            if (bubbleGroup == null)
+            {
+                finished(false);
+            }
+            UpdatePartyParticipants(bubbleGroup, () =>
+            {
+                try
+                {
+                    BubbleGroupEvents.RaiseBubblesUpdated(bubbleGroup);
+                }
+                catch
+                {
+                    // do nothing
+                }
+                if (finished != null)
+                {
+                    finished(true);
+                }
+            });
+        }
+
         public static void UpdateParties(Service service, string participantAddress)
         {
             Utils.DebugPrint("Updating bubble group parties that contain participant address: " + participantAddress);

@@ -191,7 +191,17 @@ namespace Disa.Framework
             throw new NotImplementedException();
         }
 
+        public Message EncryptSenderKeyMessage(string groupId, string address, int deviceId, byte[] data)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool HasSession(string address, int deviceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<Tuple<string, int>> HasSessions(List<Tuple<string, int>> addresses)
         {
             throw new NotImplementedException();
         }
@@ -202,6 +212,11 @@ namespace Disa.Framework
         }
 
         public void ProcessSenderKey(string groupId, string address, int deviceId, byte[] senderKeyDistributionMessage)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] CreateSenderKey(string groupId, string address, int deviceId)
         {
             throw new NotImplementedException();
         }
