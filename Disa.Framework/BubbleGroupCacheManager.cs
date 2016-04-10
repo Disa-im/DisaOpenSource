@@ -104,25 +104,28 @@ namespace Disa.Framework
 
                 try
                 {
-                    using (var fs = File.OpenRead(location))
+                    if (File.Exists(location))
                     {
-                        var items = Serializer.Deserialize<List<BubbleGroupCache>>(fs);
-
-                        foreach (var item in items)
+                        using (var fs = File.OpenRead(location))
                         {
-                            var associatedGroup = BubbleGroupManager.Find(item.Guid);
+                            var items = Serializer.Deserialize<List<BubbleGroupCache>>(fs);
 
-                            if (associatedGroup == null)
+                            foreach (var item in items)
                             {
-                                continue;
-                            }
+                                var associatedGroup = BubbleGroupManager.Find(item.Guid);
 
-                            var unifiedGroup = associatedGroup as UnifiedBubbleGroup;
-                            if (unifiedGroup != null)
-                            {
-                                associatedGroup = unifiedGroup.PrimaryGroup;
+                                if (associatedGroup == null)
+                                {
+                                    continue;
+                                }
+
+                                var unifiedGroup = associatedGroup as UnifiedBubbleGroup;
+                                if (unifiedGroup != null)
+                                {
+                                    associatedGroup = unifiedGroup.PrimaryGroup;
+                                }
+                                Bind(associatedGroup, item);
                             }
-                            Bind(associatedGroup, item);
                         }
                     }
                 }
