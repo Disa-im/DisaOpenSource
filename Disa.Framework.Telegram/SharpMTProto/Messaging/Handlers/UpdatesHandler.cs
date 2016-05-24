@@ -5,9 +5,9 @@ using System;
 using SharpTL;
 using System.IO;
 using System.IO.Compression;
-using SharpTelegram.Schema.Layer18;
 using System.Collections.Generic;
 using Disa.Framework.Telegram;
+using SharpTelegram.Schema;
 
 namespace SharpMTProto.Messaging.Handlers
 {
@@ -68,6 +68,7 @@ namespace SharpMTProto.Messaging.Handlers
             var updateShort = body as UpdateShort;
             var updatesCombined = body as UpdatesCombined;
             var updates = body as Updates;
+            var updateShortSentMessage = body as UpdateShortSentMessage;
 
             if (updatesTooLong != null)
             {
@@ -86,14 +87,12 @@ namespace SharpMTProto.Messaging.Handlers
             {
                 state.Date = updateShortMessage.Date;
                 state.Pts = updateShortMessage.Pts;
-                state.Seq = updateShortMessage.Seq;
                 updateList.Add(updateShortMessage);
             }
             else if (updateShortChatMessage != null)
             {
                 state.Date = updateShortChatMessage.Date;
                 state.Pts = updateShortChatMessage.Pts;
-                state.Seq = updateShortChatMessage.Seq;
                 updateList.Add(updateShortChatMessage);
             }
             else if (updatesCombined != null)
@@ -112,36 +111,41 @@ namespace SharpMTProto.Messaging.Handlers
                 updateList.AddRange(updates.Users);
                 updateList.AddRange(updates.Chats);
             }
-
-            foreach (var update in updateList)
+            else if (updateShortSentMessage != null)
             {
-                var newMessage = update as UpdateNewMessage;
-                var readMessages = update as UpdateReadMessages;
-                var deleteMessages = update as UpdateDeleteMessages;
-                var restoreMessages = update as UpdateRestoreMessages;
-                var encryptedMessages = update as UpdateNewEncryptedMessage;
-
-                if (newMessage != null)
-                {
-                    state.Pts = newMessage.Pts;
-                }
-                else if (readMessages != null)
-                {
-                    state.Pts = readMessages.Pts;
-                }
-                else if (deleteMessages != null)
-                {
-                    state.Pts = deleteMessages.Pts;
-                }
-                else if (restoreMessages != null)
-                {
-                    state.Pts = restoreMessages.Pts;
-                }
-                else if (encryptedMessages != null)
-                {
-                    state.Qts = encryptedMessages.Qts;
-                }
+                state.Date = updateShortSentMessage.Date;
+                state.Pts = updateShortSentMessage.Pts;
             }
+
+//            foreach (var update in updateList)
+//            {
+//                var newMessage = update as UpdateNewMessage;
+//                var readMessages = update as UpdateReadMessages;
+//                var deleteMessages = update as UpdateDeleteMessages;
+//                var restoreMessages = update as UpdateRestoreMessages;
+//                var encryptedMessages = update as UpdateNewEncryptedMessage;
+//
+//                if (newMessage != null)
+//                {
+//                    state.Pts = newMessage.Pts;
+//                }
+//                else if (readMessages != null)
+//                {
+//                    state.Pts = readMessages.Pts;
+//                }
+//                else if (deleteMessages != null)
+//                {
+//                    state.Pts = deleteMessages.Pts;
+//                }
+//                else if (restoreMessages != null)
+//                {
+//                    state.Pts = restoreMessages.Pts;
+//                }
+//                else if (encryptedMessages != null)
+//                {
+//                    state.Qts = encryptedMessages.Qts;
+//                }
+//            }
 
             RaiseOnUpdateState(state);
 

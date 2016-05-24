@@ -35,7 +35,7 @@ namespace SharpMTProto.Messaging.Handlers
                         using (var streamer = new TLStreamer(uncompressed))
                         {
                             var newResult = _tlRig.Deserialize(streamer);
-                            if (newResult is SharpTelegram.Schema.Layer18.IUpdates)
+                            if (newResult is SharpTelegram.Schema.IUpdates)
                             {
                                 return _handler.HandleAsync(new Message { Body = newResult });
                             }

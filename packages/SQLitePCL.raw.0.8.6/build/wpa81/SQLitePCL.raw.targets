@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Automatically generated-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Condition=" '$(Platform.Trim().Substring(0,3).ToLower())' != 'any' ">
+    <SDKReference Include="Microsoft.VCLibs, Version=12.0" />
+  </ItemGroup>
+  <Target Name="InjectReference_5e775ef5-3705-45d3-b875-fcfb2318bc14" BeforeTargets="ResolveAssemblyReferences" Condition=" '$(UseSQLiteFrom.ToLower())' != 'elsewhere' ">
+    <ItemGroup Condition=" '$(Platform.ToLower())' == 'arm' ">
+      <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\v120_wp81\arm\sqlite3.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+    <ItemGroup Condition=" '$(Platform.ToLower())' == 'x86' ">
+      <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\v120_wp81\x86\sqlite3.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
+</Project>

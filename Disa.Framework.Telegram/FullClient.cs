@@ -2,9 +2,8 @@
 using SharpTelegram;
 using SharpMTProto.Transport;
 using SharpMTProto;
-using SharpMTProto.Schema;
 using System.Threading.Tasks;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Collections.Generic;
 
 namespace Disa.Framework.Telegram

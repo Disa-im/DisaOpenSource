@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Automatically generated-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="InjectReference_039d527e-1fa2-4945-ba51-3a474212a69d" BeforeTargets="ResolveAssemblyReferences" Condition=" '$(UseSQLiteFrom.ToLower())' != 'elsewhere' ">
+    <ItemGroup Condition=" '$(Platform.ToLower())' == 'arm' ">
+      <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\v140\arm\sqlite3.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+    <ItemGroup Condition=" '$(Platform.ToLower())' == 'x64' ">
+      <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\v140\x64\sqlite3.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+    <ItemGroup Condition=" '$(Platform.ToLower())' == 'x86' ">
+      <Content Include="$(MSBuildThisFileDirectory)..\..\build\native\sqlite3_dynamic\v140\x86\sqlite3.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
+</Project>

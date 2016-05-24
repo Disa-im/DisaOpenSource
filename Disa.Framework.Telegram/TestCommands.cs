@@ -1,9 +1,11 @@
 ﻿using System;
 using SharpTelegram;
 using SharpMTProto;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Linq;
 using SharpMTProto.Transport;
+using SharpTL;
+using SharpMTProto.Schema;
 
 namespace Disa.Framework.Telegram
 {
@@ -15,6 +17,24 @@ namespace Disa.Framework.Telegram
 
             switch (command)
             {
+                case "decrypt":
+                    {
+                        try
+                        {
+                            var bytes = Convert.FromBase64String("+MW7Btpz31b0gt9WN5d5vAEAAAAVxLUcCwAAAMzG2AUAAAAAAQAAAA4xNDkuMTU0LjE3NS41MAC7AQAAzMbYBQEAAAABAAAAJzIwMDE6MGIyODpmMjNkOmYwMDE6MDAwMDowMDAwOjAwMDA6MDAwYbsBAADMxtgFAAAAAAIAAAAOMTQ5LjE1NC4xNjcuNTEAuwEAAMzG2AUBAAAAAgAAACcyMDAxOjA2N2M6MDRlODpmMDAyOjAwMDA6MDAwMDowMDAwOjAwMGG7AQAAzMbYBQAAAAADAAAADzE0OS4xNTQuMTc1LjEwMLsBAADMxtgFAQAAAAMAAAAnMjAwMTowYjI4OmYyM2Q6ZjAwMzowMDAwOjAwMDA6MDAwMDowMDBhuwEAAMzG2AUAAAAABAAAAA4xNDkuMTU0LjE2Ny45MQC7AQAAzMbYBQEAAAAEAAAAJzIwMDE6MDY3YzowNGU4OmYwMDQ6MDAwMDowMDAwOjAwMDA6MDAwYbsBAADMxtgFAgAAAAQAAAAPMTQ5LjE1NC4xNjUuMTIwuwEAAMzG2AUAAAAABQAAAA05MS4xMDguNTYuMTgwAAC7AQAAzMbYBQEAAAAFAAAAJzIwMDE6MGIyODpmMjNmOmYwMDU6MDAwMDowMDAwOjAwMDA6MDAwYbsBAADIAAAA6AMAAGQAAADA1AEAiBMAADB1AADgkwQAMHUAANwFAAAKAAAAYOoAAAIAAADIAAAAFcS1HAAAAAA=");
+                            TLRig.Default.PrepareSerializersForAllTLObjectsInAssembly(typeof (IMTProtoAsyncMethods).Assembly);
+                            using (var streamer = new TLStreamer(bytes))
+                            {
+                                var newResult = TLRig.Default.Deserialize(streamer);
+                                int hi = 5;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
+                    }
+                    break;
                 case "setup":
                     {
                         DebugPrint("Fetching nearest DC...");
@@ -124,18 +144,18 @@ namespace Disa.Framework.Telegram
                         });
                         var counter = 0;
                         Console.WriteLine("Pick a contact:");
-                        foreach (var icontact in contacts.Users)
+                        foreach (var iUser in contacts.Users)
                         {
-                            var contact = icontact as UserContact;
-                            if (contact == null)
+                            var user = iUser as User;
+                            if (user == null)
                                 continue;
-                            Console.WriteLine(counter++ + ") " + contact.FirstName + " " + contact.LastName);
+                            Console.WriteLine(counter++ + ") " + user.FirstName + " " + user.LastName);
                         }
                         var choice = int.Parse(Console.ReadLine());
-                        var chosenContact = (UserContact)contacts.Users[choice];
+                        var chosenContact = (User)contacts.Users[choice];
                         var result = await _fullClient.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                         {
-                            Peer = new InputPeerContact
+                            Peer = new InputPeerUser
                             {
                                 UserId = chosenContact.Id,
                             },

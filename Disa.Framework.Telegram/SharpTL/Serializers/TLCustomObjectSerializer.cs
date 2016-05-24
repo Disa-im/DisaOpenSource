@@ -53,6 +53,7 @@ namespace SharpTL.Serializers
             object obj = Activator.CreateInstance(_objectType);
             for (int i = 0; i < _serializationAgents.Length; i++)
             {
+                Console.WriteLine(i);
                 ITLPropertySerializationAgent agent = _serializationAgents[i];
                 agent.Read(obj, context);
             }

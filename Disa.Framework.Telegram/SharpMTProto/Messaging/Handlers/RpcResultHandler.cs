@@ -57,6 +57,7 @@ namespace SharpMTProto.Messaging.Handlers
                         {
                             gzip.CopyTo(uncompressedStream);
                             var uncompressed = uncompressedStream.ToArray();
+                            Console.WriteLine(Convert.ToBase64String(uncompressed));
                             using (var streamer = new TLStreamer(uncompressed))
                             {
                                 var newResult = _tlRig.Deserialize(streamer);

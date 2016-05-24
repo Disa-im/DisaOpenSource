@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using SharpTelegram.Schema.Layer18;
 using System.Linq;
 using System.Globalization;
+using SharpTelegram.Schema;
 
 namespace Disa.Framework.Telegram
 {
@@ -206,10 +206,10 @@ namespace Disa.Framework.Telegram
                                 Users = inputUsers,
                                 Title = subject,
                             });
-                            ProcessIncomingPayload(response, true);
-                            SaveState(response);
-                            var chat = TelegramUtils.GetChatFromStatedMessage(response);
-                            result(true, TelegramUtils.GetChatId(chat));
+                            //ProcessIncomingPayload(response, true);
+                            //SaveState(response);
+                            //var chat = TelegramUtils.GetChatFromStatedMessage(response);
+                            //result(true, TelegramUtils.GetChatId(chat));
                         }
                     }
                     else
@@ -274,7 +274,7 @@ namespace Disa.Framework.Telegram
         {
             get
             {
-                return 1000;
+                return MaxParticipants;
             }
         }
 

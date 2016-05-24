@@ -1,7 +1,7 @@
 ﻿using System;
 using SharpTelegram;
 using SharpMTProto;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using SharpMTProto.Transport;
 using SharpMTProto.Schema;
 using System.Threading.Tasks;
@@ -167,8 +167,8 @@ namespace Disa.Framework.Telegram
                         var result = (AuthAuthorization)iresult;
                         return new CodeRegister
                         {
-                            AccountId = (result.User as UserSelf).Id,
-                            Expires = result.Expires,
+                            AccountId = (result.User as User).Id,
+                            //Expires = result.Expires,
                             Response = CodeRegister.Type.Success,
                         };
                     }

@@ -302,6 +302,7 @@ namespace SharpTL
         /// </summary>
         /// <param name="streamer">TL streamer for reading.</param>
         /// <returns>Deserialized object.</returns>
+
         public object Deserialize(TLStreamer streamer)
         {
             return Deserialize(new TLSerializationContext(this, streamer));

@@ -28,6 +28,7 @@ namespace SharpTL.Serializers
             get { return _ConstructorNumbers; }
         }
 
+
         public void Write(object obj, TLSerializationContext context, TLSerializationMode? modeOverride = null)
         {
             var value = (bool) obj;

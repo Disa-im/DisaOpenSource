@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using SharpMTProto;
 using SharpMTProto.Transport;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using SharpMTProto.Schema;
 using System.Collections.Generic;
 
@@ -22,7 +22,7 @@ namespace SharpTelegram
         private Config _config;
         private IMTProtoClientConnection _connection;
         private bool _isDisposed;
-        private ITelegramAsyncMethods _methods;
+        private ITLSchemaAsyncMethods _methods;
 
         public TelegramClient(IClientTransportConfig transportConfig,
             ConnectionConfig connectionConfig,
@@ -38,7 +38,7 @@ namespace SharpTelegram
             _appInfo = appInfo;
             _connection = builder.BuildConnection(_transportConfig);
             _connection.Configure(connectionConfig);
-            _methods = new TelegramAsyncMethods(_connection);
+            _methods = new TLSchemaAsyncMethods(_connection);
         }
 
         public MTProtoConnectionState State
@@ -46,7 +46,7 @@ namespace SharpTelegram
             get { return _connection.State; }
         }
 
-        public ITelegramAsyncMethods Methods
+        public ITLSchemaAsyncMethods Methods
         {
             get { return _methods; }
         }
@@ -144,8 +144,9 @@ namespace SharpTelegram
         {
             _config =
                 await
-                    _methods.InvokeWithLayer18Async(new InvokeWithLayer18Args
+                _methods.InvokeWithLayerAsync(new InvokeWithLayerArgs
                     {
+                        Layer = 45,
                         Query =
                             new InitConnectionArgs
                             {

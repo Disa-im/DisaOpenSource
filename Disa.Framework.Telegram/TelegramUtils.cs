@@ -1,5 +1,5 @@
 ﻿using System;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Linq;
@@ -33,27 +33,10 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        public static IChat GetChatFromStatedMessage(IMessagesStatedMessage message)
+        public static IInputUser CastUserToInputUser(IUser iUser)
         {
-            var messagesStatedMessage = message as MessagesStatedMessage;
-            if (messagesStatedMessage != null)
-            {
-                return messagesStatedMessage.Chats.FirstOrDefault();
-            }
-            var messagesStatedMessageLink = message as MessagesStatedMessageLink;
-            if (messagesStatedMessageLink != null)
-            {
-                return messagesStatedMessageLink.Chats.FirstOrDefault();
-            }
-            return null;
-        }
-
-        public static IInputUser CastUserToInputUser(IUser user)
-        {
-            var userEmpty = user as UserEmpty;
-            var userSelf = user as UserSelf;
-            var userContact = user as UserContact;
-            var userForeign = user as UserForeign;
+            var userEmpty = iUser as UserEmpty;
+            var user = iUser as User;
             if (userEmpty != null)
             {
                 return new InputUserEmpty
@@ -61,26 +44,12 @@ namespace Disa.Framework.Telegram
                     // nothing
                 };
             }
-            if (userSelf != null)
+            if (user != null)
             {
-                return new InputUserSelf
+                return new InputUser
                 {
-                    // nothing
-                };
-            }
-            if (userContact != null)
-            {
-                return new InputUserContact
-                {
-                    UserId = userContact.Id
-                };
-            }
-            if (userForeign != null)
-            {
-                return new InputUserForeign
-                {
-                    UserId = userForeign.Id,
-                    AccessHash = userForeign.AccessHash,
+                    UserId = user.Id,
+                    AccessHash = user.AccessHash,
                 };
             }
             return null;
@@ -91,7 +60,6 @@ namespace Disa.Framework.Telegram
             var chatEmpty = chat as ChatEmpty;
             var chatForbidden = chat as ChatForbidden;
             var chatChat = chat as Chat;
-            var geoChat = chat as GeoChat;
             if (chatEmpty != null)
             {
                 return chatEmpty.Id.ToString(CultureInfo.InvariantCulture);
@@ -104,10 +72,6 @@ namespace Disa.Framework.Telegram
             {
                 return chatChat.Title;
             }
-            if (geoChat != null)
-            {
-                return geoChat.Title;
-            }
             return null;
         }
 
@@ -115,7 +79,6 @@ namespace Disa.Framework.Telegram
         {
             var chatForbidden = chat as ChatForbidden;
             var chatChat = chat as Chat;
-            var geoChat = chat as GeoChat;
             if (chatForbidden != null)
             {
                 chatForbidden.Title = title;
@@ -123,10 +86,6 @@ namespace Disa.Framework.Telegram
             if (chatChat != null)
             {
                 chatChat.Title = title;
-            }
-            if (geoChat != null)
-            {
-                geoChat.Title = title;
             }
         }
 
@@ -150,7 +109,6 @@ namespace Disa.Framework.Telegram
             var chatEmpty = chat as ChatEmpty;
             var chatForbidden = chat as ChatForbidden;
             var chatChat = chat as Chat;
-            var geoChat = chat as GeoChat;
             if (chatEmpty != null)
             {
                 return chatEmpty.Id.ToString(CultureInfo.InvariantCulture);
@@ -163,10 +121,6 @@ namespace Disa.Framework.Telegram
             {
                 return chatChat.Id.ToString(CultureInfo.InvariantCulture);
             }
-            if (geoChat != null)
-            {
-                return geoChat.Id.ToString(CultureInfo.InvariantCulture);
-            }
             return null;
         }
 
@@ -175,92 +129,42 @@ namespace Disa.Framework.Telegram
             return PhoneBook.TryGetPhoneNumberLegible("+" + phoneNumber);
         }
 
-        public static string GetUserPhoneNumber(IUser user)
+        public static string GetUserPhoneNumber(IUser iUser)
         {
-            var userEmpty = user as UserEmpty;
-            var userSelf = user as UserSelf;
-            var userContact = user as UserContact;
-            var userRequest = user as UserRequest;
-            var userDeleted = user as UserDeleted;
-            var userForeign = user as UserForeign;
+            var userEmpty = iUser as UserEmpty;
+            var user = iUser as User;
             if (userEmpty != null)
             {
                 return null;
             }
-            if (userSelf != null)
+            if (user != null)
             {
-                return userSelf.Phone;
-            }
-            if (userContact != null)
-            {
-                return userContact.Phone;
-            }
-            if (userRequest != null)
-            {
-                return userRequest.Phone;
-            }
-            if (userDeleted != null)
-            {
-                return null;
-            }
-            if (userForeign != null)
-            {
-                return null;
+                return user.Phone;
             }
             return null;
         }
 
-        public static string GetUserName(IUser user)
+        public static string GetUserName(IUser iUser)
         {
-            var userEmpty = user as UserEmpty;
-            var userSelf = user as UserSelf;
-            var userContact = user as UserContact;
-            var userRequest = user as UserRequest;
-            var userDeleted = user as UserDeleted;
-            var userForeign = user as UserForeign;
+            var userEmpty = iUser as UserEmpty;
+            var user = iUser as User;
             if (userEmpty != null)
             {
                 return userEmpty.Id.ToString(CultureInfo.InvariantCulture);
             }
-            if (userSelf != null)
+            if (user != null)
             {
-                return userSelf.FirstName + " " + userSelf.LastName;
-            }
-            if (userContact != null)
-            {
-                return userContact.FirstName + " " + userContact.LastName;
-            }
-            if (userRequest != null)
-            {
-                return userRequest.FirstName + " " + userRequest.LastName;
-            }
-            if (userDeleted != null)
-            {
-                return userDeleted.FirstName + " " + userDeleted.LastName;
-            }
-            if (userForeign != null)
-            {
-                return userForeign.FirstName + " " + userForeign.LastName;
+                return user.FirstName + " " + user.LastName;
             }
             return null;
         }
 
-        public static ulong GetAccessHash(IUser user)
+        public static ulong GetAccessHash(IUser iUser)
         {
-            var userContact = user as UserContact;
-            var userRequest = user as UserRequest;
-            var userForeign = user as UserForeign;
-            if (userContact != null)
+            var user = iUser as User;
+            if (user != null)
             {
-                return userContact.AccessHash;
-            }
-            if (userRequest != null)
-            {
-                return userRequest.AccessHash;
-            }
-            if (userForeign != null)
-            {
-                return userForeign.AccessHash;
+                return user.AccessHash;
             }
             return 0;
         }
@@ -270,7 +174,6 @@ namespace Disa.Framework.Telegram
             var chatEmpty = chat as ChatEmpty;
             var chatForbidden = chat as ChatForbidden;
             var chatChat = chat as Chat;
-            var geoChat = chat as GeoChat;
             if (chatEmpty != null)
             {
                 return null;
@@ -283,44 +186,20 @@ namespace Disa.Framework.Telegram
             {
                 return GetFileLocationFromPhoto(chatChat.Photo, small);
             }
-            if (geoChat != null)
-            {
-                return GetFileLocationFromPhoto(geoChat.Photo, small);
-            }
             return null;
         }
 
-        public static FileLocation GetUserPhotoLocation(IUser user, bool small)
+        public static FileLocation GetUserPhotoLocation(IUser iUser, bool small)
         {
-            var userEmpty = user as UserEmpty;
-            var userSelf = user as UserSelf;
-            var userContact = user as UserContact;
-            var userRequest = user as UserRequest;
-            var userDeleted = user as UserDeleted;
-            var userForeign = user as UserForeign;
+            var userEmpty = iUser as UserEmpty;
+            var user = iUser as User;
             if (userEmpty != null)
             {
                 return null;
             }
-            if (userSelf != null)
+            if (user != null)
             {
-                return GetFileLocationFromPhoto(userSelf.Photo, small);
-            }
-            if (userContact != null)
-            {
-                return GetFileLocationFromPhoto(userContact.Photo, small);
-            }
-            if (userRequest != null)
-            {
-                return GetFileLocationFromPhoto(userRequest.Photo, small);
-            }
-            if (userDeleted != null)
-            {
-                return null;
-            }
-            if (userForeign != null)
-            {
-                return GetFileLocationFromPhoto(userForeign.Photo, small);
+                return GetFileLocationFromPhoto(user.Photo, small);
             }
             return null;
         }
@@ -375,37 +254,17 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
-        public static string GetUserId(IUser user)
+        public static string GetUserId(IUser iUser)
         {
-            var userEmpty = user as UserEmpty;
-            var userSelf = user as UserSelf;
-            var userContact = user as UserContact;
-            var userRequest = user as UserRequest;
-            var userDeleted = user as UserDeleted;
-            var userForeign = user as UserForeign;
+            var userEmpty = iUser as UserEmpty;
+            var user = iUser as User;
             if (userEmpty != null)
             {
                 return userEmpty.Id.ToString(CultureInfo.InvariantCulture);
             }
-            if (userSelf != null)
+            if (user != null)
             {
-                return userSelf.Id.ToString(CultureInfo.InvariantCulture);
-            }
-            if (userContact != null)
-            {
-                return userContact.Id.ToString(CultureInfo.InvariantCulture);
-            }
-            if (userRequest != null)
-            {
-                return userRequest.Id.ToString(CultureInfo.InvariantCulture);
-            }
-            if (userDeleted != null)
-            {
-                return userDeleted.Id.ToString(CultureInfo.InvariantCulture);
-            }
-            if (userForeign != null)
-            {
-                return userForeign.Id.ToString(CultureInfo.InvariantCulture);
+                return user.Id.ToString(CultureInfo.InvariantCulture);
             }
             return null;
         }
@@ -427,37 +286,17 @@ namespace Disa.Framework.Telegram
             return status is UserStatusOnline;
         }
 
-        public static IUserStatus GetStatus(IUser user)
+        public static IUserStatus GetStatus(IUser iUser)
         {
-            var userEmpty = user as UserEmpty;
-            var userSelf = user as UserSelf;
-            var userContact = user as UserContact;
-            var userRequest = user as UserRequest;
-            var userDeleted = user as UserDeleted;
-            var userForeign = user as UserForeign;
+            var userEmpty = iUser as UserEmpty;
+            var user = iUser as User;
             if (userEmpty != null)
             {
                 return null;
             }
-            if (userSelf != null)
+            if (user != null)
             {
-                return userSelf.Status;
-            }
-            if (userContact != null)
-            {
-                return userContact.Status;
-            }
-            if (userRequest != null)
-            {
-                return userRequest.Status;
-            }
-            if (userDeleted != null)
-            {
-                return null;
-            }
-            if (userForeign != null)
-            {
-                return userForeign.Status;
+                return user.Status;
             }
             return null;
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Linq;
 
 namespace Disa.Framework.Telegram

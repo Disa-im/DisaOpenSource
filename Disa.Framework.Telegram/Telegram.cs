@@ -3,10 +3,10 @@ using Disa.Framework.Bubbles;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SharpTelegram;
+using SharpTelegram.Schema;
 using SharpMTProto;
 using SharpMTProto.Transport;
 using SharpMTProto.Authentication;
-using SharpTelegram.Schema.Layer18;
 using System.Linq;
 using SharpMTProto.Messaging.Handlers;
 using SharpMTProto.Schema;
@@ -23,6 +23,8 @@ namespace Disa.Framework.Telegram
         typeof(TypingBubble), typeof(PresenceBubble))]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
+        private static readonly int MaxParticipants = 1000;
+
         private Dictionary<string, DisaThumbnail> _cachedThumbnails = new Dictionary<string, DisaThumbnail>();
 
         private static TcpClientTransportConfig DefaultTransportConfig = 
@@ -110,41 +112,6 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private void ProcessIncomingPayload(IMessagesStatedMessage message, bool useCurrentTime, 
-            TelegramClient optionalClient = null)
-        {
-            var objs = new List<object>();
-            var messagesStatedMessage = message as MessagesStatedMessage;
-            if (messagesStatedMessage != null)
-            {
-                //objs.Add(messagesStatedMessage.Message); TODO: fix new bubble group multiple created bug
-                objs.AddRange(messagesStatedMessage.Users);
-                objs.AddRange(messagesStatedMessage.Chats);
-            }
-            var messagesStatedMessageLink = message as MessagesStatedMessageLink;
-            if (messagesStatedMessageLink != null)
-            {
-                //objs.Add(messagesStatedMessageLink.Message); TODO: fix new bubble group multiple created bug
-                objs.AddRange(messagesStatedMessageLink.Users);
-                objs.AddRange(messagesStatedMessageLink.Chats);
-            }
-            ProcessIncomingPayload(objs, useCurrentTime, optionalClient);
-        }
-
-        private void SaveState(IMessagesStatedMessage message)
-        {
-            var messagesStatedMessage = message as MessagesStatedMessage;
-            if (messagesStatedMessage != null)
-            {
-                SaveState(0, messagesStatedMessage.Pts, 0, messagesStatedMessage.Seq);
-            }
-            var messagesStatedMessageLink = message as MessagesStatedMessageLink;
-            if (messagesStatedMessageLink != null)
-            {
-                SaveState(0, messagesStatedMessageLink.Pts, 0, messagesStatedMessageLink.Seq);
-            }
-        }
-
         private object NormalizeUpdateIfNeeded(object obj)
         {
             // flatten UpdateNewMessage to Message
@@ -152,22 +119,6 @@ namespace Disa.Framework.Telegram
             if (newMessage != null)
             {
                 return newMessage.Message;
-            }
-
-            // convert ForwardedMessage to Message
-            var forwardedMessage = obj as MessageForwarded;
-            if (forwardedMessage != null)
-            {
-                return new SharpTelegram.Schema.Layer18.Message
-                {
-                    Flags = forwardedMessage.Flags,
-                    Id = forwardedMessage.Id,
-                    FromId = forwardedMessage.FromId,
-                    ToId = forwardedMessage.ToId,
-                    Date = forwardedMessage.Date,
-                    MessageProperty = forwardedMessage.Message,
-                    Media = forwardedMessage.Media,
-                };
             }
 
             return obj;
@@ -203,10 +154,9 @@ namespace Disa.Framework.Telegram
                 var typing = update as UpdateUserTyping;
                 var typingChat = update as UpdateChatUserTyping;
                 var userStatus = update as UpdateUserStatus;
-                var readMessages = update as UpdateReadMessages;
                 var messageService = update as MessageService;
                 var updateChatParticipants = update as UpdateChatParticipants;
-                var message = update as SharpTelegram.Schema.Layer18.Message;
+                var message = update as SharpTelegram.Schema.Message;
                 var user = update as IUser;
                 var chat = update as IChat;
 
@@ -214,7 +164,7 @@ namespace Disa.Framework.Telegram
                 {
                     if (!string.IsNullOrWhiteSpace(shortMessage.Message))
                     {
-                        var fromId = shortMessage.FromId.ToString(CultureInfo.InvariantCulture);
+                        var fromId = shortMessage.UserId.ToString(CultureInfo.InvariantCulture);
                         EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                             Bubble.BubbleDirection.Incoming,
                             fromId, false, this, false, false));
@@ -291,10 +241,6 @@ namespace Disa.Framework.Telegram
                     {
                         maxMessageId = message.Id;
                     }
-                }
-                else if (readMessages != null)
-                {
-                    //TODO:
                 }
                 else if (userStatus != null)
                 {
@@ -448,10 +394,13 @@ namespace Disa.Framework.Telegram
                     }
                     else if (addUser != null)
                     {
-                        var userAdded = addUser.UserId.ToString(CultureInfo.InvariantCulture);
-                        EventBubble(PartyInformationBubble.CreateParticipantAdded(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
-                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userAdded));
+                        foreach (var userId in addUser.Users)
+                        {
+                            var userAdded = userId.ToString(CultureInfo.InvariantCulture);
+                            EventBubble(PartyInformationBubble.CreateParticipantAdded(
+                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
+                                this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userAdded));
+                        }
                     }
                     else if (created != null)
                     {
@@ -521,7 +470,7 @@ namespace Disa.Framework.Telegram
             {
                 using (var disposable = new OptionalClientDisposable(this, optionalClient))
                 {
-                    var items = (List<uint>)TelegramUtils.RunSynchronously(disposable.Client.Methods
+                    var items = TelegramUtils.RunSynchronously(disposable.Client.Methods
                         .MessagesReceivedMessagesAsync(new MessagesReceivedMessagesArgs
                     {
                             MaxId = maxId,
@@ -917,18 +866,18 @@ namespace Disa.Framework.Telegram
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService2)
                     }));
-                    var messagesSentMessage = iMessagesSentMessage as MessagesSentMessage;
-                    if (messagesSentMessage != null)
-                    {
-                        SaveState(messagesSentMessage.Date, messagesSentMessage.Pts, 0, messagesSentMessage.Seq);
-                        textBubble.IdService = messagesSentMessage.Id.ToString(CultureInfo.InvariantCulture);
-                    }
-                    var messagesSentMessageLink = iMessagesSentMessage as MessagesSentMessageLink;
-                    if (messagesSentMessageLink != null)
-                    {
-                        SaveState(messagesSentMessageLink.Date, messagesSentMessageLink.Pts, 0, messagesSentMessageLink.Seq);
-                        textBubble.IdService = messagesSentMessageLink.Id.ToString(CultureInfo.InvariantCulture);
-                    }
+//                    var messagesSentMessage = iMessagesSentMessage as MessagesSentMessage;
+//                    if (messagesSentMessage != null)
+//                    {
+//                        SaveState(messagesSentMessage.Date, messagesSentMessage.Pts, 0, messagesSentMessage.Seq);
+//                        textBubble.IdService = messagesSentMessage.Id.ToString(CultureInfo.InvariantCulture);
+//                    }
+//                    var messagesSentMessageLink = iMessagesSentMessage as MessagesSentMessageLink;
+//                    if (messagesSentMessageLink != null)
+//                    {
+//                        SaveState(messagesSentMessageLink.Date, messagesSentMessageLink.Pts, 0, messagesSentMessageLink.Seq);
+//                        textBubble.IdService = messagesSentMessageLink.Id.ToString(CultureInfo.InvariantCulture);
+//                    }
                 }
             }
 
@@ -944,13 +893,11 @@ namespace Disa.Framework.Telegram
                     {
                         Peer = peer,
                         MaxId = 0,
-                        Offset = 0,
-                        ReadContents = false,
                     })) as MessagesAffectedHistory;
-                    if (messagesAffectedHistory != null)
-                    {
-                        SaveState(0, messagesAffectedHistory.Pts, 0, messagesAffectedHistory.Seq);
-                    }
+//                    if (messagesAffectedHistory != null)
+//                    {
+//                        SaveState(0, messagesAffectedHistory.Pts, 0, messagesAffectedHistory.Seq);
+//                    }
                 }
             }
         }
@@ -966,35 +913,25 @@ namespace Disa.Framework.Telegram
             }
             else
             {
-                var accessHash = GetUserAccessHashIfForeign(userId);
-                if (accessHash != 0)
+                var accessHash = GetUserAccessHashIfPossible(userId);
+                return new InputPeerUser
                 {
-                    return new InputPeerForeign
-                    {
-                        UserId = uint.Parse(userId),
-                        AccessHash = accessHash
-                    };
-                }
-                else
-                {
-                    return new InputPeerContact
-                    {
-                        UserId = uint.Parse(userId)
-                    };
-                }
+                    UserId = uint.Parse(userId),
+                    AccessHash = accessHash,
+                };
             }
         }
 
-        private ulong GetUserAccessHashIfForeign(string userId)
+        private ulong GetUserAccessHashIfPossible(string userId)
         {
-            foreach (var user in _dialogs.Users)
+            foreach (var iUser in _dialogs.Users)
             {
-                var userForeign = user as UserForeign;
-                if (userForeign != null)
+                var user = iUser as User;
+                if (user != null)
                 {
-                    var userForeignId = TelegramUtils.GetUserId(userForeign);
+                    var userForeignId = TelegramUtils.GetUserId(user);
                     if (userForeignId == userId)
-                        return TelegramUtils.GetAccessHash(userForeign);
+                        return TelegramUtils.GetAccessHash(user);
                 }
             }
             return 0;
@@ -1024,7 +961,7 @@ namespace Disa.Framework.Telegram
             return (await GetUsers(new List<IInputUser> { user }, client)).First();
         }
 
-        private async Task<List<UserContact>> FetchContacts()
+        private async Task<List<User>> FetchContacts()
         {
             using (var client = new FullClientDisposable(this))
             {
@@ -1033,7 +970,7 @@ namespace Disa.Framework.Telegram
                 {
                     Hash = string.Empty
                 });
-                return response.Users.OfType<UserContact>().ToList();
+                return response.Users.OfType<User>().ToList();
             }
         }
 
@@ -1489,8 +1426,8 @@ namespace Disa.Framework.Telegram
             var iDialogs = TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
                 {
                     Limit = limit,
-                    Offset = offset,
-                    MaxId = 0,
+//                    Offset = offset,
+//                    MaxId = 0,
                 }));
             var dialogs = iDialogs as MessagesDialogs;
             var dialogsSlice = iDialogs as MessagesDialogsSlice;

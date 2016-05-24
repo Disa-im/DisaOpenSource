@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Automatically generated-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="InjectReference_372ba34f-5c34-4aed-931e-ed749dc97fd6" BeforeTargets="ResolveAssemblyReferences">
+    <!--platform.android.pinvoke_sqlite3.anycpu-->
+    <ItemGroup Condition=" ('$(UseSQLiteFrom.ToLower())' != 'packaged_sqlite3') AND ('$(UseSQLiteFrom.ToLower())' != 'packaged_sqlcipher') ">
+      <Reference Include="SQLitePCL.raw">
+        <HintPath>$(MSBuildThisFileDirectory)pinvoke_sqlite3\anycpu\SQLitePCL.raw.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+    <!--platform.android.pinvoke_packaged_sqlite3.anycpu-->
+    <ItemGroup Condition=" '$(UseSQLiteFrom.ToLower())' == 'packaged_sqlite3' ">
+      <Reference Include="SQLitePCL.raw">
+        <HintPath>$(MSBuildThisFileDirectory)pinvoke_packaged_sqlite3\anycpu\SQLitePCL.raw.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+    <!--platform.android.pinvoke_packaged_sqlcipher.anycpu-->
+    <ItemGroup Condition=" '$(UseSQLiteFrom.ToLower())' == 'packaged_sqlcipher' ">
+      <Reference Include="SQLitePCL.raw">
+        <HintPath>$(MSBuildThisFileDirectory)pinvoke_packaged_sqlcipher\anycpu\SQLitePCL.raw.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+  </Target>
+  <PropertyGroup>
+    <ResolveAssemblyReferencesDependsOn>$(ResolveAssemblyReferencesDependsOn);InjectReference_372ba34f-5c34-4aed-931e-ed749dc97fd6</ResolveAssemblyReferencesDependsOn>
+  </PropertyGroup>
+</Project>
