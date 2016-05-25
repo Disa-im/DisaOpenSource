@@ -110,7 +110,7 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private void ProcessIncomingPayload(IMessagesStatedMessage message, bool useCurrentTime, 
+		private void ProcessIncomingPayload(IUpdates message, bool useCurrentTime, 
             TelegramClient optionalClient = null)
         {
             var objs = new List<object>();

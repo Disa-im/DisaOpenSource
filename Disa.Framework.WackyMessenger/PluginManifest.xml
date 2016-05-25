@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<plugin>
-  <name>WackyMessenger</name>
-  <version>1</version>
-  <minimumframeworkversion>27</minimumframeworkversion>
-  <production>true</production>
-  <author>John Doe</author>
-  <externalmanifest>http://example.com</externalmanifest>
-</plugin>
