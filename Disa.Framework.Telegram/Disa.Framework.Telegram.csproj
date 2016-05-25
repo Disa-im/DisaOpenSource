@@ -54,7 +54,6 @@
     <Compile Include="SharpTL\TLCrcStreamer.cs" />
     <Compile Include="SharpTL\TLObjectAttribute.cs" />
     <Compile Include="SharpTL\TLObjectWithCustomSerializerAttribute.cs" />
-    <Compile Include="SharpTL\TLPropertyAttribute.cs" />
     <Compile Include="SharpTL\TLPropertyInfo.cs" />
     <Compile Include="SharpTL\TLRig.cs" />
     <Compile Include="SharpTL\TLSerializationContext.cs" />
@@ -131,9 +130,6 @@
     <Compile Include="SharpMTProto\Services\HashServices.cs" />
     <Compile Include="SharpTelegram\TelegramAppInfo.cs" />
     <Compile Include="SharpTelegram\TelegramClient.cs" />
-    <Compile Include="SharpTelegram\Schema\Layer18\SharpTelegram.Schema.cs" />
-    <Compile Include="SharpTelegram\Schema\Layer18\SharpTelegram.Schema.MethodsImpl.cs" />
-    <Compile Include="SharpTelegram\Schema\Layer18\SharpTelegram.Schema.MethodsImpl.Ex.cs" />
     <Compile Include="Telegram.cs" />
     <Compile Include="RSAPublicKey.cs" />
     <Compile Include="ObjectDumper.cs" />
@@ -1324,6 +1320,11 @@
     <Compile Include="TelegramMutableSettings.cs" />
     <Compile Include="CachedDialogs.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\GzipPackedHandler.cs" />
+    <Compile Include="SharpTL\TLPropertyAttribute.cs" />
+    <Compile Include="SharpTL\TLFlagPropertyAttribute1.cs" />
+    <Compile Include="SharpTelegram\Schema\SharpTelegram.Schema.cs" />
+    <Compile Include="SharpTelegram\Schema\SharpTelegram.Schema.MethodsImpl.cs" />
+    <Compile Include="SharpTelegram\Schema\SharpTelegram.Schema.MethodsImpl.Ex.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SQLitePCL.raw.0.8.6\build\net45\SQLitePCL.raw.targets" Condition="Exists('..\packages\SQLitePCL.raw.0.8.6\build\net45\SQLitePCL.raw.targets')" />
@@ -1341,7 +1342,6 @@
     <Folder Include="SharpMTProto\Utils\" />
     <Folder Include="SharpTelegram\" />
     <Folder Include="SharpTelegram\Schema\" />
-    <Folder Include="SharpTelegram\Schema\Layer18\" />
     <Folder Include="BigMath\" />
     <Folder Include="BigMath\Utils\" />
     <Folder Include="Raksha\" />

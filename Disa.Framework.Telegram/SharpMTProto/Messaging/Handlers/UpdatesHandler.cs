@@ -5,7 +5,7 @@ using System;
 using SharpTL;
 using System.IO;
 using System.IO.Compression;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Collections.Generic;
 using Disa.Framework.Telegram;
 

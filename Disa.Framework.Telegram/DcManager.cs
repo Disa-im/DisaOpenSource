@@ -2,7 +2,7 @@
 using SQLite;
 using System.Collections.Generic;
 using SharpTelegram;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Linq;
 using SharpMTProto.Transport;
 using SharpMTProto;

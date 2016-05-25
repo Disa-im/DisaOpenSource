@@ -1,5 +1,5 @@
 ﻿using System;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 
 namespace Disa.Framework.Telegram
 {

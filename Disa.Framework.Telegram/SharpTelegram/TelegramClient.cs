@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using SharpMTProto;
 using SharpMTProto.Transport;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using SharpMTProto.Schema;
 using System.Collections.Generic;
 

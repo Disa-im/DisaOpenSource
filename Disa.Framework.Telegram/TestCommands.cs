@@ -1,7 +1,7 @@
 ﻿using System;
 using SharpTelegram;
 using SharpMTProto;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Linq;
 using SharpMTProto.Transport;
 

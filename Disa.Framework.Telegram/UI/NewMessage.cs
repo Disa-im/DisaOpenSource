@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Linq;
 using System.Globalization;
 

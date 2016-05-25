@@ -6,7 +6,7 @@ using SharpTelegram;
 using SharpMTProto;
 using SharpMTProto.Transport;
 using SharpMTProto.Authentication;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Linq;
 using SharpMTProto.Messaging.Handlers;
 using SharpMTProto.Schema;

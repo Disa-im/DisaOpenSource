@@ -9,6 +9,7 @@ using Mono.Cecil;
 using System.Threading.Tasks;
 using System.Text;
 using RegawMOD.Android;
+using Disa.Framework.WackyMessenger;
 
 namespace Disa.Terminal
 {
@@ -20,22 +21,22 @@ namespace Disa.Terminal
         {
             Console.WriteLine("Welcome to Disa.Terminal!");
 
-            Initialize(new Service[] { new Telegram() });
+			Initialize(new Service[] { new Telegram() });
 
             Console.WriteLine("Initialized.");
 
             Console.WriteLine("What would you like to do?");
 
-            Action a = async () =>
+            Action a = () =>
             {
                 while (true)
                 {
                     var command = Console.ReadLine();
                     try
                     {
-                        await DoCommand(command);
+						DoCommand(command).Wait();
                     }
-                    catch (Exception ex)
+					catch (AggregateException ex)
                     {
                         Console.WriteLine("Unable to perform that command: " + ex);
                         Console.WriteLine("Type 'help' to get help");

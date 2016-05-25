@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disa.Framework.Mobile", "Di
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disa.Framework.Telegram.Mobile", "Disa.Framework.Telegram.Mobile\Disa.Framework.Telegram.Mobile.csproj", "{BF8CC773-49F3-45ED-8653-EBECEE6B8D11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disa.Framework.WackyMessenger", "Disa.Framework.WackyMessenger\Disa.Framework.WackyMessenger.csproj", "{F4CA9451-6981-431A-A06A-27C3232627C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -37,5 +39,9 @@ Global
 		{BF8CC773-49F3-45ED-8653-EBECEE6B8D11}.Debug|x86.Build.0 = Debug|Any CPU
 		{BF8CC773-49F3-45ED-8653-EBECEE6B8D11}.Release|x86.ActiveCfg = Release|Any CPU
 		{BF8CC773-49F3-45ED-8653-EBECEE6B8D11}.Release|x86.Build.0 = Release|Any CPU
+		{F4CA9451-6981-431A-A06A-27C3232627C2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F4CA9451-6981-431A-A06A-27C3232627C2}.Debug|x86.Build.0 = Debug|Any CPU
+		{F4CA9451-6981-431A-A06A-27C3232627C2}.Release|x86.ActiveCfg = Release|Any CPU
+		{F4CA9451-6981-431A-A06A-27C3232627C2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
