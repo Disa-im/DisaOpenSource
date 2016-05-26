@@ -164,6 +164,7 @@ namespace SharpTL
             }
 
             // TLObject.
+			Console.WriteLine("########Trying for custom serilizer attribute");
             var tlObjectAttribute = objTypeInfo.GetCustomAttribute<TLObjectAttribute>();
             var customSerializerAttribute = objTypeInfo.GetCustomAttribute<TLObjectWithCustomSerializerAttribute>();
             if (tlObjectAttribute != null || customSerializerAttribute != null)
@@ -184,6 +185,7 @@ namespace SharpTL
                      * There is a TLObjectAttribute without custom serializer,
                      * then use this meta-info to create properties map for object serialization based on TLProperty attributes. 
                      */
+					Console.WriteLine("######## getting properties in serilizer, using TLobject");
                     List<TLPropertyInfo> props =
                         objTypeInfo.DeclaredProperties.Zip(
                             objTypeInfo.DeclaredProperties.Select(info => info.GetCustomAttribute<TLPropertyAttribute>()),

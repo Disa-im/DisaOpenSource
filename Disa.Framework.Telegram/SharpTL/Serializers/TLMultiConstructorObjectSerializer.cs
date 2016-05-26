@@ -53,6 +53,7 @@ namespace SharpTL.Serializers
 
             uint constructorNumber = context.Streamer.ReadUInt32();
             ITLSingleConstructorSerializer serializer;
+
             if (!_serializersConstructorNumberIndex.TryGetValue(constructorNumber, out serializer))
             {
                 throw new NotSupportedException(string.Format("Construction number 0x{0:X} is not supported by this serializer.", constructorNumber));

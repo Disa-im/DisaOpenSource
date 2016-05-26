@@ -206,10 +206,10 @@ namespace Disa.Framework.Telegram
                                 Users = inputUsers,
                                 Title = subject,
                             });
-                            ProcessIncomingPayload(response, true);
-                            SaveState(response);
-                            var chat = TelegramUtils.GetChatFromStatedMessage(response);
-                            result(true, TelegramUtils.GetChatId(chat));
+//                            ProcessIncomingPayload(response, true);
+//                            SaveState(response);
+//                            var chat = TelegramUtils.GetChatFromStatedMessage(response);
+//                            result(true, TelegramUtils.GetChatId(chat));
                         }
                     }
                     else

@@ -155,17 +155,17 @@ namespace Disa.Framework.Telegram
             }
 
             // convert ForwardedMessage to Message
-            var forwardedMessage = obj as MessageForwarded;
+			var forwardedMessage = obj as SharpTelegram.Schema.Message;
             if (forwardedMessage != null)
             {
-                return new SharpTelegram.Schema.Layer18.Message
+                return new SharpTelegram.Schema.Message
                 {
                     Flags = forwardedMessage.Flags,
                     Id = forwardedMessage.Id,
                     FromId = forwardedMessage.FromId,
                     ToId = forwardedMessage.ToId,
                     Date = forwardedMessage.Date,
-                    MessageProperty = forwardedMessage.Message,
+                    //MessageProperty = forwardedMessage.Message,
                     Media = forwardedMessage.Media,
                 };
             }
@@ -192,289 +192,291 @@ namespace Disa.Framework.Telegram
 
         private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime, TelegramClient optionalClient = null)
         {
-            uint maxMessageId = 0;
-
-            foreach (var payload in AdjustUpdates(payloads))
-            {
-                var update = NormalizeUpdateIfNeeded(payload);
-
-                var shortMessage = update as UpdateShortMessage;
-                var shortChatMessage = update as UpdateShortChatMessage;
-                var typing = update as UpdateUserTyping;
-                var typingChat = update as UpdateChatUserTyping;
-                var userStatus = update as UpdateUserStatus;
-                var readMessages = update as UpdateReadMessages;
-                var messageService = update as MessageService;
-                var updateChatParticipants = update as UpdateChatParticipants;
-                var message = update as SharpTelegram.Schema.Layer18.Message;
-                var user = update as IUser;
-                var chat = update as IChat;
-
-                if (shortMessage != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(shortMessage.Message))
-                    {
-                        var fromId = shortMessage.FromId.ToString(CultureInfo.InvariantCulture);
-                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
-                            Bubble.BubbleDirection.Incoming,
-                            fromId, false, this, false, false));
-                        EventBubble(new TextBubble(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date, 
-                            Bubble.BubbleDirection.Incoming, 
-                            fromId, null, false, this, shortMessage.Message,
-                            shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
-                    }
-                    if (shortMessage.Id > maxMessageId)
-                    {
-                        maxMessageId = shortMessage.Id;
-                    }
-                }
-                else if (shortChatMessage != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(shortChatMessage.Message))
-                    {
-                        var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
-                        var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
-                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
-                            Bubble.BubbleDirection.Incoming,
-                            address, participantAddress, true, this, false, false));
-                        EventBubble(new TextBubble(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortChatMessage.Date, 
-                            Bubble.BubbleDirection.Incoming, 
-                            address, participantAddress, true, this, shortChatMessage.Message,
-                            shortChatMessage.Id.ToString(CultureInfo.InvariantCulture)));
-                    }
-                    if (shortChatMessage.Id > maxMessageId)
-                    {
-                        maxMessageId = shortChatMessage.Id;
-                    }
-                }
-                else if (message != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(message.MessageProperty))
-                    {
-                        TextBubble tb = null;
-
-                        var peerUser = message.ToId as PeerUser;
-                        var peerChat = message.ToId as PeerChat;
-
-                        var direction = message.FromId == _settings.AccountId 
-                            ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
-
-                        if (peerUser != null)
-                        {
-                            var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : peerUser.UserId;
-                            var addressStr = address.ToString(CultureInfo.InvariantCulture);
-                            tb = new TextBubble(
-                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                                direction, addressStr, null, false, this, message.MessageProperty,
-                                message.Id.ToString(CultureInfo.InvariantCulture));
-                        }
-                        else if (peerChat != null)
-                        {
-                            var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
-                            var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
-                            tb = new TextBubble(
-                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                                direction, address, participantAddress, true, this, message.MessageProperty,
-                                message.Id.ToString(CultureInfo.InvariantCulture));
-                        }
-
-                        if (direction == Bubble.BubbleDirection.Outgoing)
-                        {
-                            tb.Status = Bubble.BubbleStatus.Sent;
-                        }
-
-                        EventBubble(tb);
-                    }
-                    if (message.Id > maxMessageId)
-                    {
-                        maxMessageId = message.Id;
-                    }
-                }
-                else if (readMessages != null)
-                {
-                    //TODO:
-                }
-                else if (userStatus != null)
-                {
-                    var available = TelegramUtils.GetAvailable(userStatus.Status);
-                    EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(),
-                        Bubble.BubbleDirection.Incoming,
-                        userStatus.UserId.ToString(CultureInfo.InvariantCulture),
-                        false, this, available));
-                }
-                else if (typing != null || typingChat != null)
-                {
-                    var isAudio = false;
-                    var isTyping = false;
-                    if (typing != null)
-                    {
-                        isAudio = typing.Action is SendMessageRecordAudioAction;
-                        isTyping = typing.Action is SendMessageTypingAction;
-                    }
-                    if (typingChat != null)
-                    {
-                        isAudio = typingChat.Action is SendMessageRecordAudioAction;
-                        isTyping = typingChat.Action is SendMessageTypingAction;
-                    }
-                    var userId = typing != null ? typing.UserId : typingChat.UserId;
-                    var party = typingChat != null;
-                    var participantAddress = party ? userId.ToString(CultureInfo.InvariantCulture) : null;
-                    var address = party ? typingChat.ChatId.ToString(CultureInfo.InvariantCulture) : 
-                        userId.ToString(CultureInfo.InvariantCulture);
-                    var key = address + participantAddress;
-
-                    if (isAudio || isTyping)
-                    {
-                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
-                            Bubble.BubbleDirection.Incoming,
-                            address, participantAddress, party,
-                            this, true, isAudio));
-                        CancelTypingTimer(key);
-                        var newTimer = new Timer(6000) { AutoReset = false };
-                        newTimer.Elapsed += (sender2, e2) =>
-                        {
-                            EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
-                                Bubble.BubbleDirection.Incoming,
-                                address, participantAddress, party,
-                                this, false, isAudio));
-                            newTimer.Dispose();
-                            _typingTimers.Remove(key);
-                        };
-                        _typingTimers[key] = newTimer;
-                        newTimer.Start();
-                    }
-                    else
-                    {
-                        Console.WriteLine("Unknown typing action: " + typing.Action.GetType().Name);
-                    }
-                }
-                else if (user != null)
-                {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId != null)
-                    {
-                        var updatedUser = false;
-                        for (int i = 0; i < _dialogs.Users.Count; i++)
-                        {
-                            var userInnerId = TelegramUtils.GetUserId(_dialogs.Users[i]);
-                            if (userInnerId != null && userInnerId == userId)
-                            {
-                                Console.WriteLine("Updating user with new updates information: " + userId);
-                                _dialogs.Users[i] = user;
-                                updatedUser = true;
-                                break;
-                            }
-                        }
-                        if (!updatedUser)
-                        {
-                            Console.WriteLine("New user information: " + userId + " adding to dialogs!");
-                            _dialogs.Users.Add(user);
-                        }
-                    }
-                }
-                else if (chat != null)
-                {
-                    var chatId = TelegramUtils.GetChatId(chat);
-                    if (chatId != null)
-                    {
-                        var updatedChat = false;
-                        for (int i = 0; i < _dialogs.Chats.Count; i++)
-                        {
-                            var chatInnerId = TelegramUtils.GetChatId(_dialogs.Chats[i]);
-                            if (chatInnerId != null && chatInnerId == chatId)
-                            {
-                                Console.WriteLine("Updating chat with new updates information: " + chatId);
-                                _dialogs.Chats[i] = chat;
-                                updatedChat = true;
-                                break;
-                            }
-                        }
-                        if (!updatedChat)
-                        {
-                            Console.WriteLine("New chat information: " + chatId + " adding to dialogs!");
-                            _dialogs.Chats.Add(chat);
-                        }
-                    }
-                }
-                else if (updateChatParticipants != null)
-                {
-                    var chatParicipants = updateChatParticipants.Participants as ChatParticipants;
-                    if (chatParicipants != null)
-                    {
-                        Task.Factory.StartNew(() =>
-                        {
-                            var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
-                            DebugPrint("Updating chat participants: " + address);
-                            RemoveFullChat(address);
-                            GetFullChat(address, optionalClient);
-                            BubbleGroupUpdater.Update(this, address);
-                        });
-                    }
-                }
-                else if (messageService != null)
-                {
-                    var editTitle = messageService.Action as MessageActionChatEditTitle;
-                    var deleteUser = messageService.Action as MessageActionChatDeleteUser;
-                    var addUser = messageService.Action as MessageActionChatAddUser;
-                    var created = messageService.Action as MessageActionChatCreate;
-
-                    var address = TelegramUtils.GetPeerId(messageService.ToId);
-                    var fromId = messageService.FromId.ToString(CultureInfo.InvariantCulture);
-                    if (editTitle != null)
-                    {
-                        var newTitle = editTitle.Title;
-                        for (int i = 0; i < _dialogs.Chats.Count; i++)
-                        {
-                            var chatInnerId = TelegramUtils.GetChatId(_dialogs.Chats[i]);
-                            if (chatInnerId != null && chatInnerId == address)
-                            {
-                                TelegramUtils.SetChatTitle(_dialogs.Chats[i], newTitle);
-                                break;
-                            }
-                        }
-                        EventBubble(PartyInformationBubble.CreateTitleChanged(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address, 
-                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, newTitle));
-                        BubbleGroupUpdater.Update(this, address);
-                    }
-                    else if (deleteUser != null)
-                    {
-                        var userDeleted = deleteUser.UserId.ToString(CultureInfo.InvariantCulture);
-                        EventBubble(PartyInformationBubble.CreateParticipantRemoved(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
-                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userDeleted));
-                    }
-                    else if (addUser != null)
-                    {
-                        var userAdded = addUser.UserId.ToString(CultureInfo.InvariantCulture);
-                        EventBubble(PartyInformationBubble.CreateParticipantAdded(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
-                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userAdded));
-                    }
-                    else if (created != null)
-                    {
-                        EventBubble(PartyInformationBubble.CreateParticipantAdded(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
-                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
-                            _settings.AccountId.ToString(CultureInfo.InvariantCulture)));
-                    }
-                    else
-                    {
-                        Console.WriteLine("Unknown message service: " + ObjectDumper.Dump(update));
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Unknown update: " + ObjectDumper.Dump(update));
-                }
-            }
-
-            if (maxMessageId != 0)
-            {
-                SendReceivedMessages(optionalClient, maxMessageId);
-            }
+//            uint maxMessageId = 0;
+//
+//            foreach (var payload in AdjustUpdates(payloads))
+//            {
+//                var update = NormalizeUpdateIfNeeded(payload);
+//
+//                var shortMessage = update as UpdateShortMessage;
+//                var shortChatMessage = update as UpdateShortChatMessage;
+//                var typing = update as UpdateUserTyping;
+//                var typingChat = update as UpdateChatUserTyping;
+//                var userStatus = update as UpdateUserStatus;
+// //               var readMessages = update as UpdateReadMessages;
+//                var messageService = update as MessageService;
+//                var updateChatParticipants = update as UpdateChatParticipants;
+//                var message = update as SharpTelegram.Schema.Message;
+//                var user = update as IUser;
+//                var chat = update as IChat;
+//
+//                if (shortMessage != null)
+//                {
+//                    if (!string.IsNullOrWhiteSpace(shortMessage.Message))
+//                    {
+//						var fromId = shortMessage.UserId.ToString(CultureInfo.InvariantCulture);
+//                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+//                            Bubble.BubbleDirection.Incoming,
+//                            fromId, false, this, false, false));
+//                        EventBubble(new TextBubble(
+//                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date, 
+//                            Bubble.BubbleDirection.Incoming, 
+//                            fromId, null, false, this, shortMessage.Message,
+//                            shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
+//                    }
+//                    if (shortMessage.Id > maxMessageId)
+//                    {
+//                        maxMessageId = shortMessage.Id;
+//                    }
+//                }
+//                else if (shortChatMessage != null)
+//                {
+//                    if (!string.IsNullOrWhiteSpace(shortChatMessage.Message))
+//                    {
+//                        var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
+//                        var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
+//                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+//                            Bubble.BubbleDirection.Incoming,
+//                            address, participantAddress, true, this, false, false));
+//                        EventBubble(new TextBubble(
+//                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortChatMessage.Date, 
+//                            Bubble.BubbleDirection.Incoming, 
+//                            address, participantAddress, true, this, shortChatMessage.Message,
+//                            shortChatMessage.Id.ToString(CultureInfo.InvariantCulture)));
+//                    }
+//                    if (shortChatMessage.Id > maxMessageId)
+//                    {
+//                        maxMessageId = shortChatMessage.Id;
+//                    }
+//                }
+//                else if (message != null)
+//                {
+//                    if (!string.IsNullOrWhiteSpace(message.MessageProperty))
+//                    {
+//                        TextBubble tb = null;
+//
+//                        var peerUser = message.ToId as PeerUser;
+//                        var peerChat = message.ToId as PeerChat;
+//
+//                        var direction = message.FromId == _settings.AccountId 
+//                            ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
+//
+//                        if (peerUser != null)
+//                        {
+//                            var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : peerUser.UserId;
+//                            var addressStr = address.ToString(CultureInfo.InvariantCulture);
+//                            tb = new TextBubble(
+//                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+//                                direction, addressStr, null, false, this, message.MessageProperty,
+//                                message.Id.ToString(CultureInfo.InvariantCulture));
+//                        }
+//                        else if (peerChat != null)
+//                        {
+//                            var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
+//                            var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
+//                            tb = new TextBubble(
+//                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+//                                direction, address, participantAddress, true, this, message.MessageProperty,
+//                                message.Id.ToString(CultureInfo.InvariantCulture));
+//                        }
+//
+//                        if (direction == Bubble.BubbleDirection.Outgoing)
+//                        {
+//                            tb.Status = Bubble.BubbleStatus.Sent;
+//                        }
+//
+//                        EventBubble(tb);
+//                    }
+//                    if (message.Id > maxMessageId)
+//                    {
+//                        maxMessageId = message.Id;
+//                    }
+//                }
+////                else if (readMessages != null)
+////                {
+////                    //TODO:
+////                }
+//                else if (userStatus != null)
+//                {
+//                    var available = TelegramUtils.GetAvailable(userStatus.Status);
+//                    EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(),
+//                        Bubble.BubbleDirection.Incoming,
+//                        userStatus.UserId.ToString(CultureInfo.InvariantCulture),
+//                        false, this, available));
+//                }
+//                else if (typing != null || typingChat != null)
+//                {
+//                    var isAudio = false;
+//                    var isTyping = false;
+//                    if (typing != null)
+//                    {
+//                        isAudio = typing.Action is SendMessageRecordAudioAction;
+//                        isTyping = typing.Action is SendMessageTypingAction;
+//                    }
+//                    if (typingChat != null)
+//                    {
+//                        isAudio = typingChat.Action is SendMessageRecordAudioAction;
+//                        isTyping = typingChat.Action is SendMessageTypingAction;
+//                    }
+//                    var userId = typing != null ? typing.UserId : typingChat.UserId;
+//                    var party = typingChat != null;
+//                    var participantAddress = party ? userId.ToString(CultureInfo.InvariantCulture) : null;
+//                    var address = party ? typingChat.ChatId.ToString(CultureInfo.InvariantCulture) : 
+//                        userId.ToString(CultureInfo.InvariantCulture);
+//                    var key = address + participantAddress;
+//
+//                    if (isAudio || isTyping)
+//                    {
+//                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+//                            Bubble.BubbleDirection.Incoming,
+//                            address, participantAddress, party,
+//                            this, true, isAudio));
+//                        CancelTypingTimer(key);
+//                        var newTimer = new Timer(6000) { AutoReset = false };
+//                        newTimer.Elapsed += (sender2, e2) =>
+//                        {
+//                            EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+//                                Bubble.BubbleDirection.Incoming,
+//                                address, participantAddress, party,
+//                                this, false, isAudio));
+//                            newTimer.Dispose();
+//                            _typingTimers.Remove(key);
+//                        };
+//                        _typingTimers[key] = newTimer;
+//                        newTimer.Start();
+//                    }
+//                    else
+//                    {
+//                        Console.WriteLine("Unknown typing action: " + typing.Action.GetType().Name);
+//                    }
+//                }
+//                else if (user != null)
+//                {
+//                    var userId = TelegramUtils.GetUserId(user);
+//                    if (userId != null)
+//                    {
+//                        var updatedUser = false;
+//                        for (int i = 0; i < _dialogs.Users.Count; i++)
+//                        {
+//                            var userInnerId = TelegramUtils.GetUserId(_dialogs.Users[i]);
+//                            if (userInnerId != null && userInnerId == userId)
+//                            {
+//                                Console.WriteLine("Updating user with new updates information: " + userId);
+//                                _dialogs.Users[i] = user;
+//                                updatedUser = true;
+//                                break;
+//                            }
+//                        }
+//                        if (!updatedUser)
+//                        {
+//                            Console.WriteLine("New user information: " + userId + " adding to dialogs!");
+//                            _dialogs.Users.Add(user);
+//                        }
+//                    }
+//                }
+//                else if (chat != null)
+//                {
+//                    var chatId = TelegramUtils.GetChatId(chat);
+//                    if (chatId != null)
+//                    {
+//                        var updatedChat = false;
+//                        for (int i = 0; i < _dialogs.Chats.Count; i++)
+//                        {
+//                            var chatInnerId = TelegramUtils.GetChatId(_dialogs.Chats[i]);
+//                            if (chatInnerId != null && chatInnerId == chatId)
+//                            {
+//                                Console.WriteLine("Updating chat with new updates information: " + chatId);
+//                                _dialogs.Chats[i] = chat;
+//                                updatedChat = true;
+//                                break;
+//                            }
+//                        }
+//                        if (!updatedChat)
+//                        {
+//                            Console.WriteLine("New chat information: " + chatId + " adding to dialogs!");
+//                            _dialogs.Chats.Add(chat);
+//                        }
+//                    }
+//                }
+//                else if (updateChatParticipants != null)
+//                {
+//                    var chatParicipants = updateChatParticipants.Participants as ChatParticipants;
+//                    if (chatParicipants != null)
+//                    {
+//                        Task.Factory.StartNew(() =>
+//                        {
+//                            var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
+//                            DebugPrint("Updating chat participants: " + address);
+//                            RemoveFullChat(address);
+//                            GetFullChat(address, optionalClient);
+//                            BubbleGroupUpdater.Update(this, address);
+//                        });
+//                    }
+//                }
+//                else if (messageService != null)
+//                {
+//                    var editTitle = messageService.Action as MessageActionChatEditTitle;
+//                    var deleteUser = messageService.Action as MessageActionChatDeleteUser;
+//                    var addUser = messageService.Action as MessageActionChatAddUser;
+//                    var created = messageService.Action as MessageActionChatCreate;
+//
+//                    var address = TelegramUtils.GetPeerId(messageService.ToId);
+//                    var fromId = messageService.FromId.ToString(CultureInfo.InvariantCulture);
+//                    if (editTitle != null)
+//                    {
+//                        var newTitle = editTitle.Title;
+//                        for (int i = 0; i < _dialogs.Chats.Count; i++)
+//                        {
+//                            var chatInnerId = TelegramUtils.GetChatId(_dialogs.Chats[i]);
+//                            if (chatInnerId != null && chatInnerId == address)
+//                            {
+//                                TelegramUtils.SetChatTitle(_dialogs.Chats[i], newTitle);
+//                                break;
+//                            }
+//                        }
+//                        EventBubble(PartyInformationBubble.CreateTitleChanged(
+//                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address, 
+//                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, newTitle));
+//                        BubbleGroupUpdater.Update(this, address);
+//                    }
+//                    else if (deleteUser != null)
+//                    {
+//                        var userDeleted = deleteUser.UserId.ToString(CultureInfo.InvariantCulture);
+//                        EventBubble(PartyInformationBubble.CreateParticipantRemoved(
+//                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
+//                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userDeleted));
+//                    }
+//                    else if (addUser != null)
+//					{
+//						foreach (var userId in addUser.Users) {
+//							var userAdded = userId.ToString(CultureInfo.InvariantCulture);
+//							EventBubble(PartyInformationBubble.CreateParticipantAdded(
+//								useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
+//								this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userAdded));
+//						}
+//                    }
+//                    else if (created != null)
+//                    {
+//                        EventBubble(PartyInformationBubble.CreateParticipantAdded(
+//                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
+//                            this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
+//                            _settings.AccountId.ToString(CultureInfo.InvariantCulture)));
+//                    }
+//                    else
+//                    {
+//                        Console.WriteLine("Unknown message service: " + ObjectDumper.Dump(update));
+//                    }
+//                }
+//                else
+//                {
+//                    Console.WriteLine("Unknown update: " + ObjectDumper.Dump(update));
+//                }
+//            }
+//
+//            if (maxMessageId != 0)
+//            {
+//                SendReceivedMessages(optionalClient, maxMessageId);
+//            }
         }
 
         private class OptionalClientDisposable : IDisposable
@@ -521,7 +523,7 @@ namespace Disa.Framework.Telegram
             {
                 using (var disposable = new OptionalClientDisposable(this, optionalClient))
                 {
-                    var items = (List<uint>)TelegramUtils.RunSynchronously(disposable.Client.Methods
+                    var items = TelegramUtils.RunSynchronously(disposable.Client.Methods
                         .MessagesReceivedMessagesAsync(new MessagesReceivedMessagesArgs
                     {
                             MaxId = maxId,
@@ -816,12 +818,12 @@ namespace Disa.Framework.Telegram
                     throw new Exception("Failed to register long poller...");
                 }
                 FetchState(client);
-                if (!_dialogsInitiallyRetrieved)
-                {
-                    GetDialogs(client);
-                    _dialogsInitiallyRetrieved = true;
-                }
-                GetConfig(client);
+//                if (!_dialogsInitiallyRetrieved)
+//                {
+//                    GetDialogs(client);
+//                    _dialogsInitiallyRetrieved = true;
+//                }
+//				  GetConfig(client);
             }
             DebugPrint("Starting long poller...");
             if (_longPollClient != null)
@@ -839,7 +841,7 @@ namespace Disa.Framework.Telegram
             } 
             _longPollClient.OnUpdateTooLong += OnLongPollClientUpdateTooLong;
             _longPollClient.OnClosedInternally += OnLongPollClientClosed;
-            ScheduleLongPollPing();
+           	ScheduleLongPollPing();
             DebugPrint("Long poller started!");
         }
 
@@ -866,28 +868,28 @@ namespace Disa.Framework.Telegram
 
         public override void SendBubble(Bubble b)
         {
-            var presenceBubble = b as PresenceBubble;
-            if (presenceBubble != null)
-            {
-                _hasPresence = presenceBubble.Available;
-                SetFullClientPingDelayDisconnect();
-                if (_hasPresence)
-                {
-                    var updatedUsers = GetUpdatedUsersOfAllDialogs();
-                    if (updatedUsers != null)
-                    {
-                        foreach (var updatedUser in updatedUsers)
-                        {
-                            EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming, 
-                                TelegramUtils.GetUserId(updatedUser), false, this, TelegramUtils.GetAvailable(updatedUser)));
-                        }
-                    }
-                }
-                using (var client = new FullClientDisposable(this))
-                {
-                    SendPresence(client.Client);
-                }
-            }
+//            var presenceBubble = b as PresenceBubble;
+//            if (presenceBubble != null)
+//            {
+//                _hasPresence = presenceBubble.Available;
+//                SetFullClientPingDelayDisconnect();
+//                if (_hasPresence)
+//                {
+//                    var updatedUsers = GetUpdatedUsersOfAllDialogs();
+//                    if (updatedUsers != null)
+//                    {
+//                        foreach (var updatedUser in updatedUsers)
+//                        {
+//                            EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming, 
+//                                TelegramUtils.GetUserId(updatedUser), false, this, TelegramUtils.GetAvailable(updatedUser)));
+//                        }
+//                    }
+//                }
+//                using (var client = new FullClientDisposable(this))
+//                {
+//                    SendPresence(client.Client);
+//                }
+//            }
 
             var typingBubble = b as TypingBubble;
             if (typingBubble != null)
@@ -917,18 +919,18 @@ namespace Disa.Framework.Telegram
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService2)
                     }));
-                    var messagesSentMessage = iMessagesSentMessage as MessagesSentMessage;
-                    if (messagesSentMessage != null)
-                    {
-                        SaveState(messagesSentMessage.Date, messagesSentMessage.Pts, 0, messagesSentMessage.Seq);
-                        textBubble.IdService = messagesSentMessage.Id.ToString(CultureInfo.InvariantCulture);
-                    }
-                    var messagesSentMessageLink = iMessagesSentMessage as MessagesSentMessageLink;
-                    if (messagesSentMessageLink != null)
-                    {
-                        SaveState(messagesSentMessageLink.Date, messagesSentMessageLink.Pts, 0, messagesSentMessageLink.Seq);
-                        textBubble.IdService = messagesSentMessageLink.Id.ToString(CultureInfo.InvariantCulture);
-                    }
+//                    var messagesSentMessage = iMessagesSentMessage as MessagesSentMessage;
+//                    if (messagesSentMessage != null)
+//                    {
+//                        SaveState(messagesSentMessage.Date, messagesSentMessage.Pts, 0, messagesSentMessage.Seq);
+//                        textBubble.IdService = messagesSentMessage.Id.ToString(CultureInfo.InvariantCulture);
+//                    }
+//                    var messagesSentMessageLink = iMessagesSentMessage as MessagesSentMessageLink;
+//                    if (messagesSentMessageLink != null)
+//                    {
+//                        SaveState(messagesSentMessageLink.Date, messagesSentMessageLink.Pts, 0, messagesSentMessageLink.Seq);
+//                        textBubble.IdService = messagesSentMessageLink.Id.ToString(CultureInfo.InvariantCulture);
+//                    }
                 }
             }
 
@@ -944,13 +946,12 @@ namespace Disa.Framework.Telegram
                     {
                         Peer = peer,
                         MaxId = 0,
-                        Offset = 0,
-                        ReadContents = false,
+
                     })) as MessagesAffectedHistory;
-                    if (messagesAffectedHistory != null)
-                    {
-                        SaveState(0, messagesAffectedHistory.Pts, 0, messagesAffectedHistory.Seq);
-                    }
+//                    if (messagesAffectedHistory != null)
+//                    {
+//                        SaveState(0, messagesAffectedHistory.Pts, 0, messagesAffectedHistory.Seq);
+//                    }
                 }
             }
         }
@@ -967,21 +968,13 @@ namespace Disa.Framework.Telegram
             else
             {
                 var accessHash = GetUserAccessHashIfForeign(userId);
-                if (accessHash != 0)
+
+                return new InputPeerUser
                 {
-                    return new InputPeerForeign
-                    {
-                        UserId = uint.Parse(userId),
-                        AccessHash = accessHash
-                    };
-                }
-                else
-                {
-                    return new InputPeerContact
-                    {
-                        UserId = uint.Parse(userId)
-                    };
-                }
+					UserId = uint.Parse(userId),
+					AccessHash = accessHash
+                };
+                
             }
         }
 
@@ -989,7 +982,7 @@ namespace Disa.Framework.Telegram
         {
             foreach (var user in _dialogs.Users)
             {
-                var userForeign = user as UserForeign;
+                var userForeign = user as User;
                 if (userForeign != null)
                 {
                     var userForeignId = TelegramUtils.GetUserId(userForeign);
@@ -1024,7 +1017,7 @@ namespace Disa.Framework.Telegram
             return (await GetUsers(new List<IInputUser> { user }, client)).First();
         }
 
-        private async Task<List<UserContact>> FetchContacts()
+        private async Task<List<User>> FetchContacts()
         {
             using (var client = new FullClientDisposable(this))
             {
@@ -1033,7 +1026,7 @@ namespace Disa.Framework.Telegram
                 {
                     Hash = string.Empty
                 });
-                return response.Users.OfType<UserContact>().ToList();
+                return response.Users.OfType<User>().ToList();
             }
         }
 
@@ -1041,7 +1034,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(GetTitle(group.Address, group.IsParty));
+                //result(GetTitle(group.Address, group.IsParty));
             });
         }
 
@@ -1049,7 +1042,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(GetThumbnail(group.Address, group.IsParty, true));
+                //result(GetThumbnail(group.Address, group.IsParty, true));
             });
         }
 
@@ -1057,33 +1050,33 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                using (var clientDisposable = new FullClientDisposable(this))
-                {
-                    var fullChat = GetFullChat(clientDisposable.Client, group.Address);
-                    if (fullChat != null)
-                    {
-                        var chatFull = (ChatFull)fullChat.FullChat;
-                        var participants = chatFull.Participants as ChatParticipants;
-                        if (participants == null)
-                        {
-                            result(null);
-                        }
-                        else
-                        {
-                            var users = participants.Participants.Select(x => 
-                                GetUser(fullChat.Users, ((ChatParticipant)x).UserId.ToString(CultureInfo.InvariantCulture)));
-                            var disaParticipants = users.Select(x => 
-                                new DisaParticipant(
-                                    TelegramUtils.GetUserName(x), 
-                                    TelegramUtils.GetUserId(x))).ToArray();
-                            result(disaParticipants);
-                        }
-                    }
-                    else
-                    {
-                        result(null);
-                    }
-                }
+//                using (var clientDisposable = new FullClientDisposable(this))
+//                {
+//                    var fullChat = GetFullChat(clientDisposable.Client, group.Address);
+//                    if (fullChat != null)
+//                    {
+//                        var chatFull = (ChatFull)fullChat.FullChat;
+//                        var participants = chatFull.Participants as ChatParticipants;
+//                        if (participants == null)
+//                        {
+//                            result(null);
+//                        }
+//                        else
+//                        {
+//                            var users = participants.Participants.Select(x => 
+//                                GetUser(fullChat.Users, ((ChatParticipant)x).UserId.ToString(CultureInfo.InvariantCulture)));
+//                            var disaParticipants = users.Select(x => 
+//                                new DisaParticipant(
+//                                    TelegramUtils.GetUserName(x), 
+//                                    TelegramUtils.GetUserId(x))).ToArray();
+//                            result(disaParticipants);
+//                        }
+//                    }
+//                    else
+//                    {
+//                        result(null);
+//                    }
+//                }
             });
         }
 
@@ -1091,16 +1084,16 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                //TODO: this may not actually get title always.
-                var name = GetTitle(unknownPartyParticipant, false);
-                if (!string.IsNullOrWhiteSpace(name))
-                {
-                    result(new DisaParticipant(name, unknownPartyParticipant));
-                }
-                else
-                {
-                    result(null);
-                }
+//                //TODO: this may not actually get title always.
+//                var name = GetTitle(unknownPartyParticipant, false);
+//                if (!string.IsNullOrWhiteSpace(name))
+//                {
+//                    result(new DisaParticipant(name, unknownPartyParticipant));
+//                }
+//                else
+//                {
+//                    result(null);
+//                }
             });
         }
 
@@ -1108,7 +1101,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(GetThumbnail(participant.Address, false, true));
+                //result(GetThumbnail(participant.Address, false, true));
             });
         }
 
@@ -1116,7 +1109,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(GetUpdatedLastOnline(group.Address));
+                //result(GetUpdatedLastOnline(group.Address));
             });
         }
 
@@ -1484,13 +1477,14 @@ namespace Disa.Framework.Telegram
             DebugPrint("Fetching conversations");
             var masterDialogs = new CachedDialogs();
             uint limit = 10;
-            uint offset = 0;
-            Again:
+            //uint offset = 0;
+            //Again:
             var iDialogs = TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
                 {
-                    Limit = limit,
-                    Offset = offset,
-                    MaxId = 0,
+					Limit = uint.MaxValue,
+					OffsetPeer = new InputPeerEmpty(),
+//                    Offset = offset,
+//                    MaxId = 0,
                 }));
             var dialogs = iDialogs as MessagesDialogs;
             var dialogsSlice = iDialogs as MessagesDialogsSlice;
@@ -1501,22 +1495,22 @@ namespace Disa.Framework.Telegram
                 masterDialogs.Messages.AddRange(dialogs.Messages);
                 masterDialogs.Users.AddRange(dialogs.Users);
             }
-            else if (dialogsSlice != null)
-            {
-                masterDialogs.Chats.AddRange(dialogsSlice.Chats);
-                masterDialogs.Dialogs.AddRange(dialogsSlice.Dialogs);
-                masterDialogs.Messages.AddRange(dialogsSlice.Messages);
-                masterDialogs.Users.AddRange(dialogsSlice.Users);
-                if (dialogsSlice.Count < offset + limit)
-                {
-                    Console.WriteLine("No need to fetch anymore slices. We've reached the end!");
-                    goto End;
-                }
-                DebugPrint("Obtained a dialog slice! ... fetching more!");
-                offset += limit;
-                goto Again;
-            }
-            End:
+//            else if (dialogsSlice != null)
+//            {
+//                masterDialogs.Chats.AddRange(dialogsSlice.Chats);
+//                masterDialogs.Dialogs.AddRange(dialogsSlice.Dialogs);
+//                masterDialogs.Messages.AddRange(dialogsSlice.Messages);
+//                masterDialogs.Users.AddRange(dialogsSlice.Users);
+//                if (dialogsSlice.Count < offset + limit)
+//                {
+//                    Console.WriteLine("No need to fetch anymore slices. We've reached the end!");
+//                    goto End;
+//                }
+//                DebugPrint("Obtained a dialog slice! ... fetching more!");
+//                offset += limit;
+//                goto Again;
+////            }
+ //          End:
             FetchFullChatsForParties(client, masterDialogs);
             _dialogs = masterDialogs;
             DebugPrint("Obtained conversations.");

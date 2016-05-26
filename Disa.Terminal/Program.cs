@@ -9,7 +9,6 @@ using Mono.Cecil;
 using System.Threading.Tasks;
 using System.Text;
 using RegawMOD.Android;
-using Disa.Framework.WackyMessenger;
 
 namespace Disa.Terminal
 {

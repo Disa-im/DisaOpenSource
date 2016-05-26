@@ -29,6 +29,7 @@ namespace SharpTL.Serializers
             TLSerializationMode serializationMode = TLSerializationMode.Boxed)
             : base(constructorNumber)
         {
+			Console.WriteLine("#### New Custom Object Serializer");
             _objectType = objectType;
             _serializationAgents = CreateSerializationAgents(properties, serializersBucket);
             SerializationMode = serializationMode;

@@ -73,14 +73,14 @@ namespace Disa.Framework.Telegram
                             var result = TelegramUtils.RunSynchronously(client.Methods.AuthSendCodeAsync(new AuthSendCodeArgs
                             {
                                 PhoneNumber = number,
-                                SmsType = 0,
+                                //SmsType = 0,
                                 ApiId = AppInfo.ApiId,
                                 ApiHash = "f8f2562579817ddcec76a8aae4cd86f6",
                                 LangCode = PhoneBook.Language
                             })) as AuthSentCode;
                             return new CodeRequest
                             {
-                                Registered = result.PhoneRegistered,
+                                //Registered = result.PhoneRegistered,
                                 CodeHash = result.PhoneCodeHash,
                             };
                         }
@@ -101,14 +101,14 @@ namespace Disa.Framework.Telegram
                             return cr;
                         }
                     }
-                    var result2 = (bool)TelegramUtils.RunSynchronously(client.Methods.AuthSendCallAsync(new AuthSendCallArgs
-                    {
-                        PhoneNumber = number,
-                        PhoneCodeHash = codeHash,
-                    }));
+//                    var result2 = (bool)TelegramUtils.RunSynchronously(client.Methods.AuthSendCallAsync(new AuthSendCallArgs
+//                    {
+//                        PhoneNumber = number,
+//                        PhoneCodeHash = codeHash,
+//                    }));
                     return new CodeRequest
                     {
-                        Response = result2 ? CodeRequest.Type.Success : CodeRequest.Type.Failure
+                        Response = CodeRequest.Type.Success
                     };
                 }
             }
@@ -167,8 +167,8 @@ namespace Disa.Framework.Telegram
                         var result = (AuthAuthorization)iresult;
                         return new CodeRegister
                         {
-                            AccountId = (result.User as UserSelf).Id,
-                            Expires = result.Expires,
+                            AccountId = (result.User as User).Id,
+//                            Expires = result.Expires,
                             Response = CodeRegister.Type.Success,
                         };
                     }

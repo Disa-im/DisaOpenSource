@@ -160,7 +160,7 @@ namespace Disa.Framework.Telegram
                     using (var clientDisposable = new FullClientDisposable(this))
                     {
                         exportedAuth = (AuthExportedAuthorization)TelegramUtils.RunSynchronously(clientDisposable.Client.Methods.AuthExportAuthorizationAsync(
-                            new SharpTelegram.Schema.Layer18.AuthExportAuthorizationArgs
+                            new SharpTelegram.Schema.AuthExportAuthorizationArgs
                             {
                                 DcId = (uint)dc,
                             }));
