@@ -114,6 +114,7 @@ namespace Disa.Framework.Telegram
             TelegramClient optionalClient = null)
         {
             var objs = new List<object>();
+            //TODO: updated CachedDialogs with the new incoming User, Chats.
 //            var messagesStatedMessage = message as MessagesStatedMessage;
 //            if (messagesStatedMessage != null)
 //            {
@@ -130,7 +131,7 @@ namespace Disa.Framework.Telegram
 //            }
             ProcessIncomingPayload(objs, useCurrentTime, optionalClient);
         }
-
+            
 		private void SaveState(IUpdates message)
         {
 //            var messagesStatedMessage = message as MessagesStatedMessage;
