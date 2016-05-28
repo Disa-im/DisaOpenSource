@@ -221,3 +221,4 @@ pip-log.txt
 .mr.developer.cfg
 
 *.userprefs
+Tooling/Sharp.TL.Compiler/.nuget/
