@@ -37,6 +37,7 @@ namespace Disa.Framework.Telegram
                 else
                 {
                     var partyContacts = new List<Contact>();
+                    //TODO: manually call upon GetDialogs method call to get the latest dialogs.
                     foreach (var iDialog in _dialogs.Dialogs)
                     {
                         var dialog = iDialog as Dialog;

@@ -15,8 +15,11 @@ namespace Disa.Framework.Telegram
             FullChatFailures = new ThreadSafeList<string>();
         }
 
+        // TODO: remove this. It's not needed anymore with Disa's implemetation.
+        // We only need to cache Chats, Users, and FullChats
         public ThreadSafeList<IDialog> Dialogs { get; private set; }
 
+        //TODO: remove this.
         public ThreadSafeList<IMessage> Messages { get; private set; }
 
         public ThreadSafeList<IChat> Chats { get; private set; }
