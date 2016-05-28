@@ -68,30 +68,40 @@ namespace SharpTL.Serializers
 
 			if (hasFlags) {
 				ITLPropertySerializationAgent flagAgent = _serializationAgents [0];
-				Console.WriteLine("#### just checking the flags serialization agent should be int " + _serializationAgents [0].GetType());
+				//Console.WriteLine("#### just checking the flags serialization agent should be int " + _serializationAgents [0].GetType());
+				Console.WriteLine ("#### Following are the properties to be read");
+				foreach(var property in properties) {
+					Console.WriteLine("Property name " + property.Name + " Property value " + property.GetValue(obj));
+				}
 				flagAgent.Read(obj, context);
 				flagsValue = (uint)properties[0].GetValue(obj);
 				string binary = Convert.ToString(flagsValue,2);
 				Console.WriteLine("###### The flags value set is " + flagsValue);
 				Console.WriteLine("###### The binary is " + binary);
+				var maxIndex = binary.Length - 1;
 				for (int i = 1; i < _serializationAgents.Length; i++) {
 					var currentPropertyInfo = properties [i];
 					var propInfo = currentPropertyInfo.GetCustomAttribute<TLPropertyAttribute>();
-					Console.WriteLine("######## The flag index set is " + propInfo.Flag + " and the flag set is" + propInfo.IsFlag);
+					Console.WriteLine("######## For the property "+ currentPropertyInfo.Name + " the flag index set is " + propInfo.Flag + " and the flag set is" + propInfo.IsFlag);
 					//convert the flags to binary
 					if (propInfo.IsFlag) {
-						if ((binary.Length - 1) < i) {
-							Console.WriteLine("###### the length of the binary is smaller exiting");
+						if (maxIndex < propInfo.Flag) {
+							//since the length is smaller than the flag index
+							Console.WriteLine("###### Continue, since the flag is not set");
 							continue;
-						} else {
-							if (binary [i] == '0') {
-								Console.WriteLine("The flag is set to zero, exiting");
-								continue;
-							}
+						} 
+						if (binary [(int)(maxIndex - propInfo.Flag)] == '0') {
+							Console.WriteLine("###### Continue since the flag is set to zero");
+							continue;
 						}
 					}
 					ITLPropertySerializationAgent agent = _serializationAgents [i];
 					agent.Read(obj, context);
+					Console.WriteLine ("##### The property just read was " + obj.GetType ().Name);
+					Console.WriteLine ("#### And the values of the object are as follows now are as follows ");
+					foreach(var property in properties) {
+						Console.WriteLine("Property name " + property.Name + " Property value " + property.GetValue(obj));
+					}
 				}
 			} else {
 				for (int i = 0; i < _serializationAgents.Length; i++) {
