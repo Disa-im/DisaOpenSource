@@ -18,6 +18,7 @@ namespace SharpTL.Serializers
     public class TLCustomObjectSerializer : TLSerializerBase
     {
         private readonly Type _objectType;
+	
 
         private readonly ITLPropertySerializationAgent[] _serializationAgents;
 
@@ -29,7 +30,7 @@ namespace SharpTL.Serializers
             TLSerializationMode serializationMode = TLSerializationMode.Boxed)
             : base(constructorNumber)
         {
-			Console.WriteLine("#### New Custom Object Serializer");
+			//Console.WriteLine("#### New Custom Object Serializer");
             _objectType = objectType;
             _serializationAgents = CreateSerializationAgents(properties, serializersBucket);
             SerializationMode = serializationMode;
@@ -51,12 +52,53 @@ namespace SharpTL.Serializers
 
         protected override object ReadBody(TLSerializationContext context)
         {
+			bool hasFlags = false;
+			uint flagsValue = 0;
             object obj = Activator.CreateInstance(_objectType);
-            for (int i = 0; i < _serializationAgents.Length; i++)
-            {
-                ITLPropertySerializationAgent agent = _serializationAgents[i];
-                agent.Read(obj, context);
-            }
+			var properties = obj.GetType().GetProperties();
+
+			foreach (var property in properties) {
+				if (property.Name == "Flags") {
+					hasFlags = true;
+				}
+			}
+				
+			Console.WriteLine("###### has flags" + hasFlags);
+			Console.WriteLine("###### The objects type is " + obj.GetType());
+
+			if (hasFlags) {
+				ITLPropertySerializationAgent flagAgent = _serializationAgents [0];
+				Console.WriteLine("#### just checking the flags serialization agent should be int " + _serializationAgents [0].GetType());
+				flagAgent.Read(obj, context);
+				flagsValue = (uint)properties[0].GetValue(obj);
+				string binary = Convert.ToString(flagsValue,2);
+				Console.WriteLine("###### The flags value set is " + flagsValue);
+				Console.WriteLine("###### The binary is " + binary);
+				for (int i = 1; i < _serializationAgents.Length; i++) {
+					var currentPropertyInfo = properties [i];
+					var propInfo = currentPropertyInfo.GetCustomAttribute<TLPropertyAttribute>();
+					Console.WriteLine("######## The flag index set is " + propInfo.Flag + " and the flag set is" + propInfo.IsFlag);
+					//convert the flags to binary
+					if (propInfo.IsFlag) {
+						if ((binary.Length - 1) < i) {
+							Console.WriteLine("###### the length of the binary is smaller exiting");
+							continue;
+						} else {
+							if (binary [i] == '0') {
+								Console.WriteLine("The flag is set to zero, exiting");
+								continue;
+							}
+						}
+					}
+					ITLPropertySerializationAgent agent = _serializationAgents [i];
+					agent.Read(obj, context);
+				}
+			} else {
+				for (int i = 0; i < _serializationAgents.Length; i++) {
+					ITLPropertySerializationAgent agent = _serializationAgents [i];
+					agent.Read(obj, context);
+				}
+			}
             return obj;
         }
 
@@ -102,6 +144,16 @@ namespace SharpTL.Serializers
                     return serializationAgent;
                 }).ToArray();
         }
+
+		static bool CheckIfHasFlags(IEnumerable<TLPropertyInfo> tlPropertyInfos)
+		{
+			foreach (var tlPropertyInfo in tlPropertyInfos) {
+				if (tlPropertyInfo.IsFlag) {
+					return true;
+				}
+			}
+			return false;
+		}
 
         private static TLSerializationMode? GetVectorItemsSerializationModeOverride(
             ITLVectorSerializer vectorSerializer,

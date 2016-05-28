@@ -164,7 +164,7 @@ namespace SharpTL
             }
 
             // TLObject.
-			Console.WriteLine("########Trying for custom serilizer attribute");
+			//Console.WriteLine("########Trying for custom serilizer attribute");
             var tlObjectAttribute = objTypeInfo.GetCustomAttribute<TLObjectAttribute>();
             var customSerializerAttribute = objTypeInfo.GetCustomAttribute<TLObjectWithCustomSerializerAttribute>();
             if (tlObjectAttribute != null || customSerializerAttribute != null)
@@ -185,13 +185,13 @@ namespace SharpTL
                      * There is a TLObjectAttribute without custom serializer,
                      * then use this meta-info to create properties map for object serialization based on TLProperty attributes. 
                      */
-					Console.WriteLine("######## getting properties in serilizer, using TLobject");
+					//Console.WriteLine("######## getting properties in serilizer, using TLobject");
                     List<TLPropertyInfo> props =
                         objTypeInfo.DeclaredProperties.Zip(
                             objTypeInfo.DeclaredProperties.Select(info => info.GetCustomAttribute<TLPropertyAttribute>()),
                             (info, attribute) => new Tuple<PropertyInfo, TLPropertyAttribute>(info, attribute))
                             .Where(tuple => tuple.Item2 != null)
-                            .Select(tuple => new TLPropertyInfo(tuple.Item2.Order, tuple.Item1, tuple.Item2.SerializationModeOverride))
+							.Select(tuple => new TLPropertyInfo(tuple.Item2.Order, tuple.Item2.Flag, tuple.Item2.IsFlag, tuple.Item1, tuple.Item2.SerializationModeOverride))
                             .ToList();
 
                     Add(new TLCustomObjectSerializer(tlObjectAttribute.ConstructorNumber, objType, props, this));
