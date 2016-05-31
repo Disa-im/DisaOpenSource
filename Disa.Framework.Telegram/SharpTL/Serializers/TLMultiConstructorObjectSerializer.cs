@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SharpTelegram.Schema;
 
 namespace SharpTL.Serializers
 {
@@ -35,6 +36,13 @@ namespace SharpTL.Serializers
         public void Write(object obj, TLSerializationContext context, TLSerializationMode? modeOverride = null)
         {
             Type objType = obj.GetType();
+
+            if (objType == typeof(ITrue))
+            {
+                //we dont write anything
+                return;
+            }
+
             ITLSingleConstructorSerializer serializer;
             if (!_serializersTypeIndex.TryGetValue(objType, out serializer))
             {
@@ -50,9 +58,15 @@ namespace SharpTL.Serializers
             {
                 throw new InvalidOperationException("TLMultiConstructorObjectSerializer doesn't support bare type deserialization.");
             }
+				
+			if(_objectType == typeof(ITrue)){
+				//Console.WriteLine ("Returning new onject since the typeof it is true");
+				return new True ();
+			}
 
             uint constructorNumber = context.Streamer.ReadUInt32();
-            ITLSingleConstructorSerializer serializer;
+
+			ITLSingleConstructorSerializer serializer;
 
             if (!_serializersConstructorNumberIndex.TryGetValue(constructorNumber, out serializer))
             {

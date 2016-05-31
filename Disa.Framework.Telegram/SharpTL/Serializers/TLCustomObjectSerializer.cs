@@ -12,305 +12,339 @@ using System.Reflection;
 
 namespace SharpTL.Serializers
 {
-    /// <summary>
-    ///     Serializer for TL custom object.
-    /// </summary>
-    public class TLCustomObjectSerializer : TLSerializerBase
-    {
-        private readonly Type _objectType;
+	/// <summary>
+	///     Serializer for TL custom object.
+	/// </summary>
+	public class TLCustomObjectSerializer : TLSerializerBase
+	{
+		private readonly Type _objectType;
 	
 
-        private readonly ITLPropertySerializationAgent[] _serializationAgents;
+		private readonly ITLPropertySerializationAgent[] _serializationAgents;
 
-        public TLCustomObjectSerializer(
-            uint constructorNumber,
-            Type objectType,
-            IEnumerable<TLPropertyInfo> properties,
-            TLSerializersBucket serializersBucket,
-            TLSerializationMode serializationMode = TLSerializationMode.Boxed)
-            : base(constructorNumber)
-        {
-			//Console.WriteLine("#### New Custom Object Serializer");
-            _objectType = objectType;
-            _serializationAgents = CreateSerializationAgents(properties, serializersBucket);
-            SerializationMode = serializationMode;
-        }
+		public TLCustomObjectSerializer(
+			uint constructorNumber,
+			Type objectType,
+			IEnumerable<TLPropertyInfo> properties,
+			TLSerializersBucket serializersBucket,
+			TLSerializationMode serializationMode = TLSerializationMode.Boxed)
+			: base(constructorNumber)
+		{
+			_objectType = objectType;
+			_serializationAgents = CreateSerializationAgents(properties, serializersBucket);
+			SerializationMode = serializationMode;
+		}
 
-        public override Type SupportedType
-        {
-            get { return _objectType; }
-        }
+		public override Type SupportedType
+		{
+			get { return _objectType; }
+		}
 
-        protected override void WriteBody(object obj, TLSerializationContext context)
-        {
-            for (int i = 0; i < _serializationAgents.Length; i++)
-            {
-                ITLPropertySerializationAgent agent = _serializationAgents[i];
-                agent.Write(obj, context);
-            }
-        }
-
-        protected override object ReadBody(TLSerializationContext context)
-        {
+		protected override void WriteBody(object obj, TLSerializationContext context)
+		{
 			bool hasFlags = false;
 			uint flagsValue = 0;
-            object obj = Activator.CreateInstance(_objectType);
-			var properties = obj.GetType().GetProperties();
 
-			foreach (var property in properties) {
-				if (property.Name == "Flags") {
-					hasFlags = true;
-				}
-			}
-				
-			Console.WriteLine("###### has flags" + hasFlags);
-			Console.WriteLine("###### The objects type is " + obj.GetType());
+			hasFlags = CheckForFlags(obj);
 
-			if (hasFlags) {
-				ITLPropertySerializationAgent flagAgent = _serializationAgents [0];
-				//Console.WriteLine("#### just checking the flags serialization agent should be int " + _serializationAgents [0].GetType());
-				Console.WriteLine ("#### Following are the properties to be read");
-				foreach(var property in properties) {
-					Console.WriteLine("Property name " + property.Name + " Property value " + property.GetValue(obj));
-				}
-				flagAgent.Read(obj, context);
+			if (hasFlags)
+			{
+				var properties = obj.GetType().GetProperties();
 				flagsValue = (uint)properties[0].GetValue(obj);
-				string binary = Convert.ToString(flagsValue,2);
-				Console.WriteLine("###### The flags value set is " + flagsValue);
-				Console.WriteLine("###### The binary is " + binary);
+				string binary = Convert.ToString(flagsValue, 2);
+
 				var maxIndex = binary.Length - 1;
-				for (int i = 1; i < _serializationAgents.Length; i++) {
-					var currentPropertyInfo = properties [i];
+				for (int i = 0; i < _serializationAgents.Length; i++)
+				{
+					var currentPropertyInfo = properties[i];
 					var propInfo = currentPropertyInfo.GetCustomAttribute<TLPropertyAttribute>();
-					Console.WriteLine("######## For the property "+ currentPropertyInfo.Name + " the flag index set is " + propInfo.Flag + " and the flag set is" + propInfo.IsFlag);
 					//convert the flags to binary
-					if (propInfo.IsFlag) {
-						if (maxIndex < propInfo.Flag) {
-							//since the length is smaller than the flag index
-							Console.WriteLine("###### Continue, since the flag is not set");
+					if (propInfo.IsFlag)
+					{
+						if (maxIndex < propInfo.Flag)
+						{//since the length is smaller than the flag index, it means this flag was not sent in the msg
 							continue;
 						} 
-						if (binary [(int)(maxIndex - propInfo.Flag)] == '0') {
-							Console.WriteLine("###### Continue since the flag is set to zero");
+						if (binary[(int)(maxIndex - propInfo.Flag)] == '0')
+						{//if the flag is set to zero
 							continue;
 						}
 					}
-					ITLPropertySerializationAgent agent = _serializationAgents [i];
-					agent.Read(obj, context);
-					Console.WriteLine ("##### The property just read was " + obj.GetType ().Name);
-					Console.WriteLine ("#### And the values of the object are as follows now are as follows ");
-					foreach(var property in properties) {
-						Console.WriteLine("Property name " + property.Name + " Property value " + property.GetValue(obj));
-					}
+					ITLPropertySerializationAgent agent = _serializationAgents[i];
+					agent.Write(obj, context);
 				}
-			} else {
-				for (int i = 0; i < _serializationAgents.Length; i++) {
-					ITLPropertySerializationAgent agent = _serializationAgents [i];
+			}
+			else
+			{
+				for (int i = 0; i < _serializationAgents.Length; i++)
+				{
+					ITLPropertySerializationAgent agent = _serializationAgents[i];
+					agent.Write(obj, context);
+				}
+			}
+		}
+
+		protected override object ReadBody(TLSerializationContext context)
+		{
+			bool hasFlags = false;
+			uint flagsValue = 0;
+
+			object obj = Activator.CreateInstance(_objectType);
+
+			hasFlags = CheckForFlags(obj);
+
+			if (hasFlags)
+			{
+				var properties = obj.GetType().GetProperties();
+				ITLPropertySerializationAgent flagAgent = _serializationAgents[0];
+				//deserialize anf read the flags
+				flagAgent.Read(obj, context);
+				flagsValue = (uint)properties[0].GetValue(obj);
+				//convert it to binary
+				string binary = Convert.ToString(flagsValue, 2);
+				//the length of the binary is the maximum index of flasg in the message,
+				//anything greater than this index, is useless and should directly exit
+				var maxIndex = binary.Length - 1;
+				for (int i = 1; i < _serializationAgents.Length; i++)
+				{
+					var currentPropertyInfo = properties[i];
+					var propInfo = currentPropertyInfo.GetCustomAttribute<TLPropertyAttribute>();
+					//convert the flags to binary
+					if (propInfo.IsFlag)
+					{
+						if (maxIndex < propInfo.Flag)
+						{//since the length is smaller than the flag index, it means this flag was not sent in the msg
+							continue;
+						} 
+						if (binary[(int)(maxIndex - propInfo.Flag)] == '0')
+						{//if the flag is set to zero
+							continue;
+						}
+					}
+					ITLPropertySerializationAgent agent = _serializationAgents[i];
 					agent.Read(obj, context);
 				}
 			}
-            return obj;
-        }
+			else
+			{
+				for (int i = 0; i < _serializationAgents.Length; i++)
+				{
+					ITLPropertySerializationAgent agent = _serializationAgents[i];
+					agent.Read(obj, context);
+				}
+			}
+			return obj;
+		}
 
-        private static ITLPropertySerializationAgent[] CreateSerializationAgents(IEnumerable<TLPropertyInfo> tlPropertyInfos, TLSerializersBucket serializersBucket)
-        {
-            return tlPropertyInfos.OrderBy(info => info.Order).Distinct().Select(
-                tlPropertyInfo =>
-                {
-                    PropertyInfo propertyInfo = tlPropertyInfo.PropertyInfo;
-
-                    Type propType = propertyInfo.PropertyType;
-
-                    ITLPropertySerializationAgent serializationAgent;
-
-                    if (propType == typeof (object))
-                    {
-                        /*
-                         * https://core.telegram.org/mtproto/serialize#object-pseudotype
-                         * Object Pseudotype
-                         * The Object pseudotype is a “type” which can take on values that belong to any boxed type in the schema.
-                         */
-                        serializationAgent = new TLObjectPropertySerializationAgent(tlPropertyInfo);
-                    }
-                    else
-                    {
-                        ITLSerializer tlSerializer = serializersBucket[propType];
-                        Debug.Assert(tlSerializer != null);
-
-                        var vectorSerializer = tlSerializer as ITLVectorSerializer;
-                        if (vectorSerializer != null)
-                        {
-                            TLSerializationMode? itemsSerializationModeOverride = GetVectorItemsSerializationModeOverride(
-                                vectorSerializer,
-                                propertyInfo,
-                                serializersBucket);
-                            serializationAgent = new TLVectorPropertySerializationAgent(tlPropertyInfo, vectorSerializer, itemsSerializationModeOverride);
-                        }
-                        else
-                        {
-                            serializationAgent = new TLPropertySerializationAgent(tlPropertyInfo, tlSerializer);
-                        }
-                    }
-                    return serializationAgent;
-                }).ToArray();
-        }
-
-		static bool CheckIfHasFlags(IEnumerable<TLPropertyInfo> tlPropertyInfos)
+		bool CheckForFlags(object obj)
 		{
-			foreach (var tlPropertyInfo in tlPropertyInfos) {
-				if (tlPropertyInfo.IsFlag) {
+			var properties = obj.GetType().GetProperties();
+
+			foreach (var property in properties)
+			{
+				if (property.Name == "Flags")
+				{
 					return true;
 				}
 			}
 			return false;
 		}
 
-        private static TLSerializationMode? GetVectorItemsSerializationModeOverride(
-            ITLVectorSerializer vectorSerializer,
-            PropertyInfo propertyInfo,
-            TLSerializersBucket serializersBucket)
-        {
-            Type propType = propertyInfo.PropertyType;
+		private static ITLPropertySerializationAgent[] CreateSerializationAgents(IEnumerable<TLPropertyInfo> tlPropertyInfos, TLSerializersBucket serializersBucket)
+		{
+			return tlPropertyInfos.OrderBy(info => info.Order).Distinct().Select(
+				tlPropertyInfo =>
+				{
+					PropertyInfo propertyInfo = tlPropertyInfo.PropertyInfo;
 
-            if (vectorSerializer.SupportedType != propType)
-            {
-                throw new NotSupportedException(
-                    string.Format("Current vector serializer doesn't support type: {0}. It supports: {1}", propType, vectorSerializer.SupportedType));
-            }
+					Type propType = propertyInfo.PropertyType;
 
-            TLSerializationMode? itemsSerializationModeOverride = TLSerializationMode.Bare;
+					ITLPropertySerializationAgent serializationAgent;
 
-            // Check for items serializer.
-            // If items have multiple constructors or have a TLTypeAttribute (in other words it is TL type),
-            // then items must be serialized as boxed.
-            Type itemsType = vectorSerializer.ItemsType;
-            ITLSerializer vectorItemSerializer = serializersBucket[itemsType];
-            if (vectorItemSerializer is ITLMultiConstructorSerializer || itemsType.GetTypeInfo().GetCustomAttribute<TLTypeAttribute>() != null)
-            {
-                itemsSerializationModeOverride = TLSerializationMode.Boxed;
-            }
-            else
-            {
-                // Check for TLVector attribute with items serialization mode override.
-                var tlVectorAttribute = propertyInfo.GetCustomAttribute<TLVectorAttribute>();
-                if (tlVectorAttribute != null)
-                {
-                    itemsSerializationModeOverride = tlVectorAttribute.ItemsModeOverride;
-                }
-            }
-            return itemsSerializationModeOverride;
-        }
+					if (propType == typeof(object))
+					{
+						/*
+                         * https://core.telegram.org/mtproto/serialize#object-pseudotype
+                         * Object Pseudotype
+                         * The Object pseudotype is a “type” which can take on values that belong to any boxed type in the schema.
+                         */
+						serializationAgent = new TLObjectPropertySerializationAgent(tlPropertyInfo);
+					}
+					else
+					{
+						ITLSerializer tlSerializer = serializersBucket[propType];
+						Debug.Assert(tlSerializer != null);
 
-        #region Property serialization agents.
-        /// <summary>
-        ///     TL property serialization agent.
-        /// </summary>
-        private interface ITLPropertySerializationAgent
-        {
-            void Write(object obj, TLSerializationContext context);
-            void Read(object obj, TLSerializationContext context);
-        }
+						var vectorSerializer = tlSerializer as ITLVectorSerializer;
+						if (vectorSerializer != null)
+						{
+							TLSerializationMode? itemsSerializationModeOverride = GetVectorItemsSerializationModeOverride(
+								                                                                           vectorSerializer,
+								                                                                           propertyInfo,
+								                                                                           serializersBucket);
+							serializationAgent = new TLVectorPropertySerializationAgent(tlPropertyInfo, vectorSerializer, itemsSerializationModeOverride);
+						}
+						else
+						{
+							serializationAgent = new TLPropertySerializationAgent(tlPropertyInfo, tlSerializer);
+						}
+					}
+					return serializationAgent;
+				}).ToArray();
+		}
 
-        /// <summary>
-        ///     Base TL property serialization agent.
-        /// </summary>
-        private abstract class TLPropertySerializationAgentBase : ITLPropertySerializationAgent
-        {
-            protected readonly TLPropertyInfo TLPropertyInfo;
+		private static TLSerializationMode? GetVectorItemsSerializationModeOverride(
+			ITLVectorSerializer vectorSerializer,
+			PropertyInfo propertyInfo,
+			TLSerializersBucket serializersBucket)
+		{
+			Type propType = propertyInfo.PropertyType;
 
-            private readonly string _propertyName;
+			if (vectorSerializer.SupportedType != propType)
+			{
+				throw new NotSupportedException(
+					string.Format("Current vector serializer doesn't support type: {0}. It supports: {1}", propType, vectorSerializer.SupportedType));
+			}
 
-            protected TLPropertySerializationAgentBase(TLPropertyInfo tlPropertyInfo)
-            {
-                TLPropertyInfo = tlPropertyInfo;
+			TLSerializationMode? itemsSerializationModeOverride = TLSerializationMode.Bare;
 
-                _propertyName = TLPropertyInfo.PropertyInfo.Name;
-            }
+			// Check for items serializer.
+			// If items have multiple constructors or have a TLTypeAttribute (in other words it is TL type),
+			// then items must be serialized as boxed.
+			Type itemsType = vectorSerializer.ItemsType;
+			ITLSerializer vectorItemSerializer = serializersBucket[itemsType];
+			if (vectorItemSerializer is ITLMultiConstructorSerializer || itemsType.GetTypeInfo().GetCustomAttribute<TLTypeAttribute>() != null)
+			{
+				itemsSerializationModeOverride = TLSerializationMode.Boxed;
+			}
+			else
+			{
+				// Check for TLVector attribute with items serialization mode override.
+				var tlVectorAttribute = propertyInfo.GetCustomAttribute<TLVectorAttribute>();
+				if (tlVectorAttribute != null)
+				{
+					itemsSerializationModeOverride = tlVectorAttribute.ItemsModeOverride;
+				}
+			}
+			return itemsSerializationModeOverride;
+		}
 
-            public void Write(object obj, TLSerializationContext context)
-            {
-                object propertyValue = obj.GetType().GetProperty(_propertyName).GetValue(obj);
-                WriteValue(propertyValue, context);
-            }
+		#region Property serialization agents.
 
-            public void Read(object obj, TLSerializationContext context)
-            {
-                object value = ReadValue(context);
-                obj.GetType().GetProperty(_propertyName).SetValue(obj, value);
-            }
+		/// <summary>
+		///     TL property serialization agent.
+		/// </summary>
+		private interface ITLPropertySerializationAgent
+		{
+			void Write(object obj, TLSerializationContext context);
 
-            protected abstract void WriteValue(object propertyValue, TLSerializationContext context);
-            protected abstract object ReadValue(TLSerializationContext context);
-        }
+			void Read(object obj, TLSerializationContext context);
+		}
 
-        /// <summary>
-        ///     TLObject property serialization agent.
-        /// </summary>
-        private class TLObjectPropertySerializationAgent : TLPropertySerializationAgentBase
-        {
-            public TLObjectPropertySerializationAgent(TLPropertyInfo tlPropertyInfo) : base(tlPropertyInfo)
-            {
-            }
+		/// <summary>
+		///     Base TL property serialization agent.
+		/// </summary>
+		private abstract class TLPropertySerializationAgentBase : ITLPropertySerializationAgent
+		{
+			protected readonly TLPropertyInfo TLPropertyInfo;
 
-            protected override void WriteValue(object propertyValue, TLSerializationContext context)
-            {
-                TLRig.Serialize(propertyValue, context, TLSerializationMode.Boxed);
-            }
+			private readonly string _propertyName;
 
-            protected override object ReadValue(TLSerializationContext context)
-            {
-                return TLRig.Deserialize<object>(context, TLSerializationMode.Boxed);
-            }
-        }
+			protected TLPropertySerializationAgentBase(TLPropertyInfo tlPropertyInfo)
+			{
+				TLPropertyInfo = tlPropertyInfo;
 
-        /// <summary>
-        ///     Regular TL property serialization agent.
-        /// </summary>
-        private class TLPropertySerializationAgent : TLPropertySerializationAgentBase
-        {
-            private readonly ITLSerializer _serializer;
+				_propertyName = TLPropertyInfo.PropertyInfo.Name;
+			}
 
-            public TLPropertySerializationAgent(TLPropertyInfo tlPropertyInfo, ITLSerializer serializer) : base(tlPropertyInfo)
-            {
-                _serializer = serializer;
-            }
+			public void Write(object obj, TLSerializationContext context)
+			{
+				object propertyValue = obj.GetType().GetProperty(_propertyName).GetValue(obj);
+				WriteValue(propertyValue, context);
+			}
 
-            protected override void WriteValue(object propertyValue, TLSerializationContext context)
-            {
-                _serializer.Write(propertyValue, context, TLPropertyInfo.SerializationModeOverride);
-            }
+			public void Read(object obj, TLSerializationContext context)
+			{
+				object value = ReadValue(context);
+				obj.GetType().GetProperty(_propertyName).SetValue(obj, value);
+			}
 
-            protected override object ReadValue(TLSerializationContext context)
-            {
-                return _serializer.Read(context, TLPropertyInfo.SerializationModeOverride);
-            }
-        }
+			protected abstract void WriteValue(object propertyValue, TLSerializationContext context);
 
-        /// <summary>
-        ///     TL vector property serialization agent.
-        /// </summary>
-        private class TLVectorPropertySerializationAgent : TLPropertySerializationAgentBase
-        {
-            private readonly ITLVectorSerializer _serializer;
-            private readonly TLSerializationMode? _itemsSerializationModeOverride;
+			protected abstract object ReadValue(TLSerializationContext context);
+		}
 
-            public TLVectorPropertySerializationAgent(TLPropertyInfo tlPropertyInfo, ITLVectorSerializer serializer, TLSerializationMode? itemsSerializationModeOverride)
-                : base(tlPropertyInfo)
-            {
-                _serializer = serializer;
-                _itemsSerializationModeOverride = itemsSerializationModeOverride;
-            }
+		/// <summary>
+		///     TLObject property serialization agent.
+		/// </summary>
+		private class TLObjectPropertySerializationAgent : TLPropertySerializationAgentBase
+		{
+			public TLObjectPropertySerializationAgent(TLPropertyInfo tlPropertyInfo)
+				: base(tlPropertyInfo)
+			{
+			}
 
-            protected override void WriteValue(object propertyValue, TLSerializationContext context)
-            {
-                _serializer.Write(propertyValue, context, TLPropertyInfo.SerializationModeOverride, _itemsSerializationModeOverride);
-            }
+			protected override void WriteValue(object propertyValue, TLSerializationContext context)
+			{
+				TLRig.Serialize(propertyValue, context, TLSerializationMode.Boxed);
+			}
 
-            protected override object ReadValue(TLSerializationContext context)
-            {
-                return _serializer.Read(context, TLPropertyInfo.SerializationModeOverride, _itemsSerializationModeOverride);
-            }
-        }
-        #endregion
-    }
+			protected override object ReadValue(TLSerializationContext context)
+			{
+				return TLRig.Deserialize<object>(context, TLSerializationMode.Boxed);
+			}
+		}
+
+		/// <summary>
+		///     Regular TL property serialization agent.
+		/// </summary>
+		private class TLPropertySerializationAgent : TLPropertySerializationAgentBase
+		{
+			private readonly ITLSerializer _serializer;
+
+			public TLPropertySerializationAgent(TLPropertyInfo tlPropertyInfo, ITLSerializer serializer)
+				: base(tlPropertyInfo)
+			{
+				_serializer = serializer;
+			}
+
+			protected override void WriteValue(object propertyValue, TLSerializationContext context)
+			{
+				_serializer.Write(propertyValue, context, TLPropertyInfo.SerializationModeOverride);
+			}
+
+			protected override object ReadValue(TLSerializationContext context)
+			{
+				return _serializer.Read(context, TLPropertyInfo.SerializationModeOverride);
+			}
+		}
+
+		/// <summary>
+		///     TL vector property serialization agent.
+		/// </summary>
+		private class TLVectorPropertySerializationAgent : TLPropertySerializationAgentBase
+		{
+			private readonly ITLVectorSerializer _serializer;
+			private readonly TLSerializationMode? _itemsSerializationModeOverride;
+
+			public TLVectorPropertySerializationAgent(TLPropertyInfo tlPropertyInfo, ITLVectorSerializer serializer, TLSerializationMode? itemsSerializationModeOverride)
+				: base(tlPropertyInfo)
+			{
+				_serializer = serializer;
+				_itemsSerializationModeOverride = itemsSerializationModeOverride;
+			}
+
+			protected override void WriteValue(object propertyValue, TLSerializationContext context)
+			{
+				_serializer.Write(propertyValue, context, TLPropertyInfo.SerializationModeOverride, _itemsSerializationModeOverride);
+			}
+
+			protected override object ReadValue(TLSerializationContext context)
+			{
+				return _serializer.Read(context, TLPropertyInfo.SerializationModeOverride, _itemsSerializationModeOverride);
+			}
+		}
+
+		#endregion
+	}
 }

@@ -50,39 +50,32 @@ namespace Disa.Framework.Telegram
 
         public static IInputUser CastUserToInputUser(IUser user)
         {
-//            var userEmpty = user as UserEmpty;
-////            var userSelf = user as UserSelf;
-////            var userContact = user as UserContact;
-////            var userForeign = user as UserForeign;
-//            if (userEmpty != null)
-//            {
-//                return new InputUserEmpty
-//                {
-//                    // nothing
-//                };
-//            }
-//            if (userSelf != null)
-//            {
-//                return new InputUserSelf
-//                {
-//                    // nothing
-//                };
-//            }
-//            if (userContact != null)
-//            {
-//                return new InputUserContact
-//                {
-//                    UserId = userContact.Id
-//                };
-//            }
-//            if (userForeign != null)
-//            {
-//                return new InputUserForeign
-//                {
-//                    UserId = userForeign.Id,
-//                    AccessHash = userForeign.AccessHash,
-//                };
-//            }
+            var userEmpty = user as UserEmpty;
+			var userObj = user as User;
+
+            if (userEmpty != null)
+            {
+                return new InputUserEmpty
+                {
+                    // nothing
+                };
+            }
+            if (userObj != null)
+            {
+				if (userObj.Self != null)
+				{
+					return new InputUserSelf
+					{
+						
+					};
+				}
+				return new InputUser
+				{
+					AccessHash = userObj.AccessHash,
+					UserId = userObj.Id,
+				};
+            }
+
             return null;
         }
 
@@ -178,90 +171,41 @@ namespace Disa.Framework.Telegram
         public static string GetUserPhoneNumber(IUser user)
         {
             var userEmpty = user as UserEmpty;
-//            var userSelf = user as UserSelf;
-//            var userContact = user as UserContact;
-//            var userRequest = user as UserRequest;
-//            var userDeleted = user as UserDeleted;
-//            var userForeign = user as UserForeign;
-//            if (userEmpty != null)
-//            {
-//                return null;
-//            }
-//            if (userSelf != null)
-//            {
-//                return userSelf.Phone;
-//            }
-//            if (userContact != null)
-//            {
-//                return userContact.Phone;
-//            }
-//            if (userRequest != null)
-//            {
-//                return userRequest.Phone;
-//            }
-//            if (userDeleted != null)
-//            {
-//                return null;
-//            }
-//            if (userForeign != null)
-//            {
-//                return null;
-//            }
+			var userObj = user as User;
+			if (userEmpty != null)
+			{
+				return null;
+			}
+			if (userObj != null)
+			{
+				return userObj.Phone;
+			}
             return null;
         }
 
         public static string GetUserName(IUser user)
         {
             var userEmpty = user as UserEmpty;
-//            var userSelf = user as UserSelf;
-//            var userContact = user as UserContact;
-//            var userRequest = user as UserRequest;
-//            var userDeleted = user as UserDeleted;
-//            var userForeign = user as UserForeign;
-//            if (userEmpty != null)
-//            {
-//                return userEmpty.Id.ToString(CultureInfo.InvariantCulture);
-//            }
-//            if (userSelf != null)
-//            {
-//                return userSelf.FirstName + " " + userSelf.LastName;
-//            }
-//            if (userContact != null)
-//            {
-//                return userContact.FirstName + " " + userContact.LastName;
-//            }
-//            if (userRequest != null)
-//            {
-//                return userRequest.FirstName + " " + userRequest.LastName;
-//            }
-//            if (userDeleted != null)
-//            {
-//                return userDeleted.FirstName + " " + userDeleted.LastName;
-//            }
-//            if (userForeign != null)
-//            {
-//                return userForeign.FirstName + " " + userForeign.LastName;
-//            }
+            var userObj = user as User;
+
+			if (userEmpty != null)
+            {
+                return userEmpty.Id.ToString(CultureInfo.InvariantCulture);
+            }
+			if (userObj != null)
+			{
+				return userObj.FirstName + " " + userObj.LastName;
+			}
             return null;
         }
 
         public static ulong GetAccessHash(IUser user)
         {
-//            var userContact = user as UserContact;
-//            var userRequest = user as UserRequest;
-//            var userForeign = user as UserForeign;
-//            if (userContact != null)
-//            {
-//                return userContact.AccessHash;
-//            }
-//            if (userRequest != null)
-//            {
-//                return userRequest.AccessHash;
-//            }
-//            if (userForeign != null)
-//            {
-//                return userForeign.AccessHash;
-//            }
+			var userObj = user as User;
+			if (userObj != null)
+			{
+				return userObj.AccessHash;
+			}
             return 0;
         }
 
@@ -293,35 +237,15 @@ namespace Disa.Framework.Telegram
         public static FileLocation GetUserPhotoLocation(IUser user, bool small)
         {
             var userEmpty = user as UserEmpty;
-//            var userSelf = user as UserSelf;
-//            var userContact = user as UserContact;
-//            var userRequest = user as UserRequest;
-//            var userDeleted = user as UserDeleted;
-//            var userForeign = user as UserForeign;
-//            if (userEmpty != null)
-//            {
-//                return null;
-//            }
-//            if (userSelf != null)
-//            {
-//                return GetFileLocationFromPhoto(userSelf.Photo, small);
-//            }
-//            if (userContact != null)
-//            {
-//                return GetFileLocationFromPhoto(userContact.Photo, small);
-//            }
-//            if (userRequest != null)
-//            {
-//                return GetFileLocationFromPhoto(userRequest.Photo, small);
-//            }
-//            if (userDeleted != null)
-//            {
-//                return null;
-//            }
-//            if (userForeign != null)
-//            {
-//                return GetFileLocationFromPhoto(userForeign.Photo, small);
-//            }
+			var userObj = user as User;
+            if (userEmpty != null)
+            {
+                return null;
+            }
+			if (user != null)
+			{
+				return GetFileLocationFromPhoto(userObj.Photo, small);
+			}
             return null;
         }
 
@@ -378,35 +302,15 @@ namespace Disa.Framework.Telegram
         public static string GetUserId(IUser user)
         {
             var userEmpty = user as UserEmpty;
-//            var userSelf = user as UserSelf;
-//            var userContact = user as UserContact;
-//            var userRequest = user as UserRequest;
-//            var userDeleted = user as UserDeleted;
-//            var userForeign = user as UserForeign;
-//            if (userEmpty != null)
-//            {
-//                return userEmpty.Id.ToString(CultureInfo.InvariantCulture);
-//            }
-//            if (userSelf != null)
-//            {
-//                return userSelf.Id.ToString(CultureInfo.InvariantCulture);
-//            }
-//            if (userContact != null)
-//            {
-//                return userContact.Id.ToString(CultureInfo.InvariantCulture);
-//            }
-//            if (userRequest != null)
-//            {
-//                return userRequest.Id.ToString(CultureInfo.InvariantCulture);
-//            }
-//            if (userDeleted != null)
-//            {
-//                return userDeleted.Id.ToString(CultureInfo.InvariantCulture);
-//            }
-//            if (userForeign != null)
-//            {
-//                return userForeign.Id.ToString(CultureInfo.InvariantCulture);
-//            }
+			var userObj = user as User;
+            if (userEmpty != null)
+            {
+                return userEmpty.Id.ToString(CultureInfo.InvariantCulture);
+            }
+            if (userObj != null)
+            {
+                return userObj.Id.ToString(CultureInfo.InvariantCulture);
+            }
             return null;
         }
 
@@ -430,35 +334,15 @@ namespace Disa.Framework.Telegram
         public static IUserStatus GetStatus(IUser user)
         {
             var userEmpty = user as UserEmpty;
-//            var userSelf = user as UserSelf;
-//            var userContact = user as UserContact;
-//            var userRequest = user as UserRequest;
-//            var userDeleted = user as UserDeleted;
-//            var userForeign = user as UserForeign;
-//            if (userEmpty != null)
-//            {
-//                return null;
-//            }
-//            if (userSelf != null)
-//            {
-//                return userSelf.Status;
-//            }
-//            if (userContact != null)
-//            {
-//                return userContact.Status;
-//            }
-//            if (userRequest != null)
-//            {
-//                return userRequest.Status;
-//            }
-//            if (userDeleted != null)
-//            {
-//                return null;
-//            }
-//            if (userForeign != null)
-//            {
-//                return userForeign.Status;
-//            }
+			var userObj = user as User;
+            if (userEmpty != null)
+            {
+                return null;
+            }
+			if (userObj != null)
+			{
+				return userObj.Status;
+			}
             return null;
         }
     }
