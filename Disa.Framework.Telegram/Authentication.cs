@@ -80,7 +80,7 @@ namespace Disa.Framework.Telegram
                             })) as AuthSentCode;
                             return new CodeRequest
                             {
-                                //Registered = result.PhoneRegistered,
+                                Registered = result.PhoneRegistered != null ? true : false,
                                 CodeHash = result.PhoneCodeHash,
                             };
                         }
