@@ -194,6 +194,8 @@ namespace Disa.Framework.Telegram
                 var user = update as IUser;
                 var chat = update as IChat;
 
+                DebugPrint(">>>>>> The type of object in process incoming payload is " + ObjectDumper.Dump(update));
+
                 if (shortMessage != null)
                 {
                     if (!string.IsNullOrWhiteSpace(shortMessage.Message))
@@ -202,11 +204,16 @@ namespace Disa.Framework.Telegram
                         EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                             Bubble.BubbleDirection.Incoming,
                             fromId, false, this, false, false));
-                        EventBubble(new TextBubble(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date, 
-                            Bubble.BubbleDirection.Incoming, 
-                            fromId, null, false, this, shortMessage.Message,
-                            shortMessage.Id.ToString(CultureInfo.InvariantCulture)));
+                        TextBubble textBubble = new TextBubble(
+                                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date, 
+                                            shortMessage.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, 
+                                            fromId, null, false, this, shortMessage.Message,
+                                            shortMessage.Id.ToString(CultureInfo.InvariantCulture));
+                        if (shortMessage.Out != null)
+                        {
+                            textBubble.Status = Bubble.BubbleStatus.Sent;
+                        }
+                        EventBubble(textBubble);
                     }
                     if (shortMessage.Id > maxMessageId)
                     {
