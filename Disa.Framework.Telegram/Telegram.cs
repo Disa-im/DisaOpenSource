@@ -188,7 +188,6 @@ namespace Disa.Framework.Telegram
                 var typing = update as UpdateUserTyping;
                 var typingChat = update as UpdateChatUserTyping;
                 var userStatus = update as UpdateUserStatus;
- //               var readMessages = update as UpdateReadMessages;
                 var messageService = update as MessageService;
                 var updateChatParticipants = update as UpdateChatParticipants;
                 var message = update as SharpTelegram.Schema.Message;
@@ -277,10 +276,6 @@ namespace Disa.Framework.Telegram
                         maxMessageId = message.Id;
                     }
                 }
-//                else if (readMessages != null)
-//                {
-//                    //TODO:
-//                }
                 else if (userStatus != null)
                 {
                     var available = TelegramUtils.GetAvailable(userStatus.Status);
@@ -900,7 +895,7 @@ namespace Disa.Framework.Telegram
                 var peer = GetInputPeer(textBubble.Address, textBubble.Party);
                 using (var client = new FullClientDisposable(this))
                 {
-                    var iMessagesSentMessage = TelegramUtils.RunSynchronously(
+                    var iUpdate = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                     {
 						Flags = 0,
@@ -908,17 +903,13 @@ namespace Disa.Framework.Telegram
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService2)
                     }));
-//                    var messagesSentMessage = iMessagesSentMessage as MessagesSentMessage;
-//                    if (messagesSentMessage != null)
+                    //Console.WriteLine("###### IUpdates " + ObjectDumper.Dump(iUpdate,10));
+
+//                    var updateShortSentMessage = iUpdate as UpdateShortSentMessage;
+//
+//                    if (updateShortSentMessage != null)
 //                    {
-//                        SaveState(messagesSentMessage.Date, messagesSentMessage.Pts, 0, messagesSentMessage.Seq);
-//                        textBubble.IdService = messagesSentMessage.Id.ToString(CultureInfo.InvariantCulture);
-//                    }
-//                    var messagesSentMessageLink = iMessagesSentMessage as MessagesSentMessageLink;
-//                    if (messagesSentMessageLink != null)
-//                    {
-//                        SaveState(messagesSentMessageLink.Date, messagesSentMessageLink.Pts, 0, messagesSentMessageLink.Seq);
-//                        textBubble.IdService = messagesSentMessageLink.Id.ToString(CultureInfo.InvariantCulture);
+//                        SendToResponseDispatcher(iUpdate);
 //                    }
                 }
             }
@@ -937,10 +928,27 @@ namespace Disa.Framework.Telegram
                         MaxId = 0,
 
                     })) as MessagesAffectedHistory;
-//                    if (messagesAffectedHistory != null)
-//                    {
-//                        SaveState(0, messagesAffectedHistory.Pts, 0, messagesAffectedHistory.Seq);
-//                    }
+                    if (messagesAffectedHistory != null)
+                    {
+                        SaveState(0, messagesAffectedHistory.Pts, 0, 0);
+                    }
+                }
+            }
+        }
+
+        void SendToResponseDispatcher(IUpdates iUpdate)
+        {
+            using (var client = new FullClientDisposable(this))
+            {
+                var mtProtoClientConnection = client.Client.Connection as MTProtoClientConnection;
+                if (mtProtoClientConnection != null)
+                {
+                    var responseDispatcher = mtProtoClientConnection.ResponseDispatcher as ResponseDispatcher;
+                    if (responseDispatcher != null)
+                    {
+                        SharpMTProto.Schema.IMessage tempMessage = new SharpMTProto.Schema.Message(0,0,iUpdate);
+                        responseDispatcher.DispatchAsync(tempMessage).Wait();
+                    }
                 }
             }
         }

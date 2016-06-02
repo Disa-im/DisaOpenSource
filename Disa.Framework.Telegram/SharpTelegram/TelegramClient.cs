@@ -193,5 +193,15 @@ namespace SharpTelegram
                 throw new ObjectDisposedException("Telegram client was disposed.");
             }
         }
+
+        public IMTProtoClientConnection Connection
+        {
+            get
+            {
+                return _connection;
+            }
+            private set{ }
+        }
+
     }
 }
