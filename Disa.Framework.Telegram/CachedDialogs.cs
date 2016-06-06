@@ -1,8 +1,10 @@
 ﻿using System;
 using SharpTelegram.Schema;
+using ProtoBuf;
 
 namespace Disa.Framework.Telegram
 {
+    [ProtoContract]
     public class CachedDialogs
     {
         public CachedDialogs()
@@ -22,8 +24,10 @@ namespace Disa.Framework.Telegram
         //TODO: remove this.
         public ThreadSafeList<IMessage> Messages { get; private set; }
 
+        [ProtoMember(1)]
         public ThreadSafeList<IChat> Chats { get; private set; }
 
+        [ProtoMember(2)]
         public ThreadSafeList<IUser> Users { get; private set; }
 
         public ThreadSafeList<IMessagesChatFull> FullChats { get; private set; }

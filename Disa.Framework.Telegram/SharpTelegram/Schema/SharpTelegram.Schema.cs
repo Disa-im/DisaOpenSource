@@ -27,6 +27,7 @@ namespace SharpTelegram.Schema
 {
 	using SharpTL;
 	using System.Threading.Tasks;
+    using ProtoBuf;
 
 	// TL constructors.
 
@@ -414,11 +415,13 @@ namespace SharpTelegram.Schema
 
 	}
 
+    [ProtoContract]
 	[TLObject (0x200250BA)]
 	public partial class UserEmpty : IUser
 	{
 
 		[TLProperty (1)]
+        [ProtoMember(1)]
 		public System.UInt32 Id { get; set; }
 
 	}
@@ -469,84 +472,104 @@ namespace SharpTelegram.Schema
 	}
 
 	[TLObject (0x9BA2D800)]
+    [ProtoContract]
 	public partial class ChatEmpty : IChat
 	{
 
 		[TLProperty (1)]
+        [ProtoMember(1)]
 		public System.UInt32 Id { get; set; }
 
 	}
 
 	[TLObject (0xD91CDD54)]
+    [ProtoContract]
 	public partial class Chat : IChat
 	{
 
 		[TLProperty (1)]
+        [ProtoMember(2)]
 		public System.UInt32 Flags { get; set; }
 
 
 		[TLProperty (2, 0, true)]
+        [ProtoMember(2)]
 		public ITrue Creator { get; set; }
 
 
 		[TLProperty (3, 1, true)]
+        [ProtoMember(3)]
 		public ITrue Kicked { get; set; }
 
 
 		[TLProperty (4, 2, true)]
+        [ProtoMember(4)]
 		public ITrue Left { get; set; }
 
 
 		[TLProperty (5, 3, true)]
+        [ProtoMember(5)]
 		public ITrue AdminsEnabled { get; set; }
 
 
 		[TLProperty (6, 4, true)]
+        [ProtoMember(6)]
 		public ITrue Admin { get; set; }
 
 
 		[TLProperty (7, 5, true)]
+        [ProtoMember(7)]
 		public ITrue Deactivated { get; set; }
 
 
 		[TLProperty (8)]
+        [ProtoMember(8)]
 		public System.UInt32 Id { get; set; }
 
 
 		[TLProperty (9)]
+        [ProtoMember(9)]
 		public System.String Title { get; set; }
 
 
 		[TLProperty (10)]
+        [ProtoMember(10)]
 		public IChatPhoto Photo { get; set; }
 
 
 		[TLProperty (11)]
+        [ProtoMember(11)]
 		public System.UInt32 ParticipantsCount { get; set; }
 
 
 		[TLProperty (12)]
+        [ProtoMember(12)]
 		public System.UInt32 Date { get; set; }
 
 
 		[TLProperty (13)]
+        [ProtoMember(13)]
 		public System.UInt32 Version { get; set; }
 
 
 		[TLProperty (14, 6, true)]
+        [ProtoMember(14)]
 		public IInputChannel MigratedTo { get; set; }
 
 	}
 
 	[TLObject (0x07328BDB)]
+    [ProtoContract]
 	public partial class ChatForbidden : IChat
 	{
 
 		[TLProperty (1)]
+        [ProtoMember(1)]
 		public System.UInt32 Id { get; set; }
 
 
 		[TLProperty (2)]
+        [ProtoMember(2)]
 		public System.String Title { get; set; }
 
 	}
@@ -1433,22 +1456,27 @@ namespace SharpTelegram.Schema
 	}
 
 	[TLObject (0x15BA6C40)]
+    [ProtoContract]
 	public partial class MessagesDialogs : IMessagesDialogs
 	{
 
 		[TLProperty (1)]
+        [ProtoMember(1)]
 		public System.Collections.Generic.List<IDialog> Dialogs { get; set; }
 
 
 		[TLProperty (2)]
+        [ProtoMember(2)]
 		public System.Collections.Generic.List<IMessage> Messages { get; set; }
 
 
 		[TLProperty (3)]
+        [ProtoMember(3)]
 		public System.Collections.Generic.List<IChat> Chats { get; set; }
 
 
 		[TLProperty (4)]
+        [ProtoMember(4)]
 		public System.Collections.Generic.List<IUser> Users { get; set; }
 
 	}
@@ -3969,99 +3997,123 @@ namespace SharpTelegram.Schema
 
 	}
 
+    [ProtoContract]
 	[TLObject (0xD10D979A)]
 	public partial class User : IUser
 	{
 
 		[TLProperty (1)]
+        [ProtoMember(1)]
 		public System.UInt32 Flags { get; set; }
 
 
 		[TLProperty (2, 10, true)]
+        [ProtoMember(2)]
 		public ITrue Self { get; set; }
 
 
 		[TLProperty (3, 11, true)]
+        [ProtoMember(3)]
 		public ITrue Contact { get; set; }
 
 
 		[TLProperty (4, 12, true)]
+        [ProtoMember(4)]
 		public ITrue MutualContact { get; set; }
 
 
 		[TLProperty (5, 13, true)]
+        [ProtoMember(5)]
 		public ITrue Deleted { get; set; }
 
 
 		[TLProperty (6, 14, true)]
+        [ProtoMember(6)]
 		public ITrue Bot { get; set; }
 
 
 		[TLProperty (7, 15, true)]
+        [ProtoMember(7)]
 		public ITrue BotChatHistory { get; set; }
 
 
 		[TLProperty (8, 16, true)]
+        [ProtoMember(8)]
 		public ITrue BotNochats { get; set; }
 
 
 		[TLProperty (9, 17, true)]
+        [ProtoMember(9)]
 		public ITrue Verified { get; set; }
 
 
 		[TLProperty (10, 18, true)]
+        [ProtoMember(10)]
 		public ITrue Restricted { get; set; }
 
 
 		[TLProperty (11, 20, true)]
+        [ProtoMember(11)]
 		public ITrue Min { get; set; }
 
 
 		[TLProperty (12, 21, true)]
+        [ProtoMember(12)]
 		public ITrue BotInlineGeo { get; set; }
 
 
 		[TLProperty (13)]
+        [ProtoMember(13)]
 		public System.UInt32 Id { get; set; }
 
 
 		[TLProperty (14, 0, true)]
+        [ProtoMember(14)]
 		public System.UInt64 AccessHash { get; set; }
 
 
 		[TLProperty (15, 1, true)]
+        [ProtoMember(15)]
 		public System.String FirstName { get; set; }
 
 
 		[TLProperty (16, 2, true)]
+        [ProtoMember(16)]
 		public System.String LastName { get; set; }
 
 
 		[TLProperty (17, 3, true)]
+        [ProtoMember(17)]
 		public System.String Username { get; set; }
 
 
 		[TLProperty (18, 4, true)]
+        [ProtoMember(18)]
 		public System.String Phone { get; set; }
 
 
 		[TLProperty (19, 5, true)]
+        [ProtoMember(19)]
 		public IUserProfilePhoto Photo { get; set; }
 
 
 		[TLProperty (20, 6, true)]
+        [ProtoMember(20)]
 		public IUserStatus Status { get; set; }
 
 
 		[TLProperty (21, 14, true)]
+        [ProtoMember(21)]
 		public System.UInt32 BotInfoVersion { get; set; }
 
 
 		[TLProperty (22, 18, true)]
+        [ProtoMember(22)]
 		public System.String RestrictionReason { get; set; }
 
 
 		[TLProperty (23, 19, true)]
+        [ProtoMember(23)]
 		public System.String BotInlinePlaceholder { get; set; }
 
 	}
@@ -4442,107 +4494,133 @@ namespace SharpTelegram.Schema
 	}
 
 	[TLObject (0xA14DCA52)]
+    [ProtoContract]
 	public partial class Channel : IChat
 	{
 
 		[TLProperty (1)]
+        [ProtoMember(1)]
 		public System.UInt32 Flags { get; set; }
 
 
 		[TLProperty (2, 0, true)]
+        [ProtoMember(2)]
 		public ITrue Creator { get; set; }
 
 
 		[TLProperty (3, 1, true)]
+        [ProtoMember(3)]
 		public ITrue Kicked { get; set; }
 
 
 		[TLProperty (4, 2, true)]
+        [ProtoMember(4)]
 		public ITrue Left { get; set; }
 
 
 		[TLProperty (5, 3, true)]
+        [ProtoMember(5)]
 		public ITrue Editor { get; set; }
 
 
 		[TLProperty (6, 4, true)]
+        [ProtoMember(6)]
 		public ITrue Moderator { get; set; }
 
 
 		[TLProperty (7, 5, true)]
+        [ProtoMember(7)]
 		public ITrue Broadcast { get; set; }
 
 
 		[TLProperty (8, 7, true)]
-		public ITrue Verified { get; set; }
+        [ProtoMember(8)]
+        public ITrue Verified { get; set; }
 
 
 		[TLProperty (9, 8, true)]
+        [ProtoMember(9)]
 		public ITrue Megagroup { get; set; }
 
 
 		[TLProperty (10, 9, true)]
+        [ProtoMember(10)]
 		public ITrue Restricted { get; set; }
 
 
 		[TLProperty (11, 10, true)]
+        [ProtoMember(11)]
 		public ITrue Democracy { get; set; }
 
 
 		[TLProperty (12, 11, true)]
+        [ProtoMember(12)]
 		public ITrue Signatures { get; set; }
 
 
 		[TLProperty (13, 12, true)]
+        [ProtoMember(13)]
 		public ITrue Min { get; set; }
 
 
 		[TLProperty (14)]
+        [ProtoMember(14)]
 		public System.UInt32 Id { get; set; }
 
 
 		[TLProperty (15, 13, true)]
+        [ProtoMember(15)]
 		public System.UInt64 AccessHash { get; set; }
 
 
 		[TLProperty (16)]
+        [ProtoMember(16)]
 		public System.String Title { get; set; }
 
 
 		[TLProperty (17, 6, true)]
+        [ProtoMember(17)]
 		public System.String Username { get; set; }
 
 
 		[TLProperty (18)]
+        [ProtoMember(18)]
 		public IChatPhoto Photo { get; set; }
 
 
 		[TLProperty (19)]
+        [ProtoMember(19)]
 		public System.UInt32 Date { get; set; }
 
 
 		[TLProperty (20)]
+        [ProtoMember(20)]
 		public System.UInt32 Version { get; set; }
 
 
 		[TLProperty (21, 9, true)]
+        [ProtoMember(21)]
 		public System.String RestrictionReason { get; set; }
 
 	}
 
 	[TLObject (0x2D85832C)]
+    [ProtoContract]
 	public partial class ChannelForbidden : IChat
 	{
 
 		[TLProperty (1)]
+        [ProtoMember(1)]
 		public System.UInt32 Id { get; set; }
 
 
 		[TLProperty (2)]
+        [ProtoMember(2)]
 		public System.UInt64 AccessHash { get; set; }
 
 
 		[TLProperty (3)]
+        [ProtoMember(3)]
 		public System.String Title { get; set; }
 
 	}
@@ -8744,6 +8822,9 @@ namespace SharpTelegram.Schema
 	}
 
 	[TLType (typeof(UserEmpty), typeof(User))]
+    [ProtoContract]
+    [ProtoInclude(2000, typeof(UserEmpty))]
+    [ProtoInclude(2001, typeof(User))]
 	public partial interface IUser
 	{
 	}
@@ -8759,6 +8840,12 @@ namespace SharpTelegram.Schema
 	}
 
 	[TLType (typeof(ChatEmpty), typeof(Chat), typeof(ChatForbidden), typeof(Channel), typeof(ChannelForbidden))]
+    [ProtoContract]
+    [ProtoInclude(1000, typeof(ChatEmpty))]
+    [ProtoInclude(1001, typeof(Chat))]
+    [ProtoInclude(1002, typeof(ChatForbidden))]
+    [ProtoInclude(1003, typeof(Channel))]
+    [ProtoInclude(1004, typeof(ChannelForbidden))]
 	public partial interface IChat
 	{
 	}

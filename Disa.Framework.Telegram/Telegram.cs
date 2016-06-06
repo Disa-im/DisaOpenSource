@@ -12,6 +12,8 @@ using SharpMTProto.Messaging.Handlers;
 using SharpMTProto.Schema;
 using System.Globalization;
 using System.Timers;
+using System.IO;
+using ProtoBuf;
 
 //TODO:
 //1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
@@ -229,11 +231,15 @@ namespace Disa.Framework.Telegram
                         EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                             Bubble.BubbleDirection.Incoming,
                             address, participantAddress, true, this, false, false));
-                        EventBubble(new TextBubble(
+                        TextBubble textBubble = new TextBubble(
                             useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortChatMessage.Date, 
-                            Bubble.BubbleDirection.Incoming, 
+                            shortMessage.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, 
                             address, participantAddress, true, this, shortChatMessage.Message,
-                            shortChatMessage.Id.ToString(CultureInfo.InvariantCulture)));
+                            shortChatMessage.Id.ToString(CultureInfo.InvariantCulture));
+                        if (shortMessage.Out != null)
+                        {
+                            textBubble.Status = Bubble.BubbleStatus.Sent;
+                        }
                     }
                     if (shortChatMessage.Id > maxMessageId)
                     {
@@ -1526,6 +1532,7 @@ namespace Disa.Framework.Telegram
 //                    MaxId = 0,
                 }));
             var dialogs = iDialogs as MessagesDialogs;
+            DebugPrint("Messages dialogs " + ObjectDumper.Dump(dialogs));
             var dialogsSlice = iDialogs as MessagesDialogsSlice;
             if (dialogs != null)
             {
@@ -1534,22 +1541,15 @@ namespace Disa.Framework.Telegram
                 masterDialogs.Messages.AddRange(dialogs.Messages);
                 masterDialogs.Users.AddRange(dialogs.Users);
             }
-//            else if (dialogsSlice != null)
-//            {
-//                masterDialogs.Chats.AddRange(dialogsSlice.Chats);
-//                masterDialogs.Dialogs.AddRange(dialogsSlice.Dialogs);
-//                masterDialogs.Messages.AddRange(dialogsSlice.Messages);
-//                masterDialogs.Users.AddRange(dialogsSlice.Users);
-//                if (dialogsSlice.Count < offset + limit)
-//                {
-//                    Console.WriteLine("No need to fetch anymore slices. We've reached the end!");
-//                    goto End;
-//                }
-//                DebugPrint("Obtained a dialog slice! ... fetching more!");
-//                offset += limit;
-//                goto Again;
-////            }
- //          End:
+            MemoryStream memoryStream = new MemoryStream();
+           
+            Serializer.Serialize<IUser>(memoryStream, masterDialogs.Users.ElementAt<IUser>(0));
+            //DebugPrint("############### Serialized data " + memoryStream.GetBuffer());
+            memoryStream.Position = 0;
+            IUser iuser = Serializer.Deserialize<User>(memoryStream);
+            DebugPrint("############## deserialized data " + ObjectDumper.Dump(masterDialogs.Users.ElementAt<IUser>(0)));
+            DebugPrint("############## deserialized data " + ObjectDumper.Dump(iuser));
+
             FetchFullChatsForParties(client, masterDialogs);
             _dialogs = masterDialogs;
             DebugPrint("Obtained conversations.");

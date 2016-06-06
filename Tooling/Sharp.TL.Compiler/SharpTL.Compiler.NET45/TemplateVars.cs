@@ -11,5 +11,6 @@ namespace SharpTL.Compiler
         public TLSchema Schema { get; set; }
         public string Namespace { get; set; }
         public string MethodsInterfaceName { get; set; }
+        public uint tag = 99;
     }
 }

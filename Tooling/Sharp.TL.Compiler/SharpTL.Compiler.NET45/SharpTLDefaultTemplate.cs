@@ -18,14 +18,14 @@ namespace SharpTL.Compiler {
     public partial class SharpTLDefaultTemplate : SharpTLDefaultTemplateBase {
         
         
-        #line 94 ""
+        #line 104 ""
 
         [UsedImplicitly] private TemplateVars _templateVars; 
         #line default
         #line hidden
         
         
-        #line 95 ""
+        #line 105 ""
 
 private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<TLType> types, bool isMethodsArgs = false)
 {
@@ -37,7 +37,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 102 ""
+        #line 112 ""
 
         this.Write("    [TLObject(0x");
 
@@ -45,7 +45,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 102 ""
+        #line 112 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture(constructor.Number.ToString("X8") ));
 
@@ -53,15 +53,15 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 102 ""
+        #line 112 ""
 
-        this.Write(")]\r\n    public partial class ");
+        this.Write(")]\r\n    [ProtoContract]\r\n    public partial class ");
 
         #line default
         #line hidden
         
         
-        #line 103 ""
+        #line 114 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture(
     string.Format("{0}{1}", isMethodsArgs ? constructor.Name + "Args" : constructor.Name,
@@ -72,7 +72,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 106 ""
+        #line 117 ""
 
         this.Write("\r\n    {\r\n");
 
@@ -80,7 +80,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 108 ""
+        #line 119 ""
 
         int i = 0;
         foreach (TLCombinatorParameter parameter in constructor.Parameters)
@@ -91,7 +91,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 114 ""
+        #line 125 ""
 
         this.Write("\r\n");
 
@@ -99,7 +99,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 115 ""
+        #line 126 ""
 
 		if(!parameter.IsFlag)
 		{
@@ -108,15 +108,15 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 119 ""
+        #line 130 ""
 
-        this.Write("        \t[TLProperty(");
+        this.Write("\t\t\t[ProtoMember(");
 
         #line default
         #line hidden
         
         
-        #line 119 ""
+        #line 130 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture(++i ));
 
@@ -124,7 +124,23 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 119 ""
+        #line 130 ""
+
+        this.Write(")]\r\n        \t[TLProperty(");
+
+        #line default
+        #line hidden
+        
+        
+        #line 131 ""
+
+        this.Write(this.ToStringHelper.ToStringWithCulture(i ));
+
+        #line default
+        #line hidden
+        
+        
+        #line 131 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture(serModeOverride.HasValue ? string.Format(", TLSerializationMode.{0}", serModeOverride.Value) : String.Empty ));
 
@@ -132,7 +148,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 119 ""
+        #line 131 ""
 
         this.Write(")]\r\n        \tpublic ");
 
@@ -140,7 +156,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 120 ""
+        #line 132 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture(parameter.Type.Name ));
 
@@ -148,7 +164,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 120 ""
+        #line 132 ""
 
         this.Write(" ");
 
@@ -156,7 +172,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 120 ""
+        #line 132 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture( parameter.Name ));
 
@@ -164,7 +180,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 120 ""
+        #line 132 ""
 
         this.Write(" { get; set; }\r\n");
 
@@ -172,7 +188,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 121 ""
+        #line 133 ""
 
 		}
 		else
@@ -182,15 +198,15 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 126 ""
+        #line 138 ""
 
-        this.Write("\t\t\t[TLFlagProperty(");
+        this.Write("\t\t\t[ProtoMember(");
 
         #line default
         #line hidden
         
         
-        #line 126 ""
+        #line 138 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture(++i ));
 
@@ -198,7 +214,23 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 126 ""
+        #line 138 ""
+
+        this.Write(")]\r\n\t\t\t[TLProperty(");
+
+        #line default
+        #line hidden
+        
+        
+        #line 139 ""
+
+        this.Write(this.ToStringHelper.ToStringWithCulture(i ));
+
+        #line default
+        #line hidden
+        
+        
+        #line 139 ""
 
         this.Write(",");
 
@@ -206,7 +238,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 126 ""
+        #line 139 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture(parameter.FlagIndex));
 
@@ -214,7 +246,15 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 126 ""
+        #line 139 ""
+
+        this.Write(",true");
+
+        #line default
+        #line hidden
+        
+        
+        #line 139 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture(serModeOverride.HasValue ? string.Format(", TLSerializationMode.{0}", serModeOverride.Value) : String.Empty ));
 
@@ -222,7 +262,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 126 ""
+        #line 139 ""
 
         this.Write(")]\r\n        \tpublic ");
 
@@ -230,7 +270,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 127 ""
+        #line 140 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture(parameter.Type.Name ));
 
@@ -238,7 +278,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 127 ""
+        #line 140 ""
 
         this.Write(" ");
 
@@ -246,7 +286,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 127 ""
+        #line 140 ""
 
         this.Write(this.ToStringHelper.ToStringWithCulture( parameter.Name ));
 
@@ -254,7 +294,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 127 ""
+        #line 140 ""
 
         this.Write(" { get; set; }\r\n");
 
@@ -262,7 +302,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 128 ""
+        #line 141 ""
 
 		}
 
@@ -270,7 +310,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 131 ""
+        #line 144 ""
 
         this.Write("\r\n");
 
@@ -278,7 +318,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 132 ""
+        #line 145 ""
 
         }
 
@@ -286,7 +326,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 135 ""
+        #line 148 ""
 
         this.Write("    }\r\n\r\n");
 
@@ -294,7 +334,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
         #line hidden
         
         
-        #line 137 ""
+        #line 150 ""
 
     }
 }
@@ -355,13 +395,13 @@ namespace ");
             #line hidden
             
             #line 30 ""
-            this.Write("\r\n{\r\n    using SharpTL;\r\n    using System.Threading.Tasks;\r\n\r\n    // TL construct" +
-                    "ors.\r\n\r\n");
+            this.Write("\r\n{\r\n    using SharpTL;\r\n    using System.Threading.Tasks;\r\n    using ProtoBuf;\r\n" +
+                    "\r\n    // TL constructors.\r\n\r\n");
             
             #line default
             #line hidden
             
-            #line 37 ""
+            #line 38 ""
 
     // Writing constructors with common types.
     WriteTLObjects(_templateVars.Schema.Constructors, _templateVars.Schema.TypesBox.Where(t => t.HasConstructors && !t.IsBuiltIn));
@@ -374,13 +414,13 @@ namespace ");
             #line default
             #line hidden
             
-            #line 45 ""
+            #line 46 ""
             this.Write("\r\n    // TL types.\r\n\r\n");
             
             #line default
             #line hidden
             
-            #line 48 ""
+            #line 49 ""
 
 foreach (TLType type in from t in _templateVars.Schema.TypesBox where t.HasConstructors && !t.IsBuiltIn select t)
 {
@@ -389,38 +429,91 @@ foreach (TLType type in from t in _templateVars.Schema.TypesBox where t.HasConst
             #line default
             #line hidden
             
-            #line 52 ""
+            #line 53 ""
             this.Write("    [TLType(");
             
             #line default
             #line hidden
             
-            #line 52 ""
+            #line 53 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(type.Constructors.Select(constructor => string.Format("typeof({0})", constructor.Name)).Aggregate((s, s1) => s + ", " + s1)
     ));
             
             #line default
             #line hidden
             
-            #line 53 ""
-            this.Write(")]\r\n    public partial interface ");
+            #line 54 ""
+            this.Write(")]\r\n    [ProtoContract]\r\n    ");
             
             #line default
             #line hidden
             
-            #line 54 ""
+            #line 56 ""
+
+    foreach (var constructor in type.Constructors)
+    {
+    
+            
+            #line default
+            #line hidden
+            
+            #line 60 ""
+            this.Write("    [ProtoInclude(");
+            
+            #line default
+            #line hidden
+            
+            #line 60 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture(_templateVars.tag++));
+            
+            #line default
+            #line hidden
+            
+            #line 60 ""
+            this.Write(",");
+            
+            #line default
+            #line hidden
+            
+            #line 60 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture(string.Format("typeof({0})", constructor.Name)));
+            
+            #line default
+            #line hidden
+            
+            #line 60 ""
+            this.Write(")]\r\n    ");
+            
+            #line default
+            #line hidden
+            
+            #line 61 ""
+
+    }
+    
+            
+            #line default
+            #line hidden
+            
+            #line 64 ""
+            this.Write("    public partial interface ");
+            
+            #line default
+            #line hidden
+            
+            #line 64 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(type.Name ));
             
             #line default
             #line hidden
             
-            #line 54 ""
+            #line 64 ""
             this.Write("\r\n    {\r\n    }\r\n\r\n");
             
             #line default
             #line hidden
             
-            #line 58 ""
+            #line 68 ""
 
 }
 
@@ -428,26 +521,26 @@ foreach (TLType type in from t in _templateVars.Schema.TypesBox where t.HasConst
             #line default
             #line hidden
             
-            #line 61 ""
+            #line 71 ""
             this.Write("\r\n    /// <summary>\r\n    ///     TL methods.\r\n    /// </summary>\r\n    public inte" +
                     "rface I");
             
             #line default
             #line hidden
             
-            #line 65 ""
+            #line 75 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(_templateVars.MethodsInterfaceName));
             
             #line default
             #line hidden
             
-            #line 65 ""
+            #line 75 ""
             this.Write("Methods\r\n    {\r\n");
             
             #line default
             #line hidden
             
-            #line 67 ""
+            #line 77 ""
 
     foreach (TLCombinator method in _templateVars.Schema.Methods)
     {
@@ -456,49 +549,49 @@ foreach (TLType type in from t in _templateVars.Schema.TypesBox where t.HasConst
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 81 ""
             this.Write("        ");
             
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 81 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(method.Type.Name ));
             
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 81 ""
             this.Write(" ");
             
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 81 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(method.Name ));
             
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 81 ""
             this.Write("(");
             
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 81 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(method.Name ));
             
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 81 ""
             this.Write("Args args);\r\n");
             
             #line default
             #line hidden
             
-            #line 72 ""
+            #line 82 ""
 
     }
 
@@ -506,26 +599,26 @@ foreach (TLType type in from t in _templateVars.Schema.TypesBox where t.HasConst
             #line default
             #line hidden
             
-            #line 75 ""
+            #line 85 ""
             this.Write("    }\r\n\r\n    /// <summary>\r\n    ///     TL async methods.\r\n    /// </summary>\r\n  " +
                     "  public interface I");
             
             #line default
             #line hidden
             
-            #line 80 ""
+            #line 90 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(_templateVars.MethodsInterfaceName));
             
             #line default
             #line hidden
             
-            #line 80 ""
+            #line 90 ""
             this.Write("AsyncMethods\r\n    {\r\n");
             
             #line default
             #line hidden
             
-            #line 82 ""
+            #line 92 ""
 
     foreach (TLCombinator method in _templateVars.Schema.Methods)
     {
@@ -535,49 +628,49 @@ foreach (TLType type in from t in _templateVars.Schema.TypesBox where t.HasConst
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 97 ""
             this.Write("        ");
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 97 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(returnType ));
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 97 ""
             this.Write(" ");
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 97 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(method.Name ));
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 97 ""
             this.Write("Async(");
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 97 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(method.Name ));
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 97 ""
             this.Write("Args args);\r\n");
             
             #line default
             #line hidden
             
-            #line 88 ""
+            #line 98 ""
 
     }
 
@@ -585,7 +678,7 @@ foreach (TLType type in from t in _templateVars.Schema.TypesBox where t.HasConst
             #line default
             #line hidden
             
-            #line 91 ""
+            #line 101 ""
             this.Write("    }\r\n}\r\n#pragma warning restore 1591\r\n");
             
             #line default

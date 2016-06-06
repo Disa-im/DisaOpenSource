@@ -31,6 +31,7 @@ namespace <#=_templateVars.Namespace #>
 {
     using SharpTL;
     using System.Threading.Tasks;
+    using ProtoBuf;
 
     // TL constructors.
 
@@ -51,6 +52,15 @@ foreach (TLType type in from t in _templateVars.Schema.TypesBox where t.HasConst
 #>
     [TLType(<#=type.Constructors.Select(constructor => string.Format("typeof({0})", constructor.Name)).Aggregate((s, s1) => s + ", " + s1)
     #>)]
+    [ProtoContract]
+    <#
+    foreach (var constructor in type.Constructors)
+    {
+    #>
+    [ProtoInclude(<#=_templateVars.tag++#>,<#=string.Format("typeof({0})", constructor.Name)#>)]
+    <#
+    }
+    #>
     public partial interface <#=type.Name #>
     {
     }
@@ -100,6 +110,7 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
     {
 #>
     [TLObject(0x<#=constructor.Number.ToString("X8") #>)]
+    [ProtoContract]
     public partial class <#=
     string.Format("{0}{1}", isMethodsArgs ? constructor.Name + "Args" : constructor.Name,
         (typesList != null && typesList.Contains(constructor.Type)) ? " : " + constructor.Type.Name : String.Empty)
@@ -116,14 +127,16 @@ private void WriteTLObjects(IEnumerable<TLCombinator> constructors, IEnumerable<
 		if(!parameter.IsFlag)
 		{
 #>
-        	[TLProperty(<#=++i #><#=serModeOverride.HasValue ? string.Format(", TLSerializationMode.{0}", serModeOverride.Value) : String.Empty #>)]
+			[ProtoMember(<#=++i #>)]
+        	[TLProperty(<#=i #><#=serModeOverride.HasValue ? string.Format(", TLSerializationMode.{0}", serModeOverride.Value) : String.Empty #>)]
         	public <#=parameter.Type.Name #> <#= parameter.Name #> { get; set; }
 <#+
 		}
 		else
 		{
 #>
-			[TLFlagProperty(<#=++i #>,<#=parameter.FlagIndex#><#=serModeOverride.HasValue ? string.Format(", TLSerializationMode.{0}", serModeOverride.Value) : String.Empty #>)]
+			[ProtoMember(<#=++i #>)]
+			[TLProperty(<#=i #>,<#=parameter.FlagIndex#>,true<#=serModeOverride.HasValue ? string.Format(", TLSerializationMode.{0}", serModeOverride.Value) : String.Empty #>)]
         	public <#=parameter.Type.Name #> <#= parameter.Name #> { get; set; }
 <#+
 		}
