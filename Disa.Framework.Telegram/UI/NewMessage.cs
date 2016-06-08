@@ -38,25 +38,19 @@ namespace Disa.Framework.Telegram
                 {
                     var partyContacts = new List<Contact>();
                     //TODO: manually call upon GetDialogs method call to get the latest dialogs.
-                    foreach (var iDialog in _dialogs.Dialogs)
+                    foreach (var group in BubbleGroupManager.FindAll(this).Where(x => x.IsParty))
                     {
-                        var dialog = iDialog as Dialog;
-                        if (dialog == null)
-                            continue;
-                        var peerChat = dialog.Peer as PeerChat;
-                        if (peerChat == null)
-                            continue;
-                        var peerChatId = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
+                        var peerChatId = group.Address;
                         string name = null;
-                        foreach (var iChat in _dialogs.Chats)
-                        {
-                            var chatId = TelegramUtils.GetChatId(iChat);
-                            if (chatId == peerChatId)
+
+                        var iChat = _dialogs.GetChat(uint.Parse(peerChatId));
+
+                            if (iChat!=null)
                             {
                                 name = TelegramUtils.GetChatTitle(iChat);
                                 break;
                             }
-                        }
+                        
                         if (!string.IsNullOrWhiteSpace(name))
                         {
                             partyContacts.Add(new TelegramPartyContact
@@ -87,19 +81,19 @@ namespace Disa.Framework.Telegram
                 foreach (var bubbleGroup in BubbleGroupManager.SortByMostPopular(this, true))
                 {
                     var address = bubbleGroup.Address;
-                    foreach (var user in _dialogs.Users)
+                   
+            
+                    var user = _dialogs.GetUser(uint.Parse(address));
+                    if (user != null)
                     {
-                        var userId = TelegramUtils.GetUserId(user);
-                        if (userId == address)
+                        var inputUser = TelegramUtils.CastUserToInputUser(user);
+                        if (inputUser != null)
                         {
-                            var inputUser = TelegramUtils.CastUserToInputUser(user);
-                            if (inputUser != null)
-                            {
-                                inputUsers.Add(inputUser);
-                                break;
-                            }
+                            inputUsers.Add(inputUser);
+                            break;
                         }
                     }
+
                     count++;
                     if (count > 6)
                         break;
@@ -246,16 +240,19 @@ namespace Disa.Framework.Telegram
                     };
                     return Tuple.Create(contact, id);
                 };
-                foreach (var user in _dialogs.Users)
+                if (address == null)
                 {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId == address)
-                    {
-                        var tuple = buildContact(user);
-                        result(tuple.Item1, tuple.Item2);
-                        return;
-                    }
+                    return;
                 }
+
+                var userTuple = _dialogs.GetUser(uint.Parse(address));
+                if (userTuple != null)
+                {
+                    var tuple = buildContact(userTuple);
+                    result(tuple.Item1, tuple.Item2);
+                    return;
+                }
+
                 var userContacts = await FetchContacts();
                 foreach (var userContact in userContacts)
                 {

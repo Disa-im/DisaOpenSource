@@ -229,17 +229,18 @@ namespace Disa.Framework.Telegram
                         var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
                         var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
                         EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
-                            Bubble.BubbleDirection.Incoming,
-                            address, participantAddress, true, this, false, false));
+                           Bubble.BubbleDirection.Incoming,
+                           address, participantAddress, true, this, false, false));
                         TextBubble textBubble = new TextBubble(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortChatMessage.Date, 
-                            shortMessage.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, 
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long) shortChatMessage.Date,
+                            shortChatMessage.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
                             address, participantAddress, true, this, shortChatMessage.Message,
                             shortChatMessage.Id.ToString(CultureInfo.InvariantCulture));
-                        if (shortMessage.Out != null)
+                        if (shortChatMessage.Out != null)
                         {
                             textBubble.Status = Bubble.BubbleStatus.Sent;
                         }
+                        EventBubble(textBubble);
                     }
                     if (shortChatMessage.Id > maxMessageId)
                     {
@@ -292,6 +293,17 @@ namespace Disa.Framework.Telegram
                 else if (userStatus != null)
                 {
                     var available = TelegramUtils.GetAvailable(userStatus.Status);
+                    var userToUpdate = _dialogs.GetUser(userStatus.UserId);
+                    if (userToUpdate != null)
+                    {
+                        var userToUpdateAsUser = userToUpdate as User;
+                        if (userToUpdateAsUser != null)
+                        {
+                            userToUpdateAsUser.Status = userStatus.Status;
+                            _dialogs.AddUser(userToUpdateAsUser);
+                        }
+                    }
+                   
                     EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(),
                         Bubble.BubbleDirection.Incoming,
                         userStatus.UserId.ToString(CultureInfo.InvariantCulture),
@@ -345,66 +357,26 @@ namespace Disa.Framework.Telegram
                 }
                 else if (user != null)
                 {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId != null)
-                    {
-                        var updatedUser = false;
-                        for (int i = 0; i < _dialogs.Users.Count; i++)
-                        {
-                            var userInnerId = TelegramUtils.GetUserId(_dialogs.Users[i]);
-                            if (userInnerId != null && userInnerId == userId)
-                            {
-                                Console.WriteLine("Updating user with new updates information: " + userId);
-                                _dialogs.Users[i] = user;
-                                updatedUser = true;
-                                break;
-                            }
-                        }
-                        if (!updatedUser)
-                        {
-                            Console.WriteLine("New user information: " + userId + " adding to dialogs!");
-                            _dialogs.Users.Add(user);
-                        }
-                    }
+                    _dialogs.AddUser(user);
                 }
                 else if (chat != null)
                 {
-                    var chatId = TelegramUtils.GetChatId(chat);
-                    if (chatId != null)
-                    {
-                        var updatedChat = false;
-                        for (int i = 0; i < _dialogs.Chats.Count; i++)
-                        {
-                            var chatInnerId = TelegramUtils.GetChatId(_dialogs.Chats[i]);
-                            if (chatInnerId != null && chatInnerId == chatId)
-                            {
-                                Console.WriteLine("Updating chat with new updates information: " + chatId);
-                                _dialogs.Chats[i] = chat;
-                                updatedChat = true;
-                                break;
-                            }
-                        }
-                        if (!updatedChat)
-                        {
-                            Console.WriteLine("New chat information: " + chatId + " adding to dialogs!");
-                            _dialogs.Chats.Add(chat);
-                        }
-                    }
+                    _dialogs.AddChat(chat);
                 }
                 else if (updateChatParticipants != null)
                 {
-                    var chatParicipants = updateChatParticipants.Participants as ChatParticipants;
-                    if (chatParicipants != null)
-                    {
-                        Task.Factory.StartNew(() =>
-                        {
-                            var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
-                            DebugPrint("Updating chat participants: " + address);
-                            RemoveFullChat(address);
-                            GetFullChat(address, optionalClient);
-                            BubbleGroupUpdater.Update(this, address);
-                        });
-                    }
+//                    var chatParicipants = updateChatParticipants.Participants as ChatParticipants;
+//                    if (chatParicipants != null)
+//                    {
+//                        Task.Factory.StartNew(() =>
+//                        {
+//                            var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
+//                            DebugPrint("Updating chat participants: " + address);
+//                            RemoveFullChat(address);
+//                            GetFullChat(address, optionalClient);
+//                            BubbleGroupUpdater.Update(this, address);
+//                        });
+//                    }
                 }
                 else if (messageService != null)
                 {
@@ -418,14 +390,10 @@ namespace Disa.Framework.Telegram
                     if (editTitle != null)
                     {
                         var newTitle = editTitle.Title;
-                        for (int i = 0; i < _dialogs.Chats.Count; i++)
+                        var chatToUpdate = _dialogs.GetChat(uint.Parse(address));
+                        if (chatToUpdate != null)
                         {
-                            var chatInnerId = TelegramUtils.GetChatId(_dialogs.Chats[i]);
-                            if (chatInnerId != null && chatInnerId == address)
-                            {
-                                TelegramUtils.SetChatTitle(_dialogs.Chats[i], newTitle);
-                                break;
-                            }
+                            TelegramUtils.SetChatTitle(chatToUpdate, newTitle);
                         }
                         EventBubble(PartyInformationBubble.CreateTitleChanged(
                             useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address, 
@@ -989,16 +957,11 @@ namespace Disa.Framework.Telegram
         }
 
         private ulong GetUserAccessHashIfForeign(string userId)
-        {
-            foreach (var user in _dialogs.Users)
+        { 
+            var user = _dialogs.GetUser(uint.Parse(userId));
+            if (user != null)
             {
-                var userForeign = user as User;
-                if (userForeign != null)
-                {
-                    var userForeignId = TelegramUtils.GetUserId(userForeign);
-                    if (userForeignId == userId)
-                        return TelegramUtils.GetAccessHash(userForeign);
-                }
+                return TelegramUtils.GetAccessHash(user);
             }
             return 0;
         }
@@ -1042,6 +1005,7 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupName(BubbleGroup group, Action<string> result)
         {
+            DebugPrint("GetBubbleGroupName");
             return Task.Factory.StartNew(() =>
             {
                 result(GetTitle(group.Address, group.IsParty));
@@ -1050,6 +1014,7 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupPhoto(BubbleGroup group, Action<DisaThumbnail> result)
         {
+            DebugPrint("GetBubbleGroupPhoto");
             return Task.Factory.StartNew(() =>
             {
                 result(GetThumbnail(group.Address, group.IsParty, true));
@@ -1058,40 +1023,16 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupPartyParticipants(BubbleGroup group, Action<DisaParticipant[]> result)
         {
+            DebugPrint("##### getting bubble group participants");
             return Task.Factory.StartNew(() =>
             {
-                using (var clientDisposable = new FullClientDisposable(this))
-                {
-                    var fullChat = GetFullChat(clientDisposable.Client, group.Address);
-                    if (fullChat != null)
-                    {
-                        var chatFull = (ChatFull)fullChat.FullChat;
-                        var participants = chatFull.Participants as ChatParticipants;
-                        if (participants == null)
-                        {
-                            result(null);
-                        }
-                        else
-                        {
-                            var users = participants.Participants.Select(x => 
-                                GetUser(fullChat.Users, ((ChatParticipant)x).UserId.ToString(CultureInfo.InvariantCulture)));
-                            var disaParticipants = users.Select(x => 
-                                new DisaParticipant(
-                                    TelegramUtils.GetUserName(x), 
-                                    TelegramUtils.GetUserId(x))).ToArray();
-                            result(disaParticipants);
-                        }
-                    }
-                    else
-                    {
-                        result(null);
-                    }
-                }
+                result(null);
             });
         }
 
         public override Task GetBubbleGroupUnknownPartyParticipant(BubbleGroup group, string unknownPartyParticipant, Action<DisaParticipant> result)
         {
+            DebugPrint("##### getting bubble group unknown");
             return Task.Factory.StartNew(() =>
             {
                 //TODO: this may not actually get title always.
@@ -1109,6 +1050,7 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupPartyParticipantPhoto(DisaParticipant participant, Action<DisaThumbnail> result)
         {
+            DebugPrint("get party participant photo");
             return Task.Factory.StartNew(() =>
             {
                 result(GetThumbnail(participant.Address, false, true));
@@ -1117,6 +1059,7 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
         {
+            DebugPrint("Get last online");
             return Task.Factory.StartNew(() =>
             {
                 result(GetUpdatedLastOnline(group.Address));
@@ -1193,80 +1136,61 @@ namespace Disa.Framework.Telegram
         // that way we don't have to always rely on CachedDialogs.Dialogs... which we do not need anymore.
         private List<IUser> GetUpdatedUsersOfAllDialogs()
         {
-            var peerUsers = _dialogs.Dialogs.ToList().Select(x => (x as Dialog).Peer).OfType<PeerUser>();
             var users = new List<IUser>();
-            foreach (var peer in peerUsers)
+            foreach (var userBubbleGroup in BubbleGroupManager.FindAll(this).Where(x => !x.IsParty))
             {
-                var peerUserId = peer.UserId.ToString(CultureInfo.InvariantCulture);
-                foreach (var user in _dialogs.Users)
+                var user = _dialogs.GetUser(uint.Parse(userBubbleGroup.Address));
+                if (user != null)
                 {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (peerUserId == userId)
-                    {
-                        users.Add(user);
-                    }
+                    users.Add(user);
                 }
             }
-            using (var clientDisposable = new FullClientDisposable(this))
-            {
-                var inputUsers = users.Select(x => TelegramUtils.CastUserToInputUser(x)).Where(d => d != null).ToList();
-                var updatedUsers = TelegramUtils.RunSynchronously(GetUsers(inputUsers, clientDisposable.Client));
-                return updatedUsers;
-            }
+
+            return users;
         }
 
         private long GetUpdatedLastOnline(string id)
         {
-            foreach (var user in _dialogs.Users)
+            var user = _dialogs.GetUser(uint.Parse(id));
+            if (user != null)
             {
-                var userId = TelegramUtils.GetUserId(user);
-                if (userId == id)
-                {
-                    var inputUser = TelegramUtils.CastUserToInputUser(user);
-                    if (inputUser != null)
-                    {
-                        using (var clientDisposable = new FullClientDisposable(this))
-                        {
-                            var updatedUser = TelegramUtils.RunSynchronously(GetUser(inputUser, clientDisposable.Client));
-                            return TelegramUtils.GetLastSeenTime(updatedUser);
-                        }
-                    }
-                }
+                return TelegramUtils.GetLastSeenTime(user);
             }
-            DebugPrint("Could not get last online for user: " + id);
             return 0;
         }
 
         private string GetTitle(string id, bool group)
         {
+            if (id == null)
+            {
+                return null;
+            }
             if (group)
             {
-                foreach (var chat in _dialogs.Chats)
+                var chat = _dialogs.GetChat(uint.Parse(id));
+                if (chat == null)
                 {
-                    var chatId = TelegramUtils.GetChatId(chat);
-                    if (chatId == id)
-                    {
-                        return TelegramUtils.GetChatTitle(chat);
-                    }
+                    return null;
                 }
+                return TelegramUtils.GetChatTitle(chat);
             }
             else
             {
-                foreach (var user in _dialogs.Users)
+                var user = _dialogs.GetUser(uint.Parse(id));
+                if (user == null)
                 {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId == id)
-                    {
-                        return TelegramUtils.GetUserName(user);
-                    }
+                    return null;
                 }
+                return TelegramUtils.GetUserName(user);
             }
-            DebugPrint("Could not get title for user: " + id);
-            return null;
         }
 
         private DisaThumbnail GetThumbnail(string id, bool group, bool small)
         {
+            if (id == null)
+            {
+                return null;
+            }
             var key = id + group + small;
 
             Func<DisaThumbnail, DisaThumbnail> cache = thumbnail =>
@@ -1287,22 +1211,23 @@ namespace Disa.Framework.Telegram
             }
             if (group)
             {
-                foreach (var chat in _dialogs.Chats)
+                var chat = _dialogs.GetChat(uint.Parse(id));
+                if (chat == null)
                 {
-                    if (id == TelegramUtils.GetChatId(chat))
-                    {
-                        var fileLocation = TelegramUtils.GetChatThumbnailLocation(chat, small);
-                        if (fileLocation == null)
-                        {
-                            return cache(null);
-                        }
-                        else
-                        {
-                            var bytes = FetchFileBytes(fileLocation);
-                            return cache(new DisaThumbnail(this, bytes, key));
-                        }
-                    }
+                    return null;
                 }
+                var fileLocation = TelegramUtils.GetChatThumbnailLocation(chat, small);
+                if (fileLocation == null)
+                {
+                    return cache(null);
+                }
+                else
+                {
+                    var bytes = FetchFileBytes(fileLocation);
+                    return cache(new DisaThumbnail(this, bytes, key));
+                }
+                    
+                
             }
             else
             {
@@ -1319,31 +1244,10 @@ namespace Disa.Framework.Telegram
                         return cache(new DisaThumbnail(this, bytes, key));
                     }
                 };
-                foreach (var user in _dialogs.Users)
-                {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId == id)
-                    {
-                        return getThumbnail(user);
-                    }
-                }
-                foreach (var fullChat in _dialogs.FullChats)
-                {
-                    var messagesChatFull = fullChat as MessagesChatFull;
-                    if (messagesChatFull != null)
-                    {
-                        foreach (var user in messagesChatFull.Users)
-                        {
-                            var userId = TelegramUtils.GetUserId(user);
-                            if (userId == id)
-                            {
-                                return getThumbnail(user);
-                            }
-                        }
-                    }
-                }
+
+                var userImg = _dialogs.GetUser(uint.Parse(id));
+                return userImg == null ? null : getThumbnail(userImg);
             }
-            return null;
         }
 
         //TODO: chunk the download
@@ -1398,70 +1302,70 @@ namespace Disa.Framework.Telegram
 			DebugPrint (ObjectDumper.Dump(_config));
         }
  
-        private MessagesChatFull GetFullChat(string address, TelegramClient optionalClient = null)
-        {
-            using (var disposable = new OptionalClientDisposable(this, optionalClient))
-            {
-                return GetFullChat(disposable.Client, address);
-            }
-        }
+//        private MessagesChatFull GetFullChat(string address, TelegramClient optionalClient = null)
+//        {
+//            using (var disposable = new OptionalClientDisposable(this, optionalClient))
+//            {
+//                return GetFullChat(disposable.Client, address);
+//            }
+//        }
 
-        private MessagesChatFull GetFullChat(TelegramClient client, string address)
-        {
-            var id = uint.Parse(address);
-            foreach (var iChatFull in _dialogs.FullChats)
-            {
-                var chatFull = iChatFull as MessagesChatFull;
-                if (chatFull != null)
-                {
-                    var chatFull2 = chatFull.FullChat as ChatFull;
-                    if (id == chatFull2.Id)
-                    {
-                        return chatFull;
-                    }
-                }
-            }
-            if (_dialogs.FullChatFailures.FirstOrDefault(x => x == address) != null)
-            {
-                return null;
-            }
-            else
-            {
-                return FetchAndCacheFullChat(client, _dialogs, address);
-            }
-        }
+//        private MessagesChatFull GetFullChat(TelegramClient client, string address)
+//        {
+//            var id = uint.Parse(address);
+//            foreach (var iChatFull in _dialogs.FullChats)
+//            {
+//                var chatFull = iChatFull as MessagesChatFull;
+//                if (chatFull != null)
+//                {
+//                    var chatFull2 = chatFull.FullChat as ChatFull;
+//                    if (id == chatFull2.Id)
+//                    {
+//                        return chatFull;
+//                    }
+//                }
+//            }
+//            if (_dialogs.FullChatFailures.FirstOrDefault(x => x == address) != null)
+//            {
+//                return null;
+//            }
+//            else
+//            {
+//                return FetchAndCacheFullChat(client, _dialogs, address);
+//            }
+//        }
 
-        private void RemoveFullChat(string address)
-        {
-            var id = uint.Parse(address);
-            foreach (var iChatFull in _dialogs.FullChats)
-            {
-                var chatFull = iChatFull as MessagesChatFull;
-                if (chatFull != null)
-                {
-                    var chatFull2 = chatFull.FullChat as ChatFull;
-                    if (id == chatFull2.Id)
-                    {
-                        _dialogs.FullChats.Remove(iChatFull);
-                        break;
-                    }
-                }
-            }
-            var chatFailure = _dialogs.FullChatFailures.FirstOrDefault(x => address == x);
-            if (chatFailure != null)
-            {
-                _dialogs.FullChatFailures.Remove(chatFailure);
-            }
-        }
-
-        // See FetchAndCacheFullChat
-        private void FetchFullChatsForParties(TelegramClient client, CachedDialogs dialogs)
-        {
-            foreach (var group in BubbleGroupManager.FindAll(this).Where(x => x.IsParty))
-            {
-                FetchAndCacheFullChat(client, dialogs, group.Address);
-            }
-        }
+//        private void RemoveFullChat(string address)
+//        {
+//            var id = uint.Parse(address);
+//            foreach (var iChatFull in _dialogs.FullChats)
+//            {
+//                var chatFull = iChatFull as MessagesChatFull;
+//                if (chatFull != null)
+//                {
+//                    var chatFull2 = chatFull.FullChat as ChatFull;
+//                    if (id == chatFull2.Id)
+//                    {
+//                        _dialogs.FullChats.Remove(iChatFull);
+//                        break;
+//                    }
+//                }
+//            }
+//            var chatFailure = _dialogs.FullChatFailures.FirstOrDefault(x => address == x);
+//            if (chatFailure != null)
+//            {
+//                _dialogs.FullChatFailures.Remove(chatFailure);
+//            }
+//        }
+//
+//        // See FetchAndCacheFullChat
+//        private void FetchFullChatsForParties(TelegramClient client, CachedDialogs dialogs)
+//        {
+//            foreach (var group in BubbleGroupManager.FindAll(this).Where(x => x.IsParty))
+//            {
+//                FetchAndCacheFullChat(client, dialogs, group.Address);
+//            }
+//        }
 
         //FIXME: fully implement and persist to cache.
         // This one is actually called because MessagesGetDialogs doesn't list participant information.
@@ -1470,29 +1374,30 @@ namespace Disa.Framework.Telegram
         // we need to refetch the full chat. This also needs to be cached in the same
         // structure as GetDialogs (CachedDialogs). Some of this updating can be seen
         // in ProcessIncomingPayload... although not all is yet implemented.
-        private static MessagesChatFull FetchAndCacheFullChat(TelegramClient client, 
-            CachedDialogs dialogs, string address)
-        {
-            var fullChat = FetchFullChat(client, address);
-            if (fullChat != null)
-            {
-                dialogs.FullChats.Add(fullChat);
-            }
-            else
-            {
-                dialogs.FullChatFailures.Add(address);   
-            }
-            return fullChat;
-        }
+//        private static MessagesChatFull FetchAndCacheFullChat(TelegramClient client, 
+//            CachedDialogs dialogs, string address)
+//        {
+//            var fullChat = FetchFullChat(client, address);
+//            Utils.DebugPrint(">>>> fullchat " + ObjectDumper.Dump(fullChat));
+//            if (fullChat != null)
+//            {
+//                dialogs.FullChats.Add(fullChat);
+//            }
+//            else
+//            {
+//                dialogs.FullChatFailures.Add(address);   
+//            }
+//            return fullChat;
+//        }
 
-        private static MessagesChatFull FetchFullChat(TelegramClient client, string address)
-        {
-            var fullChat = (MessagesChatFull)TelegramUtils.RunSynchronously(client.Methods.MessagesGetFullChatAsync(new MessagesGetFullChatArgs
-            {
-                ChatId = uint.Parse(address) 
-            }));
-            return fullChat;
-        }
+//        private static MessagesChatFull FetchFullChat(TelegramClient client, string address)
+//        {
+//            var fullChat = (MessagesChatFull)TelegramUtils.RunSynchronously(client.Methods.MessagesGetFullChatAsync(new MessagesGetFullChatArgs
+//            {
+//                ChatId = uint.Parse(address) 
+//            }));
+//            return fullChat;
+//        }
 
         //FIXME: If you have more than 100 convos, client will break.
         // >>>>> Telegram's implementation:
@@ -1523,35 +1428,25 @@ namespace Disa.Framework.Telegram
         {
             DebugPrint("Fetching conversations");
             var masterDialogs = new CachedDialogs();
-            uint limit = 10;
-            var iDialogs = TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
-                {
-					Limit = 100,
-					OffsetPeer = new InputPeerEmpty(),
-//                    Offset = offset,
-//                    MaxId = 0,
-                }));
-            var dialogs = iDialogs as MessagesDialogs;
-            DebugPrint("Messages dialogs " + ObjectDumper.Dump(dialogs));
-            var dialogsSlice = iDialogs as MessagesDialogsSlice;
-            if (dialogs != null)
-            {
-                masterDialogs.Chats.AddRange(dialogs.Chats);
-                masterDialogs.Dialogs.AddRange(dialogs.Dialogs);
-                masterDialogs.Messages.AddRange(dialogs.Messages);
-                masterDialogs.Users.AddRange(dialogs.Users);
-            }
-            MemoryStream memoryStream = new MemoryStream();
-           
-            Serializer.Serialize<IUser>(memoryStream, masterDialogs.Users.ElementAt<IUser>(0));
-            //DebugPrint("############### Serialized data " + memoryStream.GetBuffer());
-            memoryStream.Position = 0;
-            IUser iuser = Serializer.Deserialize<User>(memoryStream);
-            DebugPrint("############## deserialized data " + ObjectDumper.Dump(masterDialogs.Users.ElementAt<IUser>(0)));
-            DebugPrint("############## deserialized data " + ObjectDumper.Dump(iuser));
 
-            FetchFullChatsForParties(client, masterDialogs);
+            if (!masterDialogs.DatabasesExist())
+            {
+                DebugPrint("Databases dont exit! creating new ones from data from server");
+                var iDialogs =
+                    TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
+                    {
+                        Limit = 100,
+                        OffsetPeer = new InputPeerEmpty(),
+                    }));
+                var dialogs = iDialogs as MessagesDialogs;
+                masterDialogs.AddChats(dialogs.Chats);
+                masterDialogs.AddUsers(dialogs.Users);
+            }
+
+
             _dialogs = masterDialogs;
+            //FetchFullChatsForParties(client, masterDialogs);
+
             DebugPrint("Obtained conversations.");
         }
     }

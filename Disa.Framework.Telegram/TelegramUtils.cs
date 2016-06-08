@@ -143,7 +143,6 @@ namespace Disa.Framework.Telegram
             var chatEmpty = chat as ChatEmpty;
             var chatForbidden = chat as ChatForbidden;
             var chatChat = chat as Chat;
-//            var geoChat = chat as GeoChat;
             if (chatEmpty != null)
             {
                 return chatEmpty.Id.ToString(CultureInfo.InvariantCulture);
@@ -156,10 +155,6 @@ namespace Disa.Framework.Telegram
             {
                 return chatChat.Id.ToString(CultureInfo.InvariantCulture);
             }
-//            if (geoChat != null)
-//            {
-//                return geoChat.Id.ToString(CultureInfo.InvariantCulture);
-//            }
             return null;
         }
 

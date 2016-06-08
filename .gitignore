@@ -222,3 +222,5 @@ pip-log.txt
 
 *.userprefs
 Tooling/Sharp.TL.Compiler/.nuget/
+packages/
+DisaOpenSource.VC.db
