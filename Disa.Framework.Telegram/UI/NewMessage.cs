@@ -185,6 +185,7 @@ namespace Disa.Framework.Telegram
                             }
                         }
                     }
+                    DebugPrint("############# Input users size " + inputUsers.Count);
                     if (inputUsers.Any())
                     {
                         var subject = BubbleGroupUtils.GeneratePartyTitle(names.ToArray());
@@ -200,11 +201,20 @@ namespace Disa.Framework.Telegram
                             {
                                 Users = inputUsers,
                                 Title = subject,
-                            });
-//                            ProcessIncomingPayload(response, true);
-//                            SaveState(response);
-//                            var chat = TelegramUtils.GetChatFromStatedMessage(response);
-//                            result(true, TelegramUtils.GetChatId(chat));
+                           });
+                            var updates = response as Updates;
+                            if (updates != null)
+                            {
+                                SendToResponseDispatcher(updates,client.Client);
+                                _dialogs.AddUsers(updates.Users);
+                                _dialogs.AddChats(updates.Chats);
+                                var chat = TelegramUtils.GetChatFromUpdate(updates);
+                                result(true, TelegramUtils.GetChatId(chat));
+                            }
+                            else
+                            {
+                                result(false, null);
+                            }
                         }
                     }
                     else

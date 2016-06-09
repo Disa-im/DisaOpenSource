@@ -787,8 +787,9 @@ namespace Disa.Framework.Telegram
                     GetDialogs(client);
                     _dialogsInitiallyRetrieved = true;
                 }
-				GetConfig(client);
+                GetConfig(client);
             }
+
             DebugPrint("Starting long poller...");
             if (_longPollClient != null)
             {
@@ -884,14 +885,6 @@ namespace Disa.Framework.Telegram
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService2)
                     }));
-                    //Console.WriteLine("###### IUpdates " + ObjectDumper.Dump(iUpdate,10));
-
-//                    var updateShortSentMessage = iUpdate as UpdateShortSentMessage;
-//
-//                    if (updateShortSentMessage != null)
-//                    {
-//                        SendToResponseDispatcher(iUpdate);
-//                    }
                 }
             }
 
@@ -917,11 +910,9 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        void SendToResponseDispatcher(IUpdates iUpdate)
+        void SendToResponseDispatcher(IUpdates iUpdate,TelegramClient client)
         {
-            using (var client = new FullClientDisposable(this))
-            {
-                var mtProtoClientConnection = client.Client.Connection as MTProtoClientConnection;
+                var mtProtoClientConnection = client.Connection as MTProtoClientConnection;
                 if (mtProtoClientConnection != null)
                 {
                     var responseDispatcher = mtProtoClientConnection.ResponseDispatcher as ResponseDispatcher;
@@ -931,7 +922,6 @@ namespace Disa.Framework.Telegram
                         responseDispatcher.DispatchAsync(tempMessage).Wait();
                     }
                 }
-            }
         }
 
         private IInputPeer GetInputPeer(string userId, bool groupChat)

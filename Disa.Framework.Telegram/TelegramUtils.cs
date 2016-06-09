@@ -33,20 +33,10 @@ namespace Disa.Framework.Telegram
             }
         }
 
-		public static IChat GetChatFromStatedMessage(IMessage message)
-        {
-//            var messagesStatedMessage = message as MessagesStatedMessage;
-//            if (messagesStatedMessage != null)
-//            {
-//                return messagesStatedMessage.Chats.FirstOrDefault();
-//            }
-//            var messagesStatedMessageLink = message as MessagesStatedMessageLink;
-//            if (messagesStatedMessageLink != null)
-//            {
-//                return messagesStatedMessageLink.Chats.FirstOrDefault();
-//            }
-            return null;
-        }
+		public static IChat GetChatFromUpdate(Updates update)
+		{
+		    return update.Chats.FirstOrDefault();
+		}
 
         public static IInputUser CastUserToInputUser(IUser user)
         {
