@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Linq;
 using SharpTelegram.Schema;
 using ProtoBuf;
 
@@ -19,15 +20,16 @@ namespace Disa.Framework.Telegram
         /// </summary>
         private string _chatPathCached;
 
-        /// <summary>
-        /// chat dictionary for holding the chats as per the id and the object
-        /// </summary>
-        private ConcurrentDictionary<uint, IChat> _chatDictionary;
 
         /// <summary>
         /// Lock for concurrent accesses to the user sql database
         /// </summary>
         private readonly object _userLock;
+
+        /// <summary>
+        /// Lock for concurrent access to all chats in the sql database
+        /// </summary>
+        private readonly object _chatLock;
 
         /// <summary>
         /// boolean indicating chats have been loaded before
@@ -40,9 +42,9 @@ namespace Disa.Framework.Telegram
         /// </summary>
         public CachedDialogs()
         {
-            _chatDictionary = new ConcurrentDictionary<uint, IChat>();
-
             _userLock = new object();
+
+            _chatLock  = new object();
         }
 
         /// <summary>
@@ -104,22 +106,13 @@ namespace Disa.Framework.Telegram
                 using (var database = new SqlDatabase<CachedUser>(GetDatabasePath(true)))
                 {
                     var userIdString = TelegramUtils.GetUserId(user);
+                    Utils.DebugPrint("got user id " + userIdString);
                     if (userIdString == null)
                     {
                         return;
                     }
                     var userId = Convert.ToUInt32(userIdString);
-                    var dbUser = database.Store.Where(x => x.Id == userId).FirstOrDefault();
-                    //if there is an existing user, delete it and add it again
-                    if (dbUser != null)
-                    {
-                        database.Store.Delete(x => x.Id == userId);
-                        CreateCachedUserAndAdd(user, userId, database);
-                    }
-                    else
-                    {
-                        CreateCachedUserAndAdd(user, userId, database);
-                    }
+                    CreateCachedUserAndAdd(user, userId, database);
                 }
             }
         }
@@ -130,18 +123,22 @@ namespace Disa.Framework.Telegram
         /// <param name="chats">List of IChat objects</param>
         public void AddChats(List<IChat> chats)
         {
-            foreach (var chat in chats)
+
+            lock (_chatLock)
             {
-                var chatId = TelegramUtils.GetChatId(chat);
-                if (chatId == null)
+                using (var database = new SqlDatabase<CachedChat>(GetDatabasePath(false)))
                 {
-                    continue;
+                    foreach (var chat in chats)
+                    {
+                        var chatId = TelegramUtils.GetChatId(chat);
+                        if (chatId == null)
+                        {
+                            continue;
+                        }
+                        CreateCachedChatAndAdd(chat, Convert.ToUInt32(chatId), database);
+                    }
                 }
-                var chatIdInt = Convert.ToUInt32(chatId);
-                _chatDictionary[chatIdInt] = chat;
             }
-            SaveChats();
-            _chatsLoaded = true; //since this is the first time we are adding chats anyway
         }
 
 
@@ -152,14 +149,21 @@ namespace Disa.Framework.Telegram
         /// <returns></returns>
         public IChat GetChat(uint chatId)
         {
-            if (!_chatsLoaded)
+            lock (_chatLock)
             {
-                LoadChats();
-                _chatsLoaded = true;
+                using (var database = new SqlDatabase<CachedChat>(GetDatabasePath(false)))
+                {
+                    var chat = database.Store.Where(x => x.Id == chatId).FirstOrDefault();
+                    if (chat == null)
+                    {
+                        return null;
+                    }
+                    var stream = new MemoryStream(chat.ProtoBufBytes);
+                    stream.Position = 0;
+                    IChat iChat = Serializer.Deserialize<Chat>(stream);
+                    return iChat;
+                }
             }
-            IChat iChat;
-            _chatDictionary.TryGetValue(chatId, out iChat);
-            return iChat;
         }
 
         /// <summary>
@@ -168,14 +172,41 @@ namespace Disa.Framework.Telegram
         /// <param name="chat">chat to add or update</param>
         public void AddChat(IChat chat)
         {
-            if (chat == null)
+            lock (_chatLock)
             {
-                return;
+                using (var database = new SqlDatabase<CachedChat>(GetDatabasePath(false)))
+                {
+                    var chatId = TelegramUtils.GetChatId(chat);
+                    if (chatId == null)
+                    {
+                        return;
+                    }
+                    CreateCachedChatAndAdd(chat, Convert.ToUInt32(chatId), database);
+                }
             }
-            var chatId = Convert.ToUInt32(TelegramUtils.GetChatId(chat));
-            _chatDictionary[chatId] = chat;
-            SaveChats();
         }
+
+        public List<IChat> GetAllChats()
+        {
+            lock (_chatLock)
+            {
+                List<IChat> chatsToReturn = new List<IChat>();
+                using (var database = new SqlDatabase<CachedChat>(GetDatabasePath(false)))
+                {
+                    var chachedChats = database.Store;
+                    foreach (var cachedChat in chachedChats)
+                    {
+                        var stream = new MemoryStream(cachedChat.ProtoBufBytes);
+                        stream.Position = 0;
+                        var iChat = Serializer.Deserialize<Chat>(stream);
+                        chatsToReturn.Add(iChat);
+                    }
+                }
+                return chatsToReturn;
+            }
+            
+        }
+
 
         /// <summary>
         /// Returns true if the databases have been created,
@@ -203,37 +234,61 @@ namespace Disa.Framework.Telegram
 
         private void CreateCachedUserAndAdd(IUser user, uint userId, SqlDatabase<CachedUser> database)
         {
-            var memoryStream = ConvertUserToMemeoryStream(user);
+            var memoryStream = ConvertUserToMemoryStream(user);
             var cachedUser = new CachedUser
             {
                 Id = userId,
                 ProtoBufBytes = memoryStream.ToArray(),
             };
-            database.Add(cachedUser);
+            var dbUser = database.Store.Where(x => x.Id == userId).FirstOrDefault();
+            if (dbUser != null)
+            {
+                database.Store.Delete(x => x.Id == userId);
+                database.Add(cachedUser);
+            }
+            else
+            {
+                database.Add(cachedUser);
+            }
+
         }
 
-        private MemoryStream ConvertUserToMemeoryStream(IUser user)
+
+        private void CreateCachedChatAndAdd(IChat chat, uint chatId, SqlDatabase<CachedChat> database)
+        {
+            var memoryStream = ConvertChatToMemoryStream(chat);
+            var cachedChat = new CachedChat
+            {
+                Id = chatId,
+                ProtoBufBytes = memoryStream.ToArray(),
+            };
+            var dbUser = database.Store.Where(x => x.Id == chatId).FirstOrDefault();
+            if (dbUser != null)
+            {
+                database.Store.Delete(x => x.Id == chatId);
+                database.Add(cachedChat);
+            }
+            else
+            {
+                database.Add(cachedChat);
+            }
+
+        }
+
+        private MemoryStream ConvertUserToMemoryStream(IUser user)
         {
             MemoryStream memoryStream = new MemoryStream();
             Serializer.Serialize<IUser>(memoryStream, user);
             return memoryStream;
         }
 
-        private void LoadChats()
+        private MemoryStream ConvertChatToMemoryStream(IChat chat)
         {
-            using (var file = File.OpenRead(GetDatabasePath(false)))
-            {
-                _chatDictionary = Serializer.Deserialize<ConcurrentDictionary<uint, IChat>>(file);
-            }
+            MemoryStream memoryStream = new MemoryStream();
+            Serializer.Serialize<IChat>(memoryStream, chat);
+            return memoryStream;
         }
 
-        private void SaveChats()
-        {
-            using (var file = File.Create(GetDatabasePath(false)))
-            {
-                Serializer.Serialize(file, _chatDictionary);
-            }
-        }
 
 
         private string GetDatabasePath(bool isUser)

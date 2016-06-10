@@ -63,8 +63,6 @@ namespace SharpMTProto.Messaging.Handlers
         {
             var body = responseMessage.Body;
 
-            Console.WriteLine("current settings " + ObjectDumper.Dump(MutableSettingsManager.Load<TelegramMutableSettings>()));
-
             Console.WriteLine("handle Internal async " + ObjectDumper.Dump(responseMessage));
 
             var updatesTooLong = body as UpdatesTooLong;
@@ -74,6 +72,7 @@ namespace SharpMTProto.Messaging.Handlers
             var updatesCombined = body as UpdatesCombined;
             var updates = body as Updates;
             var updateShortSentMessage = body as UpdateShortSentMessage;
+            var updateContactLink = body as UpdateContactLink;
             
 
             if (updatesTooLong != null)

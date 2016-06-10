@@ -34,6 +34,8 @@ namespace Disa.Framework.Telegram
         private string _baseMessageId = "0000000000";
         private int _baseMessageIdCounter;
 
+        private List<User> contactsCache = new List<User>();
+
         public bool LoadConversations;
 
         public string CurrentMessageId
@@ -192,6 +194,8 @@ namespace Disa.Framework.Telegram
                 var userStatus = update as UpdateUserStatus;
                 var messageService = update as MessageService;
                 var updateChatParticipants = update as UpdateChatParticipants;
+                var updateContactRegistered = update as UpdateContactRegistered;
+                var updateContactLink = update as UpdateContactLink;
                 var message = update as SharpTelegram.Schema.Message;
                 var user = update as IUser;
                 var chat = update as IChat;
@@ -290,6 +294,16 @@ namespace Disa.Framework.Telegram
                         maxMessageId = message.Id;
                     }
                 }
+                else if (updateContactRegistered != null)
+                {
+                    contactsCache = new List<User>();
+                    TelegramUtils.RunSynchronously(FetchContacts());
+                }
+                else if (updateContactLink != null)
+                {
+                    contactsCache = new List<User>();
+                    TelegramUtils.RunSynchronously(FetchContacts());
+                }
                 else if (userStatus != null)
                 {
                     var available = TelegramUtils.GetAvailable(userStatus.Status);
@@ -300,6 +314,7 @@ namespace Disa.Framework.Telegram
                         if (userToUpdateAsUser != null)
                         {
                             userToUpdateAsUser.Status = userStatus.Status;
+                            DebugPrint("updated user status " + ObjectDumper.Dump(userToUpdateAsUser));
                             _dialogs.AddUser(userToUpdateAsUser);
                         }
                     }
@@ -782,6 +797,7 @@ namespace Disa.Framework.Telegram
 				DebugPrint (">>>>>>>>>>>>>> Fetching state!");
                 FetchState(client);
 				DebugPrint (">>>>>>>>>>>>>> Fetching dialogs!");
+                //TODO: remove this conditional
                 if (!_dialogsInitiallyRetrieved)
                 {
                     GetDialogs(client);
@@ -982,6 +998,10 @@ namespace Disa.Framework.Telegram
 
         private async Task<List<User>> FetchContacts()
         {
+            if (contactsCache.Count != 0)
+            {
+                return contactsCache;
+            }
             using (var client = new FullClientDisposable(this))
             {
                 var response = (ContactsContacts)await client.Client.Methods.ContactsGetContactsAsync(
@@ -989,7 +1009,8 @@ namespace Disa.Framework.Telegram
                 {
                     Hash = string.Empty
                 });
-                return response.Users.OfType<User>().ToList();
+                contactsCache.AddRange(response.Users.OfType<User>().ToList());
+                return contactsCache;
             }
         }
 
@@ -1013,7 +1034,6 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupPartyParticipants(BubbleGroup group, Action<DisaParticipant[]> result)
         {
-            DebugPrint("##### getting bubble group participants");
             return Task.Factory.StartNew(() =>
             {
                 result(null);
@@ -1022,7 +1042,6 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupUnknownPartyParticipant(BubbleGroup group, string unknownPartyParticipant, Action<DisaParticipant> result)
         {
-            DebugPrint("##### getting bubble group unknown");
             return Task.Factory.StartNew(() =>
             {
                 //TODO: this may not actually get title always.
@@ -1040,7 +1059,6 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupPartyParticipantPhoto(DisaParticipant participant, Action<DisaThumbnail> result)
         {
-            DebugPrint("get party participant photo");
             return Task.Factory.StartNew(() =>
             {
                 result(GetThumbnail(participant.Address, false, true));
@@ -1049,7 +1067,6 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
         {
-            DebugPrint("Get last online");
             return Task.Factory.StartNew(() =>
             {
                 result(GetUpdatedLastOnline(group.Address));
@@ -1093,14 +1110,20 @@ namespace Disa.Framework.Telegram
             {
                 using (var client = new FullClientDisposable(this))
                 {
-                    TelegramUtils.RunSynchronously(client.Client.Methods.ContactsImportContactsAsync(
+                    var importedContacts = TelegramUtils.RunSynchronously(client.Client.Methods.ContactsImportContactsAsync(
                         new ContactsImportContactsArgs
                         {
                             Contacts = inputContacts,
                             Replace = false,
                         }));
-                    Utils.DebugPrint("Fetching newest dialogs...");
-                    GetDialogs(client.Client);
+                    var contactsImportedcontacts = importedContacts as ContactsImportedContacts;
+                    if (contactsImportedcontacts != null)
+                    {
+                        _dialogs.AddUsers(contactsImportedcontacts.Users);
+                    }
+                    contactsCache = new List<User>();
+                    //update the contacts cache
+                    TelegramUtils.RunSynchronously(FetchContacts());
                 }
             }
             catch (Exception ex)
@@ -1413,7 +1436,7 @@ namespace Disa.Framework.Telegram
         // It should be noted that with out implementation, we don't need the offset code, since if a user has more than 100 convos,
         // he's expected to manually load them in by going to NewMessage, which will force the Updates to come in.
         // Please see FetchFullChatsForParties for further information.
-        //TODO: I don't know if MessagesDialogsSlice is actually ever returned anymore. Please confirm.
+        //TODO: do this 100 at a time
         private void GetDialogs(TelegramClient client)
         {
             DebugPrint("Fetching conversations");
@@ -1425,7 +1448,7 @@ namespace Disa.Framework.Telegram
                 var iDialogs =
                     TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
                     {
-                        Limit = 100,
+                        Limit = int.MaxValue,
                         OffsetPeer = new InputPeerEmpty(),
                     }));
                 var dialogs = iDialogs as MessagesDialogs;
