@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using SharpTelegram.Schema;
 using System.Linq;
 using System.Globalization;
+using SharpMTProto;
 
 namespace Disa.Framework.Telegram
 {
@@ -129,7 +130,7 @@ namespace Disa.Framework.Telegram
             }
             return globalContacts;
         }
-
+        //TODO: update to just fetch from the cache
         public Task GetContactsFavorites(Action<List<Contact>> result)
         {
             return Task.Factory.StartNew(async () =>
@@ -232,7 +233,6 @@ namespace Disa.Framework.Telegram
                         if (inputUser != null)
                         {
                             inputUsers.Add(inputUser);
-                            break;
                         }
                     }
                     if (inputUsers.Any())
@@ -245,24 +245,36 @@ namespace Disa.Framework.Telegram
                         }
                         using (var client = new FullClientDisposable(this))
                         {
-                            var response = await client.Client.Methods.MessagesCreateChatAsync(
-                                new MessagesCreateChatArgs
+                            try
+                            {
+                                var response = await client.Client.Methods.MessagesCreateChatAsync(
+                                    new MessagesCreateChatArgs
+                                    {
+                                        Users = inputUsers,
+                                        Title = subject,
+                                    });
+                                var updates = response as Updates;
+                                if (updates != null)
                                 {
-                                    Users = inputUsers,
-                                    Title = subject,
-                                });
-                            var updates = response as Updates;
-                            if (updates != null)
-                            {
-                                SendToResponseDispatcher(updates, client.Client);
-                                _dialogs.AddUsers(updates.Users);
-                                _dialogs.AddChats(updates.Chats);
-                                var chat = TelegramUtils.GetChatFromUpdate(updates);
-                                result(true, TelegramUtils.GetChatId(chat));
+                                    SendToResponseDispatcher(updates, client.Client);
+                                    _dialogs.AddUsers(updates.Users);
+                                    _dialogs.AddChats(updates.Chats);
+                                    var chat = TelegramUtils.GetChatFromUpdate(updates);
+                                    result(true, TelegramUtils.GetChatId(chat));
+                                }
+                                else
+                                {
+                                    result(false, null);
+                                }
                             }
-                            else
+                            catch (Exception e)
                             {
-                                result(false, null);
+                                //we get an exception if the user is not allowed to create groups
+                                var rpcError = e as RpcErrorException;
+                                if (rpcError != null)
+                                {
+                                    result(false, null);
+                                }
                             }
                         }
                     }

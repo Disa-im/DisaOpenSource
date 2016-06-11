@@ -20,7 +20,7 @@ using ProtoBuf;
 
 namespace Disa.Framework.Telegram
 {
-    [ServiceInfo("Telegram", true, false, false, false, false, typeof(TelegramSettings), 
+    [ServiceInfo("Telegram", true, false, false, false, true, typeof(TelegramSettings), 
         ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(ReadBubble), 
         typeof(TypingBubble), typeof(PresenceBubble))]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
@@ -37,6 +37,11 @@ namespace Disa.Framework.Telegram
         private List<User> contactsCache = new List<User>();
 
         public bool LoadConversations;
+
+        private object _quickUserLock = new object();
+
+        //msgid, address, date
+        private Dictionary<uint,Tuple<uint,uint,bool>> messagesUnreadCache = new Dictionary<uint, Tuple<uint, uint,bool>>();
 
         public string CurrentMessageId
         {
@@ -114,42 +119,6 @@ namespace Disa.Framework.Telegram
             }
         }
 
-		private void ProcessIncomingPayload(IUpdates message, bool useCurrentTime, 
-            TelegramClient optionalClient = null)
-        {
-            var objs = new List<object>();
-            //TODO: updated CachedDialogs with the new incoming User, Chats.
-//            var messagesStatedMessage = message as MessagesStatedMessage;
-//            if (messagesStatedMessage != null)
-//            {
-//                //objs.Add(messagesStatedMessage.Message); TODO: fix new bubble group multiple created bug
-//                objs.AddRange(messagesStatedMessage.Users);
-//                objs.AddRange(messagesStatedMessage.Chats);
-//            }
-//            var messagesStatedMessageLink = message as MessagesStatedMessageLink;
-//            if (messagesStatedMessageLink != null)
-//            {
-//                //objs.Add(messagesStatedMessageLink.Message); TODO: fix new bubble group multiple created bug
-//                objs.AddRange(messagesStatedMessageLink.Users);
-//                objs.AddRange(messagesStatedMessageLink.Chats);
-//            }
-            ProcessIncomingPayload(objs, useCurrentTime, optionalClient);
-        }
-            
-		private void SaveState(IUpdates message)
-        {
-//            var messagesStatedMessage = message as MessagesStatedMessage;
-//            if (messagesStatedMessage != null)
-//            {
-//                SaveState(0, messagesStatedMessage.Pts, 0, messagesStatedMessage.Seq);
-//            }
-//            var messagesStatedMessageLink = message as MessagesStatedMessageLink;
-//            if (messagesStatedMessageLink != null)
-//            {
-//                SaveState(0, messagesStatedMessageLink.Pts, 0, messagesStatedMessageLink.Seq);
-//            }
-        }
-
         private object NormalizeUpdateIfNeeded(object obj)
         {
             // flatten UpdateNewMessage to Message
@@ -196,6 +165,9 @@ namespace Disa.Framework.Telegram
                 var updateChatParticipants = update as UpdateChatParticipants;
                 var updateContactRegistered = update as UpdateContactRegistered;
                 var updateContactLink = update as UpdateContactLink;
+                var updateUserPhoto = update as UpdateUserPhoto;
+                var updateReadHistoryInbox = update as UpdateReadHistoryInbox;
+                var updateReadHistoryOutbox = update as UpdateReadHistoryOutbox;
                 var message = update as SharpTelegram.Schema.Message;
                 var user = update as IUser;
                 var chat = update as IChat;
@@ -215,17 +187,119 @@ namespace Disa.Framework.Telegram
                                             shortMessage.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, 
                                             fromId, null, false, this, shortMessage.Message,
                                             shortMessage.Id.ToString(CultureInfo.InvariantCulture));
+                        
                         if (shortMessage.Out != null)
                         {
                             textBubble.Status = Bubble.BubbleStatus.Sent;
                         }
                         EventBubble(textBubble);
                     }
+                    DebugPrint("###### the id of the message is" + shortMessage.Id);
                     if (shortMessage.Id > maxMessageId)
                     {
                         maxMessageId = shortMessage.Id;
                     }
                 }
+                else if (updateUserPhoto != null)
+                {
+                    var iUpdatedUser = _dialogs.GetUser(updateUserPhoto.UserId);
+                    var updatedUser = iUpdatedUser as User;
+                    DebugPrint("Updating user profile picture " + ObjectDumper.Dump(updatedUser));
+                    if (updatedUser != null)
+                    {
+                        updatedUser.Photo = updateUserPhoto.Photo;
+                    }
+                    DebugPrint("updated user profile picture " + ObjectDumper.Dump(updatedUser));
+                    _dialogs.AddUser(updatedUser);
+                }
+                else if (updateReadHistoryOutbox != null)
+                {
+                    DebugPrint("#### Handling update read history outbox ");
+                    var iPeer = updateReadHistoryOutbox.Peer;
+                    var peerChat = iPeer as PeerChat;
+                    var peerUser = iPeer as PeerUser;
+
+
+                    DebugPrint("#### got peer  " + ObjectDumper.Dump(iPeer));
+
+                    if (peerUser != null)
+                    {
+                        BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
+                            peerUser.UserId.ToString(CultureInfo.InvariantCulture));
+                        string idString = bubbleGroup.LastBubbleSafe().IdService;
+                        if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
+                        {
+                            DebugPrint("######## Message Read!!!!!");
+                            EventBubble(
+                                new ReadBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) shortMessage.Date,
+                                    Bubble.BubbleDirection.Incoming, this,
+                                    peerUser.UserId.ToString(CultureInfo.InvariantCulture), null,
+                                    Time.GetNowUnixTimestamp(), false, false));
+                        }
+
+                    }
+                    else if (peerChat != null)
+                    {
+                        BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
+                           peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
+                        string idString = bubbleGroup.LastBubbleSafe().IdService;
+                        DebugPrint("Idservice for Chat " + idString);
+                        if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
+                        {
+                            DebugPrint("######## Group Message Read!!!!!");
+                            EventBubble(
+                                new ReadBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date,
+                                    Bubble.BubbleDirection.Incoming, this,
+                                    peerChat.ChatId.ToString(CultureInfo.InvariantCulture), _settings.AccountId.ToString(CultureInfo.InvariantCulture),
+                                    Time.GetNowUnixTimestamp(), true, false));
+                        }
+
+                    }
+
+                }
+                else if (updateReadHistoryInbox != null)
+                {
+                    DebugPrint(">>> update read history inbox");
+                    var iPeer = updateReadHistoryInbox.Peer;
+                    var peerChat = iPeer as PeerChat;
+                    var peerUser = iPeer as PeerUser;
+
+
+                    DebugPrint("#### got peer  " + ObjectDumper.Dump(iPeer));
+
+                    if (peerUser != null)
+                    {
+                        BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
+                            peerUser.UserId.ToString(CultureInfo.InvariantCulture));
+                        string idString = bubbleGroup.LastBubbleSafe().IdService;
+
+                        if (uint.Parse(idString) <= updateReadHistoryInbox.MaxId)
+                        {
+                            DebugPrint("######## Message Read!!!!!");
+                            BubbleGroupManager.SetUnread(this,false, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
+                            NotificationManager.Remove(this,peerUser.UserId.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                    }
+                    else if (peerChat != null)
+                    {
+                        BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
+                            peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
+                        string idString = bubbleGroup.LastBubbleSafe().IdService;
+                        DebugPrint("Idservice for Chat " + idString);
+                        if (uint.Parse(idString) == updateReadHistoryInbox.MaxId)
+                        {
+                            DebugPrint("######## Group Message Read!!!!!");
+                            BubbleGroupManager.SetUnread(this, false,
+                                peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
+                            NotificationManager.Remove(this, peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                    }
+
+                }
+
+
                 else if (shortChatMessage != null)
                 {
                     if (!string.IsNullOrWhiteSpace(shortChatMessage.Message))
@@ -233,11 +307,13 @@ namespace Disa.Framework.Telegram
                         var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
                         var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
                         EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
-                           Bubble.BubbleDirection.Incoming,
-                           address, participantAddress, true, this, false, false));
+                            Bubble.BubbleDirection.Incoming,
+                            address, participantAddress, true, this, false, false));
                         TextBubble textBubble = new TextBubble(
                             useCurrentTime ? Time.GetNowUnixTimestamp() : (long) shortChatMessage.Date,
-                            shortChatMessage.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
+                            shortChatMessage.Out != null
+                                ? Bubble.BubbleDirection.Outgoing
+                                : Bubble.BubbleDirection.Incoming,
                             address, participantAddress, true, this, shortChatMessage.Message,
                             shortChatMessage.Id.ToString(CultureInfo.InvariantCulture));
                         if (shortChatMessage.Out != null)
@@ -246,6 +322,7 @@ namespace Disa.Framework.Telegram
                         }
                         EventBubble(textBubble);
                     }
+                    DebugPrint("###### the id of the message is" + shortChatMessage.Id);
                     if (shortChatMessage.Id > maxMessageId)
                     {
                         maxMessageId = shortChatMessage.Id;
@@ -260,15 +337,18 @@ namespace Disa.Framework.Telegram
                         var peerUser = message.ToId as PeerUser;
                         var peerChat = message.ToId as PeerChat;
 
-                        var direction = message.FromId == _settings.AccountId 
-                            ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming;
+                        var direction = message.FromId == _settings.AccountId
+                            ? Bubble.BubbleDirection.Outgoing
+                            : Bubble.BubbleDirection.Incoming;
 
                         if (peerUser != null)
                         {
-                            var address = direction == Bubble.BubbleDirection.Incoming ? message.FromId : peerUser.UserId;
+                            var address = direction == Bubble.BubbleDirection.Incoming
+                                ? message.FromId
+                                : peerUser.UserId;
                             var addressStr = address.ToString(CultureInfo.InvariantCulture);
                             tb = new TextBubble(
-                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
                                 direction, addressStr, null, false, this, message.MessageProperty,
                                 message.Id.ToString(CultureInfo.InvariantCulture));
                         }
@@ -277,7 +357,7 @@ namespace Disa.Framework.Telegram
                             var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
                             var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
                             tb = new TextBubble(
-                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
                                 direction, address, participantAddress, true, this, message.MessageProperty,
                                 message.Id.ToString(CultureInfo.InvariantCulture));
                         }
@@ -296,13 +376,11 @@ namespace Disa.Framework.Telegram
                 }
                 else if (updateContactRegistered != null)
                 {
-                    contactsCache = new List<User>();
-                    TelegramUtils.RunSynchronously(FetchContacts());
+                    contactsCache = new List<User>(); //invalidate cache
                 }
                 else if (updateContactLink != null)
                 {
                     contactsCache = new List<User>();
-                    TelegramUtils.RunSynchronously(FetchContacts());
                 }
                 else if (userStatus != null)
                 {
@@ -314,11 +392,10 @@ namespace Disa.Framework.Telegram
                         if (userToUpdateAsUser != null)
                         {
                             userToUpdateAsUser.Status = userStatus.Status;
-                            DebugPrint("updated user status " + ObjectDumper.Dump(userToUpdateAsUser));
                             _dialogs.AddUser(userToUpdateAsUser);
                         }
                     }
-                   
+
                     EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(),
                         Bubble.BubbleDirection.Incoming,
                         userStatus.UserId.ToString(CultureInfo.InvariantCulture),
@@ -341,9 +418,11 @@ namespace Disa.Framework.Telegram
                     var userId = typing != null ? typing.UserId : typingChat.UserId;
                     var party = typingChat != null;
                     var participantAddress = party ? userId.ToString(CultureInfo.InvariantCulture) : null;
-                    var address = party ? typingChat.ChatId.ToString(CultureInfo.InvariantCulture) : 
-                        userId.ToString(CultureInfo.InvariantCulture);
+                    var address = party
+                        ? typingChat.ChatId.ToString(CultureInfo.InvariantCulture)
+                        : userId.ToString(CultureInfo.InvariantCulture);
                     var key = address + participantAddress;
+
 
                     if (isAudio || isTyping)
                     {
@@ -352,7 +431,7 @@ namespace Disa.Framework.Telegram
                             address, participantAddress, party,
                             this, true, isAudio));
                         CancelTypingTimer(key);
-                        var newTimer = new Timer(6000) { AutoReset = false };
+                        var newTimer = new Timer(6000) {AutoReset = false};
                         newTimer.Elapsed += (sender2, e2) =>
                         {
                             EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
@@ -411,7 +490,7 @@ namespace Disa.Framework.Telegram
                             TelegramUtils.SetChatTitle(chatToUpdate, newTitle);
                         }
                         EventBubble(PartyInformationBubble.CreateTitleChanged(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address, 
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long) messageService.Date, address,
                             this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, newTitle));
                         BubbleGroupUpdater.Update(this, address);
                     }
@@ -419,22 +498,23 @@ namespace Disa.Framework.Telegram
                     {
                         var userDeleted = deleteUser.UserId.ToString(CultureInfo.InvariantCulture);
                         EventBubble(PartyInformationBubble.CreateParticipantRemoved(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long) messageService.Date, address,
                             this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userDeleted));
                     }
                     else if (addUser != null)
-					{
-						foreach (var userId in addUser.Users) {
-							var userAdded = userId.ToString(CultureInfo.InvariantCulture);
-							EventBubble(PartyInformationBubble.CreateParticipantAdded(
-								useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
-								this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userAdded));
-						}
+                    {
+                        foreach (var userId in addUser.Users)
+                        {
+                            var userAdded = userId.ToString(CultureInfo.InvariantCulture);
+                            EventBubble(PartyInformationBubble.CreateParticipantAdded(
+                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long) messageService.Date, address,
+                                this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userAdded));
+                        }
                     }
                     else if (created != null)
                     {
                         EventBubble(PartyInformationBubble.CreateParticipantAdded(
-                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long) messageService.Date, address,
                             this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
                             _settings.AccountId.ToString(CultureInfo.InvariantCulture)));
                     }
@@ -690,7 +770,6 @@ namespace Disa.Framework.Telegram
             // do nothing
         }
 
-        //TODO: Update to support IUsers and IChat updates to CachedDialogs
         private void FetchDifference(TelegramClient client)
         {
             var counter = 0;
@@ -797,12 +876,9 @@ namespace Disa.Framework.Telegram
 				DebugPrint (">>>>>>>>>>>>>> Fetching state!");
                 FetchState(client);
 				DebugPrint (">>>>>>>>>>>>>> Fetching dialogs!");
-                //TODO: remove this conditional
-                if (!_dialogsInitiallyRetrieved)
-                {
-                    GetDialogs(client);
-                    _dialogsInitiallyRetrieved = true;
-                }
+                GetDialogs(client);
+                _dialogsInitiallyRetrieved = true;
+                
                 GetConfig(client);
             }
 
@@ -891,6 +967,8 @@ namespace Disa.Framework.Telegram
             if (textBubble != null)
             {
                 var peer = GetInputPeer(textBubble.Address, textBubble.Party);
+               
+                DebugPrint("##### the text bubble address is " + textBubble.Address);
                 using (var client = new FullClientDisposable(this))
                 {
                     var iUpdate = TelegramUtils.RunSynchronously(
@@ -901,26 +979,32 @@ namespace Disa.Framework.Telegram
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService2)
                     }));
+                    var updateShortSentMessage = iUpdate as UpdateShortSentMessage;
+                    if (updateShortSentMessage != null)
+                    {
+                        DebugPrint("###### the id of the message is" + updateShortSentMessage.Id);
+                        textBubble.IdService = updateShortSentMessage.Id.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
             }
-
+            
             var readBubble = b as ReadBubble;
             if (readBubble != null)
             {
                 var peer = GetInputPeer(readBubble.Address, readBubble.Party);
                 using (var client = new FullClientDisposable(this))
                 {
-                    var messagesAffectedHistory =
+                    var messagesAffectedMessages =
                         TelegramUtils.RunSynchronously(client.Client.Methods.MessagesReadHistoryAsync(
                         new MessagesReadHistoryArgs
                     {
                         Peer = peer,
                         MaxId = 0,
 
-                    })) as MessagesAffectedHistory;
-                    if (messagesAffectedHistory != null)
+                    })) as MessagesAffectedMessages;
+                    if (messagesAffectedMessages != null)
                     {
-                        SaveState(0, messagesAffectedHistory.Pts, 0, 0);
+                        SaveState(0, messagesAffectedMessages.Pts, 0, 0);
                     }
                 }
             }
@@ -1042,10 +1126,12 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupUnknownPartyParticipant(BubbleGroup group, string unknownPartyParticipant, Action<DisaParticipant> result)
         {
+            DebugPrint("###### get bubble group unkonwn participants");
             return Task.Factory.StartNew(() =>
             {
                 //TODO: this may not actually get title always.
                 var name = GetTitle(unknownPartyParticipant, false);
+                DebugPrint("###### The name of the unknown participant is");
                 if (!string.IsNullOrWhiteSpace(name))
                 {
                     result(new DisaParticipant(name, unknownPartyParticipant));
@@ -1092,9 +1178,14 @@ namespace Disa.Framework.Telegram
             {
                 foreach (var phoneNumber in contact.PhoneNumbers)
                 {
+                    var clientId = "0";
+                    if (contact.ContactId != null)
+                    {
+                        clientId = contact.ContactId;
+                    }
                     inputContacts.Add(new InputPhoneContact
                     {
-                        ClientId = ulong.Parse(contact.ContactId),
+                        ClientId = ulong.Parse(clientId),
                         Phone = phoneNumber.Number,
                         FirstName = contact.FirstName,
                         LastName = contact.LastName,
@@ -1121,9 +1212,8 @@ namespace Disa.Framework.Telegram
                     {
                         _dialogs.AddUsers(contactsImportedcontacts.Users);
                     }
+                    //invalidate the cache
                     contactsCache = new List<User>();
-                    //update the contacts cache
-                    TelegramUtils.RunSynchronously(FetchContacts());
                 }
             }
             catch (Exception ex)
@@ -1145,8 +1235,6 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
-        // TODO: rework this to pull all the dialogs loaded into Disa's convo list of Telegram.
-        // that way we don't have to always rely on CachedDialogs.Dialogs... which we do not need anymore.
         private List<IUser> GetUpdatedUsersOfAllDialogs()
         {
             var users = new List<IUser>();
@@ -1192,11 +1280,37 @@ namespace Disa.Framework.Telegram
                 var user = _dialogs.GetUser(uint.Parse(id));
                 if (user == null)
                 {
-                    return null;
+                    //we havent recieved a user object for this user, we should probably get it and cache it
+                    IUser newUser = GetUser(id);
+                    if (newUser == null)
+                    {
+                        return null;
+                    }
+                    return TelegramUtils.GetUserName(newUser);
                 }
                 return TelegramUtils.GetUserName(user);
             }
         }
+
+        private IUser GetUser(string id)
+        {
+            lock (_quickUserLock)
+            {
+                using (var client = new FullClientDisposable(this))
+                {
+                    var inputUser = new InputUser();
+                    inputUser.UserId = uint.Parse(id);
+                    var inputList = new List<IInputUser>();
+                    inputList.Add(inputUser);
+                    var users = TelegramUtils.RunSynchronously(client.Client.Methods.UsersGetUsersAsync(new UsersGetUsersArgs
+                    {
+                        Id = inputList,
+                    }));
+                    var user = users.FirstOrDefault();
+                    return user;
+                }
+            }
+    }
 
         private DisaThumbnail GetThumbnail(string id, bool group, bool small)
         {
@@ -1444,7 +1558,7 @@ namespace Disa.Framework.Telegram
 
             if (!masterDialogs.DatabasesExist())
             {
-                DebugPrint("Databases dont exit! creating new ones from data from server");
+                DebugPrint("Databases dont exist! creating new ones from data from server");
                 var iDialogs =
                     TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
                     {
@@ -1455,6 +1569,24 @@ namespace Disa.Framework.Telegram
                 masterDialogs.AddChats(dialogs.Chats);
                 masterDialogs.AddUsers(dialogs.Users);
             }
+
+            //////////////////////////
+
+            //test code
+
+//            var d =
+//                    TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
+//                    {
+//                        Limit = 100,
+//                        OffsetPeer = new InputPeerEmpty(),
+//                    }));
+//            var d1 = d as MessagesDialogs;
+//
+//            Utils.DebugPrint("######## Dialogs Count" + ObjectDumper.Dump(d1.Dialogs.Count));
+//            Utils.DebugPrint("######## Dialogs" + ObjectDumper.Dump(d1.Dialogs));
+
+
+            ////////////////////////////
 
 
             _dialogs = masterDialogs;
