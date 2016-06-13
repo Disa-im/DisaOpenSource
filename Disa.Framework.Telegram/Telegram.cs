@@ -14,6 +14,7 @@ using System.Globalization;
 using System.Timers;
 using System.IO;
 using ProtoBuf;
+using Message = SharpTelegram.Schema.Message;
 
 //TODO:
 //1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
@@ -133,6 +134,10 @@ namespace Disa.Framework.Telegram
             
         private List<object> AdjustUpdates(List<object> updates)
         {
+            if (updates == null)
+            {
+                return null;
+            }
             var precedents = new List<object>();
             var successors = updates.ToList();
             foreach (var update in successors.ToList())
@@ -194,7 +199,6 @@ namespace Disa.Framework.Telegram
                         }
                         EventBubble(textBubble);
                     }
-                    DebugPrint("###### the id of the message is" + shortMessage.Id);
                     if (shortMessage.Id > maxMessageId)
                     {
                         maxMessageId = shortMessage.Id;
@@ -204,23 +208,18 @@ namespace Disa.Framework.Telegram
                 {
                     var iUpdatedUser = _dialogs.GetUser(updateUserPhoto.UserId);
                     var updatedUser = iUpdatedUser as User;
-                    DebugPrint("Updating user profile picture " + ObjectDumper.Dump(updatedUser));
                     if (updatedUser != null)
                     {
                         updatedUser.Photo = updateUserPhoto.Photo;
                     }
-                    DebugPrint("updated user profile picture " + ObjectDumper.Dump(updatedUser));
                     _dialogs.AddUser(updatedUser);
                 }
                 else if (updateReadHistoryOutbox != null)
                 {
-                    DebugPrint("#### Handling update read history outbox ");
                     var iPeer = updateReadHistoryOutbox.Peer;
                     var peerChat = iPeer as PeerChat;
                     var peerUser = iPeer as PeerUser;
 
-
-                    DebugPrint("#### got peer  " + ObjectDumper.Dump(iPeer));
 
                     if (peerUser != null)
                     {
@@ -229,7 +228,6 @@ namespace Disa.Framework.Telegram
                         string idString = bubbleGroup.LastBubbleSafe().IdService;
                         if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
                         {
-                            DebugPrint("######## Message Read!!!!!");
                             EventBubble(
                                 new ReadBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) shortMessage.Date,
                                     Bubble.BubbleDirection.Incoming, this,
@@ -239,33 +237,30 @@ namespace Disa.Framework.Telegram
 
                     }
                     else if (peerChat != null)
-                    {
-                        BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
-                           peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
-                        string idString = bubbleGroup.LastBubbleSafe().IdService;
-                        DebugPrint("Idservice for Chat " + idString);
-                        if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
-                        {
-                            DebugPrint("######## Group Message Read!!!!!");
-                            EventBubble(
-                                new ReadBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date,
-                                    Bubble.BubbleDirection.Incoming, this,
-                                    peerChat.ChatId.ToString(CultureInfo.InvariantCulture), _settings.AccountId.ToString(CultureInfo.InvariantCulture),
-                                    Time.GetNowUnixTimestamp(), true, false));
-                        }
+                    {//TODO:Uncomment when group read bubbles implemented
+//                        BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
+//                           peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
+//                        string idString = bubbleGroup.LastBubbleSafe().IdService;
+//                        DebugPrint("Idservice for Chat " + idString);
+//                        if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
+//                        {
+//                            DebugPrint("######## Group Message Read!!!!!");
+//                            EventBubble(
+//                                new ReadBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date,
+//                                    Bubble.BubbleDirection.Incoming, this,
+//                                    peerChat.ChatId.ToString(CultureInfo.InvariantCulture), null,
+//                                    Time.GetNowUnixTimestamp(), true, false));
+//                        }
 
                     }
 
                 }
                 else if (updateReadHistoryInbox != null)
                 {
-                    DebugPrint(">>> update read history inbox");
+
                     var iPeer = updateReadHistoryInbox.Peer;
                     var peerChat = iPeer as PeerChat;
                     var peerUser = iPeer as PeerUser;
-
-
-                    DebugPrint("#### got peer  " + ObjectDumper.Dump(iPeer));
 
                     if (peerUser != null)
                     {
@@ -275,7 +270,6 @@ namespace Disa.Framework.Telegram
 
                         if (uint.Parse(idString) <= updateReadHistoryInbox.MaxId)
                         {
-                            DebugPrint("######## Message Read!!!!!");
                             BubbleGroupManager.SetUnread(this,false, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
                             NotificationManager.Remove(this,peerUser.UserId.ToString(CultureInfo.InvariantCulture));
                         }
@@ -286,10 +280,9 @@ namespace Disa.Framework.Telegram
                         BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
                             peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
                         string idString = bubbleGroup.LastBubbleSafe().IdService;
-                        DebugPrint("Idservice for Chat " + idString);
+
                         if (uint.Parse(idString) == updateReadHistoryInbox.MaxId)
                         {
-                            DebugPrint("######## Group Message Read!!!!!");
                             BubbleGroupManager.SetUnread(this, false,
                                 peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
                             NotificationManager.Remove(this, peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
@@ -322,7 +315,6 @@ namespace Disa.Framework.Telegram
                         }
                         EventBubble(textBubble);
                     }
-                    DebugPrint("###### the id of the message is" + shortChatMessage.Id);
                     if (shortChatMessage.Id > maxMessageId)
                     {
                         maxMessageId = shortChatMessage.Id;
@@ -801,7 +793,7 @@ namespace Disa.Framework.Telegram
                     updates.AddRange(diff.NewMessages);
                     updates.AddRange(diff.OtherUpdates);
                 }
-                else
+                else if(slice!=null)
                 {
                     updates.AddRange(slice.NewMessages);
                     updates.AddRange(slice.OtherUpdates);
@@ -873,9 +865,10 @@ namespace Disa.Framework.Telegram
                 {
                     throw new Exception("Failed to register long poller...");
                 }
-				DebugPrint (">>>>>>>>>>>>>> Fetching state!");
+
+                DebugPrint(">>>>>>>>>>>>>> Fetching state!");
                 FetchState(client);
-				DebugPrint (">>>>>>>>>>>>>> Fetching dialogs!");
+                DebugPrint (">>>>>>>>>>>>>> Fetching dialogs!");
                 GetDialogs(client);
                 _dialogsInitiallyRetrieved = true;
                 
@@ -968,7 +961,6 @@ namespace Disa.Framework.Telegram
             {
                 var peer = GetInputPeer(textBubble.Address, textBubble.Party);
                
-                DebugPrint("##### the text bubble address is " + textBubble.Address);
                 using (var client = new FullClientDisposable(this))
                 {
                     var iUpdate = TelegramUtils.RunSynchronously(
@@ -982,7 +974,6 @@ namespace Disa.Framework.Telegram
                     var updateShortSentMessage = iUpdate as UpdateShortSentMessage;
                     if (updateShortSentMessage != null)
                     {
-                        DebugPrint("###### the id of the message is" + updateShortSentMessage.Id);
                         textBubble.IdService = updateShortSentMessage.Id.ToString(CultureInfo.InvariantCulture);
                     }
                 }
@@ -1131,7 +1122,7 @@ namespace Disa.Framework.Telegram
             {
                 //TODO: this may not actually get title always.
                 var name = GetTitle(unknownPartyParticipant, false);
-                DebugPrint("###### The name of the unknown participant is");
+                DebugPrint("###### The name of the unknown participant is " + name);
                 if (!string.IsNullOrWhiteSpace(name))
                 {
                     result(new DisaParticipant(name, unknownPartyParticipant));
@@ -1562,37 +1553,238 @@ namespace Disa.Framework.Telegram
                 var iDialogs =
                     TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
                     {
-                        Limit = int.MaxValue,
+                        Limit = 100,
                         OffsetPeer = new InputPeerEmpty(),
                     }));
-                var dialogs = iDialogs as MessagesDialogs;
-                masterDialogs.AddChats(dialogs.Chats);
-                masterDialogs.AddUsers(dialogs.Users);
+                var messagesDialogs = iDialogs as MessagesDialogs;
+
+                var messagesDialogsSlice = iDialogs as MessagesDialogsSlice;
+
+                if (messagesDialogs != null)
+                {
+                    masterDialogs.AddChats(messagesDialogs.Chats);
+                    masterDialogs.AddUsers(messagesDialogs.Users);
+                }
+                else if (messagesDialogsSlice != null)
+                {
+                    //first add whatever we have got until now
+                    masterDialogs.AddChats(messagesDialogsSlice.Chats);
+                    masterDialogs.AddUsers(messagesDialogsSlice.Users);
+                    var numDialogs = 0;
+                    do
+                    {
+                        numDialogs = messagesDialogsSlice.Dialogs.Count;
+
+                        DebugPrint("%%%%%%% Number of Dialogs " + numDialogs);
+
+                        var lastDialog = messagesDialogsSlice.Dialogs.LastOrDefault() as Dialog;
+
+                        DebugPrint("%%%%%%% Last Dialog " + ObjectDumper.Dump(lastDialog));
+
+                        if (lastDialog != null)
+                        {
+                            var lastPeer = GetInputPeerFromIPeer(lastDialog.Peer);
+                            DebugPrint("%%%%%%% Last Peer " + ObjectDumper.Dump(lastPeer));
+                            var offsetId = Math.Max(lastDialog.ReadInboxMaxId, lastDialog.TopMessage);
+                            DebugPrint("%%%%%%% message offset " + ObjectDumper.Dump(offsetId));
+                            var offsetDate = FindDateForMessageId(offsetId,messagesDialogsSlice);
+                            DebugPrint("%%%%%%% offset date " + ObjectDumper.Dump(offsetDate));
+                            var nextDialogs = TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
+                            {
+                                Limit = 100,
+                                OffsetPeer = lastPeer,
+                                OffsetId = offsetId,
+                                OffsetDate = offsetDate
+                            }));
+
+                            messagesDialogsSlice = nextDialogs as MessagesDialogsSlice;
+                            if (messagesDialogsSlice == null)
+                            {
+                                DebugPrint("%%%%%%% Next messages dialogs null ");
+                                break;
+                            }
+
+                            DebugPrint("%%%%%%% users " + ObjectDumper.Dump(messagesDialogsSlice.Users));
+
+                            DebugPrint("%%%%%%% chats " + ObjectDumper.Dump(messagesDialogsSlice.Chats));
+
+                            masterDialogs.AddUsers(messagesDialogsSlice.Users);
+                            masterDialogs.AddChats(messagesDialogsSlice.Chats);
+
+                        }
+                        DebugPrint("%%%%%%% Number of Dialogs At end " + numDialogs);
+
+                    } while (numDialogs >= 100);
+                }
             }
 
-            //////////////////////////
-
-            //test code
-
-//            var d =
+//            //////////////////////////
+//
+//            //test code
+//            try
+//            {
+//                var d =
 //                    TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
 //                    {
 //                        Limit = 100,
 //                        OffsetPeer = new InputPeerEmpty(),
 //                    }));
-//            var d1 = d as MessagesDialogs;
+//                var d1 = d as MessagesDialogs;
+//                var d2 = d as MessagesDialogsSlice;
 //
-//            Utils.DebugPrint("######## Dialogs Count" + ObjectDumper.Dump(d1.Dialogs.Count));
-//            Utils.DebugPrint("######## Dialogs" + ObjectDumper.Dump(d1.Dialogs));
-
-
-            ////////////////////////////
+//                if (d2 != null)
+//                {
+//                    Utils.DebugPrint("######## Dialogs Slice Count" + ObjectDumper.Dump(d2.Dialogs.Count));
+//                    Utils.DebugPrint("######## Dialogs Slice" + ObjectDumper.Dump(d2.Dialogs));
+//                   // Utils.DebugPrint("####### Full Dialogs " + ObjectDumper.Dump(d2));
+//                    var lastPeerDialog = d2.Dialogs.LastOrDefault() as Dialog;
+//                    var peerUser = lastPeerDialog.Peer as PeerUser;
+//                    Utils.DebugPrint("####### The peer user is " + ObjectDumper.Dump(peerUser));
+//                    Utils.DebugPrint("####### The user is " + ObjectDumper.Dump(_dialogs.GetUser(peerUser.UserId)));
+//                    if (peerUser!=null)
+//                    {
+//                        var inputPeer = new InputPeerUser();
+//                        inputPeer.UserId = peerUser.UserId;
+//                        var offset = Math.Max(lastPeerDialog.ReadInboxMaxId, lastPeerDialog.TopMessage);
+//                        Utils.DebugPrint("####### The offset message id is " + offset);
+//                        uint date = 0;
+//                        foreach(var imessage  in d2.Messages)
+//                        {
+//                            var message = imessage as Message;
+//                            if (message != null)
+//                            {
+//                                if (message.Id == offset)
+//                                {
+//                                    Utils.DebugPrint("####### message found!!! " + ObjectDumper.Dump(message));
+//                                    date = message.Date;
+//                                }
+//                            }
+//                            var messageService = imessage as MessageService;
+//                            if (messageService != null)
+//                            {
+//                                if (messageService.Id == offset)
+//                                {
+//                                    Utils.DebugPrint("####### message service found!!! " + ObjectDumper.Dump(messageService));
+//                                    date = messageService.Date;
+//                                }
+//                            }
+//
+//                        }
+//
+//                        var e =
+//                            TelegramUtils.RunSynchronously(
+//                                client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
+//                                {
+//                                    Limit = 100,
+//                                    OffsetPeer = inputPeer,
+//                                    OffsetId = offset,
+//                                    OffsetDate = date,
+//                                }));
+//                        var e1 = e as MessagesDialogs;
+//                        var e2 = e as MessagesDialogsSlice;
+//                        if (e1 != null)
+//                        {
+//                            Utils.DebugPrint("######## Dialogs internal Count" + ObjectDumper.Dump(e1.Dialogs.Count));
+//                            Utils.DebugPrint("######## Dialogs internal" + ObjectDumper.Dump(e1.Dialogs));
+//                        }
+//                        if (e2 != null)
+//                        {
+//                            Utils.DebugPrint("######## Dialogs slice internal Count" + ObjectDumper.Dump(e2.Dialogs.Count));
+//                            Utils.DebugPrint("######## Dialogs slice internal" + ObjectDumper.Dump(e2.Dialogs));
+//                        }
+//
+//                    }
+//                }
+//                else
+//                {
+//                    Utils.DebugPrint("###### Dialogs Slice null");
+//                }
+//
+//                if (d1 != null)
+//                {
+//                    Utils.DebugPrint("######## Dialogs Count" + ObjectDumper.Dump(d1.Dialogs.Count));
+//                    Utils.DebugPrint("######## Dialogs" + ObjectDumper.Dump(d1.Dialogs));
+//                }
+//                else
+//                {
+//                    Utils.DebugPrint("###### Dialogs null");
+//                }
+//
+//            }
+//            catch (Exception e)
+//            {
+//                DebugPrint("###### exception" + e);
+//            }
+//            ////////////////////////////
 
 
             _dialogs = masterDialogs;
             //FetchFullChatsForParties(client, masterDialogs);
 
             DebugPrint("Obtained conversations.");
+        }
+
+        private IInputPeer GetInputPeerFromIPeer(IPeer peer)
+        {
+            IInputPeer retInputUser = null;
+            var peerUser = peer as PeerUser;
+            var peerChat = peer as PeerChat;
+            var peerChannel = peer as PeerChannel;
+
+            if (peerUser != null)
+            {
+                var inputPeerUser = new InputPeerUser
+                {
+                    UserId = peerUser.UserId
+                };
+                retInputUser = inputPeerUser;
+            }
+            else if (peerChat != null)
+            {
+                var inputPeerChat = new InputPeerChat
+                {
+                    ChatId = peerChat.ChatId
+                };
+                retInputUser = inputPeerChat;
+            }
+            else if(peerChannel!= null)
+            {
+                var inputPeerChannel = new InputPeerChannel
+                {
+                    ChannelId = peerChannel.ChannelId,
+                };
+                retInputUser = inputPeerChannel;
+            }
+            return retInputUser;
+
+        }
+
+        private uint FindDateForMessageId(uint offsetId, MessagesDialogsSlice messagesDialogsSlice)
+        {
+            uint date = 0;
+            foreach (var iMessage in messagesDialogsSlice.Messages)
+            {
+                var message = iMessage as Message;
+                if (message != null)
+                {
+                    if (message.Id == offsetId)
+                    {
+                        Utils.DebugPrint("####### message found!!! " + ObjectDumper.Dump(message));
+                        date = message.Date;
+                    }
+                }
+                var messageService = iMessage as MessageService;
+                if (messageService != null)
+                {
+                    if (messageService.Id == offsetId)
+                    {
+                        Utils.DebugPrint("####### message service found!!! " + ObjectDumper.Dump(messageService));
+                        date = messageService.Date;
+                    }
+                }
+
+            }
+            return date;
         }
     }
 }
