@@ -225,32 +225,39 @@ namespace Disa.Framework.Telegram
                     {
                         BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
                             peerUser.UserId.ToString(CultureInfo.InvariantCulture));
-                        string idString = bubbleGroup.LastBubbleSafe().IdService;
-                        if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
+                        DebugPrint("Found bubble group " + bubbleGroup);
+                        if (bubbleGroup != null)
                         {
-                            EventBubble(
-                                new ReadBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) shortMessage.Date,
-                                    Bubble.BubbleDirection.Incoming, this,
-                                    peerUser.UserId.ToString(CultureInfo.InvariantCulture), null,
-                                    Time.GetNowUnixTimestamp(), false, false));
+                            string idString = bubbleGroup.LastBubbleSafe().IdService;
+                            if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
+                            {
+                                EventBubble(
+                                    new ReadBubble(Time.GetNowUnixTimestamp(),
+                                        Bubble.BubbleDirection.Incoming, this,
+                                        peerUser.UserId.ToString(CultureInfo.InvariantCulture), null,
+                                        Time.GetNowUnixTimestamp(), false, false));
+                            }
                         }
+                        
 
                     }
                     else if (peerChat != null)
-                    {//TODO:Uncomment when group read bubbles implemented
-//                        BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
-//                           peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
-//                        string idString = bubbleGroup.LastBubbleSafe().IdService;
-//                        DebugPrint("Idservice for Chat " + idString);
-//                        if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
-//                        {
-//                            DebugPrint("######## Group Message Read!!!!!");
-//                            EventBubble(
-//                                new ReadBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortMessage.Date,
-//                                    Bubble.BubbleDirection.Incoming, this,
-//                                    peerChat.ChatId.ToString(CultureInfo.InvariantCulture), null,
-//                                    Time.GetNowUnixTimestamp(), true, false));
-//                        }
+                    {
+                        BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
+                           peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
+                        if (bubbleGroup != null)
+                        {
+                            string idString = bubbleGroup.LastBubbleSafe().IdService;
+                            if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
+                            {
+                                EventBubble(
+                                    new ReadBubble(
+                                        Time.GetNowUnixTimestamp(),
+                                        Bubble.BubbleDirection.Incoming, this,
+                                        peerChat.ChatId.ToString(CultureInfo.InvariantCulture), _settings.AccountId.ToString(CultureInfo.InvariantCulture),
+                                        Time.GetNowUnixTimestamp(), true, false));
+                            }
+                        }
 
                     }
 
@@ -1611,7 +1618,10 @@ namespace Disa.Framework.Telegram
                             masterDialogs.AddUsers(messagesDialogsSlice.Users);
                             masterDialogs.AddChats(messagesDialogsSlice.Chats);
 
+                            
+
                         }
+
                         DebugPrint("%%%%%%% Number of Dialogs At end " + numDialogs);
 
                     } while (numDialogs >= 100);

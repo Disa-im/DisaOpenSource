@@ -330,6 +330,27 @@ namespace Disa.Framework.Telegram
 			}
             return null;
         }
+
+        public static string GetUserIdFromParticipant(IChatParticipant partyParticipant)
+        {
+            var participant = partyParticipant as ChatParticipant;
+            var participantCreator = partyParticipant as ChatParticipantCreator;
+            var participantAdmin = partyParticipant as ChatParticipantAdmin;
+            if (participant != null)
+            {
+                return participant.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            else if (participantCreator != null)
+            {
+                return participantCreator.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            else if (participantAdmin != null)
+            {
+                return participantAdmin.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            return null;
+        }
+
     }
 }
 

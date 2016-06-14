@@ -1316,6 +1316,7 @@
     <Compile Include="SharpMTProto\Messaging\Handlers\GenericRequestResponseHandler.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\UpdatesHandler.cs" />
     <Compile Include="SharpMTProto\Messaging\Handlers\PongHandler.cs" />
+    <Compile Include="UI\PartyOptions.cs" />
     <Compile Include="UI\UserInformation.cs" />
     <Compile Include="DcManager.cs" />
     <Compile Include="FullClient.cs" />
