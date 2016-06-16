@@ -13,6 +13,7 @@ using SharpMTProto.Schema;
 using System.Globalization;
 using System.Timers;
 using System.IO;
+using System.Security.Cryptography;
 using ProtoBuf;
 using Message = SharpTelegram.Schema.Message;
 
@@ -23,7 +24,7 @@ namespace Disa.Framework.Telegram
 {
     [ServiceInfo("Telegram", true, false, false, false, true, typeof(TelegramSettings), 
         ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(ReadBubble), 
-        typeof(TypingBubble), typeof(PresenceBubble))]
+        typeof(TypingBubble), typeof(PresenceBubble), typeof(ImageBubble))]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
         private Dictionary<string, DisaThumbnail> _cachedThumbnails = new Dictionary<string, DisaThumbnail>();
@@ -346,10 +347,11 @@ namespace Disa.Framework.Telegram
                                 ? message.FromId
                                 : peerUser.UserId;
                             var addressStr = address.ToString(CultureInfo.InvariantCulture);
-                            tb = new TextBubble(
-                                useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
-                                direction, addressStr, null, false, this, message.MessageProperty,
-                                message.Id.ToString(CultureInfo.InvariantCulture));
+                                tb = new TextBubble(
+                                    useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
+                                    direction, addressStr, null, false, this, message.MessageProperty,
+                                    message.Id.ToString(CultureInfo.InvariantCulture));
+                            
                         }
                         else if (peerChat != null)
                         {
@@ -367,6 +369,31 @@ namespace Disa.Framework.Telegram
                         }
 
                         EventBubble(tb);
+                    }
+                    else
+                    {
+                        var peerUser = message.ToId as PeerUser;
+                        var peerChat = message.ToId as PeerChat;
+
+                        var direction = message.FromId == _settings.AccountId
+                            ? Bubble.BubbleDirection.Outgoing
+                            : Bubble.BubbleDirection.Incoming;
+
+                        if (peerUser != null)
+                        {
+                            var address = direction == Bubble.BubbleDirection.Incoming
+                                ? message.FromId
+                                : peerUser.UserId;
+                            var addressStr = address.ToString(CultureInfo.InvariantCulture);
+                            RaiseMediaBubble(message, useCurrentTime,true,addressStr);
+                        }
+                        else if (peerChat != null)
+                        {
+                            var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
+                            var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
+                            RaiseMediaBubble(message,useCurrentTime,false,address,participantAddress);
+                        }
+                        
                     }
                     if (message.Id > maxMessageId)
                     {
@@ -533,6 +560,121 @@ namespace Disa.Framework.Telegram
                 SendReceivedMessages(optionalClient, maxMessageId);
             }
         }
+
+        private void RaiseMediaBubble(Message message, bool useCurrentTime, bool isUser, string addressStr, string participantAddress = null)
+        {
+            DebugPrint(">>>>>>> Raising media bubble");
+            var messageMedia = message.Media;
+            var messageMediaPhoto = messageMedia as MessageMediaPhoto;
+            var messageMediaDocument = messageMedia as MessageMediaDocument;
+
+
+            if (messageMediaPhoto != null)
+            {
+                var fileLocation = GetPhotoFileLocation(messageMediaPhoto.Photo);
+                var fileSize = GetPhotoFileSize(messageMediaPhoto.Photo);
+                var cachedPhoto = GetCachedPhotoBytes(messageMediaPhoto.Photo);
+                FileInformation fileInfo = new FileInformation
+                {
+                    FileLocation = fileLocation,
+                    Size = fileSize,
+                    FileType = "image"
+                };
+                var memoryStream = new MemoryStream();
+                Serializer.Serialize<FileInformation>(memoryStream, fileInfo);
+                ImageBubble b = null;
+                if (isUser)
+                {
+                    b = new ImageBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
+                        Bubble.BubbleDirection.Incoming, addressStr, null, false, this, null, ImageBubble.Type.Url,
+                        cachedPhoto, message.Id.ToString(CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    b = new ImageBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
+                        Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true, this, null,
+                        ImageBubble.Type.Url, cachedPhoto, message.Id.ToString(CultureInfo.InvariantCulture));
+                }
+                if (b.Direction == Bubble.BubbleDirection.Outgoing)
+                {
+                    b.Status = Bubble.BubbleStatus.Sent;
+                }
+                b.AdditionalData = memoryStream.ToArray();
+                
+                EventBubble(b);
+            }
+            else if (messageMediaDocument != null)
+            {
+                DebugPrint(">>>> Media document " + ObjectDumper.Dump(messageMediaDocument));
+                DebugPrint(">>>>> Media attributes " +  (messageMediaDocument.Document as Document).Attributes);
+            }
+
+
+        }
+
+        private uint GetPhotoFileSize(IPhoto iPhoto)
+        {
+            var photo = iPhoto as Photo;
+
+            if (photo != null)
+            {
+                foreach (var photoSize in photo.Sizes)
+                {
+                    var photoSizeNormal = photoSize as PhotoSize;
+                    if (photoSizeNormal != null)
+                    {
+                        if (photoSizeNormal.Type == "x")
+                        {
+                            return photoSizeNormal.Size;
+                        }
+                    }
+
+                }
+            }
+            return 0;
+        }
+
+        private IFileLocation GetPhotoFileLocation(IPhoto iPhoto)
+        {
+            var photo = iPhoto as Photo;
+
+            if (photo != null)
+            {
+                foreach (var photoSize in photo.Sizes)
+                {
+                    var photoSizeNormal = photoSize as PhotoSize;
+                    if (photoSizeNormal != null)
+                    {
+                        if (photoSizeNormal.Type == "x")
+                        {
+                            return photoSizeNormal.Location;
+                        }
+                    }
+
+                }
+            }
+            return null;
+        }
+
+        private byte[] GetCachedPhotoBytes(IPhoto iPhoto)
+        {
+            var photo = iPhoto as Photo;
+
+            if (photo != null)
+            {
+                foreach (var photoSize in photo.Sizes)
+                {
+                    var photoSizeCached = photoSize as PhotoCachedSize;
+                    if (photoSizeCached != null)
+                    {
+                        return photoSizeCached.Bytes;
+                    }
+
+                }
+            }
+            return null;
+        }
+
 
         private class OptionalClientDisposable : IDisposable
         {
@@ -1006,6 +1148,136 @@ namespace Disa.Framework.Telegram
                     }
                 }
             }
+
+            var imageBubble = b as ImageBubble;
+            if (imageBubble != null)
+            {
+                var fileId = GenerateRandomId();
+                try
+                {
+                    var fileInfo =  new FileInfo(imageBubble.ImagePath);
+                    DebugPrint(">>>>>>> the size of the file is " + fileInfo.Length);
+                    UploadImage(imageBubble,fileId);
+                }
+                catch (Exception e)
+                {
+                    DebugPrint("File upload error " + e);
+                    throw;
+                }
+            }
+        }
+
+        private void UploadBigImage(ImageBubble imageBubble, ulong fileId, long fileSize)
+        {
+            const uint chunkSize = 524288;
+            var fileTotalParts = (uint)fileSize/chunkSize;
+            var chunk = new byte[chunkSize];
+            uint chunkNumber = 0;
+            var offset = 0;
+            using (var file = File.OpenRead(imageBubble.ImagePath))
+            {
+                using (var client = new FullClientDisposable(this))
+                {
+                    int bytesRead;
+                    while ((bytesRead = file.Read(chunk, 0, chunk.Length)) > 0)
+                    {
+                        var uploaded =
+                            TelegramUtils.RunSynchronously(
+                                client.Client.Methods.UploadSaveBigFilePartAsync(new UploadSaveBigFilePartArgs
+                                {
+                                    Bytes = chunk,
+                                    FileId = fileId,
+                                    FilePart = chunkNumber,
+                                    FileTotalParts = fileTotalParts+1,
+                                }));
+
+                        if (!uploaded)
+                        {
+                            throw new Exception("The file chunk failed to be uploaded");
+                        }
+                        chunkNumber++;
+                        offset += bytesRead;
+                    }
+                    var inputFile = new InputFileBig
+                    {
+                        Id = fileId,
+                        Name = imageBubble.ImagePathNative,
+                        Parts = chunkNumber
+                    };
+                    SendImage(client.Client, imageBubble,inputFile);
+                }
+            }
+
+        }
+
+        private void UploadImage(ImageBubble imageBubble,ulong fileId)
+        {
+            const int chunkSize = 65536;
+            var chunk = new byte[chunkSize];
+            uint chunkNumber = 0;
+            var offset = 0;
+            using (var file = File.OpenRead(imageBubble.ImagePath))
+            {
+                using (var client = new FullClientDisposable(this))
+                {
+                    int bytesRead;
+                    while ((bytesRead = file.Read(chunk, 0, chunk.Length)) > 0)
+                    {
+                        //RPC call
+
+                        var uploaded =
+                            TelegramUtils.RunSynchronously(
+                                client.Client.Methods.UploadSaveFilePartAsync(new UploadSaveFilePartArgs
+                                {
+                                    Bytes = chunk,
+                                    FileId = fileId,
+                                    FilePart = chunkNumber
+                                }));
+
+                        if (!uploaded)
+                        {
+                            throw new Exception("The file chunk failed to be uploaded");
+                        }
+                        chunkNumber++;
+                        offset += bytesRead;
+                    }
+                    var inputFile = new InputFile
+                    {
+                        Id = fileId,
+                        Md5Checksum = "",
+                        Name = imageBubble.ImagePathNative,
+                        Parts = chunkNumber
+                    };
+                    SendImage(client.Client, imageBubble, inputFile);
+                }
+            }
+        }
+
+        private void SendImage(TelegramClient client, ImageBubble imageBubble, IInputFile inputFile)
+        {
+            var inputPeer = GetInputPeer(imageBubble.Address, imageBubble.Party);
+            var sendResult = TelegramUtils.RunSynchronously(
+                client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
+                {
+
+                    Flags = 0,
+                    Peer = inputPeer,
+                    Media = new InputMediaUploadedPhoto
+                    {
+                        Caption = "",
+                        File = inputFile,
+                    },
+                    RandomId = GenerateRandomId(),
+                }));
+        }
+
+        private ulong GenerateRandomId()
+        {
+            byte[] buffer = new byte[sizeof(UInt64)];
+            var random = new Random();
+            random.NextBytes(buffer);
+            var id = BitConverter.ToUInt64(buffer, 0);
+            return id;
         }
 
         void SendToResponseDispatcher(IUpdates iUpdate,TelegramClient client)
@@ -1392,7 +1664,26 @@ namespace Disa.Framework.Telegram
             }));
             return response.Bytes;
         }
-            
+
+        private static byte[] FetchFileBytes(TelegramClient client, FileLocation fileLocation,uint offset,uint limit)
+        {
+            var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
+                new UploadGetFileArgs
+                {
+                    Location = new InputFileLocation
+                    {
+                        VolumeId = fileLocation.VolumeId,
+                        LocalId = fileLocation.LocalId,
+                        Secret = fileLocation.Secret
+                    },
+                    Offset = offset,
+                    Limit = limit,
+                }));
+            return response.Bytes;
+        }
+
+
+
         private byte[] FetchFileBytes(FileLocation fileLocation)
         {
             if (fileLocation.DcId == _settings.NearestDcId)
@@ -1408,6 +1699,31 @@ namespace Disa.Framework.Telegram
                 {
                     var client = GetClient((int)fileLocation.DcId);
                     return FetchFileBytes(client, fileLocation);
+                }
+                catch (Exception ex)
+                {
+                    DebugPrint("Failed to obtain client from DC manager: " + ex);
+                    return null;
+                }
+            }
+        }
+
+
+        private byte[] FetchFileBytes(FileLocation fileLocation,uint offset,uint limit)
+        {
+            if (fileLocation.DcId == _settings.NearestDcId)
+            {
+                using (var clientDisposable = new FullClientDisposable(this))
+                {
+                    return FetchFileBytes(clientDisposable.Client, fileLocation,offset,limit);
+                }
+            }
+            else
+            {
+                try
+                {
+                    var client = GetClient((int)fileLocation.DcId);
+                    return FetchFileBytes(client, fileLocation,offset,limit);
                 }
                 catch (Exception ex)
                 {

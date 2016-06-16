@@ -51,6 +51,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CachedChat.cs" />
+    <Compile Include="FileInformation.cs" />
+    <Compile Include="MediaDownloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SharpTL\Exceptions.cs" />
     <Compile Include="SharpTL\GlobalSuppressions.cs" />
