@@ -22,7 +22,7 @@ using Message = SharpTelegram.Schema.Message;
 
 namespace Disa.Framework.Telegram
 {
-    [ServiceInfo("Telegram", true, false, false, false, true, typeof(TelegramSettings), 
+    [ServiceInfo("Telegram", true, true, true, false, true, typeof(TelegramSettings), 
         ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(ReadBubble), 
         typeof(TypingBubble), typeof(PresenceBubble), typeof(ImageBubble), typeof(FileBubble), typeof(AudioBubble),typeof(LocationBubble))]
     [FileParameters(55000000)] //25mb
@@ -631,7 +631,7 @@ namespace Disa.Framework.Telegram
                         FileType = "document",
                         Document = document
                     };
-                    var memoryStream = new MemoryStream();
+                    var memoryStream = new MemoryStream(); //never do this. always wrap streams in using
                     Serializer.Serialize<FileInformation>(memoryStream, fileInfo);
                     VisualBubble bubble = null;
                     if (document.MimeType.Contains("audio"))
@@ -1282,7 +1282,8 @@ namespace Disa.Framework.Telegram
                 var fileId = GenerateRandomId();
                 try
                 {
-                    UploadFile(imageBubble,fileId,0);
+                    var inputFile = UploadFile(imageBubble,fileId,0);
+                    SendFile(imageBubble, inputFile);
                 }
                 catch (Exception e)
                 {
@@ -1302,11 +1303,13 @@ namespace Disa.Framework.Telegram
                     DebugPrint(">>>>>>> the size of the file is " + fileInfo.Length);
                     if (fileInfo.Length <= 10485760)
                     {
-                        UploadFile(fileBubble, fileId, fileInfo.Length);
+                        var inputFile = UploadFile(fileBubble, fileId, fileInfo.Length);
+                        SendFile(fileBubble,inputFile);
                     }
                     else
                     {
-                        UploadBigFile(fileBubble,fileId,fileInfo.Length);
+                        var inputFile = UploadBigFile(fileBubble,fileId,fileInfo.Length);
+                        SendFile(fileBubble, inputFile);
                     }
                 }
                 catch (Exception e)
@@ -1327,11 +1330,13 @@ namespace Disa.Framework.Telegram
                     DebugPrint(">>>>>>> the size of the file is " + fileInfo.Length);
                     if (fileInfo.Length <= 10485760)
                     {
-                        UploadFile(audioBubble, fileId,fileInfo.Length);
+                        var inputFile = UploadFile(audioBubble, fileId,fileInfo.Length);
+                        SendFile(audioBubble,inputFile);
                     }
                     else
                     {
-                        UploadBigFile(audioBubble, fileId, fileInfo.Length);
+                        var inputFile = UploadBigFile(audioBubble, fileId, fileInfo.Length);
+                        SendFile(audioBubble, inputFile);
                     }
                 }
                 catch (Exception e)
@@ -1376,7 +1381,7 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private void UploadBigFile(VisualBubble bubble, ulong fileId, long fileSize)
+        private IInputFile UploadBigFile(VisualBubble bubble, ulong fileId, long fileSize)
         {
             const uint chunkSize = 131072;
             var fileTotalParts = (uint)fileSize/chunkSize;
@@ -1408,13 +1413,12 @@ namespace Disa.Framework.Telegram
                         offset += bytesRead;
                         UpdateSendProgress(bubble, offset, fileSize);
                     }
-                    var inputFile = new InputFileBig
+                    return new InputFileBig
                     {
                         Id = fileId,
                         Name = GetNameFromBubble(bubble),
                         Parts = chunkNumber
                     };
-                    SendFile(client.Client, bubble,inputFile);
                 }
             }
 
@@ -1465,7 +1469,7 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private void UploadFile(VisualBubble bubble, ulong fileId, long fileSize)
+        private IInputFile UploadFile(VisualBubble bubble, ulong fileId, long fileSize)
         {
             const int chunkSize = 65536;
             var chunk = new byte[chunkSize];
@@ -1497,14 +1501,14 @@ namespace Disa.Framework.Telegram
                         offset += bytesRead;
                         UpdateSendProgress(bubble, offset, fileSize);
                     }
-                    var inputFile = new InputFile
+                    return new InputFile
                     {
                         Id = fileId,
                         Md5Checksum = "",
                         Name = GetNameFromBubble(bubble),
                         Parts = chunkNumber
                     };
-                    SendFile(client.Client, bubble, inputFile);
+                    
                 }
             }
         }
@@ -1522,15 +1526,22 @@ namespace Disa.Framework.Telegram
                 float progress = offset / (float)fileSize;
                 if (fileBubble.Transfer != null && fileBubble.Transfer.Progress != null)
                 {
+                    Utils.DebugPrint("#### PROGRESS: " + progress * 100);
                     try
                     {
-                        fileBubble.Transfer.Progress((int)progress * 100);
+                        fileBubble.Transfer.Progress((int) progress*100);
                     }
                     catch (Exception ex)
                     {
                     }
                 }
-                
+                else
+
+                {
+                    Utils.DebugPrint("######" + (fileBubble.Transfer == null));
+                    Utils.DebugPrint(("######### NULL"));
+                }
+
             }else if (audioBubble != null)
             {
                 float progress = offset / (float)fileSize;
@@ -1547,84 +1558,87 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private void SendFile(TelegramClient client, VisualBubble bubble, IInputFile inputFile)
+        private void SendFile(VisualBubble bubble, IInputFile inputFile)
         {
             var inputPeer = GetInputPeer(bubble.Address, bubble.Party);
             var imageBubble = bubble as ImageBubble;
             var fileBubble = bubble as FileBubble;
             var audioBubble = bubble as AudioBubble;
-
-            if (imageBubble != null)
+            using (var client = new FullClientDisposable(this))
             {
-                TelegramUtils.RunSynchronously(
-                    client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
-                    {
+                if (imageBubble != null)
+                {
 
-                        Flags = 0,
-                        Peer = inputPeer,
-                        Media = new InputMediaUploadedPhoto
+                    TelegramUtils.RunSynchronously(
+                        client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
                         {
-                            Caption = "",
-                            File = inputFile,
-                        },
-                        RandomId = GenerateRandomId(),
-                    }));
-            }
-            else if (fileBubble != null)
-            {
-                var documentAttributes = new List<IDocumentAttribute>
+
+                            Flags = 0,
+                            Peer = inputPeer,
+                            Media = new InputMediaUploadedPhoto
+                            {
+                                Caption = "",
+                                File = inputFile,
+                            },
+                            RandomId = GenerateRandomId(),
+                        }));
+                }
+                else if (fileBubble != null)
                 {
-                    new DocumentAttributeFilename
+                    var documentAttributes = new List<IDocumentAttribute>
                     {
-                        FileName = fileBubble.FileName
-                    }
-                };
-                TelegramUtils.RunSynchronously(
-                     client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
-                     {
+                        new DocumentAttributeFilename
+                        {
+                            FileName = fileBubble.FileName
+                        }
+                    };
+                    TelegramUtils.RunSynchronously(
+                        client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
+                        {
 
-                         Flags = 0,
-                         Peer = inputPeer,
-                         Media = new InputMediaUploadedDocument
-                         {
-                             Attributes = documentAttributes,
-                             Caption = "",
-                             File = inputFile,
-                             MimeType = fileBubble.MimeType,
-                         },
-                         RandomId = GenerateRandomId(),
-                     }));
-            }
-            else if (audioBubble != null)
-            {
-                var documentAttributes = new List<IDocumentAttribute>();
-
-                documentAttributes.Add(new DocumentAttributeAudio
+                            Flags = 0,
+                            Peer = inputPeer,
+                            Media = new InputMediaUploadedDocument
+                            {
+                                Attributes = documentAttributes,
+                                Caption = "",
+                                File = inputFile,
+                                MimeType = fileBubble.MimeType,
+                            },
+                            RandomId = GenerateRandomId(),
+                        }));
+                }
+                else if (audioBubble != null)
                 {
-                    Duration = (uint) audioBubble.Seconds,
-                    Flags = 0
-                });
-               
+                    var documentAttributes = new List<IDocumentAttribute>();
 
-                var mimeType = Platform.GetMimeTypeFromPath(audioBubble.AudioPath);
-                var inputMedia = new InputMediaUploadedDocument
-                {
-                    Attributes = documentAttributes,
-                    Caption = "",
-                    File = inputFile,
-                    MimeType = mimeType,
-                };
+                    documentAttributes.Add(new DocumentAttributeAudio
+                    {
+                        Duration = (uint) audioBubble.Seconds,
+                        Flags = 0
+                    });
 
-                var media = new MessagesSendMediaArgs
-                {
-                    Flags = 0,
-                    Media = inputMedia,
-                    Peer = inputPeer,
-                    RandomId = GenerateRandomId(),
-                };
 
-                TelegramUtils.RunSynchronously(
-                    client.Methods.MessagesSendMediaAsync(media));
+                    var mimeType = Platform.GetMimeTypeFromPath(audioBubble.AudioPath);
+                    var inputMedia = new InputMediaUploadedDocument
+                    {
+                        Attributes = documentAttributes,
+                        Caption = "",
+                        File = inputFile,
+                        MimeType = mimeType,
+                    };
+
+                    var media = new MessagesSendMediaArgs
+                    {
+                        Flags = 0,
+                        Media = inputMedia,
+                        Peer = inputPeer,
+                        RandomId = GenerateRandomId(),
+                    };
+
+                    TelegramUtils.RunSynchronously(
+                        client.Client.Methods.MessagesSendMediaAsync(media));
+                }
             }
         }
 

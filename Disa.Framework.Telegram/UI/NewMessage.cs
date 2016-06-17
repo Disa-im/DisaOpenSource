@@ -285,9 +285,16 @@ namespace Disa.Framework.Telegram
                 }
                 else
                 {
-                    var telegramContact = contacts[0].Item1 as TelegramContact;
-                    _dialogs.AddUser(telegramContact.User);
-                    result(true, contacts[0].Item2.Id);
+                    if (contacts[0].Item2 is Contact.PartyID)
+                    {
+                        result(true, contacts[0].Item2.Id);
+                    }
+                    else
+                    {
+                        var telegramContact = contacts[0].Item1 as TelegramContact;
+                        _dialogs.AddUser(telegramContact.User);
+                        result(true, contacts[0].Item2.Id);
+                    }
                 }
             });
         }

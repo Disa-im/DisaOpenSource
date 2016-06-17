@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using Raksha.Security;
 using SharpTelegram;
@@ -120,16 +121,86 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
+                //MessagesEditChatPhotoAsync
                 //Temporary to avoid the loading screen
-                result(null);
+                byte[] resizedImage = Platform.GenerateJpegBytes(bytes, 640, 640);
+                var inputFile = UploadPartyImage(resizedImage);
+
+                using (var client = new FullClientDisposable(this))
+                {
+                    var update = TelegramUtils.RunSynchronously(
+                        client.Client.Methods.MessagesEditChatPhotoAsync(new MessagesEditChatPhotoArgs
+                        {
+                            ChatId = uint.Parse(group.Address),
+                            Photo = new InputChatUploadedPhoto
+                            {
+                                Crop = new InputPhotoCropAuto(),
+                                File = inputFile
+                            }
+                        }));
+                    SendToResponseDispatcher(update,client.Client);
+                }
+                byte[] disaImage = Platform.GenerateJpegBytes(bytes, 96, 96);
+                var thumbnail = new DisaThumbnail(this,resizedImage,GenerateRandomId().ToString());
+                result(thumbnail);
             });
+        }
+
+        private IInputFile UploadPartyImage(byte[] resizedImage)
+        {
+            var fileId = GenerateRandomId();
+            const int chunkSize = 65536;
+            var chunk = new byte[chunkSize];
+            uint chunkNumber = 0;
+            var offset = 0;
+            var memoryStream = new MemoryStream(resizedImage);
+            using (var client = new FullClientDisposable(this))
+            {
+                int bytesRead;
+                while ((bytesRead = memoryStream.Read(chunk, 0, chunk.Length)) > 0)
+                {
+                    //RPC call
+
+                    var uploaded =
+                        TelegramUtils.RunSynchronously(
+                            client.Client.Methods.UploadSaveFilePartAsync(new UploadSaveFilePartArgs
+                            {
+                                Bytes = chunk,
+                                FileId = fileId,
+                                FilePart = chunkNumber
+                            }));
+
+                    if (!uploaded)
+                    {
+                        throw new Exception("The file chunk failed to be uploaded");
+                    }
+                    chunkNumber++;
+                    offset += bytesRead;
+                }
+                return new InputFile
+                {
+                    Id = fileId,
+                    Md5Checksum = "",
+                    Name = GenerateRandomId() + ".jpeg",
+                    Parts = chunkNumber
+                };
+            }
+            
         }
 
         public Task DeletePartyPhoto(BubbleGroup group)
         {
             return Task.Factory.StartNew(() =>
             {
-
+                using (var client = new FullClientDisposable(this))
+                {
+                    TelegramUtils.RunSynchronously(
+                        client.Client.Methods.MessagesEditChatPhotoAsync(new MessagesEditChatPhotoArgs
+                        {
+                            ChatId = uint.Parse(group.Address),
+                            Photo = new InputChatPhotoEmpty()
+                        }));
+                }
             });
         }
 
