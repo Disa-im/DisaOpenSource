@@ -7,10 +7,12 @@ namespace Disa.Framework.Telegram
     public class FileInformation
     {
         [ProtoMember(1)]
-        public IFileLocation FileLocation { get; set; }
+        public FileLocation FileLocation { get; set; }
         [ProtoMember(2)]
         public uint Size { get; set; }
         [ProtoMember(3)]
         public string FileType { get; set; }
+        [ProtoMember(4)]
+        public Document Document { get; set; }
     }
 }

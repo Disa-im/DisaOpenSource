@@ -120,7 +120,7 @@ namespace Disa.Framework.Telegram
         {
             if (_hasPresence)
             {
-                DebugPrint("Telling full client that it can forever stay alive.");
+                DebugPrint(">>>>>>> Telling full client that it can forever stay alive.");
                 PingDelay(_fullClient, uint.MaxValue);
                 ScheduleFullClientPing();
             }
@@ -130,7 +130,7 @@ namespace Disa.Framework.Telegram
                 {
                     return;   
                 }
-                DebugPrint("Telling full client that it can only stay alive for a minute.");
+                DebugPrint(">>>>>>>> Telling full client that it can only stay alive for a minute.");
                 PingDelay(_fullClient, 60);
                 RemoveFullClientPingIfPossible();
             }
