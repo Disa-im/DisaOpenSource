@@ -185,7 +185,7 @@ namespace Disa.Framework.Telegram
 //            return Tuple.Create(dcOption.IpAddress, dcOption.Port);
 //        }
 
-        private class FullClientDisposable : IDisposable
+        public class FullClientDisposable : IDisposable
         {
             private readonly bool _isFullClient;
             private readonly TelegramClient _client;

@@ -351,6 +351,20 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
+        public static string GetUserHandle(IUser user)
+        {
+            var userEmpty = user as UserEmpty;
+            var userObj = user as User;
+            if (userEmpty != null)
+            {
+                return null;
+            }
+            if (userObj != null)
+            {
+                return "@" + userObj.Username.ToString(CultureInfo.InvariantCulture);
+            }
+            return null;
+        }
     }
 }
 

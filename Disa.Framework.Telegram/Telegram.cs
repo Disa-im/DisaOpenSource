@@ -75,14 +75,14 @@ namespace Disa.Framework.Telegram
 
         private Random _random = new Random(System.Guid.NewGuid().GetHashCode());
 
-        private TelegramSettings _settings;
+        public TelegramSettings _settings;
         private TelegramMutableSettings _mutableSettings;
 
         private TelegramClient _longPollClient;
 
         private readonly object _mutableSettingsLock = new object();
-
-        private CachedDialogs _dialogs = new CachedDialogs();
+        //public so that profile settings can access it from the instance
+        public CachedDialogs _dialogs = new CachedDialogs();
         private bool _dialogsInitiallyRetrieved = false;
         private Config _config;
 
@@ -498,18 +498,7 @@ namespace Disa.Framework.Telegram
                 }
                 else if (updateChatParticipants != null)
                 {
-//                    var chatParicipants = updateChatParticipants.Participants as ChatParticipants;
-//                    if (chatParicipants != null)
-//                    {
-//                        Task.Factory.StartNew(() =>
-//                        {
-//                            var address = chatParicipants.ChatId.ToString(CultureInfo.InvariantCulture);
-//                            DebugPrint("Updating chat participants: " + address);
-//                            RemoveFullChat(address);
-//                            GetFullChat(address, optionalClient);
-//                            BubbleGroupUpdater.Update(this, address);
-//                        });
-//                    }
+                    //do nothing, we just use party options for this
                 }
                 else if (messageService != null)
                 {
@@ -594,30 +583,35 @@ namespace Disa.Framework.Telegram
                 {
                     FileLocation = fileLocation,
                     Size = fileSize,
-                    FileType = "image"
+                    FileType = "image",
+                    Document = new Document()
                 };
-                var memoryStream = new MemoryStream();
-                Serializer.Serialize<FileInformation>(memoryStream, fileInfo);
-                ImageBubble imageBubble = null;
-                if (isUser)
+                using (var memoryStream = new MemoryStream())
                 {
-                    imageBubble = new ImageBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
-                        message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, null, ImageBubble.Type.Url,
-                        cachedPhoto, message.Id.ToString(CultureInfo.InvariantCulture));
+                    Serializer.Serialize<FileInformation>(memoryStream, fileInfo);
+                    ImageBubble imageBubble = null;
+                    if (isUser)
+                    {
+                        imageBubble = new ImageBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
+                            message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
+                            addressStr, null, false, this, null, ImageBubble.Type.Url,
+                            cachedPhoto, message.Id.ToString(CultureInfo.InvariantCulture));
+                    }
+                    else
+                    {
+                        imageBubble = new ImageBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
+                            message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
+                            addressStr, participantAddress, true, this, null,
+                            ImageBubble.Type.Url, cachedPhoto, message.Id.ToString(CultureInfo.InvariantCulture));
+                    }
+                    if (imageBubble.Direction == Bubble.BubbleDirection.Outgoing)
+                    {
+                        imageBubble.Status = Bubble.BubbleStatus.Sent;
+                    }
+                    imageBubble.AdditionalData = memoryStream.ToArray();
+                    EventBubble(imageBubble);
                 }
-                else
-                {
-                    imageBubble = new ImageBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
-                        message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true, this, null,
-                        ImageBubble.Type.Url, cachedPhoto, message.Id.ToString(CultureInfo.InvariantCulture));
-                }
-                if (imageBubble.Direction == Bubble.BubbleDirection.Outgoing)
-                {
-                    imageBubble.Status = Bubble.BubbleStatus.Sent;
-                }
-                imageBubble.AdditionalData = memoryStream.ToArray();
                 
-                EventBubble(imageBubble);
             }
             else if (messageMediaDocument != null)
             {
@@ -631,51 +625,73 @@ namespace Disa.Framework.Telegram
                         FileType = "document",
                         Document = document
                     };
-                    var memoryStream = new MemoryStream(); //never do this. always wrap streams in using
-                    Serializer.Serialize<FileInformation>(memoryStream, fileInfo);
-                    VisualBubble bubble = null;
-                    if (document.MimeType.Contains("audio"))
+                    using (var memoryStream = new MemoryStream())
                     {
-                        var audioTime = (int)GetAudioTime(document);
-                        if (isUser)
+                        Serializer.Serialize<FileInformation>(memoryStream, fileInfo);
+                        VisualBubble bubble = null;
+                        if (document.MimeType.Contains("audio"))
                         {
-                            bubble = new AudioBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
-                               message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, "", AudioBubble.Type.Url,
-                                false, audioTime, message.Id.ToString(CultureInfo.InvariantCulture));
+                            var audioTime = (int) GetAudioTime(document);
+                            if (isUser)
+                            {
+                                bubble =
+                                    new AudioBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
+                                        message.Out != null
+                                            ? Bubble.BubbleDirection.Outgoing
+                                            : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, "",
+                                        AudioBubble.Type.Url,
+                                        false, audioTime, message.Id.ToString(CultureInfo.InvariantCulture));
+                            }
+                            else
+                            {
+                                bubble =
+                                    new AudioBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
+                                        message.Out != null
+                                            ? Bubble.BubbleDirection.Outgoing
+                                            : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true,
+                                        this, "",
+                                        AudioBubble.Type.Url, false, audioTime,
+                                        message.Id.ToString(CultureInfo.InvariantCulture));
+                            }
                         }
                         else
                         {
-                            bubble = new AudioBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
-                                message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true, this, "",
-                                AudioBubble.Type.Url, false, audioTime,
-                                message.Id.ToString(CultureInfo.InvariantCulture));
+
+                            var filename = document.MimeType.Contains("video")
+                                ? "Video Clip"
+                                : GetDocumentFileName(document);
+
+                            if (isUser)
+                            {
+                                bubble =
+                                    new FileBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
+                                        message.Out != null
+                                            ? Bubble.BubbleDirection.Outgoing
+                                            : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, "",
+                                        FileBubble.Type.Url, filename, document.MimeType,
+                                        message.Id.ToString(CultureInfo.InvariantCulture));
+                            }
+                            else
+                            {
+                                bubble =
+                                    new FileBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
+                                        message.Out != null
+                                            ? Bubble.BubbleDirection.Outgoing
+                                            : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true,
+                                        this, "", FileBubble.Type.Url, filename, document.MimeType,
+                                        message.Id.ToString(CultureInfo.InvariantCulture));
+                            }
+
                         }
-                    }
-                    else
-                    {
 
-                        var filename = document.MimeType.Contains("video") ? "Video Clip" : GetDocumentFileName(document);
-
-                        if (isUser)
+                        if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
                         {
-                            bubble = new FileBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                                message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, "", FileBubble.Type.Url, filename,document.MimeType, message.Id.ToString(CultureInfo.InvariantCulture));
+                            bubble.Status = Bubble.BubbleStatus.Sent;
                         }
-                        else
-                        {
-                            bubble = new FileBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                               message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true, this, "", FileBubble.Type.Url, filename, document.MimeType, message.Id.ToString(CultureInfo.InvariantCulture));
-                        }
+                        bubble.AdditionalData = memoryStream.ToArray();
 
+                        EventBubble(bubble);
                     }
-                    
-                    if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
-                    {
-                        bubble.Status = Bubble.BubbleStatus.Sent;
-                    }
-                    bubble.AdditionalData = memoryStream.ToArray();
-
-                    EventBubble(bubble);
 
                 }
 
@@ -684,9 +700,10 @@ namespace Disa.Framework.Telegram
             {
                 VisualBubble bubble = null;
                 var geoPoint = messageMediaGeo.Geo as GeoPoint;
-                byte[] geoPointThumbnail = Platform.GenerateLocationThumbnail(geoPoint.Long, geoPoint.Lat).Result;
+
                 if (geoPoint != null)
                 {
+                    byte[] geoPointThumbnail = Platform.GenerateLocationThumbnail(geoPoint.Long, geoPoint.Lat).Result;
                     if (isUser)
                     {
                         bubble = new LocationBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
@@ -1526,7 +1543,6 @@ namespace Disa.Framework.Telegram
                 float progress = offset / (float)fileSize;
                 if (fileBubble.Transfer != null && fileBubble.Transfer.Progress != null)
                 {
-                    Utils.DebugPrint("#### PROGRESS: " + progress * 100);
                     try
                     {
                         fileBubble.Transfer.Progress((int) progress*100);
@@ -1534,12 +1550,6 @@ namespace Disa.Framework.Telegram
                     catch (Exception ex)
                     {
                     }
-                }
-                else
-
-                {
-                    Utils.DebugPrint("######" + (fileBubble.Transfer == null));
-                    Utils.DebugPrint(("######### NULL"));
                 }
 
             }else if (audioBubble != null)
@@ -1549,6 +1559,7 @@ namespace Disa.Framework.Telegram
                 {
                     try
                     {
+                        DebugPrint("Updating progress as " + (int)progress*100);
                         audioBubble.Transfer.Progress((int)progress * 100);
                     }
                     catch (Exception ex)
@@ -1643,7 +1654,7 @@ namespace Disa.Framework.Telegram
         }
 
 
-        private ulong GenerateRandomId()
+        public ulong GenerateRandomId()
         {
             byte[] buffer = new byte[sizeof(UInt64)];
             var random = new Random();
@@ -1957,7 +1968,7 @@ namespace Disa.Framework.Telegram
             }
     }
 
-        private DisaThumbnail GetThumbnail(string id, bool group, bool small)
+        public DisaThumbnail GetThumbnail(string id, bool group, bool small)
         {
             if (id == null)
             {

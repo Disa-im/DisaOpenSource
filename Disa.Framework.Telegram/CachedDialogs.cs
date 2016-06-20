@@ -63,10 +63,12 @@ namespace Disa.Framework.Telegram
                     {
                         return null;
                     }
-                    var stream = new MemoryStream(user.ProtoBufBytes);
-                    stream.Position = 0;
-                    IUser iuser = Serializer.Deserialize<User>(stream);
-                    return iuser;
+                    using (var stream = new MemoryStream(user.ProtoBufBytes))
+                    {
+                        stream.Position = 0;
+                        IUser iuser = Serializer.Deserialize<User>(stream);
+                        return iuser;
+                    }
                 }
             }
         }
@@ -158,10 +160,12 @@ namespace Disa.Framework.Telegram
                     {
                         return null;
                     }
-                    var stream = new MemoryStream(chat.ProtoBufBytes);
-                    stream.Position = 0;
-                    IChat iChat = Serializer.Deserialize<Chat>(stream);
-                    return iChat;
+                    using (var stream = new MemoryStream(chat.ProtoBufBytes))
+                    {
+                        stream.Position = 0;
+                        IChat iChat = Serializer.Deserialize<Chat>(stream);
+                        return iChat;
+                    }
                 }
             }
         }
@@ -196,10 +200,13 @@ namespace Disa.Framework.Telegram
                     var chachedChats = database.Store;
                     foreach (var cachedChat in chachedChats)
                     {
-                        var stream = new MemoryStream(cachedChat.ProtoBufBytes);
-                        stream.Position = 0;
-                        var iChat = Serializer.Deserialize<Chat>(stream);
-                        chatsToReturn.Add(iChat);
+
+                        using (var stream = new MemoryStream(cachedChat.ProtoBufBytes))
+                        {
+                            stream.Position = 0;
+                            var iChat = Serializer.Deserialize<Chat>(stream);
+                            chatsToReturn.Add(iChat);
+                        }
                     }
                 }
                 return chatsToReturn;
@@ -234,21 +241,23 @@ namespace Disa.Framework.Telegram
 
         private void CreateCachedUserAndAdd(IUser user, uint userId, SqlDatabase<CachedUser> database)
         {
-            var memoryStream = ConvertUserToMemoryStream(user);
-            var cachedUser = new CachedUser
+            using (var memoryStream = ConvertUserToMemoryStream(user))
             {
-                Id = userId,
-                ProtoBufBytes = memoryStream.ToArray(),
-            };
-            var dbUser = database.Store.Where(x => x.Id == userId).FirstOrDefault();
-            if (dbUser != null)
-            {
-                database.Store.Delete(x => x.Id == userId);
-                database.Add(cachedUser);
-            }
-            else
-            {
-                database.Add(cachedUser);
+                var cachedUser = new CachedUser
+                {
+                    Id = userId,
+                    ProtoBufBytes = memoryStream.ToArray(),
+                };
+                var dbUser = database.Store.Where(x => x.Id == userId).FirstOrDefault();
+                if (dbUser != null)
+                {
+                    database.Store.Delete(x => x.Id == userId);
+                    database.Add(cachedUser);
+                }
+                else
+                {
+                    database.Add(cachedUser);
+                }
             }
 
         }
@@ -256,21 +265,24 @@ namespace Disa.Framework.Telegram
 
         private void CreateCachedChatAndAdd(IChat chat, uint chatId, SqlDatabase<CachedChat> database)
         {
-            var memoryStream = ConvertChatToMemoryStream(chat);
-            var cachedChat = new CachedChat
+            using (var memoryStream = ConvertChatToMemoryStream(chat))
             {
-                Id = chatId,
-                ProtoBufBytes = memoryStream.ToArray(),
-            };
-            var dbUser = database.Store.Where(x => x.Id == chatId).FirstOrDefault();
-            if (dbUser != null)
-            {
-                database.Store.Delete(x => x.Id == chatId);
-                database.Add(cachedChat);
-            }
-            else
-            {
-                database.Add(cachedChat);
+                var cachedChat = new CachedChat
+                {
+                    Id = chatId,
+                    ProtoBufBytes = memoryStream.ToArray(),
+                };
+
+                var dbUser = database.Store.Where(x => x.Id == chatId).FirstOrDefault();
+                if (dbUser != null)
+                {
+                    database.Store.Delete(x => x.Id == chatId);
+                    database.Add(cachedChat);
+                }
+                else
+                {
+                    database.Add(cachedChat);
+                }
             }
 
         }

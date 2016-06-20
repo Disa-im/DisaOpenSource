@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using Raksha.Security;
-using SharpTelegram;
 using SharpTelegram.Schema;
 
 namespace Disa.Framework.Telegram
@@ -141,7 +139,7 @@ namespace Disa.Framework.Telegram
                     SendToResponseDispatcher(update,client.Client);
                 }
                 byte[] disaImage = Platform.GenerateJpegBytes(bytes, 96, 96);
-                var thumbnail = new DisaThumbnail(this,resizedImage,GenerateRandomId().ToString());
+                var thumbnail = new DisaThumbnail(this,disaImage,GenerateRandomId().ToString());
                 result(thumbnail);
             });
         }
@@ -153,39 +151,41 @@ namespace Disa.Framework.Telegram
             var chunk = new byte[chunkSize];
             uint chunkNumber = 0;
             var offset = 0;
-            var memoryStream = new MemoryStream(resizedImage);
-            using (var client = new FullClientDisposable(this))
+            using (var memoryStream = new MemoryStream(resizedImage))
             {
-                int bytesRead;
-                while ((bytesRead = memoryStream.Read(chunk, 0, chunk.Length)) > 0)
+                using (var client = new FullClientDisposable(this))
                 {
-                    //RPC call
-
-                    var uploaded =
-                        TelegramUtils.RunSynchronously(
-                            client.Client.Methods.UploadSaveFilePartAsync(new UploadSaveFilePartArgs
-                            {
-                                Bytes = chunk,
-                                FileId = fileId,
-                                FilePart = chunkNumber
-                            }));
-
-                    if (!uploaded)
+                    int bytesRead;
+                    while ((bytesRead = memoryStream.Read(chunk, 0, chunk.Length)) > 0)
                     {
-                        throw new Exception("The file chunk failed to be uploaded");
+                        //RPC call
+
+                        var uploaded =
+                            TelegramUtils.RunSynchronously(
+                                client.Client.Methods.UploadSaveFilePartAsync(new UploadSaveFilePartArgs
+                                {
+                                    Bytes = chunk,
+                                    FileId = fileId,
+                                    FilePart = chunkNumber
+                                }));
+
+                        if (!uploaded)
+                        {
+                            return null;
+                        }
+                        chunkNumber++;
+                        offset += bytesRead;
                     }
-                    chunkNumber++;
-                    offset += bytesRead;
+                    return new InputFile
+                    {
+                        Id = fileId,
+                        Md5Checksum = "",
+                        Name = GenerateRandomId() + ".jpeg",
+                        Parts = chunkNumber
+                    };
                 }
-                return new InputFile
-                {
-                    Id = fileId,
-                    Md5Checksum = "",
-                    Name = GenerateRandomId() + ".jpeg",
-                    Parts = chunkNumber
-                };
             }
-            
+
         }
 
         public Task DeletePartyPhoto(BubbleGroup group)
@@ -382,7 +382,6 @@ namespace Disa.Framework.Telegram
                 var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
                 if (id == _settings.AccountId.ToString(CultureInfo.InvariantCulture))
                 {
-                    //TODO:check how the protocol responds
                     if ((partyParticipant is ChatParticipantAdmin)||(partyParticipant is ChatParticipantCreator))
                     {
                         return true;

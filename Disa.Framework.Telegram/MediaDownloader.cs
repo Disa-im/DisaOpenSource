@@ -24,6 +24,17 @@ namespace Disa.Framework.Telegram
                     {
                         var fileInformation = Serializer.Deserialize<FileInformation>(memoryStream);
                         var type = fileInformation.FileType;
+                        var document = fileInformation.Document as Document;
+                        var fileLocation = fileInformation.FileLocation as FileLocation;
+                        if (document == null && type == "document")
+                        {
+                            return null;
+                        }
+                        if (fileLocation == null && type == "image")
+                        {
+                            return null;
+                        }
+
                         if (bubble is ImageBubble)
                         {   
                             savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
@@ -31,24 +42,27 @@ namespace Disa.Framework.Telegram
                         }
                         else if(bubble is FileBubble)
                         {
-                            if (GetDocumentFileName(fileInformation.Document) != null)
+
+                            if (GetDocumentFileName(document) != null)
                             {
                                 savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
-                                    MediaManager.GetDisaFilesPath, GetDocumentFileName(fileInformation.Document));
+                                    MediaManager.GetDisaFilesPath, GetDocumentFileName(document));
                             }
                             else
                             {
                                 savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
                                     MediaManager.GetDisaFilesPath,
-                                    Platform.GetExtensionFromMimeType(fileInformation.Document.MimeType));
+                                    Platform.GetExtensionFromMimeType(document.MimeType));
 
                             }
                         }
                         else if(bubble is AudioBubble)
                         {
+                            if (document == null) return null;
+
                             savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
                                        MediaManager.GetDisaAudioPath,
-                                       Platform.GetExtensionFromMimeType(fileInformation.Document.MimeType));
+                                       Platform.GetExtensionFromMimeType(document.MimeType));
 
                         }
                         if (savePath == null) return savePath;
@@ -68,9 +82,10 @@ namespace Disa.Framework.Telegram
                             {
                                 DebugPrint(">>>>>>>>>>>>>>>>>>>>>> Timer Elapsed!! ");
                                 DebugPrint(">>>>>>> current progress " + currentProgress);
-                                if (fileInformation.Document.DcId != _settings.NearestDcId)
+                                
+                                if (document.DcId != _settings.NearestDcId)
                                 {
-                                    cachedClient = GetClient((int) fileInformation.Document.DcId);
+                                    cachedClient = GetClient((int) document.DcId);
                                 }
                             };
                         }
@@ -88,7 +103,7 @@ namespace Disa.Framework.Telegram
                                         while (currentOffset <= fileSize)
                                         {
                                             var bytes = FetchFileBytes(
-                                                fileInformation.FileLocation,
+                                                fileLocation,
                                                 currentOffset, chunkSize);
                                             if (bytes.Length == 0)
                                             {
@@ -105,7 +120,7 @@ namespace Disa.Framework.Telegram
                                 case "document":
                                     using (var fs = File.OpenWrite(savePathTemp))
                                     {
-                                        var fileSize = fileInformation.Document.Size;
+                                        var fileSize = document.Size;
                                         uint currentOffset = 0;
                                         if (timer != null)
                                         {
@@ -114,7 +129,7 @@ namespace Disa.Framework.Telegram
                                        
                                         while (currentOffset <= fileSize)
                                         {
-                                            var bytes = FetchDocumentBytes(fileInformation.Document, currentOffset,
+                                            var bytes = FetchDocumentBytes(document, currentOffset,
                                                 chunkSize);
                                             if (bytes.Length == 0)
                                             {
