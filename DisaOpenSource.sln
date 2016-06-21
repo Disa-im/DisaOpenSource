@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disa.Framework.Mobile", "Di
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disa.Framework.Telegram.Mobile", "Disa.Framework.Telegram.Mobile\Disa.Framework.Telegram.Mobile.csproj", "{BF8CC773-49F3-45ED-8653-EBECEE6B8D11}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Disa.Framework.Telegram.Shared", "Disa.Framework.Telegram.Shared\Disa.Framework.Telegram.Shared.shproj", "{F9134193-59EF-48B9-BBEB-5B663B171288}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Disa.Framework.Telegram.Mobile.Shared", "Disa.Framework.Telegram.Mobile.Shared\Disa.Framework.Telegram.Mobile.Shared.shproj", "{8F00A2D9-308C-4E57-B9C4-56C418E502D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
