@@ -168,7 +168,7 @@ namespace Disa.Framework.Telegram
                             ? UserInformation.TypeSubtitle.Other
                             : UserInformation.TypeSubtitle.PhoneNumber,
                         Subtitle = string.IsNullOrWhiteSpace(phoneNumber)
-                            ? address
+                            ? TelegramUtils.GetUserHandle(updatedUser)
                             : TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber),
                         LastSeen = lastSeen,
                         Presence = presence,

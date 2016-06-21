@@ -138,6 +138,8 @@
     <Compile Include="SharpMTProto\Services\HashServices.cs" />
     <Compile Include="SharpTelegram\TelegramAppInfo.cs" />
     <Compile Include="SharpTelegram\TelegramClient.cs" />
+    <Compile Include="SyncAgent.cs" />
+    <Compile Include="SyncComparer.cs" />
     <Compile Include="Telegram.cs" />
     <Compile Include="RSAPublicKey.cs" />
     <Compile Include="ObjectDumper.cs" />

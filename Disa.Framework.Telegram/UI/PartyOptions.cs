@@ -25,7 +25,6 @@ namespace Disa.Framework.Telegram
                 {
                     thumbnail = GetThumbnail(participant.Address, false, preview);
                 }
-                DebugPrint("####### got thumbnail " + ObjectDumper.Dump(thumbnail));
                 result(thumbnail);
             });
         }

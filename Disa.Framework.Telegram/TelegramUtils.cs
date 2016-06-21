@@ -365,6 +365,29 @@ namespace Disa.Framework.Telegram
             }
             return null;
         }
+
+        public static uint GetMessageId(IMessage iMessage)
+        {
+            var message = iMessage as Message;
+
+            var messageService = iMessage as MessageService;
+
+            var messageEmpty = iMessage as MessageEmpty;
+
+            if (message != null)
+            {
+                return message.Id;
+            }
+            if (messageService != null)
+            {
+                return messageService.Id;
+            }
+            if (messageEmpty != null)
+            {
+                return messageEmpty.Id;
+            }
+            return 0;
+        }
     }
 }
 
