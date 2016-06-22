@@ -18,6 +18,12 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Disa.Framework.Telegram.Mobile.Shared", "Disa.Framework.Telegram.Mobile.Shared\Disa.Framework.Telegram.Mobile.Shared.shproj", "{8F00A2D9-308C-4E57-B9C4-56C418E502D5}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Disa.Framework.Telegram.Shared\Disa.Framework.Telegram.Shared.projitems*{575dce77-4e2e-46e0-9bb8-fa8e5c912bfa}*SharedItemsImports = 4
+		Disa.Framework.Telegram.Mobile.Shared\Disa.Framework.Telegram.Mobile.Shared.projitems*{8f00a2d9-308c-4e57-b9c4-56c418e502d5}*SharedItemsImports = 13
+		Disa.Framework.Telegram.Shared\Disa.Framework.Telegram.Shared.projitems*{f9134193-59ef-48b9-bbeb-5b663b171288}*SharedItemsImports = 13
+		Disa.Framework.Telegram.Mobile.Shared\Disa.Framework.Telegram.Mobile.Shared.projitems*{bf8cc773-49f3-45ed-8653-ebecee6b8d11}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86

@@ -6,7 +6,7 @@
 
 using SharpMTProto;
 
-namespace SharpTelegram.Schema.Layer18
+namespace SharpTelegram.Schema
 {
     public partial class TelegramAsyncMethods
     {
