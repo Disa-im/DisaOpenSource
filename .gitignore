@@ -221,3 +221,7 @@ pip-log.txt
 .mr.developer.cfg
 
 *.userprefs
+DisaOpenSource.VC.db
+Tooling/Sharp.TL.Compiler/.nuget/
+Tooling/Sharp.TL.Compiler/packages/
+packages/
