@@ -54,7 +54,6 @@ namespace Disa.Framework.Telegram
                                             Limit = 50 //like the official client
                                         }));
                                 var contactsFound = searchResult as ContactsFound;
-                                DebugPrint("####### contacts found " + ObjectDumper.Dump(contactsFound.Users));
                                 var globalContacts = GetGlobalContacts(contactsFound);
                                 localContacts.AddRange(globalContacts);
                             }
@@ -130,58 +129,49 @@ namespace Disa.Framework.Telegram
             }
             return globalContacts;
         }
-        //TODO: update to just fetch from the cache
+
         public Task GetContactsFavorites(Action<List<Contact>> result)
         {
-            return Task.Factory.StartNew(async () =>
+            return Task.Factory.StartNew(() =>
             {
                 var count = 0;
-                var inputUsers = new List<IInputUser>();
+                var users = new List<IUser>();
                 foreach (var bubbleGroup in BubbleGroupManager.SortByMostPopular(this, true))
                 {
                     var address = bubbleGroup.Address;
                     var user = _dialogs.GetUser(uint.Parse(address));
                     if (user != null)
                     {
-                        var inputUser = TelegramUtils.CastUserToInputUser(user);
-                        if (inputUser != null)
-                        {
-                            inputUsers.Add(inputUser);
-                            break;
-                        }
+                        users.Add(user);
                     }
-
                     count++;
                     if (count > 6)
                         break;
                 }
-                if (!inputUsers.Any())
+
+                if (!users.Any())
                 {
                     result(null);
+                    return;
                 }
-                else
-                {
-                    using (var client = new FullClientDisposable(this))
+
+                var contacts = users.Select(x =>
+                    new TelegramContact
                     {
-                        var users = await GetUsers(inputUsers, client.Client);
-                        var contacts = users.Select(x =>
-                            new TelegramContact
+                        Available = TelegramUtils.GetAvailable(x),
+                        LastSeen = TelegramUtils.GetLastSeenTime(x),
+                        FirstName = TelegramUtils.GetUserName(x),
+                        Ids = new List<Contact.ID>
+                        {
+                            new Contact.ID
                             {
-                                Available = TelegramUtils.GetAvailable(x),
-                                LastSeen = TelegramUtils.GetLastSeenTime(x),
-                                FirstName = TelegramUtils.GetUserName(x),
-                                Ids = new List<Contact.ID>
-                            {
-                                new Contact.ID
-                                {
-                                    Service = this,
-                                    Id = TelegramUtils.GetUserId(x).ToString(CultureInfo.InvariantCulture)
-                                }
-                            },
-                            }).OfType<Contact>().OrderBy(x => x.FirstName).ToList();
-                        result(contacts);
-                    }
-                }
+                                Service = this,
+                                Id = TelegramUtils.GetUserId(x).ToString(CultureInfo.InvariantCulture)
+                            }
+                        },
+                    }).OfType<Contact>().OrderBy(x => x.FirstName).ToList();
+
+                result(contacts);
             });
         }
 
