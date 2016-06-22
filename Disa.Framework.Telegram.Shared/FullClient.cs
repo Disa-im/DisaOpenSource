@@ -4,7 +4,7 @@ using SharpMTProto.Transport;
 using SharpMTProto;
 using SharpMTProto.Schema;
 using System.Threading.Tasks;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Collections.Generic;
 
 namespace Disa.Framework.Telegram
@@ -120,7 +120,7 @@ namespace Disa.Framework.Telegram
         {
             if (_hasPresence)
             {
-                DebugPrint("Telling full client that it can forever stay alive.");
+                DebugPrint(">>>>>>> Telling full client that it can forever stay alive.");
                 PingDelay(_fullClient, uint.MaxValue);
                 ScheduleFullClientPing();
             }
@@ -130,7 +130,7 @@ namespace Disa.Framework.Telegram
                 {
                     return;   
                 }
-                DebugPrint("Telling full client that it can only stay alive for a minute.");
+                DebugPrint(">>>>>>>> Telling full client that it can only stay alive for a minute.");
                 PingDelay(_fullClient, 60);
                 RemoveFullClientPingIfPossible();
             }
@@ -185,7 +185,7 @@ namespace Disa.Framework.Telegram
 //            return Tuple.Create(dcOption.IpAddress, dcOption.Port);
 //        }
 
-        private class FullClientDisposable : IDisposable
+        public class FullClientDisposable : IDisposable
         {
             private readonly bool _isFullClient;
             private readonly TelegramClient _client;

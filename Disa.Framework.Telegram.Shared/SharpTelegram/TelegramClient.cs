@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using SharpMTProto;
 using SharpMTProto.Transport;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using SharpMTProto.Schema;
 using System.Collections.Generic;
 
@@ -144,8 +144,9 @@ namespace SharpTelegram
         {
             _config =
                 await
-                    _methods.InvokeWithLayer18Async(new InvokeWithLayer18Args
+                    _methods.InvokeWithLayerAsync(new InvokeWithLayerArgs
                     {
+						Layer = 51,
                         Query =
                             new InitConnectionArgs
                             {
@@ -192,5 +193,15 @@ namespace SharpTelegram
                 throw new ObjectDisposedException("Telegram client was disposed.");
             }
         }
+
+        public IMTProtoClientConnection Connection
+        {
+            get
+            {
+                return _connection;
+            }
+            private set{ }
+        }
+
     }
 }

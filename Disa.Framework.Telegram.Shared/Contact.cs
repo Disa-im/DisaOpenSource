@@ -1,4 +1,5 @@
 ﻿using System;
+using SharpTelegram.Schema;
 
 namespace Disa.Framework.Telegram
 {
@@ -8,6 +9,8 @@ namespace Disa.Framework.Telegram
         {
             
         }
+
+        public User User { get; set; }
     }
 
     public class TelegramPartyContact : Disa.Framework.PartyContact

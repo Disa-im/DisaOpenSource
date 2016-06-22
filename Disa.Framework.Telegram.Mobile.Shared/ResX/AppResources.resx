@@ -273,4 +273,31 @@
   <data name="TelegramCodeLastNameInvalid" xml:space="preserve">
     <value>The last name entered is invalid. Please try another.</value>
   </data>
+  <data name="TelegramContact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="TelegramEveryone" xml:space="preserve">
+    <value>Everyone</value>
+  </data>
+  <data name="TelegramGroups" xml:space="preserve">
+    <value>Groups</value>
+  </data>
+  <data name="TelegramLastSeen" xml:space="preserve">
+    <value>Last Seen</value>
+  </data>
+  <data name="TelegramNobody" xml:space="preserve">
+    <value>Nobody</value>
+  </data>
+  <data name="TelegramNone" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="TelegramNotRunningLong" xml:space="preserve">
+    <value>Telegram needs to be running before you can adjust its profile settings.</value>
+  </data>
+  <data name="TelegramPrivacyList" xml:space="preserve">
+    <value>Privacy List</value>
+  </data>
+  <data name="TelegramSelect" xml:space="preserve">
+    <value>Select</value>
+  </data>
 </root>

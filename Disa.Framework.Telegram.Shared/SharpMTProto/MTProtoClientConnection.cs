@@ -199,6 +199,15 @@ namespace SharpMTProto
             }
         }
 
+        public IResponseDispatcher ResponseDispatcher
+        {
+            get
+            { 
+                return _responseDispatcher;
+            }
+            private set{ }
+        }
+
         /// <summary>
         ///     Start sender and receiver tasks.
         /// </summary>

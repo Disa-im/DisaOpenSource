@@ -325,9 +325,17 @@ namespace SharpTL
             // Read a constructor number and restore the streamer position.
             streamer.PushPosition();
             uint constructorNumber = streamer.ReadUInt32();
+			//Console.WriteLine("Retrived constructor number " + constructorNumber);
             streamer.PopPosition();
 
             ITLSerializer serializer = context.Rig.GetSerializerByConstructorNumber(constructorNumber);
+
+
+
+			//Console.WriteLine("Got serializer for above constructor number" + serializer.SupportedType);
+
+
+
             if (serializer == null)
             {
                 throw new TLSerializerNotFoundException(

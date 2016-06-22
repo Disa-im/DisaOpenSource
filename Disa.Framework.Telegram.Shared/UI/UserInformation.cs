@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using SharpTelegram.Schema.Layer18;
+using SharpTelegram.Schema;
 using System.Linq;
 
 namespace Disa.Framework.Telegram
@@ -39,31 +39,31 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                foreach (var user in _dialogs.Users)
+
+                if (address == null)
                 {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId == address)
+                    result(null);
+                }
+
+                var user = _dialogs.GetUser(uint.Parse(address));
+
+                var phoneNumber = TelegramUtils.GetUserPhoneNumber(user);
+                if (!string.IsNullOrWhiteSpace(phoneNumber))
+                {
+                    if (PhoneBookHasNumber(phoneNumber))
                     {
-                        var phoneNumber = TelegramUtils.GetUserPhoneNumber(user);
-                        if (!string.IsNullOrWhiteSpace(phoneNumber))
-                        {
-                            if (PhoneBookHasNumber(phoneNumber))
-                            {
-                                result(Platform.GetIcon(IconType.People));
-                            }
-                            else
-                            {
-                                result(Platform.GetIcon(IconType.AddContact));
-                            }
-                        }
-                        else
-                        {
-                            result(null);
-                        }
-                        return;
+                        result(Platform.GetIcon(IconType.People));
+                    }
+                    else
+                    {
+                        result(Platform.GetIcon(IconType.AddContact));
                     }
                 }
-                result(null);
+                else
+                {
+                    result(null);
+                }
+
             });
         }
 
@@ -71,20 +71,22 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                foreach (var user in _dialogs.Users)
+                if (address == null)
                 {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId == address)
-                    {
-                        var phoneNumber = TelegramUtils.GetUserPhoneNumber(user);
-                        if (!string.IsNullOrWhiteSpace(phoneNumber))
-                        {
-                            Platform.OpenContact(
-                                TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber));
-                            return;
-                        }
-                    }
+                    return;
                 }
+
+                var user = _dialogs.GetUser(uint.Parse(address));
+
+                var phoneNumber = TelegramUtils.GetUserPhoneNumber(user);
+                if (!string.IsNullOrWhiteSpace(phoneNumber))
+                {
+                    Platform.OpenContact(
+                        TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber));
+                    return;
+                }
+
+
             });
         }
 
@@ -92,19 +94,22 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                foreach (var user in _dialogs.Users)
+
+                if (address == null)
                 {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId == address)
-                    {
-                        var phoneNumber = TelegramUtils.GetUserPhoneNumber(user);
-                        if (!string.IsNullOrWhiteSpace(phoneNumber))
-                        {
-                            result(Platform.GetIcon(IconType.Call));
-                            return;
-                        }
-                    }
+                    return;
                 }
+
+                var user = _dialogs.GetUser(uint.Parse(address));
+
+                var phoneNumber = TelegramUtils.GetUserPhoneNumber(user);
+                if (!string.IsNullOrWhiteSpace(phoneNumber))
+                {
+                    result(Platform.GetIcon(IconType.Call));
+                    return;
+                }
+
+
                 result(null);
             });
         }
@@ -113,20 +118,21 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                foreach (var user in _dialogs.Users)
+                if (address == null)
                 {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId == address)
-                    {
-                        var phoneNumber = TelegramUtils.GetUserPhoneNumber(user);
-                        if (!string.IsNullOrWhiteSpace(phoneNumber))
-                        {
-                            Platform.DialContact(
-                                TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber));
-                            return;
-                        }
-                    }
+                    return;
                 }
+
+                var user = _dialogs.GetUser(uint.Parse(address));
+                var phoneNumber = TelegramUtils.GetUserPhoneNumber(user);
+                if (!string.IsNullOrWhiteSpace(phoneNumber))
+                {
+                    Platform.DialContact(
+                        TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber));
+                    return;
+                }
+
+
             });
         }
 
@@ -134,40 +140,40 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(async () =>
             {
-                foreach (var user in _dialogs.Users)
-                {
-                    var userId = TelegramUtils.GetUserId(user);
-                    if (userId == address)
-                    {
-                        using (var client = new FullClientDisposable(this))
-                        {
-                            var inputUser = TelegramUtils.CastUserToInputUser(user);
-                            var updatedUser = await GetUser(inputUser, client.Client);
-                            var name = TelegramUtils.GetUserName(updatedUser);
-                            var lastSeen = TelegramUtils.GetLastSeenTime(updatedUser);
-                            var presence = TelegramUtils.GetAvailable(updatedUser);
-                            var phoneNumber = TelegramUtils.GetUserPhoneNumber(updatedUser);
 
-                            if (string.IsNullOrWhiteSpace(name))
-                            {
-                                result(null);  //TODO: ensure this doesn't crash Disa
-                                return;
-                            }
-                            result(new UserInformation
-                            {
-                                Title = name,
-                                SubtitleType = string.IsNullOrWhiteSpace(phoneNumber) ? 
-                                    UserInformation.TypeSubtitle.Other : UserInformation.TypeSubtitle.PhoneNumber,
-                                Subtitle = string.IsNullOrWhiteSpace(phoneNumber) ? 
-                                    address : TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber),
-                                LastSeen = lastSeen,
-                                Presence = presence,
-                            });
-                            return;
-                        }
-                    }
+                if (address == null)
+                {
+                    return;
                 }
-                result(null);  //TODO: ensure this doesn't crash Disa
+
+                var user = _dialogs.GetUser(uint.Parse(address));
+                using (var client = new FullClientDisposable(this))
+                {
+                    var inputUser = TelegramUtils.CastUserToInputUser(user);
+                    var updatedUser = await GetUser(inputUser, client.Client);
+                    var name = TelegramUtils.GetUserName(updatedUser);
+                    var lastSeen = TelegramUtils.GetLastSeenTime(updatedUser);
+                    var presence = TelegramUtils.GetAvailable(updatedUser);
+                    var phoneNumber = TelegramUtils.GetUserPhoneNumber(updatedUser);
+
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        result(null); //TODO: ensure this doesn't crash Disa
+                        return;
+                    }
+                    result(new UserInformation
+                    {
+                        Title = name,
+                        SubtitleType = string.IsNullOrWhiteSpace(phoneNumber)
+                            ? UserInformation.TypeSubtitle.Other
+                            : UserInformation.TypeSubtitle.PhoneNumber,
+                        Subtitle = string.IsNullOrWhiteSpace(phoneNumber)
+                            ? TelegramUtils.GetUserHandle(updatedUser)
+                            : TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber),
+                        LastSeen = lastSeen,
+                        Presence = presence,
+                    });
+                }
             });
         }
     }

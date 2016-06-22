@@ -42,6 +42,7 @@ namespace Disa.Framework
                     var toRemoves = new List<BubbleGroupSettings>();
                     foreach (var settings in db.Store.ToList())
                     {
+                        
                         var bubbleGroup = BubbleGroupManager.Find(settings.Guid);
                         if (bubbleGroup == null)
                         {
