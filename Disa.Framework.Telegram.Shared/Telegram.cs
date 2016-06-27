@@ -213,6 +213,17 @@ namespace Disa.Framework.Telegram
                         {
                             textBubble.Status = Bubble.BubbleStatus.Sent;
                         }
+                        if (textBubble.Direction == Bubble.BubbleDirection.Incoming)
+                        {
+                            if (shortMessage.ReplyToMsgId != 0)
+                            {
+                                var iReplyMessage = GetMessage(shortMessage.ReplyToMsgId,optionalClient);
+                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+                                var replyMessage = iReplyMessage as Message;
+                                AddQuotedMessageToBubble(replyMessage, textBubble);
+
+                            }
+                        }
                         EventBubble(textBubble);
                     }
                     if (shortMessage.Id > maxMessageId)
@@ -345,6 +356,18 @@ namespace Disa.Framework.Telegram
                         {
                             textBubble.Status = Bubble.BubbleStatus.Sent;
                         }
+                        if (textBubble.Direction == Bubble.BubbleDirection.Incoming)
+                        {
+                            if (shortChatMessage.ReplyToMsgId != 0)
+                            {
+                                var iReplyMessage = GetMessage(shortChatMessage.ReplyToMsgId,optionalClient);
+                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+                                var replyMessage = iReplyMessage as Message;
+                                AddQuotedMessageToBubble(replyMessage, textBubble);
+
+                            }
+                        }
+
                         EventBubble(textBubble);
                     }
                     if (shortChatMessage.Id > maxMessageId)
@@ -357,6 +380,17 @@ namespace Disa.Framework.Telegram
                     var bubble = ProcessFullMessage(message,useCurrentTime);
                     if (bubble != null)
                     {
+                        if (bubble.Direction == Bubble.BubbleDirection.Incoming)
+                        {
+                            if (message.ReplyToMsgId != 0)
+                            {
+                                var iReplyMessage = GetMessage(message.ReplyToMsgId,optionalClient);
+                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+                                var replyMessage = iReplyMessage as Message;
+                                AddQuotedMessageToBubble(replyMessage, bubble);
+
+                            }
+                        }
                         EventBubble(bubble);
                     }
                     if (message.Id > maxMessageId)
@@ -514,6 +548,95 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private void AddQuotedMessageToBubble(Message replyMessage, VisualBubble bubble)
+        {
+            if (replyMessage == null)
+            {
+                return;
+            }
+
+            if(!string.IsNullOrEmpty(replyMessage.MessageProperty))
+            {
+                bubble.QuotedType = VisualBubble.MediaType.Text;
+                bubble.QuotedContext = replyMessage.MessageProperty;
+
+            }
+            else
+            {
+                var messageMedia = replyMessage.Media;
+                var messageMediaPhoto = messageMedia as MessageMediaPhoto;
+                var messageMediaDocument = messageMedia as MessageMediaDocument;
+                var messageMediaGeo = messageMedia as MessageMediaGeo;
+                var messageMediaVenue = messageMedia  as MessageMediaVenue;
+                var messageMediaContact = messageMedia as MessageMediaContact;
+
+                if (messageMediaPhoto != null)
+                {
+                    bubble.QuotedType = VisualBubble.MediaType.Image;
+                    bubble.HasQuotedThumbnail = true;
+                    bubble.QuotedThumbnail = GetCachedPhotoBytes(messageMediaPhoto.Photo);
+                }
+                if(messageMediaDocument != null)
+                {
+                    var document = messageMediaDocument.Document as Document;
+                    if(document!=null)
+                    {
+                        if (document.MimeType.Contains("audio"))
+                        {
+                            bubble.QuotedType = VisualBubble.MediaType.Audio;
+                            bubble.QuotedSeconds = GetAudioTime(document);
+                        }
+                        else if (document.MimeType.Contains("video"))
+                        {
+                            bubble.QuotedType = VisualBubble.MediaType.File;
+                            bubble.QuotedContext = "Video";
+                        }
+                        else
+                        {
+                            bubble.QuotedType = VisualBubble.MediaType.File;
+                            bubble.QuotedContext = GetDocumentFileName(document);
+                        }
+
+                    }
+                }
+                if(messageMediaGeo != null)
+                {
+                    var geoPoint = messageMediaGeo.Geo as GeoPoint;
+
+                    if (geoPoint != null)
+                    {
+                        bubble.QuotedType = VisualBubble.MediaType.Location;
+                        bubble.QuotedContext = geoPoint.Lat + "," + geoPoint.Long;
+                        bubble.HasQuotedThumbnail = true;
+                        bubble.QuotedThumbnail = Platform.GenerateLocationThumbnail(geoPoint.Long, geoPoint.Lat).Result;
+                    }
+                        
+                }
+                if(messageMediaVenue != null)
+                {
+                    var geoPoint = messageMediaVenue.Geo as GeoPoint;
+
+                    if (geoPoint != null)
+                    {
+                        bubble.QuotedType = VisualBubble.MediaType.Location;
+                        bubble.QuotedContext = messageMediaVenue.Title;
+                        bubble.HasQuotedThumbnail = true;
+                        bubble.QuotedThumbnail = Platform.GenerateLocationThumbnail(geoPoint.Long, geoPoint.Lat).Result;
+                    }
+
+                }
+                if(messageMediaContact != null)
+                {
+                    bubble.QuotedType = VisualBubble.MediaType.Contact;
+                    bubble.QuotedContext = messageMediaContact.FirstName + " " + messageMediaContact.LastName; 
+                }
+                    
+            }
+            bubble.QuotedAddress = replyMessage.FromId.ToString(CultureInfo.InvariantCulture);
+            bubble.QuotedIdService = replyMessage.Id.ToString(CultureInfo.InvariantCulture);
+
+        }
+
         private VisualBubble ProcessFullMessage(Message message,bool useCurrentTime)
         {
             var peerUser = message.ToId as PeerUser;
@@ -578,6 +701,55 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
+        private IMessagesMessages FetchMessage(uint replyToMsgId, TelegramClient client)
+        {
+            return TelegramUtils.RunSynchronously(client.Methods.MessagesGetMessagesAsync(new MessagesGetMessagesArgs
+            { 
+                Id = new List<uint>
+                {
+                    replyToMsgId    
+                }
+            }));
+        }
+
+        private IMessage GetMessage(uint replyToMsgId,TelegramClient optionalClient)
+        {
+            if (optionalClient != null)
+            {
+                var messagesmessages = FetchMessage(replyToMsgId, optionalClient);
+                var messages = TelegramUtils.GetMessagesFromMessagesMessages(messagesmessages);
+                var chats = TelegramUtils.GetChatsFromMessagesMessages(messagesmessages);
+                var users = TelegramUtils.GetUsersFromMessagesMessages(messagesmessages);
+
+                _dialogs.AddUsers(users);
+                _dialogs.AddChats(chats);
+
+                if (messages != null)
+                {
+                    return messages[0];
+                }
+            }
+            else
+            {
+                using (var client = new FullClientDisposable(this))
+                {
+                    var messagesmessages = FetchMessage(replyToMsgId, client.Client);
+                    var messages = TelegramUtils.GetMessagesFromMessagesMessages(messagesmessages);
+                    var chats = TelegramUtils.GetChatsFromMessagesMessages(messagesmessages);
+                    var users = TelegramUtils.GetUsersFromMessagesMessages(messagesmessages);
+
+                    _dialogs.AddUsers(users);
+                    _dialogs.AddChats(chats);
+
+                    if (messages != null)
+                    {
+                        return messages[0];
+                    }
+                }
+            }
+            return null;    
+        }
+
         private VisualBubble MakeMediaBubble(Message message, bool useCurrentTime, bool isUser, string addressStr, string participantAddress = null)
         {
             DebugPrint(">>>>>>> Making media bubble");
@@ -585,7 +757,7 @@ namespace Disa.Framework.Telegram
             var messageMediaPhoto = messageMedia as MessageMediaPhoto;
             var messageMediaDocument = messageMedia as MessageMediaDocument;
             var messageMediaGeo = messageMedia as MessageMediaGeo;
-
+            var messageMediaVenue = messageMedia as MessageMediaVenue;
 
             if (messageMediaPhoto != null)
             {
@@ -671,10 +843,10 @@ namespace Disa.Framework.Telegram
                         }
                         else
                         {
-
+                            //TODO: localize
                             var filename = document.MimeType.Contains("video")
                                 ? "Video Clip"
-                                : GetDocumentFileName(document);
+                                : GetDocumentFileName(document);GetDocumentFileName(document);
 
                             if (isUser)
                             {
@@ -713,36 +885,56 @@ namespace Disa.Framework.Telegram
             }
             else if (messageMediaGeo != null)
             {
-                VisualBubble bubble = null;
+
                 var geoPoint = messageMediaGeo.Geo as GeoPoint;
 
                 if (geoPoint != null)
                 {
-                    byte[] geoPointThumbnail = Platform.GenerateLocationThumbnail(geoPoint.Long, geoPoint.Lat).Result;
-                    if (isUser)
-                    {
-                        bubble = new LocationBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
-                           message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, geoPoint.Long, geoPoint.Long,
-                            "", geoPointThumbnail, message.Id.ToString(CultureInfo.InvariantCulture));
-                    }
-                    else
-                    {
-                        bubble = new LocationBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
-                           message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true, this, geoPoint.Long, geoPoint.Long,
-                            "", geoPointThumbnail, message.Id.ToString(CultureInfo.InvariantCulture))
-                        ;
-                    }
-                    if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
-                    {
-                        bubble.Status = Bubble.BubbleStatus.Sent;
-                    }
+                   
+                    var geoBubble = MakeGeoBubble(geoPoint,message,isUser,useCurrentTime,addressStr,participantAddress);
 
-                    return bubble;
+                    return geoBubble;
+                }
+
+
+            }
+            else if (messageMediaVenue != null)
+            {
+                var geoPoint = messageMediaVenue.Geo as GeoPoint;
+
+                if (geoPoint != null)
+                {
+
+                    var geoBubble = MakeGeoBubble(geoPoint,message,isUser,useCurrentTime,addressStr,participantAddress);
+                    return geoBubble;
                 }
 
             }
 
             return null;
+        }
+
+        private VisualBubble MakeGeoBubble(GeoPoint geoPoint,Message message,bool isUser,bool useCurrentTime,string addressStr,string participantAddress)
+        {
+            byte[] geoPointThumbnail = Platform.GenerateLocationThumbnail(geoPoint.Long, geoPoint.Lat).Result;
+            VisualBubble bubble;
+            if (isUser)
+            {
+                bubble = new LocationBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                    message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, geoPoint.Long, geoPoint.Long,
+                    "", geoPointThumbnail, message.Id.ToString(CultureInfo.InvariantCulture));
+            }
+            else
+            {
+                bubble = new LocationBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                    message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true, this, geoPoint.Long, geoPoint.Long,
+                    "", geoPointThumbnail, message.Id.ToString(CultureInfo.InvariantCulture));
+            }
+            if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
+            {
+                bubble.Status = Bubble.BubbleStatus.Sent;
+            }
+            return bubble;
         }
 
         private string GetDocumentFileName(Document document)
