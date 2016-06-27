@@ -3,11 +3,14 @@ using SharpTelegram.Schema;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Disa.Framework.Telegram
 {
     public static class TelegramUtils
     {
+       
+
         public static T RunSynchronously<T>(Task<T> task)
         {
             try
@@ -388,6 +391,53 @@ namespace Disa.Framework.Telegram
             }
             return 0;
         }
+
+        public static List<IMessage> GetMessagesFromMessagesMessages(IMessagesMessages iMessagesMessages)
+        {
+            var messagesMessages = iMessagesMessages as MessagesMessages;
+            var messagesMessagesSlice = iMessagesMessages as MessagesMessagesSlice;
+            if (messagesMessages != null)
+            {
+                return messagesMessages.Messages;
+            }
+            if (messagesMessagesSlice != null)
+            {
+                return messagesMessagesSlice.Messages;
+            }
+            return null;
+        }
+
+        public static List<IChat> GetChatsFromMessagesMessages(IMessagesMessages iMessagesMessages)
+        {
+            var messagesMessages = iMessagesMessages as MessagesMessages;
+            var messagesMessagesSlice = iMessagesMessages as MessagesMessagesSlice;
+            if (messagesMessages != null)
+            {
+                return messagesMessages.Chats;
+            }
+            if (messagesMessagesSlice != null)
+            {
+                return messagesMessagesSlice.Chats;
+            }
+            return null;
+        }
+
+
+        public static List<IUser> GetUsersFromMessagesMessages(IMessagesMessages iMessagesMessages)
+        {
+            var messagesMessages = iMessagesMessages as MessagesMessages;
+            var messagesMessagesSlice = iMessagesMessages as MessagesMessagesSlice;
+            if (messagesMessages != null)
+            {
+                return messagesMessages.Users;
+            }
+            if (messagesMessagesSlice != null)
+            {
+                return messagesMessagesSlice.Users;
+            }
+            return null;
+        }
+
     }
 }
 
