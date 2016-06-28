@@ -20,10 +20,6 @@ namespace Disa.Framework.Telegram
                 if (actionIdLong == 0)
                 {
                    var bubbles = LoadBubblesForBubbleGroup(group, Time.GetNowUnixTimestamp(), limit);
-                    foreach (var x in bubbles)
-                    {
-                        Utils.DebugPrint("###### " + ObjectDumper.Dump(x));
-                    }
                     if (bubbles.LastOrDefault() != null)
                     {
                         var lastActionId = bubbles.LastOrDefault().IdService;
@@ -106,6 +102,13 @@ namespace Disa.Framework.Telegram
                 var bubble = ProcessFullMessage(message, false);
 				if (bubble != null)
 				{
+					if (message.ReplyToMsgId != 0)
+					{
+						var iReplyMessage = GetMessage(message.ReplyToMsgId, null);
+						DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+						var replyMessage = iReplyMessage as Message;
+						AddQuotedMessageToBubble(replyMessage, bubble);
+					}
 					bubbles.Add(bubble);
 				}
             }

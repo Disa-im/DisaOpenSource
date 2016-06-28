@@ -161,17 +161,22 @@ namespace Disa.Framework.Telegram
             return precedents.Concat(successors).ToList();
         }
 
-        public override Task GetQuotedMessageTitle(string userId, Action<string> result)
+		public override Task GetQuotedMessageTitle(Bubble bubble, Action<string> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                if (userId != null)
-                {
-                    DebugPrint("#### got user id for quoted title " + userId);
-                    uint userIdInt = uint.Parse(userId);
-                    string username = TelegramUtils.GetUserName(_dialogs.GetUser(userIdInt));
-                    result(username);
-                }
+				var visualBubble = bubble as VisualBubble;
+				if (visualBubble != null)
+				{
+					var userId = visualBubble.QuotedAddress;
+					if (userId != null)
+					{
+						DebugPrint("#### got user id for quoted title " + userId);
+						uint userIdInt = uint.Parse(userId);
+						string username = TelegramUtils.GetUserName(_dialogs.GetUser(userIdInt));
+						result(username);
+					}
+				}
             });
         }
 
