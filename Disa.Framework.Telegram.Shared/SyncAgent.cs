@@ -104,7 +104,10 @@ namespace Disa.Framework.Telegram
                 var message = iMessage as Message;
                 if(message==null)continue;
                 var bubble = ProcessFullMessage(message, false);
-                bubbles.Add(bubble);
+				if (bubble != null)
+				{
+					bubbles.Add(bubble);
+				}
             }
             return bubbles;
         }
