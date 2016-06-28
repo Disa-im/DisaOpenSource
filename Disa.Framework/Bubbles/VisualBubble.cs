@@ -18,6 +18,10 @@ namespace Disa.Framework.Bubbles
     [ProtoInclude(210, typeof(ContactBubble))]
     public abstract class VisualBubble : Bubble
     {
+        public enum MediaType {
+            None, Audio, Video, Text, Location, File, Contact,Image
+        }
+
         [ProtoMember(251)]
         public bool Deleted { get; set; }
         [ProtoMember(252)]
@@ -26,6 +30,22 @@ namespace Disa.Framework.Bubbles
         public string IdService2 { get; set; }
         [ProtoMember(255)]
         public byte[] AdditionalData { get; set; }
+        [ProtoMember(256)]
+        public string QuotedAddress { get; set;} 
+        [ProtoMember(257)]
+        public string QuotedIdService { get; set;}
+        [ProtoMember(258)]
+        public string QuotedIdService2 {get; set;}
+        [ProtoMember(259)]
+        public MediaType QuotedType{ get; set;}
+        [ProtoMember(260)]
+        public string QuotedContext{get; set;}
+        [ProtoMember(261)]
+        public long QuotedSeconds{ get; set;}
+        [ProtoMember(262)]
+        public byte[] QuotedThumbnail { get; set;}
+        [ProtoMember(263)]
+        public bool HasQuotedThumbnail { get; set;}
 
         [NonSerialized]
         public string ID;
