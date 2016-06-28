@@ -14,6 +14,7 @@ using SharpMTProto.Schema;
 using System.Globalization;
 using System.Timers;
 using System.IO;
+using System.Reactive;
 using System.Security.Cryptography;
 using ProtoBuf;
 using IMessage = SharpTelegram.Schema.IMessage;
@@ -160,6 +161,20 @@ namespace Disa.Framework.Telegram
             return precedents.Concat(successors).ToList();
         }
 
+        public override Task GetQuotedMessageTitle(string userId, Action<string> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                if (userId != null)
+                {
+                    DebugPrint("#### got user id for quoted title " + userId);
+                    uint userIdInt = uint.Parse(userId);
+                    string username = TelegramUtils.GetUserName(_dialogs.GetUser(userIdInt));
+                    result(username);
+                }
+            });
+        }
+
         private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime, TelegramClient optionalClient = null)
         {
             uint maxMessageId = 0;
@@ -191,14 +206,12 @@ namespace Disa.Framework.Telegram
                     if (!string.IsNullOrWhiteSpace(shortMessage.Message))
                     {
 						var fromId = shortMessage.UserId.ToString(CultureInfo.InvariantCulture);
-//                        var shortMessageUser = _dialogs.GetUser(shortMessage.UserId);
-//                        if (shortMessageUser == null)
-//                        {
-//                            DebugPrint(">>>>> User is null, fetching user from the server");
-//                            var newUser = GetUser(fromId);
-//                            DebugPrint(">>>> got user " + ObjectDumper.Dump(newUser));
-//                            _dialogs.AddUser(newUser);
-//                        }
+                        var shortMessageUser = _dialogs.GetUser(shortMessage.UserId);
+                        if (shortMessageUser == null)
+                        {
+                            DebugPrint(">>>>> User is null, fetching user from the server");
+                            GetMessage(shortMessage.Id, optionalClient);
+                        }
                         
                         EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                             Bubble.BubbleDirection.Incoming,
@@ -712,11 +725,11 @@ namespace Disa.Framework.Telegram
             }));
         }
 
-        private IMessage GetMessage(uint replyToMsgId,TelegramClient optionalClient)
+        private IMessage GetMessage(uint messageId,TelegramClient optionalClient)
         {
             if (optionalClient != null)
             {
-                var messagesmessages = FetchMessage(replyToMsgId, optionalClient);
+                var messagesmessages = FetchMessage(messageId, optionalClient);
                 var messages = TelegramUtils.GetMessagesFromMessagesMessages(messagesmessages);
                 var chats = TelegramUtils.GetChatsFromMessagesMessages(messagesmessages);
                 var users = TelegramUtils.GetUsersFromMessagesMessages(messagesmessages);
@@ -733,7 +746,7 @@ namespace Disa.Framework.Telegram
             {
                 using (var client = new FullClientDisposable(this))
                 {
-                    var messagesmessages = FetchMessage(replyToMsgId, client.Client);
+                    var messagesmessages = FetchMessage(messageId, client.Client);
                     var messages = TelegramUtils.GetMessagesFromMessagesMessages(messagesmessages);
                     var chats = TelegramUtils.GetChatsFromMessagesMessages(messagesmessages);
                     var users = TelegramUtils.GetUsersFromMessagesMessages(messagesmessages);
