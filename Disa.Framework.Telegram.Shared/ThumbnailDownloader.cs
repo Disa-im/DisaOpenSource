@@ -20,12 +20,12 @@ namespace Disa.Framework.Telegram
         {
             if (!Platform.HasInternetConnection())
             {
-                return Tuple.Create<bool, byte[]>(true, null);
+                return Tuple.Create<bool, byte[]>(false, null);
             }
 
             if (id == null)
             {
-                return Tuple.Create<bool,byte[]>(false,null);
+                return Tuple.Create<bool,byte[]>(true,null);
             }
             using (var client = new FullClientDisposable(this))
             {
@@ -47,14 +47,14 @@ namespace Disa.Framework.Telegram
                             var bytesSecond = FetchFileBytes(fileLocation);
                             if (bytesSecond != null)
                             {
-                                return Tuple.Create(false, bytesSecond);
+                                return Tuple.Create(true, bytesSecond);
                             }
                         }
-                        return Tuple.Create(false, bytes);
+                        return Tuple.Create(true, bytes);
                     }
 
                 }
-                return Tuple.Create<bool, byte[]>(false, null);
+                return Tuple.Create<bool, byte[]>(true, null);
             }
         }
     }
