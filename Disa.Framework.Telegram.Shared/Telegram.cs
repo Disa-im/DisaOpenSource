@@ -784,6 +784,7 @@ namespace Disa.Framework.Telegram
                 DebugPrint("filelocation " + ObjectDumper.Dump(fileLocation));
                 var fileSize = GetPhotoFileSize(messageMediaPhoto.Photo);
                 var cachedPhoto = GetCachedPhotoBytes(messageMediaPhoto.Photo);
+                DebugPrint("cached photo " + ObjectDumper.Dump(cachedPhoto));
                 FileInformation fileInfo = new FileInformation
                 {
                     FileLocation = fileLocation,
@@ -1017,6 +1018,29 @@ namespace Disa.Framework.Telegram
                         if (photoSizeNormal.Type == "x")
                         {
                             return photoSizeNormal.Location as FileLocation;
+                        }
+                    }
+
+                }
+            }
+            return null;
+        }
+
+
+        private FileLocation GetCachedPhotoFileLocation(IPhoto iPhoto)
+        {
+            var photo = iPhoto as Photo;
+
+            if (photo != null)
+            {
+                foreach (var photoSize in photo.Sizes)
+                {
+                    var photoSizeSmall = photoSize as PhotoSize;
+                    if (photoSizeSmall != null)
+                    {
+                        if (photoSizeSmall.Type == "s")
+                        {
+                            return photoSizeSmall.Location as FileLocation;
                         }
                     }
 

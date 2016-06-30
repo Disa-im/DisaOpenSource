@@ -7,9 +7,9 @@ namespace Disa.Framework.Telegram
     public class CachedUser
     {
         [Indexed]
-        public uint Id { get; set;}
+        public uint Id { get; set; }
 
-        public byte[] ProtoBufBytes { get; set;}
+        public byte[] ProtoBufBytes { get; set; }
 
         public override string ToString()
         {

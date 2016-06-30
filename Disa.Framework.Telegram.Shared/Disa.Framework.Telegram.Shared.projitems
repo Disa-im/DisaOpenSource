@@ -1295,6 +1295,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TelegramSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TelegramUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThumbnailDownloader.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)BigMath\" />
