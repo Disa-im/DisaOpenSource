@@ -909,9 +909,7 @@ namespace Disa.Framework.Telegram
 
                 if (geoPoint != null)
                 {
-                   
-                    var geoBubble = MakeGeoBubble(geoPoint,message,isUser,useCurrentTime,addressStr,participantAddress);
-
+                    var geoBubble = MakeGeoBubble(geoPoint, message, isUser, useCurrentTime, addressStr, participantAddress, null);
                     return geoBubble;
                 }
 
@@ -923,8 +921,7 @@ namespace Disa.Framework.Telegram
 
                 if (geoPoint != null)
                 {
-
-                    var geoBubble = MakeGeoBubble(geoPoint,message,isUser,useCurrentTime,addressStr,participantAddress);
+                    var geoBubble = MakeGeoBubble(geoPoint,message,isUser,useCurrentTime,addressStr,participantAddress,messageMediaVenue.Title);
                     return geoBubble;
                 }
 
@@ -933,21 +930,24 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
-        private VisualBubble MakeGeoBubble(GeoPoint geoPoint,Message message,bool isUser,bool useCurrentTime,string addressStr,string participantAddress)
+        private VisualBubble MakeGeoBubble(GeoPoint geoPoint,Message message,bool isUser,bool useCurrentTime,string addressStr,string participantAddress,string name)
         {
-            byte[] geoPointThumbnail = Platform.GenerateLocationThumbnail(geoPoint.Long, geoPoint.Lat).Result;
-            VisualBubble bubble;
+            LocationBubble bubble;
             if (isUser)
             {
                 bubble = new LocationBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
                     message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, geoPoint.Long, geoPoint.Long,
-                    "", geoPointThumbnail, message.Id.ToString(CultureInfo.InvariantCulture));
+                    "", null, message.Id.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
                 bubble = new LocationBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
                     message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true, this, geoPoint.Long, geoPoint.Long,
-                    "", geoPointThumbnail, message.Id.ToString(CultureInfo.InvariantCulture));
+                    "", null, message.Id.ToString(CultureInfo.InvariantCulture));
+            }
+            if (name != null) 
+            {
+                bubble.Name = name;
             }
             if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
             {
