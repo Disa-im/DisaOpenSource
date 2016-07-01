@@ -66,6 +66,18 @@ namespace Disa.Framework
             }
         }
 
+        public DisaQuotedTitle[] QuotedTitles
+        {
+            get
+            {
+                return BubbleGroupSettingsManager.GetQuotedTitles(this);
+            }
+            set
+            {
+                BubbleGroupSettingsManager.SetQuotedTitles(this, value);
+            }
+        }
+
         internal DisaParticipantNickname[] ParticipantNicknames
         {
             get
@@ -143,14 +155,22 @@ namespace Disa.Framework
 
         public void InsertByTime(VisualBubble b)
         {
-            if (Bubbles.Count > BubblesCapSize)
+            if (Bubbles.Count >= BubblesCapSize)
             {
                 Bubbles.RemoveAt(0);
             }
 
+            var unreadIndicatorGuid = BubbleGroupSettingsManager.GetUnreadIndicatorGuid(this);
             for (int i = Bubbles.Count - 1; i >= 0; i--)
             {
                 var nBubble = Bubbles[i];
+
+                var unreadIndicatorIndex = -1;
+                if (unreadIndicatorGuid != null && unreadIndicatorGuid == nBubble.ID)
+                {
+                    unreadIndicatorIndex = i;
+                }
+
                 if (nBubble.Time <= b.Time)
                 {
                     // adding it to the end, we can do a simple contract
@@ -159,13 +179,17 @@ namespace Disa.Framework
                         Bubbles.Add(b);
                         if (b.Direction == Bubble.BubbleDirection.Incoming)
                         {
-                            BubbleGroupSettingsManager.SetUnread(this, true);
+							BubbleGroupSettingsManager.SetUnread(this, true);
                         }
                     }
                     // inserting, do a full contract
                     else
                     {
                         Bubbles.Insert(i + 1, b);
+                    }
+                    if (i >= unreadIndicatorIndex && b.Direction == Bubble.BubbleDirection.Outgoing)
+                    {
+                        BubbleGroupSettingsManager.SetUnreadIndicatorGuid(this, b.ID, false);
                     }
                     break;
                 }

@@ -299,6 +299,7 @@ namespace Disa.Framework
             {
                 var unifiedGroup = @group as UnifiedBubbleGroup;
 
+                var adjustUnifiedGroupUnreadIndicatorIfExists = false;
                 var associatedGroups = unifiedGroup != null
                     ? unifiedGroup.Groups.ToList()
                     : new[] { @group }.ToList();
@@ -320,6 +321,13 @@ namespace Disa.Framework
                         {
                             partiallyLoadedGroup.Bubbles.Remove(partiallyLoadedBubbleToRemove);
                         }
+                        if (partiallyLoadedGroup.Bubbles.Count < 1)
+                        {
+                            foreach (var partiallyLoadedBubbleToRemove in partiallyLoadedBubblesToRemove)
+                            {
+                                partiallyLoadedGroup.Bubbles.Add(partiallyLoadedBubbleToRemove);
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -327,6 +335,8 @@ namespace Disa.Framework
                         if (!rollingBack)
                         {
                             Utils.DebugPrint("Attempting to roll back the last transaction....");
+                            BubbleGroupSettingsManager.SetUnreadIndicatorGuid(partiallyLoadedGroup, null, false);
+                            adjustUnifiedGroupUnreadIndicatorIfExists = true;
                             rollingBack = true;
                             var lastModifiedIndex = BubbleGroupIndex.GetLastModifiedIndex(partiallyLoadedGroup.ID);
                             if (lastModifiedIndex.HasValue)
@@ -358,6 +368,10 @@ namespace Disa.Framework
                 if (unifiedGroup != null && !unifiedGroup.UnifiedGroupLoaded)
                 {
                     Populate(unifiedGroup);
+                }
+                if (unifiedGroup != null && adjustUnifiedGroupUnreadIndicatorIfExists)
+                {
+                    BubbleGroupSettingsManager.SetUnreadIndicatorGuid(unifiedGroup, null, false);
                 }
             }
 
@@ -465,6 +479,8 @@ namespace Disa.Framework
         private static BubbleGroup AddNewInternal(VisualBubble newBubble, bool raiseBubbleInserted)
         {
             var group = new BubbleGroup(newBubble, null, false);
+
+            BubbleGroupSettingsManager.SetUnreadIndicatorGuid(group, group.LastBubbleSafe().ID, true);
 
             if (ServiceManager.IsRunning(@group.Service))
             {

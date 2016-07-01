@@ -69,6 +69,14 @@ namespace Disa.Framework
             return Task.FromResult(0);
         }
 
+        public virtual Task GetQuotedMessageTitle(VisualBubble bubble, Action<string> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                result(null);
+            });
+        }
+
         public void EventBubble(Bubble b)
         {
             if (b != null)

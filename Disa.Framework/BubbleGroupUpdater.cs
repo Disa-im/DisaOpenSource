@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Disa.Framework.Bubbles;
 
 namespace Disa.Framework
 {
@@ -308,7 +309,7 @@ namespace Disa.Framework
             }
         }
 
-        public static async Task<bool> UpdateUnknownPartyParticipant(BubbleGroup bubbleGroup, string participantAddress, Action onAdded = null)
+        public static bool UpdateUnknownPartyParticipant(BubbleGroup bubbleGroup, string participantAddress, Action onAdded = null)
         {
             var service = bubbleGroup.Service;
 
@@ -323,7 +324,7 @@ namespace Disa.Framework
 
             try
             {
-                await service.GetBubbleGroupUnknownPartyParticipant(bubbleGroup, participantAddress, participant =>
+                service.GetBubbleGroupUnknownPartyParticipant(bubbleGroup, participantAddress, participant =>
                 {
                     if (participant != null)
                     {
@@ -346,6 +347,7 @@ namespace Disa.Framework
                     BubbleGroupEvents.RaiseRefreshed(bubbleGroup);
                     BubbleGroupEvents.RaiseBubblesUpdated(bubbleGroup);
                 });
+                return true;
             }
             catch (Exception ex)
             {
@@ -353,8 +355,6 @@ namespace Disa.Framework
                     " - " + bubbleGroup.Address + ": " + ex);
                 return false;
             }
-
-            return true;
         }
 
         public static void Update(Service service, string bubbleGroupAddress)
@@ -417,6 +417,54 @@ namespace Disa.Framework
                     Update(@group);
                     break; //don't update the same group again
                 }
+            }
+        }
+
+        public static bool UpdateQuotedMessageTitle(VisualBubble bubble, Action<string> onTitleUpdated)
+        {
+            var service = bubble.Service;
+            if (!ServiceManager.IsRunning(service))
+            {
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(bubble.QuotedAddress))
+            {
+                return false;
+            }
+
+            try
+            {
+                service.GetQuotedMessageTitle(bubble, result =>
+                {
+                    var bubbleGroup = BubbleGroupManager.FindWithAddress(bubble.Service, bubble.Address);
+                    if (bubbleGroup != null)
+                    {
+                        var quotedTitles = bubbleGroup.QuotedTitles == null ? 
+                                                    new List<DisaQuotedTitle>() : bubbleGroup.QuotedTitles.ToList();
+                        var quotedTitle = quotedTitles.FirstOrDefault(x => 
+                                                                   bubbleGroup.Service.BubbleGroupComparer(x.Address, bubble.QuotedAddress));
+                        if (quotedTitle == null)
+                        {
+                            quotedTitles.Add(new DisaQuotedTitle
+                            {
+                                Address = bubble.QuotedAddress,
+                                Title = result,
+                            });
+                        }
+                        else
+                        {
+                            quotedTitle.Title = result;
+                        }
+                        bubbleGroup.QuotedTitles = quotedTitles.ToArray();
+                    }
+                    onTitleUpdated(result);
+                });
+                return true;
+            }
+            catch (Exception e)
+            {
+                Utils.DebugPrint("Error getting quoted message title " + e);
+                return false;
             }
         }
     }

@@ -321,6 +321,49 @@ namespace Disa.Framework
             }
         }
 
+        public static void PurgeQuotedTitlesCache(Service service)
+        {
+            var bubbleGroups = FindAll(service);
+            foreach (var bubbleGroup in bubbleGroups)
+            {
+                if (bubbleGroup.QuotedTitles != null)
+                {
+                    bubbleGroup.QuotedTitles = null;
+                }
+            }
+        }
+
+        public static void PurgeQuotedTitlesCache(Service service, string bubbleGroupAddress)
+        {
+            var bubbleGroup = FindWithAddress(service, bubbleGroupAddress);
+            if (bubbleGroup != null)
+            {
+                if (bubbleGroup.QuotedTitles != null)
+                {
+                    bubbleGroup.QuotedTitles = null;
+                }
+            }
+        }
+
+        public static void PurgeQuotedTitleCache(Service service, string bubbleGroupAddress, string quotedTitleAddress)
+        {
+            var bubbleGroup = FindWithAddress(service, bubbleGroupAddress);
+            if (bubbleGroup != null)
+            {
+                if (bubbleGroup.QuotedTitles != null)
+                {
+                    var quotedTitles = bubbleGroup.QuotedTitles.ToList();
+                    var quotedTitle = quotedTitles.FirstOrDefault(x =>
+                                           bubbleGroup.Service.BubbleGroupComparer(x.Address, quotedTitleAddress));
+                    if (quotedTitle != null)
+                    {
+                        quotedTitles.Remove(quotedTitle);
+                        bubbleGroup.QuotedTitles = quotedTitles.ToArray();
+                    }
+                }
+            }
+        }
+
         public static IEnumerable<BubbleGroup> FindAllInnerWithRegisteredService(BubbleGroup group)
         {
             var unifiedGroup = @group as UnifiedBubbleGroup;
@@ -601,38 +644,33 @@ namespace Disa.Framework
             {
                 foreach (var innerGroup in unifiedGroup.Groups)
                 {
-                    SetUnread(innerGroup, false, skipSendReadBubble);
+                    SetUnread(innerGroup, unread, false, skipSendReadBubble, onlySetIfServiceRunning);
                 }
             }
 
-            Action @do = () =>
-            {
-                var updatedSomething = BubbleGroupSettingsManager.GetUnread(@group);
-                BubbleGroupSettingsManager.SetUnread(@group, unread);
+            var currentlyUnread = BubbleGroupSettingsManager.GetUnread(@group);
 
+            if (!unread)
+            {
+                BubbleGroupSettingsManager.SetUnreadIndicatorGuid(group, group.LastBubbleSafe().ID, false);
+            }
+
+            if ((onlySetIfServiceRunning && ServiceManager.IsRunning(@group.Service)) || !onlySetIfServiceRunning)
+            {
+                BubbleGroupSettingsManager.SetUnread(@group, unread);
                 if (unifiedGroup == null)
                 {
                     if (!skipSendReadBubble)
                     {
                         if (@group.Service.Information.DoesSupport(typeof(ReadBubble)) && ServiceManager.IsRunning(@group.Service))
                         {
-                            BubbleManager.Send(new ReadBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Outgoing, 
-                                @group.Service, @group.Address, null, Time.GetNowUnixTimestamp(), @group.IsParty, updatedSomething));
+                            BubbleManager.Send(new ReadBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Outgoing,
+                                @group.Service, @group.Address, null, Time.GetNowUnixTimestamp(), @group.IsParty, currentlyUnread));
                         }
                     }
                 }
-
                 if (updateUi)
                     BubbleGroupEvents.RaiseRefreshed(@group);
-            };
-
-            if (onlySetIfServiceRunning && ServiceManager.IsRunning(@group.Service))
-            {
-                @do();
-            }
-            else if (!onlySetIfServiceRunning)
-            {
-                @do();
             }
         }
 

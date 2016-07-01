@@ -42,7 +42,6 @@ namespace Disa.Framework
                     var toRemoves = new List<BubbleGroupSettings>();
                     foreach (var settings in db.Store.ToList())
                     {
-                        
                         var bubbleGroup = BubbleGroupManager.Find(settings.Guid);
                         if (bubbleGroup == null)
                         {
@@ -88,6 +87,7 @@ namespace Disa.Framework
                             Mute = false,
                             Unread = true,
                             Guid = group.ID,
+							UnreadIndicatorGuid = null,
                             LastUnreadSetTime = 0,
                             ReadTimes = null,
                             ParticipantNicknames = null,
@@ -97,6 +97,7 @@ namespace Disa.Framework
                             Ringtone = null,
                             RingtoneDisabled = false,
                             VibrateOptionDisabled = false,
+                            QuotedTitles = null,
                         };
                         db.Add(settings);
                         group.Settings = settings;
@@ -122,8 +123,18 @@ namespace Disa.Framework
 
         public static void SetUnread(BubbleGroup group, bool unread)
         {
+			InsertDefaultIfNull(group);
+			if (group.Settings.Unread != unread)
+			{
+				group.Settings.Unread = unread;
+                Update(group.Settings);
+			}
+        }
+
+        public static void SetUnreadIndicatorGuid(BubbleGroup group, string guid, bool isNew)
+        {
             InsertDefaultIfNull(group);
-            group.Settings.Unread = unread;
+            group.Settings.UnreadIndicatorGuid = guid + "|" + (isNew ? "true" : "false");
             Update(group.Settings);
         }
 
@@ -230,6 +241,39 @@ namespace Disa.Framework
             return group.Settings.LastUnreadSetTime;
         }
 
+		public static string GetUnreadIndicatorGuid(BubbleGroup group)
+		{
+			InsertDefaultIfNull(group);
+            var guid = group.Settings.UnreadIndicatorGuid;
+            if (!string.IsNullOrWhiteSpace(guid))
+            {
+                var indexOf = guid.IndexOf('|');
+                if (indexOf > -1)
+                {
+                    var editedGuid = guid.Substring(0, indexOf);
+                    return editedGuid;
+                }
+            }
+            return guid;
+		}
+
+        public static bool GetUnreadIndicatorGuidIsNew(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            var guid = group.Settings.UnreadIndicatorGuid;
+            if (!string.IsNullOrWhiteSpace(guid))
+            {
+                var indexOf = guid.IndexOf('|');
+                if (indexOf > -1)
+                {
+                    indexOf += 1;
+                    var value = guid.Substring(indexOf, guid.Length - indexOf);
+                    return value == "true";
+                }
+            }
+            return false;
+        }
+
         internal static DisaParticipantNickname[] GetParticipantNicknames(BubbleGroup group)
         {
             InsertDefaultIfNull(group);
@@ -280,6 +324,51 @@ namespace Disa.Framework
                 }
                 return group.Settings.ReadTimesCached;
             }
+        }
+
+        internal static DisaQuotedTitle[] GetQuotedTitles(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            if (group.Settings.QuotedTitlesCachedSet)
+            {
+                return group.Settings.QuotedTitlesCached;
+            }
+            else
+            {
+                if (group.Settings.QuotedTitles == null)
+                {
+                    group.Settings.QuotedTitlesCachedSet = true;
+                }
+                else
+                {
+                    using (var ms = new MemoryStream(group.Settings.QuotedTitles))
+                    {
+                        var quotedTitles = Serializer.Deserialize<DisaQuotedTitle[]>(ms);
+                        group.Settings.QuotedTitlesCached = quotedTitles;
+                        group.Settings.QuotedTitlesCachedSet = true;
+                    }
+                }
+                return group.Settings.QuotedTitlesCached;
+            }
+        }
+
+        internal static void SetQuotedTitles(BubbleGroup group, DisaQuotedTitle[] quotedTitles)
+        {
+            InsertDefaultIfNull(group);
+            group.Settings.QuotedTitlesCached = quotedTitles;
+            if (quotedTitles != null)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    Serializer.Serialize(ms, quotedTitles);
+                    group.Settings.QuotedTitles = ms.ToArray();
+                }
+            }
+            else
+            {
+                group.Settings.QuotedTitles = null;
+            }
+            Update(group.Settings);
         }
 
         internal static void SetParticipantNicknames(BubbleGroup group, DisaParticipantNickname[] nicknames)

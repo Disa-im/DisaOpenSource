@@ -43,16 +43,24 @@ namespace Disa.Framework
 
         protected internal void OnBubbleUpdated(VisualBubble bubble, BubbleGroup group)
         {
-            if (Bubbles.Count > BubblesCapSize)
+            if (Bubbles.Count >= BubblesCapSize)
             {
                 Bubbles.RemoveAt(0);
             }
 
             var addedToEnd = false;
 
+            var unreadIndicatorGuid = BubbleGroupSettingsManager.GetUnreadIndicatorGuid(this);
             for (int i = Bubbles.Count - 1; i >= 0; i--)
             {
                 var nBubble = Bubbles[i];
+
+                var unreadIndicatorIndex = -1;
+                if (unreadIndicatorGuid != null && unreadIndicatorGuid == nBubble.ID)
+                {
+                    unreadIndicatorIndex = i;
+                }
+
                 if (nBubble.Time <= bubble.Time)
                 {
                     // adding it to the end, we can do a simple contract
@@ -62,13 +70,17 @@ namespace Disa.Framework
                         Bubbles.Add(bubble);
                         if (bubble.Direction == Bubble.BubbleDirection.Incoming)
                         {
-                            BubbleGroupSettingsManager.SetUnread(this, true);
+							BubbleGroupSettingsManager.SetUnread(this, true);
                         }
                     }
                     // inserting, do a full contract
                     else
                     {
                         Bubbles.Insert(i + 1, bubble);
+                    }
+                    if (i >= unreadIndicatorIndex && bubble.Direction == Bubble.BubbleDirection.Outgoing)
+                    {
+                        BubbleGroupSettingsManager.SetUnreadIndicatorGuid(this, bubble.ID, false);
                     }
                     break;
                 }
