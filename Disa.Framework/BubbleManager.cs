@@ -81,6 +81,7 @@ namespace Disa.Framework
 
                     var shouldQueue = vb.Service.QueuedBubblesParameters == null || 
                                       !vb.Service.QueuedBubblesParameters.BubblesNotToQueue.Contains(vb.GetType());
+                    var skipMonitorExit = false;
 
                     try
                     {
@@ -88,6 +89,7 @@ namespace Disa.Framework
                             BubbleQueueManager.HasQueuedBubbles(vb.Service.Information.ServiceName, 
                                 true, false))
                         {
+                            skipMonitorExit = true;
                             BubbleQueueManager.JustQueue(group, vb);
                             restartServiceIfNeeded();
                             return false;
@@ -174,7 +176,7 @@ namespace Disa.Framework
                     }
                     finally
                     {
-                        if (shouldQueue)
+                        if (!skipMonitorExit && shouldQueue)
                         {
                             Monitor.Exit(vb.Service.SendBubbleLock);
                         }
@@ -615,6 +617,8 @@ namespace Disa.Framework
                     newGroup = true;
 
                     Utils.DebugPrint("GUID of new group: " + theGroup.ID);
+
+                    BubbleGroupSettingsManager.SetUnreadIndicatorGuid(theGroup, theGroup.LastBubbleSafe().ID, true);
 
                     vb.Service.NewBubbleGroupCreated(theGroup).ContinueWith(x =>
                     {

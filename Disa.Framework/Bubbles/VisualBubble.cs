@@ -18,8 +18,17 @@ namespace Disa.Framework.Bubbles
     [ProtoInclude(210, typeof(ContactBubble))]
     public abstract class VisualBubble : Bubble
     {
-        public enum MediaType {
+        public enum MediaType
+        {
             None, Audio, Video, Text, Location, File, Contact,Image
+        }
+
+        public static string QuotedNameMyself
+        {
+            get
+            {
+                return "&^%$#@?!myself!?@#$%^&";
+            }
         }
 
         [ProtoMember(251)]
@@ -45,7 +54,11 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(262)]
         public byte[] QuotedThumbnail { get; set;}
         [ProtoMember(263)]
-        public bool HasQuotedThumbnail { get; set;}
+        public bool HasQuotedThumbnail { get; set; }
+        [ProtoMember(264)]
+        public double QuotedLocationLatitude { get; set; }
+        [ProtoMember(265)]
+        public double QuotedLocationLongitude { get; set; }
 
         [NonSerialized]
         public string ID;

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SQLite;
 
 namespace Disa.Framework
@@ -21,6 +22,8 @@ namespace Disa.Framework
 
         public bool Unread { get; set; }
 
+		public string UnreadIndicatorGuid { get; set; }
+
         public long LastUnreadSetTime { get; set; }
 
         public byte[] ParticipantNicknames { get; set; }
@@ -40,5 +43,12 @@ namespace Disa.Framework
         public DisaReadTime[] ReadTimesCached { get; set; }
         [Ignore]
         public bool ReadTimesCachedSet { get; set; }
+
+        public byte[] QuotedTitles { get; set; }
+
+        [Ignore]
+        public DisaQuotedTitle[] QuotedTitlesCached { get; set; }
+        [Ignore]
+        public bool QuotedTitlesCachedSet { get; set; }
     }
 }

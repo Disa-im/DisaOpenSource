@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Disa.Framework.Bubbles;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -532,6 +532,105 @@ namespace Disa.Framework
             }
         }
 
+        public static IEnumerable<bool> LoadBubblesIntoOffline(BubbleGroup group, List<VisualBubble> listToLoadInto)
+        {
+            if (!listToLoadInto.Any())
+                yield break;
+
+            Utils.DebugPrint("Loading into convo (offline): " + group.ID);
+
+            var unifiedGroup = group as UnifiedBubbleGroup;
+            var groups = unifiedGroup != null ? unifiedGroup.Groups : new List<BubbleGroup>() { group };
+
+            const int MaxLoadPerGroup = 100;
+            var currentTime = listToLoadInto.Min(x => x.Time);
+
+            var bubbleGroupStates = new Dictionary<BubbleGroup, LoadBubblesIntoStateHolder>();
+            foreach (var innerGroup in groups)
+            {
+                bubbleGroupStates[innerGroup] = new LoadBubblesIntoStateHolder();
+            }
+
+            while (true)
+            {
+                var listToLoadIntoCount = listToLoadInto.Count;
+                var bubbleLoads = new Dictionary<BubbleGroup, List<Tuple<VisualBubble, bool>>>();
+
+                foreach (var innerGroup in groups)
+                {
+                    var innerGroupState = bubbleGroupStates[innerGroup];
+
+                    if (innerGroupState.LocalFinished)
+                    {
+                        bubbleLoads[innerGroup] = null;
+                    }
+                    else
+                    {
+                        var localBubbles = new List<VisualBubble>();
+                        innerGroupState.LocalCursor = BubbleGroupDatabase.FetchBubblesAt(innerGroup,
+                            currentTime, MaxLoadPerGroup, ref localBubbles, innerGroupState.LocalCursor);
+                        if (innerGroupState.LocalCursor == 0 || localBubbles.Count == 0)
+                        {
+                            innerGroupState.LocalFinished = true;
+                        }
+
+                        bubbleLoads[innerGroup] = localBubbles.Select(x =>
+                                                                      new Tuple<VisualBubble, bool>(x, false)).ToList();
+                    }
+                }
+
+                // find the greatest minimum time of all the bubble loads
+                // and merge the bubble loads against that
+
+                var greatestMin = 0L;
+                foreach (var bubbleLoad in bubbleLoads)
+                {
+                    if (bubbleLoad.Value == null || !bubbleLoad.Value.Any())
+                        continue;
+
+                    var min = bubbleLoad.Value.Min(x => x.Item1.Time);
+                    if (min > greatestMin)
+                    {
+                        greatestMin = min;
+                    }
+                }
+
+                var mergedBubbles = new List<VisualBubble>();
+                foreach (var bubbleLoad in bubbleLoads)
+                {
+                    if (bubbleLoad.Value != null)
+                    {
+                        var bubblesToMerge = bubbleLoad.Value.Where(x =>
+                            x.Item1.Time >= greatestMin).Select(x => x.Item1).ToList();
+                        foreach (var bubbleToMerge in bubblesToMerge)
+                        {
+                            bubbleToMerge.BubbleGroupReference = bubbleLoad.Key;
+                        }
+                        mergedBubbles.AddRange(bubblesToMerge);
+                    }
+                }
+                mergedBubbles.TimSort((x, y) => x.Time.CompareTo(y.Time));
+
+                // insert the merged bubbles into the list to load into, making sure to 
+                // remove and duplicates encountered.
+                listToLoadInto.InsertRange(0, mergedBubbles);
+                LoadBubblesIntoRemoveDuplicates(listToLoadInto, currentTime);
+
+                if (mergedBubbles.Any())
+                {
+                    currentTime = mergedBubbles.First().Time;
+                }
+
+                // if the count wasn't altered, we've hit the end
+                if (listToLoadIntoCount == listToLoadInto.Count)
+                {
+                    yield break;
+                }
+
+                yield return true;
+            }
+        }
+
         private static IEnumerable<bool> LoadBubblesInto(BubbleGroup group, List<VisualBubble> listToLoadInto, 
             LoadBubbles instance)
         {
@@ -865,6 +964,43 @@ namespace Disa.Framework
                             if (sendingBubbles.Any())
                             {
                                 BubbleManager.Replace(group, sendingBubbles);
+                            }
+                            Action<BubbleGroup> adjustUnreadIndicators = groupToAdjust =>
+                            {
+                                var unreadIndicatorGuid = BubbleGroupSettingsManager.GetUnreadIndicatorGuid(groupToAdjust);
+                                var lastOutgoingBubbleIndex = -1;
+                                var lastUnreadIndicatorIndex = -1;
+                                for (int i = groupToAdjust.Bubbles.Count - 1; i >= 0; i--)
+                                {
+                                    var bubble = groupToAdjust.Bubbles[i];
+                                    if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
+                                    {
+                                        lastOutgoingBubbleIndex = i;
+                                    }
+                                    if (bubble.ID == unreadIndicatorGuid)
+                                    {
+                                        lastUnreadIndicatorIndex = i;
+                                    }
+                                    if (lastUnreadIndicatorIndex != -1 && lastOutgoingBubbleIndex != -1)
+                                    {
+                                        break;
+                                    }
+                                }
+                                var newIndicatorIndex = Math.Max(lastOutgoingBubbleIndex, lastUnreadIndicatorIndex);
+                                if (newIndicatorIndex != -1)
+                                {
+                                    BubbleGroupSettingsManager.SetUnreadIndicatorGuid(groupToAdjust, 
+                                                                                      groupToAdjust.Bubbles[newIndicatorIndex].ID, 
+                                                                                      false);
+                                }
+                            };
+                            if (unifiedGroup != null)
+                            {
+                                adjustUnreadIndicators(unifiedGroup);
+                            }
+                            foreach (var groupToAdjust in groupsToSync)
+                            {
+                                adjustUnreadIndicators(groupToAdjust);
                             }
                             group.RaiseBubblesSynced();
                         }
