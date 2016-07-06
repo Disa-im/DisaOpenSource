@@ -52,6 +52,7 @@ namespace Disa.Framework.Telegram
             public bool Registered { get; set; }
             public string CodeHash { get; set; }
             public Type Response { get; set; }
+            public int MigrateId { get; set;}
         }
 
         public static CodeRequest RequestCode(Service service, string number, string codeHash, TelegramSettings settings, bool call)
@@ -73,7 +74,6 @@ namespace Disa.Framework.Telegram
                             var result = TelegramUtils.RunSynchronously(client.Methods.AuthSendCodeAsync(new AuthSendCodeArgs
                             {
                                 PhoneNumber = number,
-                                //SmsType = 0,
                                 ApiId = AppInfo.ApiId,
                                 ApiHash = "f8f2562579817ddcec76a8aae4cd86f6",
                                 LangCode = PhoneBook.Language
@@ -86,6 +86,7 @@ namespace Disa.Framework.Telegram
                         }
                         catch (RpcErrorException ex)
                         {
+                            Utils.DebugPrint(">>>> Send code failure " + ObjectDumper.Dump(ex));
                             var error = (RpcError)ex.Error;
                             var cr = new CodeRequest();
                             var response = CodeRequest.Type.Failure;
@@ -93,6 +94,11 @@ namespace Disa.Framework.Telegram
                             {
                                 case 400:
                                     cr.Response = CodeRequest.Type.NumberInvalid;
+                                    break;
+                                case 303:
+                                    var newDcId = GetDcId(error.ErrorMessage);
+                                    cr.Response = CodeRequest.Type.Migrate;
+                                    cr.MigrateId = newDcId;
                                     break;
                                 default:
                                     cr.Response = CodeRequest.Type.Failure;
@@ -119,12 +125,76 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
+
+        public static TelegramClient GetNewClient(int migrateId, TelegramSettings settings, out TelegramSettings newSettings)
+        {
+
+            var dcConfig = GetDcConfig(migrateId, settings);
+
+            var transportConfig = new TcpClientTransportConfig(dcConfig.IpAddress, (int)dcConfig.Port);
+
+            var authInfo = TelegramUtils.RunSynchronously(FetchNewAuthentication(transportConfig));
+
+            var newClient = new TelegramClient(transportConfig, new ConnectionConfig(authInfo.AuthKey, authInfo.Salt), AppInfo);
+
+            newSettings = new TelegramSettings();
+            newSettings.AccountId = settings.AccountId;
+            newSettings.AuthKey = authInfo.AuthKey;
+            newSettings.Salt = authInfo.Salt;
+            newSettings.NearestDcId = (uint)migrateId;
+            newSettings.NearestDcIp = dcConfig.IpAddress;
+            newSettings.NearestDcPort = (int)dcConfig.Port;
+
+            return newClient;
+        }
+
+        public static DcOption GetDcConfig(int migrateId, TelegramSettings settings)
+        {
+            var transportConfig =
+                    new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort);
+            using (var client = new TelegramClient(transportConfig,
+                                                   new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo)) 
+            {
+                TelegramUtils.RunSynchronously(client.Connect());
+                var config = (Config)TelegramUtils.RunSynchronously(client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs { }));
+                var dcOption = config.DcOptions.OfType<DcOption>().FirstOrDefault(x => x.Id == migrateId);
+                return dcOption;
+            }
+        }
+
+
+        public static AuthExportedAuthorization GenerateExportedAuth(int migrateId, TelegramSettings settings)
+        {
+            var transportConfig =
+                   new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort);
+            using (var client = new TelegramClient(transportConfig,
+                                                   new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
+            {
+                TelegramUtils.RunSynchronously(client.Connect());
+                var exportedAuth = (AuthExportedAuthorization)TelegramUtils.RunSynchronously(client.Methods.AuthExportAuthorizationAsync(
+                            new SharpTelegram.Schema.AuthExportAuthorizationArgs
+                            {
+                                DcId = (uint)migrateId,
+                            }));
+                return exportedAuth;
+            }
+
+
+        }
+
+        private static int GetDcId(string errorMessage)
+        {
+            var messageParts = errorMessage.Split('_');
+            int dcId = -1;
+            int.TryParse(messageParts[messageParts.Length - 1],out dcId);
+            return dcId;
+        }
+
         public class CodeRegister
         {
             public enum Type { Success, Failure, NumberInvalid, CodeEmpty, CodeExpired, CodeInvalid, FirstNameInvalid, LastNameInvalid }
 
             public uint AccountId { get; set; }
-
             public long Expires { get; set; }
             public Type Response { get; set; }
         }
@@ -174,6 +244,7 @@ namespace Disa.Framework.Telegram
                     }
                     catch (RpcErrorException ex)
                     {
+                        Utils.DebugPrint(">>>>>> Failed to sign in " + ex);
                         var error = (RpcError)ex.Error;
                         var cr = new CodeRegister();
                         var response = CodeRegister.Type.Failure;
@@ -212,7 +283,7 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
-        private static async Task<AuthInfo> FetchNewAuthentication(TcpClientTransportConfig config)
+        public static async Task<AuthInfo> FetchNewAuthentication(TcpClientTransportConfig config)
         {
             var authKeyNegotiater = MTProtoClientBuilder.Default.BuildAuthKeyNegotiator(config);
             authKeyNegotiater.KeyChain.Add(RSAPublicKey.Get());

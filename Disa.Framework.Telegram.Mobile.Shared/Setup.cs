@@ -5,6 +5,10 @@ using Xamarin.Forms;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using SharpTelegram.Schema;
+using SharpMTProto.Transport;
+using SharpTelegram;
+using SharpMTProto;
 
 namespace Disa.Framework.Telegram.Mobile
 {
@@ -464,22 +468,40 @@ namespace Disa.Framework.Telegram.Mobile
                 _haveCode.BackgroundColor = _haveCode.IsEnabled ? Color.FromHex("c50923") : Color.Gray;
             }
 
-            private void SetSettingsCodeHash(string codeHash)
+            private void SetSettingsCodeHash(string codeHash, bool save)
             {
                 var state = _settings.States.FirstOrDefault(x => x.NationalNumber == NationalNumber);
                 if (state == null)
                     return;
                 state.CodeHash = codeHash;
-                SaveSettings();
+                if (save)
+                {
+                    SaveSettings();
+                }
             }
 
-            private void SetSettingsRegistered(bool registered)
+            private void SetSettingsSettings(TelegramSettings newSettings, bool save)
+            {
+               var state = _settings.States.FirstOrDefault(x => x.NationalNumber == NationalNumber);
+                if (state == null)
+                    return;
+                state.Settings = newSettings;
+                if (save)
+                {
+                    SaveSettings();
+                }
+            }
+
+            private void SetSettingsRegistered(bool registered, bool save)
             {
                 var state = _settings.States.FirstOrDefault(x => x.NationalNumber == NationalNumber);
                 if (state == null)
                     return;
                 state.Registered = registered;
-                SaveSettings();
+                if (save)
+                {
+                    SaveSettings();
+                }
             }
 
             private enum VerificationOption { Sms, Voice };
@@ -488,10 +510,33 @@ namespace Disa.Framework.Telegram.Mobile
             {
                 return Task<ActivationResult>.Factory.StartNew(() =>
                     {
+                        var settings = GetSettingsTelegramSettings();
                         var response = Telegram.RequestCode(_service, CountryCode + NationalNumber,
-                            GetSettingsCodeHash(),
-                            GetSettingsTelegramSettings(), option == VerificationOption.Voice);
+                                       GetSettingsCodeHash(),
+                                       GetSettingsTelegramSettings(), option == VerificationOption.Voice);
 
+                        if (response.Response == Telegram.CodeRequest.Type.Migrate)
+                        {
+                            TelegramSettings newSettings;
+                            using (var migratedClient = Telegram.GetNewClient(response.MigrateId, GetSettingsTelegramSettings(), out newSettings))
+                            {
+                                TelegramUtils.RunSynchronously(migratedClient.Connect());
+                                response = Telegram.RequestCode(_service, CountryCode + NationalNumber,
+                                       GetSettingsCodeHash(),
+                                       newSettings, option == VerificationOption.Voice);
+                                Utils.DebugPrint(">>>>> Response from the server " + ObjectDumper.Dump(response));
+                                if (option == VerificationOption.Sms)
+                                {
+                                    SetSettingsSettings(newSettings, false);
+                                    SetSettingsCodeHash(response.CodeHash, false);
+                                    SetSettingsRegistered(response.Registered, false);
+                                }
+                                return new ActivationResult
+                                {
+                                    Success = true,
+                                };
+                            }
+                        }
                         if (response == null || response.Response != Telegram.CodeRequest.Type.Success)
                         {
                             var message = Localize.GetString("TelegramVerifyError");
@@ -512,8 +557,8 @@ namespace Disa.Framework.Telegram.Mobile
 
                         if (option == VerificationOption.Sms)
                         {
-                            SetSettingsCodeHash(response.CodeHash);
-                            SetSettingsRegistered(response.Registered);
+                            SetSettingsCodeHash(response.CodeHash,true);
+                            SetSettingsRegistered(response.Registered,true);
                         }
                             
                         return new ActivationResult
@@ -522,7 +567,9 @@ namespace Disa.Framework.Telegram.Mobile
                         };
                     });
             }
-        }
+
+
+       }
 
         private class Code : ContentPage 
         {

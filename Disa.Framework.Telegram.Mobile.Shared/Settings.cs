@@ -251,7 +251,7 @@ namespace Disa.Framework.Telegram.Mobile
 
                 var telegramService = service as Telegram;
 
-                var user = telegramService._dialogs.GetUser(telegramService._settings.AccountId);
+                var user = telegramService.Dialogs.GetUser(telegramService.Settings.AccountId);
 
                 DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
 
@@ -442,7 +442,7 @@ namespace Disa.Framework.Telegram.Mobile
                 var photo = iPhoto as PhotosPhoto;
                 if (photo != null)
                 {
-                    service._dialogs.AddUsers(photo.Users);
+                    service.Dialogs.AddUsers(photo.Users);
                 }
 
                 var photoObj = photo.Photo as Photo;
@@ -511,7 +511,7 @@ namespace Disa.Framework.Telegram.Mobile
                     return null;
                 }
 
-                if (thumbnailLocation.DcId == telegramService._settings.NearestDcId)
+                if (thumbnailLocation.DcId == telegramService.Settings.NearestDcId)
                 {
                     using (var clientDisposable = new Telegram.FullClientDisposable(telegramService))
                     {

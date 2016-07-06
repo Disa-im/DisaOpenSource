@@ -72,21 +72,46 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        public Config Config
+        {
+            get 
+            {
+                return _config;
+            }
+        }
+
+        public TelegramSettings Settings
+        {
+            get
+            {
+                return _settings;   
+            }
+        }
+
+        public CachedDialogs Dialogs
+        {
+            get
+            {
+                return _dialogs;
+            }
+        }
+
         private bool _hasPresence;
 
         private bool _longPollerAborted;
 
         private Random _random = new Random(System.Guid.NewGuid().GetHashCode());
 
-        public TelegramSettings _settings;
+        private TelegramSettings _settings;
+
         private TelegramMutableSettings _mutableSettings;
 
         private TelegramClient _longPollClient;
 
         private readonly object _mutableSettingsLock = new object();
-        //public so that profile settings can access it from the instance
-        public CachedDialogs _dialogs = new CachedDialogs();
-        private bool _dialogsInitiallyRetrieved = false;
+        
+        private CachedDialogs _dialogs = new CachedDialogs();
+
         private Config _config;
 
         private Dictionary<string, Timer> _typingTimers = new Dictionary<string, Timer>();
@@ -1411,8 +1436,6 @@ namespace Disa.Framework.Telegram
                 FetchState(client);
                 DebugPrint (">>>>>>>>>>>>>> Fetching dialogs!");
                 GetDialogs(client);
-                _dialogsInitiallyRetrieved = true;
-                
                 GetConfig(client);
             }
 

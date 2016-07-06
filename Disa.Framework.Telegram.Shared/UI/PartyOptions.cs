@@ -60,7 +60,7 @@ namespace Disa.Framework.Telegram
             foreach(var partyParticipant in partyParticipants)
             {
                 string participantAddress = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                if (participantAddress == _settings.AccountId.ToString(CultureInfo.InvariantCulture))
+                if (participantAddress == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
                 {
                     return true;
                 }
@@ -379,7 +379,7 @@ namespace Disa.Framework.Telegram
             foreach (var partyParticipant in partyParticipants)
             {
                 var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                if (id == _settings.AccountId.ToString(CultureInfo.InvariantCulture))
+                if (id == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
                 {
                     if ((partyParticipant is ChatParticipantAdmin)||(partyParticipant is ChatParticipantCreator))
                     {
@@ -413,7 +413,7 @@ namespace Disa.Framework.Telegram
             foreach (var partyParticipant in partyParticipants)
             {
                 var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                if (id == _settings.AccountId.ToString(CultureInfo.InvariantCulture))
+                if (id == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
                 {
                     //TODO:check how the protocol responds
                     if (partyParticipant is ChatParticipantCreator)
@@ -513,7 +513,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var inputUser = new InputUser { UserId = _settings.AccountId };
+                var inputUser = new InputUser { UserId = Settings.AccountId };
                 using (var client = new FullClientDisposable(this))
                 {
                     var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesDeleteChatUserAsync(new MessagesDeleteChatUserArgs

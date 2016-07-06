@@ -83,7 +83,7 @@ namespace Disa.Framework.Telegram
                                 DebugPrint(">>>>>>>>>>>>>>>>>>>>>> Timer Elapsed!! ");
                                 DebugPrint(">>>>>>> current progress " + currentProgress);
                                 
-                                if (document.DcId != _settings.NearestDcId)
+                                if (document.DcId != Settings.NearestDcId)
                                 {
                                     cachedClient = GetClient((int) document.DcId);
                                 }
