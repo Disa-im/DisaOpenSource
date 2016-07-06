@@ -25,10 +25,10 @@ using Message = SharpTelegram.Schema.Message;
 
 namespace Disa.Framework.Telegram
 {
-    [ServiceInfo("Telegram", true, true, true, false, true, typeof(TelegramSettings), 
-        ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(ReadBubble), 
-        typeof(TypingBubble), typeof(PresenceBubble), typeof(ImageBubble), typeof(FileBubble), typeof(AudioBubble),typeof(LocationBubble))]
-    [FileParameters(55000000)] //25mb
+    [ServiceInfo("Telegram", true, true, true, false, true, typeof(TelegramSettings),
+        ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(ReadBubble),
+                 typeof(TypingBubble), typeof(PresenceBubble), typeof(ImageBubble), typeof(FileBubble), typeof(AudioBubble), typeof(LocationBubble), typeof(ContactBubble))]
+    [FileParameters(55000000)] //55mb
     [AudioParameters(AudioParameters.RecordType.M4A, AudioParameters.NoDurationLimit, 25000000, ".mp3", ".aac", ".m4a", ".mp4", ".wav", ".3ga", ".3gp", ".3gpp", ".amr", ".ogg", ".webm", ".weba", ".opus")]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
@@ -800,6 +800,7 @@ namespace Disa.Framework.Telegram
             var messageMediaDocument = messageMedia as MessageMediaDocument;
             var messageMediaGeo = messageMedia as MessageMediaGeo;
             var messageMediaVenue = messageMedia as MessageMediaVenue;
+            var messageMediaContact = messageMedia as MessageMediaContact;
 
             if (messageMediaPhoto != null)
             {
@@ -950,8 +951,50 @@ namespace Disa.Framework.Telegram
                 }
 
             }
+            else if (messageMediaContact != null)
+            {
+                var contactCard = new ContactCard
+                {
+                    GivenName = messageMediaContact.FirstName,
+                    FamilyName = messageMediaContact.LastName
+                };
+                contactCard.Phones.Add(new ContactCard.ContactCardPhone
+                {
+                    Number = messageMediaContact.PhoneNumber
+                });
+                var vCardData = Platform.GenerateBytesFromContactCard(contactCard);
+                var contactBubble = MakeContactBubble(message, isUser, useCurrentTime, addressStr, participantAddress, vCardData, messageMediaContact.FirstName);
+
+                return contactBubble;
+            }
 
             return null;
+        }
+
+        private ContactBubble MakeContactBubble(Message message, bool isUser, bool useCurrentTime, string addressStr, string participantAddress, byte[] vCardData, string name)
+        {
+            ContactBubble bubble;
+
+            if (isUser)
+            {
+                bubble = new ContactBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                         message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr,
+                         null, false, this, name, vCardData,
+                         message.Id.ToString(CultureInfo.InvariantCulture));
+            }
+            else
+            {
+                bubble = new ContactBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                         message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr,
+                         participantAddress, true, this, name, vCardData,
+                         message.Id.ToString(CultureInfo.InvariantCulture));
+            }
+            if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
+            {
+                bubble.Status = Bubble.BubbleStatus.Sent;
+            }
+
+            return bubble;
         }
 
         private VisualBubble MakeGeoBubble(GeoPoint geoPoint,Message message,bool isUser,bool useCurrentTime,string addressStr,string participantAddress,string name)
@@ -1641,7 +1684,39 @@ namespace Disa.Framework.Telegram
                 SendGeoLocation(locationBubble);
             }
 
+            var contactBubble = b as ContactBubble;
 
+            if (contactBubble != null)
+            {
+                SendContact(contactBubble);
+            }
+
+        }
+
+        private void SendContact(ContactBubble contactBubble)
+        {
+            var inputPeer = GetInputPeer(contactBubble.Address, contactBubble.Party);
+            var contactCard = Platform.GenerateContactCardFromBytes(contactBubble.VCardData);
+            if (contactCard != null)
+            {
+                using (var client = new FullClientDisposable(this))
+                {
+                    TelegramUtils.RunSynchronously(
+                        client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
+                        {
+
+                            Flags = 0,
+                            Peer = inputPeer,
+                            Media = new InputMediaContact
+                            {
+                                FirstName = contactCard.GivenName,
+                                LastName = contactCard.FamilyName,
+                                PhoneNumber = contactCard.Phones?.FirstOrDefault()?.Number
+                            },
+                            RandomId = GenerateRandomId(),
+                        }));
+                }
+            }
         }
 
         private void SendGeoLocation(LocationBubble locationBubble)
