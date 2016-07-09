@@ -1570,7 +1570,7 @@ namespace Disa.Framework.Telegram
                
                 using (var client = new FullClientDisposable(this))
                 {
-                    var iUpdate = TelegramUtils.RunSynchronously(
+                    var iUpdates = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
                     {
 						Flags = 0,
@@ -1578,7 +1578,8 @@ namespace Disa.Framework.Telegram
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService2)
                     }));
-                    var updateShortSentMessage = iUpdate as UpdateShortSentMessage;
+                    var updateShortSentMessage = iUpdates as UpdateShortSentMessage;
+                    //SendToResponseDispatcher(iUpdates, client.Client);
                     if (updateShortSentMessage != null)
                     {
                         textBubble.IdService = updateShortSentMessage.Id.ToString(CultureInfo.InvariantCulture);
@@ -1920,12 +1921,13 @@ namespace Disa.Framework.Telegram
             var imageBubble = bubble as ImageBubble;
             var fileBubble = bubble as FileBubble;
             var audioBubble = bubble as AudioBubble;
+
             using (var client = new FullClientDisposable(this))
             {
                 if (imageBubble != null)
                 {
 
-                    TelegramUtils.RunSynchronously(
+                    var iUpdates = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
                         {
 
@@ -1938,6 +1940,21 @@ namespace Disa.Framework.Telegram
                             },
                             RandomId = GenerateRandomId(),
                         }));
+                    var updates = iUpdates as Updates;
+                    if (updates != null)
+                    {
+                        foreach (var update in updates.UpdatesProperty)
+                        {
+                            var updateNewMessage = update as UpdateNewMessage;
+                            if (updateNewMessage != null)
+                            {
+                                var message = updateNewMessage.Message as Message;
+                                imageBubble.IdService = message?.Id.ToString(CultureInfo.InvariantCulture);
+                                break;
+                            }
+                        }
+                    }
+                    SendToResponseDispatcher(iUpdates, client.Client);
                 }
                 else if (fileBubble != null)
                 {
@@ -1948,7 +1965,7 @@ namespace Disa.Framework.Telegram
                             FileName = fileBubble.FileName
                         }
                     };
-                    TelegramUtils.RunSynchronously(
+                    var iUpdates = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
                         {
 
@@ -1963,6 +1980,22 @@ namespace Disa.Framework.Telegram
                             },
                             RandomId = GenerateRandomId(),
                         }));
+                    var updates = iUpdates as Updates;
+                    if (updates != null)
+                    {
+                        foreach (var update in updates.UpdatesProperty)
+                        {
+                            var updateNewMessage = update as UpdateNewMessage;
+                            if (updateNewMessage != null)
+                            {
+                                var message = updateNewMessage.Message as Message;
+                                fileBubble.IdService = message?.Id.ToString(CultureInfo.InvariantCulture);
+                                break;
+                            }
+                        }
+                    }
+                    SendToResponseDispatcher(iUpdates, client.Client);
+
                 }
                 else if (audioBubble != null)
                 {
@@ -1992,8 +2025,23 @@ namespace Disa.Framework.Telegram
                         RandomId = GenerateRandomId(),
                     };
 
-                    TelegramUtils.RunSynchronously(
+                    var iUpdates = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMediaAsync(media));
+                    var updates = iUpdates as Updates;
+                    if (updates != null)
+                    {
+                        foreach (var update in updates.UpdatesProperty)
+                        {
+                            var updateNewMessage = update as UpdateNewMessage;
+                            if (updateNewMessage != null)
+                            {
+                                var message = updateNewMessage.Message as Message;
+                                audioBubble.IdService = message?.Id.ToString(CultureInfo.InvariantCulture);
+                                break;
+                            }
+                        }
+                    }
+                    SendToResponseDispatcher(iUpdates, client.Client);
                 }
             }
         }
