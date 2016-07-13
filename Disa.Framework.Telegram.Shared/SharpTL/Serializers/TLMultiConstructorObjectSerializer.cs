@@ -37,7 +37,7 @@ namespace SharpTL.Serializers
         {
             Type objType = obj.GetType();
 
-            if (objType == typeof(ITrue))
+            if (objType == typeof(True))
             {
                 //we dont write anything
                 return;

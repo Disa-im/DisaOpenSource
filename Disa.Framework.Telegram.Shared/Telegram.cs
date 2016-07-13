@@ -422,6 +422,13 @@ namespace Disa.Framework.Telegram
                     {
                         if (bubble.Direction == Bubble.BubbleDirection.Incoming)
                         {
+                            var fromId = message.FromId.ToString(CultureInfo.InvariantCulture);
+                            var messageUser = _dialogs.GetUser(message.FromId);
+                            if (messageUser == null)
+                            {
+                                DebugPrint(">>>>> User is null, fetching user from the server");
+                                GetMessage(message.Id, optionalClient);
+                            }
                             if (message.ReplyToMsgId != 0)
                             {
                                 var iReplyMessage = GetMessage(message.ReplyToMsgId,optionalClient);
@@ -766,7 +773,7 @@ namespace Disa.Framework.Telegram
                 _dialogs.AddUsers(users);
                 _dialogs.AddChats(chats);
 
-                if (messages != null)
+                if (messages != null && messages.Count > 0)
                 {
                     return messages[0];
                 }
@@ -783,7 +790,7 @@ namespace Disa.Framework.Telegram
                     _dialogs.AddUsers(users);
                     _dialogs.AddChats(chats);
 
-                    if (messages != null)
+                    if (messages != null && messages.Count > 0)
                     {
                         return messages[0];
                     }
@@ -804,12 +811,9 @@ namespace Disa.Framework.Telegram
 
             if (messageMediaPhoto != null)
             {
-                DebugPrint("messagemediaphoto " + ObjectDumper.Dump(messageMediaPhoto));
                 var fileLocation = GetPhotoFileLocation(messageMediaPhoto.Photo);
-                DebugPrint("filelocation " + ObjectDumper.Dump(fileLocation));
                 var fileSize = GetPhotoFileSize(messageMediaPhoto.Photo);
                 var cachedPhoto = GetCachedPhotoBytes(messageMediaPhoto.Photo);
-                DebugPrint("cached photo " + ObjectDumper.Dump(cachedPhoto));
                 FileInformation fileInfo = new FileInformation
                 {
                     FileLocation = fileLocation,
@@ -1579,11 +1583,11 @@ namespace Disa.Framework.Telegram
                         RandomId = ulong.Parse(textBubble.IdService2)
                     }));
                     var updateShortSentMessage = iUpdates as UpdateShortSentMessage;
-                    //SendToResponseDispatcher(iUpdates, client.Client);
                     if (updateShortSentMessage != null)
                     {
                         textBubble.IdService = updateShortSentMessage.Id.ToString(CultureInfo.InvariantCulture);
                     }
+                    SendToResponseDispatcher(iUpdates, client.Client);
                 }
             }
             
@@ -2001,12 +2005,32 @@ namespace Disa.Framework.Telegram
                 {
                     var documentAttributes = new List<IDocumentAttribute>();
 
-                    documentAttributes.Add(new DocumentAttributeAudio
+                    if (audioBubble.Recording)
                     {
-                        Duration = (uint) audioBubble.Seconds,
-                        Flags = 0
-                    });
-
+                        documentAttributes.Add(new DocumentAttributeAudio
+                        {
+                            Flags = 1024,
+                            Duration = (uint)audioBubble.Seconds,
+                            Voice = new True()
+                        });
+                    }
+                    else if (audioBubble.FileName != null)
+                    {
+                        documentAttributes.Add(new DocumentAttributeAudio
+                        {
+                            Flags = 1,
+                            Duration = (uint)audioBubble.Seconds,
+                            Title = audioBubble.FileName
+                        });
+                    }
+                    else 
+                    {
+                        documentAttributes.Add(new DocumentAttributeAudio
+                        {
+                            Flags = 0,
+                            Duration = (uint)audioBubble.Seconds
+                        });
+                    }
 
                     var mimeType = Platform.GetMimeTypeFromPath(audioBubble.AudioPath);
                     var inputMedia = new InputMediaUploadedDocument
@@ -2175,12 +2199,9 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupUnknownPartyParticipant(BubbleGroup group, string unknownPartyParticipant, Action<DisaParticipant> result)
         {
-            DebugPrint("###### get bubble group unkonwn participants");
             return Task.Factory.StartNew(() =>
             {
-                //TODO: this may not actually get title always.
                 var name = GetTitle(unknownPartyParticipant, false);
-                DebugPrint("###### The name of the unknown participant is " + name);
                 if (!string.IsNullOrWhiteSpace(name))
                 {
                     result(new DisaParticipant(name, unknownPartyParticipant));
@@ -2329,13 +2350,7 @@ namespace Disa.Framework.Telegram
                 var user = _dialogs.GetUser(uint.Parse(id));
                 if (user == null)
                 {
-                    //we havent recieved a user object for this user, we should probably get it and cache it
-                    IUser newUser = GetUser(id);
-                    if (newUser == null)
-                    {
-                        return null;
-                    }
-                    return TelegramUtils.GetUserName(newUser);
+                    return null;
                 }
                 return TelegramUtils.GetUserName(user);
             }
@@ -2371,7 +2386,7 @@ namespace Disa.Framework.Telegram
                     return null;
                 }
             }
-    }
+        }
 
         public DisaThumbnail GetThumbnail(string id, bool group, bool small)
         {
@@ -2438,7 +2453,6 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        //TODO: chunk the download
         private static byte[] FetchFileBytes(TelegramClient client, FileLocation fileLocation)
         {
             var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
