@@ -169,6 +169,7 @@ namespace Disa.Framework.Telegram
                                 Id = TelegramUtils.GetUserId(x).ToString(CultureInfo.InvariantCulture)
                             }
                         },
+                        User = x as User
                     }).OfType<Contact>().OrderBy(x => x.FirstName).ToList();
 
                 result(contacts);
