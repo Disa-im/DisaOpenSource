@@ -162,9 +162,16 @@ namespace Disa.Framework.Telegram
                     }
                     using (var stream = new MemoryStream(chat.ProtoBufBytes))
                     {
-                        stream.Position = 0;
-                        IChat iChat = Serializer.Deserialize<Chat>(stream);
-                        return iChat;
+                        if(chat.isChat)
+                        {
+                            var iChat = Serializer.Deserialize<Chat>(stream);
+                            return iChat;
+                        }
+                        else
+                        {
+                            var iChat = Serializer.Deserialize<Channel>(stream);
+                            return iChat;
+                        }
                     }
                 }
             }
@@ -203,9 +210,16 @@ namespace Disa.Framework.Telegram
 
                         using (var stream = new MemoryStream(cachedChat.ProtoBufBytes))
                         {
-                            stream.Position = 0;
-                            var iChat = Serializer.Deserialize<Chat>(stream);
-                            chatsToReturn.Add(iChat);
+                            if(cachedChat.isChat)
+                            {
+                                var iChat = Serializer.Deserialize<Chat>(stream);
+                                chatsToReturn.Add(iChat);
+                            }
+                            else
+                            {
+                                var iChat = Serializer.Deserialize<Channel>(stream);
+                                chatsToReturn.Add(iChat);
+                            }
                         }
                     }
                 }
@@ -267,11 +281,25 @@ namespace Disa.Framework.Telegram
         {
             using (var memoryStream = ConvertChatToMemoryStream(chat))
             {
-                var cachedChat = new CachedChat
+                CachedChat cachedChat = null;
+                if (chat is Chat)
                 {
-                    Id = chatId,
-                    ProtoBufBytes = memoryStream.ToArray(),
-                };
+                    cachedChat = new CachedChat
+                    {
+                        Id = chatId,
+                        isChat = true,
+                        ProtoBufBytes = memoryStream.ToArray(),
+                    };
+                }
+                else 
+                {
+                    cachedChat = new CachedChat
+                    {
+                        Id = chatId,
+                        isChat = false,
+                        ProtoBufBytes = memoryStream.ToArray(),
+                    };
+                }
 
                 var dbUser = database.Store.Where(x => x.Id == chatId).FirstOrDefault();
                 if (dbUser != null)

@@ -80,6 +80,7 @@ namespace Disa.Framework.Telegram
                                     {
                                         Service = this,
                                         Id = TelegramUtils.GetChatId(chat),
+                                        ExtendedParty = chat is Channel
                                     }
                                 },
                         });

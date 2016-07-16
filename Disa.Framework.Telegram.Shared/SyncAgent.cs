@@ -51,7 +51,7 @@ namespace Disa.Framework.Telegram
 
         private List<VisualBubble> LoadBubblesForBubbleGroup(BubbleGroup @group, long fromTime, int max)
         {
-            var response = GetMessageHistory(group.Address, group.IsParty, fromTime, max);
+            var response = GetMessageHistory(group.Address, group.IsParty, group.IsExtendedParty, fromTime, max);
             var messages = response as MessagesMessages;
             var messagesSlice = response as MessagesMessagesSlice;
             if (messages != null)
@@ -74,11 +74,11 @@ namespace Disa.Framework.Telegram
             return new List<VisualBubble>();
         }
 
-        private IMessagesMessages GetMessageHistory(string address, bool isParty, long fromTime, int max)
+        private IMessagesMessages GetMessageHistory(string address, bool isParty, bool isExtendedParty, long fromTime, int max)
         {
             using (var client = new FullClientDisposable(this))
             {
-                var peer = GetInputPeer(address, isParty);
+                var peer = GetInputPeer(address, isParty, isExtendedParty);
                 var response =
                     TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs

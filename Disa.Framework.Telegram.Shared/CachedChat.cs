@@ -9,6 +9,8 @@ namespace Disa.Framework.Telegram
         [Indexed]
         public uint Id { get; set; }
 
+        public bool isChat { get; set; }
+
         public byte[] ProtoBufBytes { get; set; }
 
         public override string ToString()

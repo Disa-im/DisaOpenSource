@@ -9,8 +9,6 @@ namespace Disa.Framework.Telegram
 {
     public static class TelegramUtils
     {
-       
-
         public static T RunSynchronously<T>(Task<T> task)
         {
             try
@@ -77,7 +75,9 @@ namespace Disa.Framework.Telegram
             var chatEmpty = chat as ChatEmpty;
             var chatForbidden = chat as ChatForbidden;
             var chatChat = chat as Chat;
-//            var geoChat = chat as GeoChat;
+            var chatChannel = chat as Channel;
+            var chatChannelForbidden = chat as ChannelForbidden;
+
             if (chatEmpty != null)
             {
                 return chatEmpty.Id.ToString(CultureInfo.InvariantCulture);
@@ -90,10 +90,15 @@ namespace Disa.Framework.Telegram
             {
                 return chatChat.Title;
             }
-//            if (geoChat != null)
-//            {
-//                return geoChat.Title;
-//            }
+            if (chatChannel != null)
+            {
+                return chatChannel.Title;
+            }
+            if (chatChannelForbidden != null)
+            {
+                return chatChannelForbidden.Title;
+            }
+
             return null;
         }
 
@@ -101,7 +106,9 @@ namespace Disa.Framework.Telegram
         {
             var chatForbidden = chat as ChatForbidden;
             var chatChat = chat as Chat;
-//            var geoChat = chat as GeoChat;
+            var chatChannel = chat as Channel;
+            var chatChannelForbidden = chat as ChannelForbidden;
+
             if (chatForbidden != null)
             {
                 chatForbidden.Title = title;
@@ -110,10 +117,14 @@ namespace Disa.Framework.Telegram
             {
                 chatChat.Title = title;
             }
-//            if (geoChat != null)
-//            {
-//                geoChat.Title = title;
-//            }
+            if (chatChannel != null)
+            {
+                chatChannel.Title = title;
+            }
+            if (chatChannelForbidden != null)
+            {
+                chatChannelForbidden.Title = title;
+            }
         }
 
         public static string GetPeerId(IPeer peer)
@@ -136,17 +147,28 @@ namespace Disa.Framework.Telegram
             var chatEmpty = chat as ChatEmpty;
             var chatForbidden = chat as ChatForbidden;
             var chatChat = chat as Chat;
+            var chatChannel = chat as Channel;
+            var chatChannelForbidden = chat as ChannelForbidden;
+
             if (chatEmpty != null)
             {
-                return chatEmpty.Id.ToString(CultureInfo.InvariantCulture);
+                return null;
             }
             if (chatForbidden != null)
             {
-                return chatForbidden.Id.ToString(CultureInfo.InvariantCulture);
+                return null;
             }
             if (chatChat != null)
             {
                 return chatChat.Id.ToString(CultureInfo.InvariantCulture);
+            }
+            if (chatChannel != null)
+            {
+                return chatChannel.Id.ToString(CultureInfo.InvariantCulture);
+            }
+            if (chatChannelForbidden != null)
+            {
+                return null;
             }
             return null;
         }
@@ -197,12 +219,24 @@ namespace Disa.Framework.Telegram
             return 0;
         }
 
+        internal static ulong GetChannelAccessHash(IChat chat)
+        {
+            var channel = chat as Channel;
+            if (channel != null)
+            {
+                return channel.AccessHash;
+            }
+            return 0;
+        }
+
         public static FileLocation GetChatThumbnailLocation(IChat chat, bool small)
         {
             var chatEmpty = chat as ChatEmpty;
             var chatForbidden = chat as ChatForbidden;
             var chatChat = chat as Chat;
-//            var geoChat = chat as GeoChat;
+            var chatChannel = chat as Channel;
+            var chatChannelForbidden = chat as ChannelForbidden;
+
             if (chatEmpty != null)
             {
                 return null;
@@ -215,10 +249,14 @@ namespace Disa.Framework.Telegram
             {
                 return GetFileLocationFromPhoto(chatChat.Photo, small);
             }
-//            if (geoChat != null)
-//            {
-//                return GetFileLocationFromPhoto(geoChat.Photo, small);
-//            }
+            if (chatChannel != null) 
+            {
+                return GetFileLocationFromPhoto(chatChannel.Photo, small);
+            }
+            if (chatChannelForbidden != null) 
+            {
+                return null;
+            }
             return null;
         }
 
@@ -438,6 +476,6 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
-    }
+   }
 }
 

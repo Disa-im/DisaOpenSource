@@ -177,7 +177,8 @@ namespace SharpMTProto.Messaging.Handlers
                 }
                 else if (updateNewChannelMessage != null)
                 {
-                    state.Pts = updateNewChannelMessage.Pts;
+                    //for some wierd reason the PTS is a very small value
+                    //state.Pts = updateNewChannelMessage.Pts;
                 }
                 else if (updateDeleteChannelMessage != null)
                 {

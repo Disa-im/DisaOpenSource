@@ -157,11 +157,15 @@ namespace Disa.Framework.Telegram
         {
             // flatten UpdateNewMessage to Message
             var newMessage = obj as UpdateNewMessage;
+            var newChannelMessage = obj as UpdateNewChannelMessage;
             if (newMessage != null)
             {
                 return newMessage.Message;
             }
-
+            if (newChannelMessage != null)
+            {
+                return newChannelMessage.Message;
+            }
             return obj;
         }
             
@@ -222,6 +226,7 @@ namespace Disa.Framework.Telegram
                 var updateUserPhoto = update as UpdateUserPhoto;
                 var updateReadHistoryInbox = update as UpdateReadHistoryInbox;
                 var updateReadHistoryOutbox = update as UpdateReadHistoryOutbox;
+                var updateReadChannelInbox = update as UpdateReadChannelInbox;
                 var message = update as SharpTelegram.Schema.Message;
                 var user = update as IUser;
                 var chat = update as IChat;
@@ -690,6 +695,7 @@ namespace Disa.Framework.Telegram
         {
             var peerUser = message.ToId as PeerUser;
             var peerChat = message.ToId as PeerChat;
+            var peerChannel = message.ToId as PeerChannel;
 
             var direction = message.FromId == _settings.AccountId
                 ? Bubble.BubbleDirection.Outgoing
@@ -720,6 +726,16 @@ namespace Disa.Framework.Telegram
                         direction, address, participantAddress, true, this, message.MessageProperty,
                         message.Id.ToString(CultureInfo.InvariantCulture));
                 }
+                else if (peerChannel != null) 
+                {
+                    var address = peerChannel.ChannelId.ToString(CultureInfo.InvariantCulture);
+                    var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
+                    tb = new TextBubble(
+                        useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                        direction, address, participantAddress, true, this, message.MessageProperty,
+                        message.Id.ToString(CultureInfo.InvariantCulture));
+                    tb.ExtendedParty = true;
+                }
                 if (tb == null) return null;
                 if (direction == Bubble.BubbleDirection.Outgoing)
                 {
@@ -743,6 +759,14 @@ namespace Disa.Framework.Telegram
                     var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
                     var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
                     var bubble = MakeMediaBubble(message, useCurrentTime, false, address, participantAddress);
+                    return bubble;
+                }
+                else if (peerChannel != null)
+                {
+                    var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
+                    var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
+                    var bubble = MakeMediaBubble(message, useCurrentTime, false, address, participantAddress);
+                    bubble.ExtendedParty = true;
                     return bubble;
                 }
 
@@ -1529,6 +1553,7 @@ namespace Disa.Framework.Telegram
 
         public override void SendBubble(Bubble b)
         {
+            DebugPrint(">>>> Sending bubble " + ObjectDumper.Dump(b));
             var presenceBubble = b as PresenceBubble;
             if (presenceBubble != null)
             {
@@ -1555,7 +1580,7 @@ namespace Disa.Framework.Telegram
             var typingBubble = b as TypingBubble;
             if (typingBubble != null)
             {
-                var peer = GetInputPeer(typingBubble.Address, typingBubble.Party);
+                var peer = GetInputPeer(typingBubble.Address, typingBubble.Party, typingBubble.ExtendedParty);
                 using (var client = new FullClientDisposable(this))
                 {
                     TelegramUtils.RunSynchronously(client.Client.Methods.MessagesSetTypingAsync(
@@ -1570,7 +1595,7 @@ namespace Disa.Framework.Telegram
             var textBubble = b as TextBubble;
             if (textBubble != null)
             {
-                var peer = GetInputPeer(textBubble.Address, textBubble.Party);
+                var peer = GetInputPeer(textBubble.Address, textBubble.Party, textBubble.ExtendedParty);
                
                 using (var client = new FullClientDisposable(this))
                 {
@@ -1582,10 +1607,22 @@ namespace Disa.Framework.Telegram
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService2)
                     }));
+                    DebugPrint(">>>> IUpdates message sent " + ObjectDumper.Dump(iUpdates));
                     var updateShortSentMessage = iUpdates as UpdateShortSentMessage;
                     if (updateShortSentMessage != null)
                     {
                         textBubble.IdService = updateShortSentMessage.Id.ToString(CultureInfo.InvariantCulture);
+                    }
+                    var updates = iUpdates as Updates;
+                    foreach (var update in updates.UpdatesProperty) 
+                    {
+                        var updateNewChannelMessage = update as UpdateNewChannelMessage;
+                        if (updateNewChannelMessage == null) continue;
+                        var message = updateNewChannelMessage.Message as Message;
+                        if (message != null)
+                        {
+                            textBubble.IdService = message.Id.ToString(CultureInfo.InvariantCulture);
+                        }
                     }
                     SendToResponseDispatcher(iUpdates, client.Client);
                 }
@@ -1594,7 +1631,7 @@ namespace Disa.Framework.Telegram
             var readBubble = b as ReadBubble;
             if (readBubble != null)
             {
-                var peer = GetInputPeer(readBubble.Address, readBubble.Party);
+                var peer = GetInputPeer(readBubble.Address, readBubble.Party, readBubble.ExtendedParty);
                 using (var client = new FullClientDisposable(this))
                 {
                     var messagesAffectedMessages =
@@ -1700,7 +1737,7 @@ namespace Disa.Framework.Telegram
 
         private void SendContact(ContactBubble contactBubble)
         {
-            var inputPeer = GetInputPeer(contactBubble.Address, contactBubble.Party);
+            var inputPeer = GetInputPeer(contactBubble.Address, contactBubble.Party, contactBubble.ExtendedParty);
             var contactCard = Platform.GenerateContactCardFromBytes(contactBubble.VCardData);
             if (contactCard != null)
             {
@@ -1726,7 +1763,7 @@ namespace Disa.Framework.Telegram
 
         private void SendGeoLocation(LocationBubble locationBubble)
         {
-            var inputPeer = GetInputPeer(locationBubble.Address, locationBubble.Party);
+            var inputPeer = GetInputPeer(locationBubble.Address, locationBubble.Party, locationBubble.ExtendedParty);
             using (var client = new FullClientDisposable(this))
             {
                 TelegramUtils.RunSynchronously(
@@ -1921,7 +1958,7 @@ namespace Disa.Framework.Telegram
 
         private void SendFile(VisualBubble bubble, IInputFile inputFile)
         {
-            var inputPeer = GetInputPeer(bubble.Address, bubble.Party);
+            var inputPeer = GetInputPeer(bubble.Address, bubble.Party, bubble.ExtendedParty);
             var imageBubble = bubble as ImageBubble;
             var fileBubble = bubble as FileBubble;
             var audioBubble = bubble as AudioBubble;
@@ -2094,26 +2131,29 @@ namespace Disa.Framework.Telegram
                 }
         }
 
-        private IInputPeer GetInputPeer(string userId, bool groupChat)
+        private IInputPeer GetInputPeer(string id, bool groupChat, bool superGroup)
         {
+            if (superGroup)
+            {
+                return new InputPeerChannel
+                {
+                    ChannelId = uint.Parse(id),
+                    AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(id)))
+                };
+            }
             if (groupChat)
             {
                 return new InputPeerChat
                 {
-                    ChatId = uint.Parse(userId)
+                    ChatId = uint.Parse(id)
                 };
             }
-            else
+            var accessHash = GetUserAccessHashIfForeign(id);
+            return new InputPeerUser
             {
-                var accessHash = GetUserAccessHashIfForeign(userId);
-
-                return new InputPeerUser
-                {
-					UserId = uint.Parse(userId),
-					AccessHash = accessHash
-                };
-                
-            }
+                UserId = uint.Parse(id),
+                AccessHash = accessHash
+            };
         }
 
         private ulong GetUserAccessHashIfForeign(string userId)

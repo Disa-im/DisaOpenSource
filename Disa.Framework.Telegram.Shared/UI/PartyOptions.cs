@@ -12,6 +12,13 @@ namespace Disa.Framework.Telegram
         private MessagesChatFull _fullChat;
         object _fullChatLock = new object();
 
+        private class Participants 
+        {
+            List<IChatParticipant> chatParticipants;
+            List<IChannelParticipant> channelParticipants;
+        }
+
+
         public Task GetPartyPhoto(BubbleGroup group, DisaParticipant participant, bool preview, Action<DisaThumbnail> result)
         {
             return Task.Factory.StartNew(() =>
@@ -33,7 +40,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var fullChat = FetchFullChat(group.Address);
+                var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = GetPartyParticipants(fullChat);
                 if (!IsPartOfParty(partyParticipants))
                 {
@@ -43,7 +50,7 @@ namespace Disa.Framework.Telegram
                 }
                 if (ChatAdminsEnabled(group.Address))
                 {
-                    if (!IsAdmin(group.Address))
+                    if (!IsAdmin(group.Address, group.IsExtendedParty))
                     {
                         DebugPrint("####### Not admin returning false");
                         result(false);
@@ -71,16 +78,44 @@ namespace Disa.Framework.Telegram
 
         private List<IChatParticipant> GetPartyParticipants(MessagesChatFull fullChat)
         {
-            var iChatfull = fullChat.FullChat;
-            var chatFull = iChatfull as ChatFull;
-            if (chatFull == null) return null;
-            var chatParticipants = chatFull.Participants as ChatParticipants;
-            if (chatParticipants != null)
+            var iChatFull = fullChat.FullChat;
+            var chatFull = iChatFull as ChatFull;
+            var channelFull = iChatFull as ChannelFull;
+            if (chatFull != null)
             {
-                DebugPrint("###### Party participants " + ObjectDumper.Dump(chatParticipants));
-                return chatParticipants.Participants;
+                var chatParticipants = chatFull.Participants as ChatParticipants;
+                if (chatParticipants != null)
+                {
+                    DebugPrint("###### Party participants " + ObjectDumper.Dump(chatParticipants));
+                    return chatParticipants.Participants;
+                }
             }
+            if (channelFull != null)
+            {
+                //var channelParticipants = GetChannelParticipants(channelFull);
+                return new List<IChatParticipant>();
+            }
+
             return null;
+        }
+
+        private IChannelsChannelParticipants GetChannelParticipants(ChannelFull channelFull)
+        {
+            using (var client = new FullClientDisposable(this)) 
+            {
+                return TelegramUtils.RunSynchronously(
+                    client.Client.Methods.ChannelsGetParticipantsAsync(new ChannelsGetParticipantsArgs
+                    {
+                        Channel = new InputChannel
+                        {
+                            ChannelId = channelFull.Id,
+                            AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(channelFull.Id))
+                        },
+                        Filter = new ChannelParticipantsRecent(),
+                        Limit = 0,
+                        Offset = uint.MaxValue
+                    }));
+            }
         }
 
         public Task CanViewPartyPhoto(BubbleGroup group, Action<bool> result)
@@ -95,7 +130,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var fullChat = FetchFullChat(group.Address);
+                var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = GetPartyParticipants(fullChat);
                 if (!IsPartOfParty(partyParticipants))
                 {
@@ -104,7 +139,7 @@ namespace Disa.Framework.Telegram
                 }
                 if (ChatAdminsEnabled(group.Address))
                 {
-                    if (!IsAdmin(group.Address))
+                    if (!IsAdmin(group.Address, group.IsExtendedParty))
                     {
                         result(false);
                         return;
@@ -215,7 +250,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var fullChat = FetchFullChat(group.Address);
+                var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = GetPartyParticipants(fullChat);
                 if (!IsPartOfParty(partyParticipants))
                 {
@@ -224,7 +259,7 @@ namespace Disa.Framework.Telegram
                 }
                 if (ChatAdminsEnabled(group.Address))
                 {
-                    if (!IsAdmin(group.Address))
+                    if (!IsAdmin(group.Address, group.IsExtendedParty))
                     {
                         result(false);
                         return;
@@ -263,7 +298,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var fullChat = FetchFullChat(group.Address);
+                var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = GetPartyParticipants(fullChat);
                 var resultList = new List<DisaParticipant>();
                 foreach (var partyParticipant in partyParticipants)
@@ -283,7 +318,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var fullChat = FetchFullChat(group.Address);
+                var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = GetPartyParticipants(fullChat);
                 if (!IsPartOfParty(partyParticipants))
                 {
@@ -292,7 +327,7 @@ namespace Disa.Framework.Telegram
                 }
                 if (ChatAdminsEnabled(group.Address))
                 {
-                    if (!IsAdmin(group.Address))
+                    if (!IsAdmin(group.Address, group.IsExtendedParty))
                     {
                         result(false);
                         return;
@@ -324,7 +359,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var fullChat = FetchFullChat(group.Address);
+                var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = GetPartyParticipants(fullChat);
                 if (!IsPartOfParty(partyParticipants))
                 {
@@ -333,7 +368,7 @@ namespace Disa.Framework.Telegram
                 }
                 if (ChatAdminsEnabled(group.Address))
                 {
-                    if (!IsAdmin(group.Address))
+                    if (!IsAdmin(group.Address, group.IsExtendedParty))
                     {
                         result(false);
                         return;
@@ -364,13 +399,13 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(IsCreator(group.Address)); 
+                result(IsCreator(group.Address, group.IsExtendedParty)); 
             });
         }
 
-        private bool IsAdmin(string address)
+        private bool IsAdmin(string address, bool isExtendedParty)
         {
-            var fullChat = FetchFullChat(address);
+            var fullChat = FetchFullChat(address, isExtendedParty);
             var partyParticipants = GetPartyParticipants(fullChat);
             if (!ChatAdminsEnabled(address))
             {
@@ -406,9 +441,9 @@ namespace Disa.Framework.Telegram
             return false;
         }
 
-        private bool IsCreator(string address)
+        private bool IsCreator(string address, bool superGroup)
         {
-            var fullChat = FetchFullChat(address);
+            var fullChat = FetchFullChat(address, superGroup);
             var partyParticipants = GetPartyParticipants(fullChat);
             foreach (var partyParticipant in partyParticipants)
             {
@@ -458,7 +493,7 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var fullChat = FetchFullChat(group.Address);
+                var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = GetPartyParticipants(fullChat);
                 List<DisaParticipant> resultList = new List<DisaParticipant>();
                 if (!ChatAdminsEnabled(group.Address))
@@ -538,7 +573,7 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        private MessagesChatFull FetchFullChat(string address)
+        private MessagesChatFull FetchFullChat(string address, bool superGroup)
         {
             //Classic check lock check pattern for concurrent access from all the methods
             if (_fullChat != null) return _fullChat;
@@ -547,13 +582,37 @@ namespace Disa.Framework.Telegram
                 if (_fullChat != null) return _fullChat;
                 using (var client = new FullClientDisposable(this))
                 {
-                    _fullChat =
-                        (MessagesChatFull)
-                            TelegramUtils.RunSynchronously(
-                                client.Client.Methods.MessagesGetFullChatAsync(new MessagesGetFullChatArgs
-                                {
-                                    ChatId = uint.Parse(address)
-                                }));
+                    if (!superGroup)
+                    {
+                        _fullChat =
+                            (MessagesChatFull)
+                                TelegramUtils.RunSynchronously(
+                                    client.Client.Methods.MessagesGetFullChatAsync(new MessagesGetFullChatArgs
+                                    {
+                                        ChatId = uint.Parse(address)
+                                    }));
+                    }
+                    else 
+                    {
+                        try
+                        {
+                            _fullChat =
+                                (MessagesChatFull)
+                                    TelegramUtils.RunSynchronously(
+                                    client.Client.Methods.ChannelsGetFullChannelAsync(new ChannelsGetFullChannelArgs
+                                    {
+                                        Channel = new InputChannel
+                                        {
+                                            ChannelId = uint.Parse(address),
+                                            AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(address)))
+                                        }
+                                    }));
+                        }
+                        catch (Exception e)
+                        {
+                            DebugPrint(">>>> get full channel exception " + e);
+                        }
+                    }
                     DebugPrint("#### fullchat " + ObjectDumper.Dump(_fullChat));
                     _dialogs.AddUsers(_fullChat.Users);
                     _dialogs.AddChats(_fullChat.Chats);
