@@ -188,7 +188,7 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        public Task SetPartyShareLink(BubbleGroup group, Tuple<string, string> shareLink, Action<PartyShareLinkResult> result)
+        public Task SetPartyShareLink(BubbleGroup group, Tuple<string, string> shareLink, Action<SetPartyShareLinkResult> result)
         {
             return Task.Factory.StartNew(() => 
             {
@@ -198,11 +198,11 @@ namespace Disa.Framework.Telegram
                 {
                     if (Char.IsDigit(shareLink.Item2, 0))
                     {
-                        result(PartyShareLinkResult.LinkInvalid);
+                        result(SetPartyShareLinkResult.LinkInvalid);
                     }
                     else if (shareLink.Item2[0] == '_')
                     {
-                        result(PartyShareLinkResult.LinkInvalid);
+                        result(SetPartyShareLinkResult.LinkInvalid);
                     }
                     else if (regex.IsMatch(shareLink.Item2))
                     {
@@ -213,26 +213,26 @@ namespace Disa.Framework.Telegram
                             bool changed = SetChannelUserName(group, shareLink.Item2);
                             if (changed)
                             {
-                                result(PartyShareLinkResult.Success);
+                                result(SetPartyShareLinkResult.Success);
                                 return;
                             }
-                            result(PartyShareLinkResult.Failure);
+                            result(SetPartyShareLinkResult.Failure);
                             return;
                         }
                         else
                         {
-                            result(PartyShareLinkResult.LinkUnavailable);
+                            result(SetPartyShareLinkResult.LinkUnavailable);
                             return;
                         }
 
                     }
                     else 
                     {
-                        result(PartyShareLinkResult.LinkInvalid);
+                        result(SetPartyShareLinkResult.LinkInvalid);
                         return;
                     }
                 }
-                result(PartyShareLinkResult.Failure);
+                result(SetPartyShareLinkResult.Failure);
             });
         }
 
