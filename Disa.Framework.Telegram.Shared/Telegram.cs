@@ -1614,14 +1614,17 @@ namespace Disa.Framework.Telegram
                         textBubble.IdService = updateShortSentMessage.Id.ToString(CultureInfo.InvariantCulture);
                     }
                     var updates = iUpdates as Updates;
-                    foreach (var update in updates.UpdatesProperty) 
+                    if (updates != null)
                     {
-                        var updateNewChannelMessage = update as UpdateNewChannelMessage;
-                        if (updateNewChannelMessage == null) continue;
-                        var message = updateNewChannelMessage.Message as Message;
-                        if (message != null)
+                        foreach (var update in updates.UpdatesProperty)
                         {
-                            textBubble.IdService = message.Id.ToString(CultureInfo.InvariantCulture);
+                            var updateNewChannelMessage = update as UpdateNewChannelMessage;
+                            if (updateNewChannelMessage == null) continue;
+                            var message = updateNewChannelMessage.Message as Message;
+                            if (message != null)
+                            {
+                                textBubble.IdService = message.Id.ToString(CultureInfo.InvariantCulture);
+                            }
                         }
                     }
                     SendToResponseDispatcher(iUpdates, client.Client);
