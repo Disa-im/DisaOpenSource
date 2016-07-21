@@ -10,12 +10,21 @@ namespace Disa.Framework.Telegram
     public partial class Telegram : IPartyOptions
     {
         private MessagesChatFull _fullChat;
+        private Participants _participants;
         object _fullChatLock = new object();
+        object _participantsLock = new object();
 
-        private class Participants 
+        private enum ParticipantsType 
         {
-            List<IChatParticipant> chatParticipants;
-            List<IChannelParticipant> channelParticipants;
+            Chat,
+            Channel
+        };
+
+        private class Participants
+        {
+            public ParticipantsType Type { get; set; }
+            public List<IChatParticipant> ChatParticipants { get; set; }
+            public List<IChannelParticipant> ChannelParticipants { get; set; }
         }
 
 
@@ -61,61 +70,107 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        private bool IsPartOfParty(List<IChatParticipant> partyParticipants)
+        private bool IsPartOfParty(Participants partyParticipants)
         {
-            
-            foreach(var partyParticipant in partyParticipants)
+            if (partyParticipants.Type == ParticipantsType.Chat)
             {
-                string participantAddress = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                if (participantAddress == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
+                foreach (var partyParticipant in partyParticipants.ChatParticipants)
                 {
-                    return true;
+                    string participantAddress = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
+                    if (participantAddress == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
+                    {
+                        return true;
+                    }
                 }
-
+            }
+            else 
+            {
+                foreach (var partyParticipant in partyParticipants.ChannelParticipants)
+                {
+                    string participantAddress = TelegramUtils.GetUserIdFromChannelParticipant(partyParticipant);
+                    if (participantAddress == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
+                    {
+                        return true;
+                    }
+                }
             }
             return false;
         }
 
-        private List<IChatParticipant> GetPartyParticipants(MessagesChatFull fullChat)
+        private Participants GetPartyParticipants(MessagesChatFull fullChat)
         {
-            var iChatFull = fullChat.FullChat;
-            var chatFull = iChatFull as ChatFull;
-            var channelFull = iChatFull as ChannelFull;
-            if (chatFull != null)
+            if (_participants != null)
             {
-                var chatParticipants = chatFull.Participants as ChatParticipants;
-                if (chatParticipants != null)
+                return _participants;
+            }
+            lock (_participantsLock)
+            {
+                if (_participants != null)
                 {
-                    DebugPrint("###### Party participants " + ObjectDumper.Dump(chatParticipants));
-                    return chatParticipants.Participants;
+                    return _participants;
+                }
+                var iChatFull = fullChat.FullChat;
+                var chatFull = iChatFull as ChatFull;
+                var channelFull = iChatFull as ChannelFull;
+                if (chatFull != null)
+                {
+                    var chatParticipants = chatFull.Participants as ChatParticipants;
+                    if (chatParticipants != null)
+                    {
+                        DebugPrint("###### Party participants " + ObjectDumper.Dump(chatParticipants));
+                        _participants = new Participants
+                        {
+                            Type = ParticipantsType.Chat,
+                            ChatParticipants = chatParticipants.Participants
+                        };
+                        return _participants;
+                    }
+                }
+                if (channelFull != null)
+                {
+                    var channelParticipants = GetChannelParticipants(channelFull, new ChannelParticipantsRecent());
+                    DebugPrint("###### Party participants " + ObjectDumper.Dump(channelParticipants));
+                    _participants = new Participants
+                    {
+                        Type = ParticipantsType.Channel,
+                        ChannelParticipants = channelParticipants
+                    };
+                    return _participants;
                 }
             }
-            if (channelFull != null)
-            {
-                //var channelParticipants = GetChannelParticipants(channelFull);
-                return new List<IChatParticipant>();
-            }
-
             return null;
         }
 
-        private IChannelsChannelParticipants GetChannelParticipants(ChannelFull channelFull)
+        private List<IChannelParticipant> GetChannelParticipants(ChannelFull channelFull, IChannelParticipantsFilter filter)
         {
+            var participantsList = new List<IChannelParticipant>();
             using (var client = new FullClientDisposable(this)) 
             {
-                return TelegramUtils.RunSynchronously(
-                    client.Client.Methods.ChannelsGetParticipantsAsync(new ChannelsGetParticipantsArgs
-                    {
-                        Channel = new InputChannel
+                uint count = 100;
+                uint offset = 0;
+                while (count > 0)
+                {
+                    var result = (ChannelsChannelParticipants)TelegramUtils.RunSynchronously(
+                        client.Client.Methods.ChannelsGetParticipantsAsync(new ChannelsGetParticipantsArgs
                         {
-                            ChannelId = channelFull.Id,
-                            AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(channelFull.Id))
-                        },
-                        Filter = new ChannelParticipantsRecent(),
-                        Limit = 0,
-                        Offset = uint.MaxValue
-                    }));
+                            Channel = new InputChannel
+                            {
+                                ChannelId = channelFull.Id,
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(channelFull.Id))
+                            },
+                            Filter = filter,
+                            Limit = 100,
+                            Offset = offset
+                        }));
+                    DebugPrint("channel result " + ObjectDumper.Dump(result));
+                    participantsList.AddRange(result.Participants);
+                    count = (uint)result.Participants.Count;
+                    offset += count;
+                    _dialogs.AddUsers(result.Users);
+                }
+
             }
+            return participantsList;
         }
 
         public Task CanViewPartyPhoto(BubbleGroup group, Action<bool> result)
@@ -154,23 +209,44 @@ namespace Disa.Framework.Telegram
             return Task.Factory.StartNew(() =>
             {
                 //MessagesEditChatPhotoAsync
-                //Temporary to avoid the loading screen
                 byte[] resizedImage = Platform.GenerateJpegBytes(bytes, 640, 640);
                 var inputFile = UploadPartyImage(resizedImage);
 
                 using (var client = new FullClientDisposable(this))
                 {
-                    var update = TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesEditChatPhotoAsync(new MessagesEditChatPhotoArgs
-                        {
-                            ChatId = uint.Parse(group.Address),
+                    if (!group.IsExtendedParty)
+                    {
+                        var update = TelegramUtils.RunSynchronously(
+                            client.Client.Methods.MessagesEditChatPhotoAsync(new MessagesEditChatPhotoArgs
+                            {
+                                ChatId = uint.Parse(group.Address),
+                                Photo = new InputChatUploadedPhoto
+                                {
+                                    Crop = new InputPhotoCropAuto(),
+                                    File = inputFile
+                                }
+                            }));
+                        SendToResponseDispatcher(update, client.Client);
+                    }
+                    else 
+                    {
+                        //ChannelsEditPhoto
+                        var update = TelegramUtils.RunSynchronously(
+                            client.Client.Methods.ChannelsEditPhotoAsync(new ChannelsEditPhotoArgs 
+                        { 
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(group.Address),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                            },
                             Photo = new InputChatUploadedPhoto
                             {
                                 Crop = new InputPhotoCropAuto(),
                                 File = inputFile
                             }
                         }));
-                    SendToResponseDispatcher(update,client.Client);
+                        SendToResponseDispatcher(update, client.Client);
+                    }
                 }
                 byte[] disaImage = Platform.GenerateJpegBytes(bytes, 96, 96);
                 var thumbnail = new DisaThumbnail(this,disaImage,GenerateRandomId().ToString());
@@ -228,12 +304,30 @@ namespace Disa.Framework.Telegram
             {
                 using (var client = new FullClientDisposable(this))
                 {
-                    TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesEditChatPhotoAsync(new MessagesEditChatPhotoArgs
-                        {
-                            ChatId = uint.Parse(group.Address),
-                            Photo = new InputChatPhotoEmpty()
-                        }));
+                    if (!group.IsExtendedParty)
+                    {
+                        var update = TelegramUtils.RunSynchronously(
+                            client.Client.Methods.MessagesEditChatPhotoAsync(new MessagesEditChatPhotoArgs
+                            {
+                                ChatId = uint.Parse(group.Address),
+                                Photo = new InputChatPhotoEmpty()
+                            }));
+                        SendToResponseDispatcher(update, client.Client);
+                    }
+                    else
+                    {
+                        var update = TelegramUtils.RunSynchronously(
+                            client.Client.Methods.ChannelsEditPhotoAsync(new ChannelsEditPhotoArgs
+                            {
+                                Channel = new InputChannel
+                                {
+                                    ChannelId = uint.Parse(group.Address),
+                                    AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                                },
+                                Photo = new InputChatPhotoEmpty()
+                            }));
+                        SendToResponseDispatcher(update, client.Client);
+                    }
                 }
             });
         }
@@ -275,12 +369,30 @@ namespace Disa.Framework.Telegram
             {
                 using (var client = new FullClientDisposable(this))
                 {
-                    var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesEditChatTitleAsync(new MessagesEditChatTitleArgs
+                    if (!group.IsExtendedParty)
                     {
-                        ChatId = uint.Parse(group.Address),
-                        Title = name,
-                    }));
-                    SendToResponseDispatcher(update,client.Client);
+                        var update = TelegramUtils.RunSynchronously(
+                            client.Client.Methods.MessagesEditChatTitleAsync(new MessagesEditChatTitleArgs
+                        {
+                            ChatId = uint.Parse(group.Address),
+                            Title = name,
+                        }));
+                        SendToResponseDispatcher(update, client.Client);
+                    }
+                    else 
+                    { 
+                        var update = TelegramUtils.RunSynchronously(
+                            client.Client.Methods.ChannelsEditTitleAsync(new ChannelsEditTitleArgs 
+                        { 
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(group.Address),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                            },
+                            Title = name
+                        }));
+                        SendToResponseDispatcher(update, client.Client);
+                    }
                 }
 
             });
@@ -301,14 +413,30 @@ namespace Disa.Framework.Telegram
                 var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = GetPartyParticipants(fullChat);
                 var resultList = new List<DisaParticipant>();
-                foreach (var partyParticipant in partyParticipants)
+                if (!group.IsExtendedParty)
                 {
-                    var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                    if (id != null)
+                    foreach (var partyParticipant in partyParticipants.ChatParticipants)
                     {
-                        var name = TelegramUtils.GetUserName(_dialogs.GetUser(uint.Parse(id)));
-                        resultList.Add(new DisaParticipant(name,id));
+                        var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
+                        if (id != null)
+                        {
+                            var name = TelegramUtils.GetUserName(_dialogs.GetUser(uint.Parse(id)));
+                            resultList.Add(new DisaParticipant(name, id));
+                        }
                     }
+                }
+                else
+                {
+                    foreach (var partyParticipant in partyParticipants.ChannelParticipants)
+                    {
+                        var id = TelegramUtils.GetUserIdFromChannelParticipant(partyParticipant);
+                        if (id != null)
+                        {
+                            var name = TelegramUtils.GetUserName(_dialogs.GetUser(uint.Parse(id)));
+                            resultList.Add(new DisaParticipant(name, id));
+                        }
+                    }
+                
                 }
                 result(resultList.ToArray());
             });
@@ -327,6 +455,12 @@ namespace Disa.Framework.Telegram
                 }
                 if (ChatAdminsEnabled(group.Address))
                 {
+                    if (group.IsExtendedParty && IsDemocracyEnabled(group))
+                    {
+                        //if democracy is enabled in a spergroup anyone can add members
+                        result(true);
+                        return;
+                    }
                     if (!IsAdmin(group.Address, group.IsExtendedParty))
                     {
                         result(false);
@@ -337,6 +471,16 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        private bool IsDemocracyEnabled(BubbleGroup group)
+        {
+            var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+            if (channel != null)
+            {
+                return channel.Democracy != null;
+            }
+            return false;
+        }
+
         public Task AddPartyParticipant(BubbleGroup group, DisaParticipant participant)
         {
             var inputUser = new InputUser { UserId = uint.Parse(participant.Address) };
@@ -344,13 +488,33 @@ namespace Disa.Framework.Telegram
             {
                 using (var client = new FullClientDisposable(this))
                 {
-                    var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesAddChatUserAsync(new MessagesAddChatUserArgs
+                    if (!group.IsExtendedParty)
                     {
-                        UserId = inputUser,
-                        ChatId = uint.Parse(group.Address),
-                        FwdLimit = 0
-                    }));
-                    SendToResponseDispatcher(update,client.Client);
+                        var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesAddChatUserAsync(new MessagesAddChatUserArgs
+                        {
+                            UserId = inputUser,
+                            ChatId = uint.Parse(group.Address),
+                            FwdLimit = 0
+                        }));
+                        SendToResponseDispatcher(update, client.Client);
+                    }
+                    else
+                    { 
+                        var update = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsInviteToChannelAsync(new ChannelsInviteToChannelArgs 
+                        {
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(group.Address),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                            },
+                            Users = new List<IInputUser> 
+                            {
+                                inputUser
+                            }
+                        }));
+                        SendToResponseDispatcher(update, client.Client);
+                    
+                    }
                 }
             });
         }
@@ -385,12 +549,29 @@ namespace Disa.Framework.Telegram
                 var inputUser = new InputUser {UserId = uint.Parse(participant.Address)};
                 using (var client = new FullClientDisposable(this))
                 {
-                    var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesDeleteChatUserAsync(new MessagesDeleteChatUserArgs
+                    if (!group.IsExtendedParty)
                     {
-                        ChatId = uint.Parse(group.Address),
-                        UserId = inputUser,
-                    }));
-                    SendToResponseDispatcher(update, client.Client);
+                        var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesDeleteChatUserAsync(new MessagesDeleteChatUserArgs
+                        {
+                            ChatId = uint.Parse(group.Address),
+                            UserId = inputUser,
+                        }));
+                        SendToResponseDispatcher(update, client.Client);
+                    }
+                    else
+                    {
+                        var update = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsKickFromChannelAsync(new ChannelsKickFromChannelArgs
+                        {
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(group.Address),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                            },
+                            Kicked = true,
+                            UserId = inputUser
+                        }));
+                        SendToResponseDispatcher(update, client.Client);
+                    }
                 }
             });
         }
@@ -407,20 +588,40 @@ namespace Disa.Framework.Telegram
         {
             var fullChat = FetchFullChat(address, isExtendedParty);
             var partyParticipants = GetPartyParticipants(fullChat);
-            if (!ChatAdminsEnabled(address))
+
+            if (!isExtendedParty)
             {
-                return true;
-            }
-            foreach (var partyParticipant in partyParticipants)
-            {
-                var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                if (id == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
+                if (!ChatAdminsEnabled(address))
                 {
-                    if ((partyParticipant is ChatParticipantAdmin)||(partyParticipant is ChatParticipantCreator))
+                    return true;
+                }
+                foreach (var partyParticipant in partyParticipants.ChatParticipants)
+                {
+                    var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
+                    if (id == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
                     {
-                        return true;
+                        if ((partyParticipant is ChatParticipantAdmin) || (partyParticipant is ChatParticipantCreator))
+                        {
+                            return true;
+                        }
                     }
                 }
+            }
+            else
+            {
+                foreach (var partyParticipant in partyParticipants.ChannelParticipants)
+                {
+                    var id = TelegramUtils.GetUserIdFromChannelParticipant(partyParticipant);
+                    if (id == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
+                    {
+                        if ((partyParticipant is ChannelParticipantCreator) || (partyParticipant is ChannelParticipantEditor)
+                            || (partyParticipant is ChannelParticipantModerator))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                
             }
             return false;
 
@@ -430,6 +631,7 @@ namespace Disa.Framework.Telegram
         {
             var iChat = _dialogs.GetChat(uint.Parse(address));
             var chat = iChat as Chat;
+            var channel = iChat as Channel;
             if (chat != null)
             {
                 if (chat.AdminsEnabled != null)
@@ -438,6 +640,10 @@ namespace Disa.Framework.Telegram
                 }
                 return false;
             }
+            if (channel != null)
+            {
+                return true;
+            }
             return false;
         }
 
@@ -445,16 +651,27 @@ namespace Disa.Framework.Telegram
         {
             var fullChat = FetchFullChat(address, superGroup);
             var partyParticipants = GetPartyParticipants(fullChat);
-            foreach (var partyParticipant in partyParticipants)
+            if (!superGroup)
             {
-                var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                if (id == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
+                foreach (var partyParticipant in partyParticipants.ChatParticipants)
                 {
-                    //TODO:check how the protocol responds
-                    if (partyParticipant is ChatParticipantCreator)
+                    var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
+                    if (id == Settings.AccountId.ToString(CultureInfo.InvariantCulture))
                     {
-                        return true;
+                        //TODO:check how the protocol responds
+                        if (partyParticipant is ChatParticipantCreator)
+                        {
+                            return true;
+                        }
                     }
+                }
+            }
+            else 
+            {
+                var channel = _dialogs.GetChat(uint.Parse(address)) as Channel;
+                if (channel != null)
+                {
+                    return channel.Creator != null;
                 }
             }
             return false;
@@ -470,20 +687,33 @@ namespace Disa.Framework.Telegram
                 {
                     if (!ChatAdminsEnabled(group.Address))
                     {
-                        TelegramUtils.RunSynchronously(client.Client.Methods.MessagesToggleChatAdminsAsync(new MessagesToggleChatAdminsArgs
-                        {
-                            ChatId = uint.Parse(group.Address),
-                            Enabled = true,
-                        }));
+                        //this condition should ideally never be hit
+                        // if chat admins are disabled, everyone is an admin and hence the ui never allows anyone to be promoted to an admin
                     }
 
-                    TelegramUtils.RunSynchronously(client.Client.Methods.MessagesEditChatAdminAsync(new MessagesEditChatAdminArgs
+                    if (!group.IsExtendedParty)
                     {
-                        ChatId = uint.Parse(group.Address),
-                        IsAdmin = true,
-                        UserId = inputUser,
+                        TelegramUtils.RunSynchronously(client.Client.Methods.MessagesEditChatAdminAsync(new MessagesEditChatAdminArgs
+                        {
+                            ChatId = uint.Parse(group.Address),
+                            IsAdmin = true,
+                            UserId = inputUser,
+                        }));
+                    }
+                    else
+                    {
+                        TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsEditAdminAsync(new ChannelsEditAdminArgs
+                        {
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(group.Address),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                            },
+                            Role = new ChannelRoleModerator(),
+                            UserId = inputUser
+                        }));
                         
-                    }));
+                    }
                 }
                 
             });
@@ -496,22 +726,39 @@ namespace Disa.Framework.Telegram
                 var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = GetPartyParticipants(fullChat);
                 List<DisaParticipant> resultList = new List<DisaParticipant>();
-                if (!ChatAdminsEnabled(group.Address))
+
+                if (!group.IsExtendedParty)
                 {
-                    foreach (var partyParticipant in partyParticipants)
+                    if (!ChatAdminsEnabled(group.Address))
                     {
-                        var userId = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                        var user = _dialogs.GetUser(uint.Parse(userId));
-                        resultList.Add(new DisaParticipant(TelegramUtils.GetUserName(user),userId));
+                        foreach (var partyParticipant in partyParticipants.ChatParticipants)
+                        {
+                            var userId = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
+                            var user = _dialogs.GetUser(uint.Parse(userId));
+                            resultList.Add(new DisaParticipant(TelegramUtils.GetUserName(user), userId));
+                        }
+                    }
+                    else
+                    {
+                        foreach (var partyParticipant in partyParticipants.ChatParticipants)
+                        {
+                            var userId = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
+                            if (partyParticipant is ChatParticipantAdmin || partyParticipant is ChatParticipantCreator)
+                            {
+                                var user = _dialogs.GetUser(uint.Parse(userId));
+                                resultList.Add(new DisaParticipant(TelegramUtils.GetUserName(user), userId));
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    foreach (var partyParticipant in partyParticipants)
+                    foreach (var partyParticipant in partyParticipants.ChannelParticipants)
                     {
-                        var userId = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                        if (partyParticipant is ChatParticipantAdmin || partyParticipant is ChatParticipantCreator)
+                        if ((partyParticipant is ChannelParticipantCreator) || (partyParticipant is ChannelParticipantEditor)
+                           || (partyParticipant is ChannelParticipantModerator))
                         {
+                            var userId = TelegramUtils.GetUserIdFromChannelParticipant(partyParticipant);
                             var user = _dialogs.GetUser(uint.Parse(userId));
                             resultList.Add(new DisaParticipant(TelegramUtils.GetUserName(user), userId));
                         }
@@ -523,7 +770,7 @@ namespace Disa.Framework.Telegram
 
         public int GetMaxParticipantsAllowed()
         {
-            return 200;
+            return 5000;
         }
 
         public Task ConvertContactIdToParticipant(Contact contact,
@@ -551,12 +798,26 @@ namespace Disa.Framework.Telegram
                 var inputUser = new InputUser { UserId = Settings.AccountId };
                 using (var client = new FullClientDisposable(this))
                 {
-                    var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesDeleteChatUserAsync(new MessagesDeleteChatUserArgs
+                    if (group.IsExtendedParty)
                     {
-                        ChatId = uint.Parse(group.Address),
-                        UserId = inputUser,
-                    }));
-                    SendToResponseDispatcher(update, client.Client);
+                        var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesDeleteChatUserAsync(new MessagesDeleteChatUserArgs
+                        {
+                            ChatId = uint.Parse(group.Address),
+                            UserId = inputUser,
+                        }));
+                        SendToResponseDispatcher(update, client.Client);
+                    }
+                    else
+                    { 
+                        var update = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsLeaveChannelAsync(new ChannelsLeaveChannelArgs
+                        { 
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(group.Address),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                            }
+                        }));
+                    }
                 }
             });
         }
@@ -568,6 +829,11 @@ namespace Disa.Framework.Telegram
                 lock (_fullChatLock)
                 {
                     _fullChat = null;
+                    GC.Collect();
+                }
+                lock(_participantsLock)
+                {
+                    _participants = null;
                     GC.Collect();
                 }
             });

@@ -229,6 +229,43 @@ namespace Disa.Framework.Telegram
             return 0;
         }
 
+        public static string GetUserIdFromChannelParticipant(IChannelParticipant partyParticipant)
+        {
+            var channelParticipant = partyParticipant as ChannelParticipant;
+            var channelParticipantSelf = partyParticipant as ChannelParticipantSelf;
+            var channelParticipantEditor = partyParticipant as ChannelParticipantEditor;
+            var channelParticipantModerator = partyParticipant as ChannelParticipantModerator;
+            var channelParticipantCreator = partyParticipant as ChannelParticipantCreator;
+            var channelParticipantKicked = partyParticipant as ChannelParticipantKicked;
+
+
+            if (channelParticipant != null)
+            {
+                return channelParticipant.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            if (channelParticipantSelf != null)
+            {
+               return channelParticipantSelf.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            if (channelParticipantEditor != null)
+            {
+                return channelParticipantEditor.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            if (channelParticipantModerator != null)
+            {
+                return channelParticipantModerator.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            if (channelParticipantCreator != null)
+            {
+                return channelParticipantCreator.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            if (channelParticipantKicked != null)
+            { 
+                return channelParticipantKicked.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            return null;
+        }
+
         public static FileLocation GetChatThumbnailLocation(IChat chat, bool small)
         {
             var chatEmpty = chat as ChatEmpty;

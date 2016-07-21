@@ -8,20 +8,137 @@ namespace Disa.Framework.Telegram
 {
     public partial class Telegram : IPartyOptionsExtended
     {
-        
-        public Task CanSetPartyDescription(BubbleGroup group, Action<bool> result)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task CanViewPartyBlockedParticipants(BubbleGroup group, Action<bool> result)
         {
-            throw new NotImplementedException();
+            return Task.Factory.StartNew(() =>
+            {
+                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                if (channel != null)
+                {
+                    if (IsAdmin(group.Address, true))
+                    {
+                        result(true);
+                    }
+                    else
+                    {
+                        result(false);
+                    }
+                }
+                else
+                {
+                    result(false);
+                }
+            });
+        }
+
+        public Task CanSetPartyDescription(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                if (channel != null)
+                {
+                    if (IsAdmin(group.Address, true))
+                    {
+                        result(true);
+                    }
+                    else
+                    {
+                        result(false);
+                    }
+                }
+                else
+                {
+                    result(false);
+                }
+            });
+
         }
 
         public Task GetPartyDescription(BubbleGroup group, Action<string> result)
         {
-            throw new NotImplementedException();
+            return Task.Factory.StartNew(() => 
+            {
+                var fullChat = FetchFullChat(group.Address, true);
+                var fullChannel = fullChat?.FullChat as ChannelFull;
+                if (fullChannel != null)
+                {
+                    result(fullChannel.About);
+                }
+                else
+                {
+                    result(null);
+                }
+            });
+        }
+
+        public Task HasPartyDescription(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                if (channel != null)
+                {
+                    if (IsAdmin(group.Address, true))
+                    {
+                        result(true);
+                    }
+                    else
+                    {
+                        result(false);
+                    }
+                }
+                else
+                {
+                    result(false);
+                }
+            });
+        }
+
+        public Task SetPartyDescription(BubbleGroup group, string description, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() => 
+            {
+                if (description != null)
+                {
+                    using (var client = new FullClientDisposable(this)) 
+                    {
+                        var edited = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsEditAboutAsync(new ChannelsEditAboutArgs
+                        {
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(group.Address),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                            },
+                            About = description
+                        }));
+                        if (edited)
+                        {
+                            result(true);
+                        }
+                        else
+                        {
+                            result(false);
+                        }
+                    }
+                }
+            });
+        }
+
+        public Task GetPartyDescriptionMaxCharacters(BubbleGroup group, Action<int> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                result(249);
+            });
+        }
+
+        public Task GetPartyDescriptionMinCharacters(BubbleGroup group, Action<int> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                result(0);
+            });
         }
 
         public Task GetPartyShareLink(BubbleGroup group, Action<Tuple<string, string>> result)
@@ -135,23 +252,12 @@ namespace Disa.Framework.Telegram
             });
         }
 
-
         public Task GetPartyShareLinkMinCharacters(BubbleGroup group, Action<int> result)
         {
             return Task.Factory.StartNew(() =>
             {
                 result(5);
             });
-        }
-
-        public Task HasPartyDescription(BubbleGroup group, Action<bool> result)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SetPartyDescription(BubbleGroup group, string description, Action<bool> result)
-        {
-            throw new NotImplementedException();
         }
 
         private bool CheckChannelUserName(BubbleGroup group, string name)
@@ -236,6 +342,7 @@ namespace Disa.Framework.Telegram
             });
         }
 
-   }
+
+    }
 }
 

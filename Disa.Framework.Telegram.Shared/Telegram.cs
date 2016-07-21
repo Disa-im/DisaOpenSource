@@ -2472,8 +2472,6 @@ namespace Disa.Framework.Telegram
                     var bytes = FetchFileBytes(fileLocation);
                     return cache(new DisaThumbnail(this, bytes, key));
                 }
-                    
-                
             }
             else
             {
