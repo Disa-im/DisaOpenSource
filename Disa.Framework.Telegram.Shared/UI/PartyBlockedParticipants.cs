@@ -11,7 +11,22 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(true);
+                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                if (channel != null)
+                {
+                    if (IsAdmin(group.Address, true) && IsCreator(group.Address,true))
+                    {
+                        result(true);
+                    }
+                    else
+                    {
+                        result(false);
+                    }
+                }
+                else
+                {
+                    result(false);
+                }
             });
         }
 
