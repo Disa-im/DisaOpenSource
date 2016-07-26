@@ -141,7 +141,28 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                result(false);
+                using (var client = new FullClientDisposable(this))
+                {
+                    try
+                    {
+                        var response = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsToggleInvitesAsync(new ChannelsToggleInvitesArgs
+                        {
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(group.Address),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                            },
+                            Enabled = restriction == PartyOptionsSettingsAddNewMembersRestriction.Everyone
+                        }));
+                        SendToResponseDispatcher(response, client.Client);
+                        result(true);
+                    }
+                    catch (Exception e)
+                    {
+                        DebugPrint("##### Exeption while setting all members are admins type " + e);
+                        result(false);
+                    }
+                }
             });
         }
 
