@@ -248,6 +248,16 @@ namespace Disa.Terminal
         {
             throw new NotImplementedException();
         }
+
+        public override byte[] GenerateBytesFromContactCard(ContactCard contactCard)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ContactCard GenerateContactCardFromBytes(byte[] contactCardBytes)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

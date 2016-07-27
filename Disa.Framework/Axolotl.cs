@@ -1,24 +1,72 @@
-﻿using System;
-using System.IO;
-using System.Globalization;
-using SQLite;
-using System.Linq;
+using System;
 using System.Collections.Generic;
 
 namespace Disa.Framework
 {
     public class Axolotl
     {
-        private static class Database
+        public interface IAxolotlStatic
         {
-            private static string GetPath(int registrationId)
+            Tuple<byte[], byte[]> GenerateCurveKeyPair();
+
+            byte[] CalculateCurveAgreement(byte[] publicKey, byte[] privateKey);
+
+            bool VerifyCurveSignature(byte[] message, byte[] signature, byte[] publicKey);
+
+            byte[] DeriveHKDFv3Secrets(byte[] inputKeyMaterial, byte[] info, int outputLength);
+        }
+
+        public interface IAxolotl
+        {
+            void Constructor(int registrationId);
+
+            Message EncryptMessage(string address, int deviceId, byte[] data);
+
+            Message EncryptSenderKeyMessage(string groupId, string address, int deviceId, byte[] data);
+
+            bool HasSession(string address, int deviceId);
+
+            List<Tuple<string, int>> HasSessions(List<Tuple<string, int>> addresses);
+
+            void ProcessPreKey(string address, int deviceId, PreKeyBundle bundle);
+
+            void ProcessSenderKey(string groupId, string address, int deviceId, byte[] senderKeyDistributionMessage);
+
+            byte[] CreateSenderKey(string groupId, string address, int deviceId);
+
+            byte[] DecryptMessage(string groupId, string address, int deviceId, Message message);
+
+            byte[] DecryptPreKeyMessage(string address, int deviceId, byte[] data);
+
+            byte[] DecryptSenderKeyMessage(string groupId, string address, int deviceId, byte[] data);
+
+            byte[] DecryptMessage(string address, int deviceId, byte[] data);
+
+            byte[] IdentityKeyPair
             {
-                return Path.Combine(Platform.GetSettingsPath(), "axolotl-" + registrationId.ToString(CultureInfo.InvariantCulture));
+                get;
             }
 
-            public static bool Exists(int registrationId)
+            SignedPreKey GenerateSignedPreKey();
+
+            PreKey[] GeneratePreKeys(int count);
+
+            void StorePreKeys(PreKey[] preKeys);
+
+            void StoreSignedPreKey(SignedPreKey signedPreKey);
+
+            PreKey[] GetNewestPreKeys(int count);
+
+            SignedPreKey GetNewestSignedPreKey();
+
+            bool NeedsKeys
             {
-                return File.Exists(GetPath(registrationId));
+                get;
+            }
+
+            int RegistrationId
+            {
+                get;
             }
         }
 
@@ -36,11 +84,34 @@ namespace Disa.Framework
 
         public class PreKey
         {
+            private readonly IPreKey _preKey;
+
+            public interface IPreKey
+            {
+                int Id
+                {
+                    get;
+                }
+                byte[] Data
+                {
+                    get;
+                }
+                object Object
+                {
+                    get;
+                }
+            }
+
+            public PreKey(IPreKey preKey)
+            {
+                _preKey = preKey;
+            }
+
             public int Id
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return _preKey.Id;
                 }
             }
 
@@ -48,18 +119,53 @@ namespace Disa.Framework
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return _preKey.Data;
+                }
+            }
+
+            public object Object
+            {
+                get
+                {
+                    return _preKey.Object;
                 }
             }
         }
 
         public class SignedPreKey
         {
+            private readonly ISignedPreKey _signedPreKey;
+
+            public interface ISignedPreKey
+            {
+                int Id
+                {
+                    get;
+                }
+                byte[] Data
+                {
+                    get;
+                }
+                byte[] Signature
+                {
+                    get;
+                }
+                object Object
+                {
+                    get;
+                }
+            }
+
+            public SignedPreKey(ISignedPreKey signedPreKey)
+            {
+                _signedPreKey = signedPreKey;
+            }
+
             public int Id
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return _signedPreKey.Id;
                 }
             }
 
@@ -67,7 +173,7 @@ namespace Disa.Framework
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return _signedPreKey.Data;
                 }
             }
 
@@ -75,7 +181,15 @@ namespace Disa.Framework
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return _signedPreKey.Signature;
+                }
+            }
+
+            public object Object
+            {
+                get
+                {
+                    return _signedPreKey.Object;
                 }
             }
         }
@@ -88,7 +202,7 @@ namespace Disa.Framework
             public byte[] Data { get; set; }
         }
 
-        public class NoDatabaseFound : System.Exception
+        public class NoDatabaseFound : Exception
         {
             public NoDatabaseFound() : base()
             {
@@ -99,7 +213,7 @@ namespace Disa.Framework
             }
         }
 
-        public class InvalidKeyIdException : System.Exception
+        public class InvalidKeyIdException : Exception
         {
             public InvalidKeyIdException() : base()
             {
@@ -110,7 +224,7 @@ namespace Disa.Framework
             }
         }
 
-        public class InvalidKeyException : System.Exception
+        public class InvalidKeyException : Exception
         {
             public InvalidKeyException() : base()
             {
@@ -121,7 +235,7 @@ namespace Disa.Framework
             }
         }
 
-        public class UntrustedIdentityException : System.Exception
+        public class UntrustedIdentityException : Exception
         {
             public UntrustedIdentityException() : base()
             {
@@ -132,7 +246,7 @@ namespace Disa.Framework
             }
         }
 
-        public class LegacyMessageException : System.Exception
+        public class LegacyMessageException : Exception
         {
             public LegacyMessageException() : base()
             {
@@ -143,7 +257,7 @@ namespace Disa.Framework
             }
         }
 
-        public class DuplicateMessageException : System.Exception
+        public class DuplicateMessageException : Exception
         {
             public DuplicateMessageException() : base()
             {
@@ -154,7 +268,7 @@ namespace Disa.Framework
             }
         }
 
-        public class InvalidMessageException : System.Exception
+        public class InvalidMessageException : Exception
         {
             public InvalidMessageException() : base()
             {
@@ -165,7 +279,7 @@ namespace Disa.Framework
             }
         }
 
-        public class NoSessionException : System.Exception
+        public class NoSessionException : Exception
         {
             public NoSessionException() : base()
             {
@@ -176,114 +290,118 @@ namespace Disa.Framework
             }
         }
 
+        static internal AxolotlImplementation AxolotlImplementation { private get; set; }
+
+        private readonly IAxolotl _axolotl;
+
         public Axolotl(int registrationId)
         {
-
-        }
-
-        public static byte[] DeriveHKDFv3Secrets(byte[] inputKeyMaterial, byte[] info, int outputLength)
-        {
-            throw new NotImplementedException();
+            if (AxolotlImplementation == null || AxolotlImplementation.InstantianteAxolotl == null)
+            {
+                throw new Exception("No Axolotl implementation.");
+            }
+            _axolotl = AxolotlImplementation.InstantianteAxolotl();
+            _axolotl.Constructor(registrationId);
         }
 
         public Message EncryptMessage(string address, int deviceId, byte[] data)
         {
-            throw new NotImplementedException();
+            return _axolotl.EncryptMessage(address, deviceId, data);
         }
 
         public Message EncryptSenderKeyMessage(string groupId, string address, int deviceId, byte[] data)
         {
-            throw new NotImplementedException();
+            return _axolotl.EncryptSenderKeyMessage(groupId, address, deviceId, data);
         }
 
         public bool HasSession(string address, int deviceId)
         {
-            throw new NotImplementedException();
+            return _axolotl.HasSession(address, deviceId);
         }
 
         public List<Tuple<string, int>> HasSessions(List<Tuple<string, int>> addresses)
         {
-            throw new NotImplementedException();
+            return _axolotl.HasSessions(addresses);
         }
 
         public void ProcessPreKey(string address, int deviceId, PreKeyBundle bundle)
         {
-            throw new NotImplementedException();
+            _axolotl.ProcessPreKey(address, deviceId, bundle);
         }
 
         public void ProcessSenderKey(string groupId, string address, int deviceId, byte[] senderKeyDistributionMessage)
         {
-            throw new NotImplementedException();
+            _axolotl.ProcessSenderKey(groupId, address, deviceId, senderKeyDistributionMessage);
         }
 
         public byte[] CreateSenderKey(string groupId, string address, int deviceId)
         {
-            throw new NotImplementedException();
+            return _axolotl.CreateSenderKey(groupId, address, deviceId);
         }
 
         public byte[] DecryptMessage(string groupId, string address, int deviceId, Message message)
         {
-            throw new NotImplementedException();
+            return _axolotl.DecryptMessage(groupId, address, deviceId, message);
         }
 
         public byte[] DecryptPreKeyMessage(string address, int deviceId, byte[] data)
         {
-            throw new NotImplementedException();
+            return _axolotl.DecryptPreKeyMessage(address, deviceId, data);
         }
 
         public byte[] DecryptSenderKeyMessage(string groupId, string address, int deviceId, byte[] data)
         {
-            throw new NotImplementedException();
+            return _axolotl.DecryptSenderKeyMessage(groupId, address, deviceId, data);
         }
 
         public byte[] DecryptMessage(string address, int deviceId, byte[] data)
         {
-            throw new NotImplementedException();
+            return _axolotl.DecryptMessage(address, deviceId, data);
         }
 
         public byte[] IdentityKeyPair
         {
             get
             {
-                throw new NotImplementedException();
+                return _axolotl.IdentityKeyPair;
             }
         }
 
         public SignedPreKey GenerateSignedPreKey()
         {
-            throw new NotImplementedException();
+            return _axolotl.GenerateSignedPreKey();
         }
 
         public PreKey[] GeneratePreKeys(int count)
         {
-            throw new NotImplementedException();
+            return _axolotl.GeneratePreKeys(count);
         }
 
         public void StorePreKeys(PreKey[] preKeys)
         {
-            throw new NotImplementedException();
+            _axolotl.StorePreKeys(preKeys);
         }
 
         public void StoreSignedPreKey(SignedPreKey signedPreKey)
         {
-            throw new NotImplementedException();
+            _axolotl.StoreSignedPreKey(signedPreKey);
         }
             
         public PreKey[] GetNewestPreKeys(int count)
         {
-            throw new NotImplementedException();
+            return _axolotl.GetNewestPreKeys(count);
         }
 
         public SignedPreKey GetNewestSignedPreKey()
         {
-            throw new NotImplementedException();
+            return _axolotl.GetNewestSignedPreKey();
         }
 
         public bool NeedsKeys
         {
             get
             {
-                throw new NotImplementedException();
+                return _axolotl.NeedsKeys;
             }
         }
 
@@ -291,8 +409,40 @@ namespace Disa.Framework
         {
             get
             {
-                throw new NotImplementedException();
+                return _axolotl.RegistrationId;
             }
+        }
+
+        private static void CheckForAxolotlStaticImplementation()
+        {
+            if (AxolotlImplementation == null || AxolotlImplementation.AxolotlStatic == null)
+            {
+                throw new Exception("No AxolotlStatic implementation.");
+            }
+        }
+
+        public static byte[] DeriveHKDFv3Secrets(byte[] inputKeyMaterial, byte[] info, int outputLength)
+        {
+            CheckForAxolotlStaticImplementation();
+            return AxolotlImplementation.AxolotlStatic.DeriveHKDFv3Secrets(inputKeyMaterial, info, outputLength);
+        }
+
+        public static Tuple<byte[], byte[]> GenerateCurveKeyPair()
+        {
+            CheckForAxolotlStaticImplementation();
+            return AxolotlImplementation.AxolotlStatic.GenerateCurveKeyPair();
+        }
+
+        public static byte[] CalculateCurveAgreement(byte[] publicKey, byte[] privateKey)
+        {
+            CheckForAxolotlStaticImplementation();
+            return AxolotlImplementation.AxolotlStatic.CalculateCurveAgreement(publicKey, privateKey);
+        }
+
+        public static bool VerifyCurveSignature(byte[] message, byte[] signature, byte[] publicKey)
+        {
+            CheckForAxolotlStaticImplementation();
+            return AxolotlImplementation.AxolotlStatic.VerifyCurveSignature(message, signature, publicKey);
         }
     }
 }

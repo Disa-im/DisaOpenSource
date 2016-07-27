@@ -37,10 +37,12 @@ namespace Disa.Framework
             "zxing.monoandroid.dll", 
         };
 
-        public static void InitializePlatform(PlatformImplementation platform)
+        public static void PreInitialize(PlatformImplementation platform, 
+                                              AxolotlImplementation axolotl)
         {
             PlatformImplementation = platform;
             Platform.PlatformImplementation = platform;
+            Axolotl.AxolotlImplementation = axolotl;
         }
 
         public static void InitializeMain(Service[] allServices)
@@ -58,7 +60,7 @@ namespace Disa.Framework
         {
             get
             {
-                return "28";
+                return "30";
             }
         }
 

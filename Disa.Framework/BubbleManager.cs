@@ -160,15 +160,16 @@ namespace Disa.Framework
                                 BubbleGroupManager.LastBubbleSentTimestamps[group.ID] = Time.GetNowUnixTimestamp();
                             }
 
+                            var status = Bubble.BubbleStatus.Sent;
+
                             if (vb.Status == Bubble.BubbleStatus.Delivered)
                             {
+                                status = Bubble.BubbleStatus.Delivered;
                                 Utils.DebugPrint(
-                                    "************ Race condition. The server set the status to delivered/read before we could send it to sent. :')");
-                                checkForQueued();
-                                return true;
+                                    "************ Race condition. The server set the status to delivered before we could send it to sent. :')");
                             }
 
-                            UpdateStatus(vb, Bubble.BubbleStatus.Sent, @group);
+                            UpdateStatus(vb, status, @group);
 
                             checkForQueued();
                             return true;

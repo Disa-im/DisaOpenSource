@@ -174,6 +174,16 @@ namespace Disa.Framework
             return PlatformImplementation.CreatePartyBitmap(service, name, participants);
         }
 
+        public static byte[] GenerateBytesFromContactCard(ContactCard contactCard) 
+        {
+            return PlatformImplementation.GenerateBytesFromContactCard(contactCard);
+        }
+
+        public static ContactCard GenerateContactCardFromBytes(byte[] contactCardBytes) 
+        {
+            return PlatformImplementation.GenerateContactCardFromBytes(contactCardBytes);
+        }
+
         public static DisaThumbnail CreatePartyBitmap(Service service, string name,
             DisaThumbnail big, string bigName,
             DisaThumbnail small1, string small1Name,

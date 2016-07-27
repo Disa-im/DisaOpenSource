@@ -1,12 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System;
 
 namespace Disa.Framework
 {
     public class WakeLockBalancer
     {
+        public interface IWakeLockBalancer
+        {
+            void ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
+
+            bool ShouldRebalanceWakeLocks();
+
+            void RemoveWakeLock(WakeLock newWakeLock);
+
+            void ScheduleWakeLock(WakeLock newWakeLock);
+        }
+
+        private readonly IWakeLockBalancer _wakeLockBalancer;
+
+        public WakeLockBalancer(IWakeLockBalancer wakeLockBalancer)
+        {
+            _wakeLockBalancer = wakeLockBalancer;
+        }
+
+        public void ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately()
+        {
+            _wakeLockBalancer.ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
+        }
+
+        public bool ShouldRebalanceWakeLocks()
+        {
+            return _wakeLockBalancer.ShouldRebalanceWakeLocks();
+        }
+
+        public void RemoveWakeLock(WakeLock newWakeLock)
+        {
+            _wakeLockBalancer.RemoveWakeLock(newWakeLock);
+        }
+
+        public void ScheduleWakeLock(WakeLock newWakeLock)
+        {
+            _wakeLockBalancer.ScheduleWakeLock(newWakeLock);
+        }
+
         public class CruelWakeLock : WakeLock
         {
             public CruelWakeLock(ActionObject action, int interval, int tolerance, bool reoccurring)

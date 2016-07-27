@@ -931,7 +931,6 @@ namespace Disa.Framework
                                             + " bubbles into " + groupToSync.ID + " on service " + groupToSync.Service.Information.ServiceName);
                                         BubbleManager.Update(groupToSync, syncResult.Updates, SearchDepth);
                                     }
-                                    Database.SetActionId(groupToSync, syncResult.NewActionId);
                                 }
                             }
                             else
@@ -940,6 +939,10 @@ namespace Disa.Framework
                                     groupToSync.ID + " on service " + groupToSync.Service.Information.ServiceName + 
                                     " returned an empty result (" + syncResult.ResultType.ToString() + ").");
                                 somethingSynced = syncResult.JustRefresh;
+                            }
+                            if (!syncResult.NullActionId)
+                            {
+                                Database.SetActionId(groupToSync, syncResult.NewActionId);
                             }
                             groupToSync.NeedsSync = false;
                         }

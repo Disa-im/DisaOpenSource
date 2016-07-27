@@ -153,6 +153,11 @@ namespace Disa.Framework
             get { return Bubbles[0].Party; }
         }
 
+        public bool IsExtendedParty
+        {
+            get { return Bubbles[0].ExtendedParty; }
+        }
+
         public void InsertByTime(VisualBubble b)
         {
             if (Bubbles.Count >= BubblesCapSize)

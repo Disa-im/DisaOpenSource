@@ -61,6 +61,10 @@ namespace Disa.Framework
 
         public abstract byte[] GenerateVideoThumbnail(string videoPath);
 
+        public abstract byte[] GenerateBytesFromContactCard(ContactCard contactCard);
+
+        public abstract ContactCard GenerateContactCardFromBytes(byte[] contactCardBytes);
+
         public abstract Task<byte[]> GenerateLocationThumbnail(double longitude, double latitude);
 
         public abstract void CreatePartyBitmap(Service service, string name, IPartyThumbnail thumbnail, 

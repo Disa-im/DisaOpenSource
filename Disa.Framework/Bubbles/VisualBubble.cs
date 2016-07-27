@@ -72,6 +72,10 @@ namespace Disa.Framework.Bubbles
         internal BubbleGroup BubbleGroupReference;
         [NonSerialized]
         public object Tag;
+        [NonSerialized]
+        public ThumbnailTransfer QuotedThumbnailTransfer;
+        [NonSerialized]
+        public bool QuotedThumbnailDownloadFailed;
 
         protected VisualBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string id = null, string idService = null)

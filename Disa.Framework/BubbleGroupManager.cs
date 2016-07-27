@@ -664,8 +664,13 @@ namespace Disa.Framework
                     {
                         if (@group.Service.Information.DoesSupport(typeof(ReadBubble)) && ServiceManager.IsRunning(@group.Service))
                         {
-                            BubbleManager.Send(new ReadBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Outgoing,
-                                @group.Service, @group.Address, null, Time.GetNowUnixTimestamp(), @group.IsParty, currentlyUnread));
+                            var readBubble = new ReadBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Outgoing,
+                                                 @group.Service, @group.Address, null, Time.GetNowUnixTimestamp(), @group.IsParty, currentlyUnread);
+                            if (@group.IsExtendedParty) 
+                            {
+                                readBubble.ExtendedParty = true;
+                            }
+                            BubbleManager.Send(readBubble);
                         }
                     }
                 }

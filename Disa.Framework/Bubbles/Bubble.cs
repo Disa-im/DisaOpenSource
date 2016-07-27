@@ -44,6 +44,9 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(156)]
         public string ParticipantAddressNickname { get; set; }
 
+        [ProtoMember(157)]
+        public bool ExtendedParty { get; set;}
+
         [NonSerialized]
         public Service Service;
 

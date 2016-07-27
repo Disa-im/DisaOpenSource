@@ -43,6 +43,7 @@ namespace Disa.Framework
 
         public class PartyID : ID
         {
+            public bool ExtendedParty;
         }
     }
 

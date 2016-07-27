@@ -20,7 +20,13 @@ namespace Disa.Framework.Bubbles
         public byte[] Thumbnail { get; set; }
 
         [NonSerialized]
+        public ThumbnailTransfer ThumbnailTransfer;
+
+        [NonSerialized]
         public bool IsDownloading = false;
+
+        [NonSerialized]
+        public bool ThumbnailDownloadFailed;
 
         public LocationBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, double longitude, double latitude,

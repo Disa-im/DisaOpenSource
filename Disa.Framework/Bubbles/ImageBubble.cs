@@ -69,6 +69,15 @@ namespace Disa.Framework.Bubbles
         [NonSerialized] 
         public BubbleTransfer Transfer;
 
+        [NonSerialized]
+        public ThumbnailTransfer ThumbnailTransfer;
+
+        [ProtoMember(7)]
+        public bool NullThumbnail { get; set;}
+
+        [NonSerialized]
+        public bool ThumbnailDownloadFailed;
+
         public ImageBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string imagePath, Type imageType, byte[] thumbnailBytes, string idService = null,
             bool isAnimated = false) :
