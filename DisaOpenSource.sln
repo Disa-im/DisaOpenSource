@@ -17,6 +17,10 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Disa.Framework.Telegram.Sha
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Disa.Framework.Telegram.Mobile.Shared", "Disa.Framework.Telegram.Mobile.Shared\Disa.Framework.Telegram.Mobile.Shared.shproj", "{8F00A2D9-308C-4E57-B9C4-56C418E502D5}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Disa.Framework.Shared", "Disa.Framework.Shared\Disa.Framework.Shared.shproj", "{78848CF0-7246-4463-A01F-B6E2A8133196}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Disa.Framework.Mobile.Shared", "Disa.Framework.Mobile.Shared\Disa.Framework.Mobile.Shared.shproj", "{3EC88EF4-ED80-4B79-9B7E-E842A94076A7}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Disa.Framework.Telegram.Shared\Disa.Framework.Telegram.Shared.projitems*{575dce77-4e2e-46e0-9bb8-fa8e5c912bfa}*SharedItemsImports = 4

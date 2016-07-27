@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{3EC88EF4-ED80-4B79-9B7E-E842A94076A7}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Disa.Framework.Mobile.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)EmailEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPluginDescription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPluginPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPluginPageControls.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PhoneEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UserProfile.cs" />
+  </ItemGroup>
+</Project>
