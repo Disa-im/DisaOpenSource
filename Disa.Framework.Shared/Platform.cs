@@ -192,5 +192,21 @@ namespace Disa.Framework
             return PlatformImplementation.CreatePartyBitmap(service, name, big, bigName, small1, small1Name, small2,
                 small2Name);
         }
+
+        public static BubbleGroup GetCurrentBubbleGroupOnUI() 
+        {
+            return PlatformImplementation.GetCurrentBubbleGroupOnUI();
+        }
+
+        public static bool SwitchCurrentBubbleGroupOnUI(BubbleGroup group)
+        {
+            return PlatformImplementation.SwitchCurrentBubbleGroupOnUI(group);
+        }
+
+        public static void DeleteBubbleGroup(BubbleGroup[] bubbleGroups)
+        {
+            PlatformImplementation.DeleteBubbleGroup(bubbleGroups);
+        }
+
     }
 }

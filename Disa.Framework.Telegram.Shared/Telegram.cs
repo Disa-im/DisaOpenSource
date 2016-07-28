@@ -573,6 +573,7 @@ namespace Disa.Framework.Telegram
                     var deleteUser = messageService.Action as MessageActionChatDeleteUser;
                     var addUser = messageService.Action as MessageActionChatAddUser;
                     var created = messageService.Action as MessageActionChatCreate;
+                    var upgradedToSuperGroup = messageService.Action as MessageActionChannelMigrateFrom;
 
                     var address = TelegramUtils.GetPeerId(messageService.ToId);
                     var fromId = messageService.FromId.ToString(CultureInfo.InvariantCulture);
@@ -612,6 +613,18 @@ namespace Disa.Framework.Telegram
                             useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                             this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
                             _settings.AccountId.ToString(CultureInfo.InvariantCulture)));
+                    }
+                    else if (upgradedToSuperGroup != null)
+                    {
+                        var bubble = PartyInformationBubble.CreateConvertedToExtendedParty(
+                            useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address, this,
+                            messageService.Id.ToString(CultureInfo.InvariantCulture));
+                        bubble.ExtendedParty = true;
+                        EventBubble(bubble);
+                        var bubbleGroupToSwitch = BubbleGroupManager.FindWithAddress(this, address);
+                        var bubbleGroupToDelete = Platform.GetCurrentBubbleGroupOnUI();
+                        Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
+                        Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroupToDelete });
                     }
                     else
                     {
@@ -1523,30 +1536,38 @@ namespace Disa.Framework.Telegram
 
         private void FetchChannelDifference(TelegramClient client)
         {
-            var extendedBubbleGroups = BubbleGroupManager.FindAll(this).Where(group => group.IsExtendedParty);
-            foreach (var bubbleGroup in extendedBubbleGroups)
+            try
             {
-                Again:
-                var channelAddress = uint.Parse(bubbleGroup.Address);
-                var channel = _dialogs.GetChat(uint.Parse(bubbleGroup.Address));
-                var result = TelegramUtils.RunSynchronously(
-                    client.Methods.UpdatesGetChannelDifferenceAsync(new UpdatesGetChannelDifferenceArgs
-                    {
-                        Channel = new InputChannel
-                        {
-                            ChannelId = channelAddress,
-                            AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(channelAddress))
-                        },
-                        Filter = new ChannelMessagesFilterEmpty(),
-                        Limit = 100,
-                        Pts = _dialogs.GetChatPts(channelAddress)
-                    }));
-                var updates = ProcessChannelDifferenceResult(channelAddress, result);
-                if (updates.Any())
+                var extendedBubbleGroups = BubbleGroupManager.FindAll(this).Where(group => group.IsExtendedParty);
+                foreach (var bubbleGroup in extendedBubbleGroups)
                 {
-                    ProcessIncomingPayload(updates, false, client);
-                    goto Again;
+                Again:
+                    var channelAddress = uint.Parse(bubbleGroup.Address);
+                    var channel = _dialogs.GetChat(uint.Parse(bubbleGroup.Address));
+                    var result = TelegramUtils.RunSynchronously(
+                        client.Methods.UpdatesGetChannelDifferenceAsync(new UpdatesGetChannelDifferenceArgs
+                        {
+                            Channel = new InputChannel
+                            {
+                                ChannelId = channelAddress,
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(channelAddress))
+                            },
+                            Filter = new ChannelMessagesFilterEmpty(),
+                            Limit = 100,
+                            Pts = _dialogs.GetChatPts(channelAddress)
+                        }));
+                    var updates = ProcessChannelDifferenceResult(channelAddress, result);
+                    if (updates.Any())
+                    {
+                        ProcessIncomingPayload(updates, false, client);
+                        goto Again;
+                    }
                 }
+
+            }
+            catch (Exception e)
+            {
+                DebugPrint("#### Exception getting channels" + e);
             }
         }
 

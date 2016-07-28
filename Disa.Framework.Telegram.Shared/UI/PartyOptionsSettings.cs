@@ -71,8 +71,23 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                //return false for now since the platform functions are not implemented
-                result(false);
+                using (var client = new FullClientDisposable(this))
+                {
+                    try
+                    {
+                        var response = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesMigrateChatAsync(new MessagesMigrateChatArgs
+                        {
+                            ChatId = uint.Parse(group.Address)
+                        }));
+                        SendToResponseDispatcher(response, client.Client);
+                        result(true);
+                    }
+                    catch (Exception e)
+                    {
+                        DebugPrint("## exception while migrating the chat " + e);
+                        result(false);
+                    }
+                }
             });
         }
 

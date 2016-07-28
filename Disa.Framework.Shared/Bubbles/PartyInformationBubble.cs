@@ -7,7 +7,7 @@ namespace Disa.Framework.Bubbles
     [ProtoContract]
     public class PartyInformationBubble : VisualBubble
     {
-        public enum InformationType { ParticipantAdded, ParticipantRemoved, TitleChanged, ThumbnailChanged, }
+        public enum InformationType { ParticipantAdded, ParticipantRemoved, TitleChanged, ThumbnailChanged, UpgradedToExtendedParty }
 
         [ProtoMember(1)]
         public string Message { get; private set; }
@@ -77,6 +77,13 @@ namespace Disa.Framework.Bubbles
         {
             return new PartyInformationBubble(time, BubbleDirection.Incoming, address, null, true, 
                 service, idService, InformationType.ThumbnailChanged, participantWhomChangedThumbnail, null);
+        }
+
+        public static PartyInformationBubble CreateConvertedToExtendedParty(long time, string address, 
+           Service service, string idService)
+        { 
+            return new PartyInformationBubble(time, BubbleDirection.Incoming, address, null, true,
+                service, idService, InformationType.UpgradedToExtendedParty, null, null);
         }
 
         public PartyInformationBubble()

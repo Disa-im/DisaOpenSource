@@ -78,5 +78,11 @@ namespace Disa.Framework
             DisaThumbnail big, string bigName,
             DisaThumbnail small1, string small1Name,
             DisaThumbnail small2, string small2Name);
+
+        public abstract BubbleGroup GetCurrentBubbleGroupOnUI();
+
+        public abstract bool SwitchCurrentBubbleGroupOnUI(BubbleGroup group);
+
+        public abstract void DeleteBubbleGroup(BubbleGroup[] bubbleGroups);
     }
 }
