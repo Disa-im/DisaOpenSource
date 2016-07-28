@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{78848CF0-7246-4463-A01F-B6E2A8133196}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Disa.Framework.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ZipStorer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Axolotl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AxolotlImplementation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupCacheManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupDatabase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupDatabasePrimitives.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupEvents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupIndex.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupSettingsManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupSync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupUpdater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleQueueManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleTransfer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ComposeBubbleGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contact.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContactCard.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisaMutableSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisaParticipant.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisaParticipantNickname.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisaQuotedTitle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisaReadTime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisaServiceUserSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisaSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisaThumbnail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisaUnifiedBubbleGroupEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Emoji.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IconType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IMediaDownloader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IMediaDownloaderCustom.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IMessageIntent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)INewMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPartyBlockedParticipants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPartyOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPartyOptionsExtended.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPartyOptionsSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPartyThumbnail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPrivacyList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ITerminal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IThumbnailDownloader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ITimeFormatter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IUserInformation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IVisualBubbleServiceId.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LogsManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MediaManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MutableSettingsManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NotificationManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OkHttpClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PhoneBook.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PhoneBookContact.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Platform.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PlatformImplementation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PlatformManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Queue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SendBubbleAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Service.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceBubbleGroupAddressException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceBubbleSendFailedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceEvents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceExpiredException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceManagerException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceQueueBubbleException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceRestartException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceSchedulerException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceSpecialRestartException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceUserSettingsManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceWarningException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SettingsChangedManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SettingsManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SimpleDatabase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Socket.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SqlDatabase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SslSocket.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThreadSafeList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThumbnailTransfer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Time.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnifiedBubbleGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UserInformation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WakeLock.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WakeLockBalancer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\AbstractBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\AudioBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\Bubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\ComposeBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\ContactBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\DeliveredBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\DeliveredBubbleReceipt.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\FileBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\ImageBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\LocationBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\NewBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\NewDayBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\PartyInformationBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\PresenceBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\ReadBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\StickerBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\SubscribeBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\TextBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\TypingBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\VideoBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\VisualBubble.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Bubbles\" />
+  </ItemGroup>
+</Project>

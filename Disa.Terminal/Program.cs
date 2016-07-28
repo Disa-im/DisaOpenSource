@@ -370,7 +370,7 @@ namespace Disa.Terminal
         {
             var allServices = new [] { new UnifiedService() }.Concat(services);
 
-            PlatformManager.InitializePlatform(new WindowsUnix());
+            PlatformManager.PreInitialize(new WindowsUnix(), null);
 
             // Initialize the PhoneBook
             var locale = Platform.GetCurrentLocale();

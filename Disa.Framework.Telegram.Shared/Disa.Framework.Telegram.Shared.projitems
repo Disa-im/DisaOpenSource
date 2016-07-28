@@ -1313,6 +1313,5 @@
     <None Include="$(MSBuildThisFileDirectory)Nito.AsyncEx\Base\AsyncFactory.FromAsync.tt" />
     <None Include="$(MSBuildThisFileDirectory)Nito.AsyncEx\Base\Nito.AsyncEx %28NET45, Win8, WP8, WPA81%29.csproj" />
     <None Include="$(MSBuildThisFileDirectory)Nito.AsyncEx\Base\packages.config" />
-    <None Include="$(MSBuildThisFileDirectory)packages.config" />
   </ItemGroup>
 </Project>
