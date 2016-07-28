@@ -8,15 +8,15 @@ namespace Disa.Framework.Telegram
     {
         public Tuple<bool,byte[]> FetchQuotedThumbnailBytes(VisualBubble bubble)
         {
-            return GetThumbnailBytes(bubble.QuotedIdService);
+            return GetThumbnailBytes(bubble.QuotedIdService, bubble.Address, bubble.ExtendedParty);
         }
 
         public Tuple<bool,byte[]> FetchThumbnailBytes(VisualBubble bubble)
         {
-            return GetThumbnailBytes(bubble.IdService);
+            return GetThumbnailBytes(bubble.IdService, bubble.Address, bubble.ExtendedParty);
         }
 
-        private Tuple<bool,byte[]> GetThumbnailBytes(string id)
+        private Tuple<bool,byte[]> GetThumbnailBytes(string id, string address, bool superGroup)
         {
             if (!Platform.HasInternetConnection())
             {
@@ -30,7 +30,7 @@ namespace Disa.Framework.Telegram
             using (var client = new FullClientDisposable(this))
             {
 
-                var iMessage = GetMessage(uint.Parse(id), client.Client);
+                var iMessage = GetMessage(uint.Parse(id), client.Client, uint.Parse(address), superGroup);
 
                 var message = iMessage as Message;
                 if (message != null)

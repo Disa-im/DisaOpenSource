@@ -131,6 +131,7 @@ namespace Disa.Framework.Telegram
         {
             var peerChat = peer as PeerChat;
             var peerUser = peer as PeerUser;
+            var peerChannel = peer as PeerChannel;
             if (peerChat != null)
             {
                 return peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
@@ -138,6 +139,10 @@ namespace Disa.Framework.Telegram
             if (peerUser != null)
             {
                 return peerUser.UserId.ToString(CultureInfo.InvariantCulture);
+            }
+            if (peerChannel != null)
+            {
+                return peerChannel.ChannelId.ToString(CultureInfo.InvariantCulture);
             }
             return null;
         }
@@ -471,6 +476,8 @@ namespace Disa.Framework.Telegram
         {
             var messagesMessages = iMessagesMessages as MessagesMessages;
             var messagesMessagesSlice = iMessagesMessages as MessagesMessagesSlice;
+            var messagesChannelMessages = iMessagesMessages as MessagesChannelMessages;
+
             if (messagesMessages != null)
             {
                 return messagesMessages.Messages;
@@ -479,6 +486,10 @@ namespace Disa.Framework.Telegram
             {
                 return messagesMessagesSlice.Messages;
             }
+            if (messagesChannelMessages != null)
+            {
+                return messagesChannelMessages.Messages;
+            }
             return null;
         }
 
@@ -486,6 +497,8 @@ namespace Disa.Framework.Telegram
         {
             var messagesMessages = iMessagesMessages as MessagesMessages;
             var messagesMessagesSlice = iMessagesMessages as MessagesMessagesSlice;
+            var messagesChannelMessages = iMessagesMessages as MessagesChannelMessages;
+
             if (messagesMessages != null)
             {
                 return messagesMessages.Chats;
@@ -493,6 +506,10 @@ namespace Disa.Framework.Telegram
             if (messagesMessagesSlice != null)
             {
                 return messagesMessagesSlice.Chats;
+            }
+            if (messagesChannelMessages != null)
+            {
+                return messagesChannelMessages.Chats;
             }
             return null;
         }
@@ -502,6 +519,8 @@ namespace Disa.Framework.Telegram
         {
             var messagesMessages = iMessagesMessages as MessagesMessages;
             var messagesMessagesSlice = iMessagesMessages as MessagesMessagesSlice;
+            var messagesChannelMessages = iMessagesMessages as MessagesChannelMessages;
+
             if (messagesMessages != null)
             {
                 return messagesMessages.Users;
@@ -509,6 +528,10 @@ namespace Disa.Framework.Telegram
             if (messagesMessagesSlice != null)
             {
                 return messagesMessagesSlice.Users;
+            }
+            if (messagesChannelMessages != null)
+            {
+                return messagesChannelMessages.Users;
             }
             return null;
         }

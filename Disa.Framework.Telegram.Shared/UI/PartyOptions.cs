@@ -584,12 +584,12 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        private bool IsAdmin(string address, bool isExtendedParty)
+        private bool IsAdmin(string address, bool isSuperGroup)
         {
-            var fullChat = FetchFullChat(address, isExtendedParty);
+            var fullChat = FetchFullChat(address, isSuperGroup);
             var partyParticipants = GetPartyParticipants(fullChat);
 
-            if (!isExtendedParty)
+            if (!isSuperGroup)
             {
                 if (!ChatAdminsEnabled(address))
                 {

@@ -9,7 +9,9 @@ namespace Disa.Framework.Telegram
         [Indexed]
         public uint Id { get; set; }
 
-        public bool isChat { get; set; }
+        public bool IsChat { get; set; }
+
+        public uint Pts { get; set; }
 
         public byte[] ProtoBufBytes { get; set; }
 

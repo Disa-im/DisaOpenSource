@@ -162,7 +162,7 @@ namespace Disa.Framework.Telegram
                     }
                     using (var stream = new MemoryStream(chat.ProtoBufBytes))
                     {
-                        if(chat.isChat)
+                        if(chat.IsChat)
                         {
                             var iChat = Serializer.Deserialize<Chat>(stream);
                             return iChat;
@@ -173,6 +173,40 @@ namespace Disa.Framework.Telegram
                             return iChat;
                         }
                     }
+                }
+            }
+        }
+
+        public void UpdateChatPts(uint channelId, uint pts)
+        {
+            lock (_chatLock)
+            {
+                using (var database = new SqlDatabase<CachedChat>(GetDatabasePath(false)))
+                {
+                    var cachedChat = database.Store.Where(x => x.Id == channelId).FirstOrDefault();
+                    if (cachedChat == null)
+                    {
+                        return;
+                    }
+                    cachedChat.Pts = pts;
+                    database.Store.Delete(x => x.Id == channelId);
+                    database.Add(cachedChat);
+                }
+            }
+        }
+
+        public uint GetChatPts(uint channelId)
+        {
+            lock (_chatLock)
+            {
+                using (var database = new SqlDatabase<CachedChat>(GetDatabasePath(false)))
+                {
+                    var cachedChat = database.Store.Where(x => x.Id == channelId).FirstOrDefault();
+                    if (cachedChat == null)
+                    {
+                        return 0;
+                    }
+                    return cachedChat.Pts;
                 }
             }
         }
@@ -210,7 +244,7 @@ namespace Disa.Framework.Telegram
 
                         using (var stream = new MemoryStream(cachedChat.ProtoBufBytes))
                         {
-                            if(cachedChat.isChat)
+                            if(cachedChat.IsChat)
                             {
                                 var iChat = Serializer.Deserialize<Chat>(stream);
                                 chatsToReturn.Add(iChat);
@@ -287,7 +321,7 @@ namespace Disa.Framework.Telegram
                     cachedChat = new CachedChat
                     {
                         Id = chatId,
-                        isChat = true,
+                        IsChat = true,
                         ProtoBufBytes = memoryStream.ToArray(),
                     };
                 }
@@ -296,13 +330,13 @@ namespace Disa.Framework.Telegram
                     cachedChat = new CachedChat
                     {
                         Id = chatId,
-                        isChat = false,
+                        IsChat = false,
                         ProtoBufBytes = memoryStream.ToArray(),
                     };
                 }
 
-                var dbUser = database.Store.Where(x => x.Id == chatId).FirstOrDefault();
-                if (dbUser != null)
+                var dbChat = database.Store.Where(x => x.Id == chatId).FirstOrDefault();
+                if (dbChat != null)
                 {
                     database.Store.Delete(x => x.Id == chatId);
                     database.Add(cachedChat);

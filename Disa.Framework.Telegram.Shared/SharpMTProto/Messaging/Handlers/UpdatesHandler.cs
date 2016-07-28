@@ -173,7 +173,7 @@ namespace SharpMTProto.Messaging.Handlers
                 }
                 else if (updateChannelTooLong != null)
                 {
-                    state.Pts = updateChannelTooLong.Pts;
+                    //state.Pts = updateChannelTooLong.Pts;
                 }
                 else if (updateNewChannelMessage != null)
                 {
@@ -182,11 +182,11 @@ namespace SharpMTProto.Messaging.Handlers
                 }
                 else if (updateDeleteChannelMessage != null)
                 {
-                    state.Pts = updateDeleteChannelMessage.Pts;
+                    //state.Pts = updateDeleteChannelMessage.Pts;
                 }
                 else if (updateEditChannelMessage != null)
                 {
-                    state.Pts = updateEditChannelMessage.Pts;
+                    //state.Pts = updateEditChannelMessage.Pts;
                 }
 
             }

@@ -74,11 +74,11 @@ namespace Disa.Framework.Telegram
             return new List<VisualBubble>();
         }
 
-        private IMessagesMessages GetMessageHistory(string address, bool isParty, bool isExtendedParty, long fromTime, int max)
+        private IMessagesMessages GetMessageHistory(string address, bool isParty, bool isSuperGroup, long fromTime, int max)
         {
             using (var client = new FullClientDisposable(this))
             {
-                var peer = GetInputPeer(address, isParty, isExtendedParty);
+                var peer = GetInputPeer(address, isParty, isSuperGroup);
                 var response =
                     TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs
@@ -104,7 +104,7 @@ namespace Disa.Framework.Telegram
 				{
 					if (message.ReplyToMsgId != 0)
 					{
-						var iReplyMessage = GetMessage(message.ReplyToMsgId, null);
+                        var iReplyMessage = GetMessage(message.ReplyToMsgId, null);
 						DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
 						var replyMessage = iReplyMessage as Message;
 						AddQuotedMessageToBubble(replyMessage, bubble);
