@@ -122,7 +122,7 @@ namespace Disa.Framework
         public static string GetParticipantNicknameOrName(BubbleGroup group, DisaParticipant participant)
         {
             var fetchNickname = false;
-            var name = participant.Name;
+            var isParticipantNameANumber = false;
             if (!string.IsNullOrWhiteSpace(participant.Name))
             {
                 if (!PhoneBook.IsPossibleNumber(participant.Name))
@@ -132,13 +132,15 @@ namespace Disa.Framework
                 else
                 {
                     fetchNickname = true;
+                    isParticipantNameANumber = true;
                 }
             }
             else
             {
                 fetchNickname = true;
             }
-            var prependParticipantName = false;
+            var name = participant.Name;
+            var nameIsNickname = false;
             if (fetchNickname)
             {
                 var participantNicknames = group.ParticipantNicknames;
@@ -148,15 +150,12 @@ namespace Disa.Framework
                         group.Service.BubbleGroupComparer(participant.Address, x.Address));
                     if (participantNickname != null)
                     {
-                        name = participantNickname.Nickname;   
-                        if (participant.Unknown)
-                        {
-                            prependParticipantName = true;
-                        }
+                        name = participantNickname.Nickname;
+                        nameIsNickname = true;
                     }
                 }
             }
-            if (prependParticipantName && !string.IsNullOrWhiteSpace(participant.Name))
+            if (isParticipantNameANumber && nameIsNickname)
             {
                 return name + " (" + participant.Name + ")";
             }
