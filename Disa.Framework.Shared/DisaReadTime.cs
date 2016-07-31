@@ -6,6 +6,14 @@ namespace Disa.Framework
     [ProtoContract]
     public class DisaReadTime
     {
+        public static string SingletonPartyParticipantAddress
+        {
+            get
+            {
+                return "&^%$#@?!singletonpartyparticipantaddress!?@#$%^&";
+            }
+        }
+
         [NonSerialized]
         public object Tag;
         [ProtoMember(1)]
