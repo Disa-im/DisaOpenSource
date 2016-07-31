@@ -51,14 +51,15 @@ namespace Disa.Framework.Telegram
 
         private List<VisualBubble> LoadBubblesForBubbleGroup(BubbleGroup @group, long fromTime, int max)
         {
-            var response = GetMessageHistory(group.Address, group.IsParty, group.IsExtendedParty, fromTime, max);
+            var response = GetMessageHistory(group, fromTime, max);
             var messages = response as MessagesMessages;
             var messagesSlice = response as MessagesMessagesSlice;
+            var messagesChannels = response as MessagesChannelMessages;
             if (messages != null)
             {
                 _dialogs.AddChats(messages.Chats);
                 _dialogs.AddUsers(messages.Users);
-                DebugPrint("Messages are as follows " + ObjectDumper.Dump(messages.Messages));
+                //DebugPrint("Messages are as follows " + ObjectDumper.Dump(messages.Messages));
                 messages.Messages.Reverse();
                 return ConvertMessageToBubbles(messages.Messages);
 
@@ -67,29 +68,97 @@ namespace Disa.Framework.Telegram
             {
                 _dialogs.AddChats(messagesSlice.Chats);
                 _dialogs.AddUsers(messagesSlice.Users);
-                DebugPrint("Messages are as follows " + ObjectDumper.Dump(messagesSlice.Messages));
+                //DebugPrint("Messages are as follows " + ObjectDumper.Dump(messagesSlice.Messages));
                 messagesSlice.Messages.Reverse();
                 return ConvertMessageToBubbles(messagesSlice.Messages);
+            }
+            if (messagesChannels != null)
+            {
+                _dialogs.AddChats(messagesChannels.Chats);
+                _dialogs.AddUsers(messagesChannels.Users);
+                messagesChannels.Messages.Reverse();
+                return ConvertMessageToBubbles(messagesChannels.Messages);
             }
             return new List<VisualBubble>();
         }
 
-        private IMessagesMessages GetMessageHistory(string address, bool isParty, bool isSuperGroup, long fromTime, int max)
+        private IMessagesMessages GetMessageHistory(BubbleGroup group, long fromTime, int max)
         {
             using (var client = new FullClientDisposable(this))
             {
-                var peer = GetInputPeer(address, isParty, isSuperGroup);
-                var response =
-                    TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs
-                        {
-                            Peer = peer,
-                            OffsetDate = (uint) fromTime,
-                            Limit = (uint) max
+                if (group.IsExtendedParty)
+                {
+                    try
+                    {
+                        var offsetId = GetMessagePtsForTime(group, fromTime);
+                        var peer = GetInputPeer(group.Address, group.IsParty, group.IsExtendedParty);
+                        var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                        var response =
+                            TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs
+                                {
+                                    Peer = peer,
+                                    OffsetId = offsetId+1,
+                                    OffsetDate = 0,
+                                    Limit = 50
 
-                        }));
-                return response;
+                                }));
+
+                        return response;
+                    }
+                    catch (Exception e)
+                    {
+                        DebugPrint("Exception " + e);
+                        return null;
+                    }
+                }
+                else
+                {
+                    var peer = GetInputPeer(group.Address, group.IsParty, group.IsExtendedParty);
+                    var response =
+                        TelegramUtils.RunSynchronously(
+                            client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs
+                            {
+                                Peer = peer,
+                                OffsetDate = (uint)fromTime,
+                                Limit = (uint)max
+
+                            }));
+                    return response;
+                }
             }
+        }
+
+        private MessagesMessages MakeMessagesMessages(List<IChat> chats, List<IUser> users, List<IMessage> messages)
+        {
+            return new MessagesMessages
+            {
+                Chats = chats,
+                Users = users,
+                Messages = messages
+            };
+        }
+
+        private uint GetMessagePtsForTime(BubbleGroup group, long fromTime)
+        {
+            VisualBubble bubbleToSyncFrom = null;
+            foreach (var bubble in BubbleGroupSync.ReadBubblesFromDatabase(group))
+            {
+                if (bubble.Time <= fromTime)
+                {
+                    bubbleToSyncFrom = bubble;
+                    break;
+                }
+            }
+            if (bubbleToSyncFrom != null)
+            {
+                if (bubbleToSyncFrom.IdService == null)
+                {
+                    return 1;
+                }
+                return uint.Parse(bubbleToSyncFrom.IdService);
+            }
+            return 1;
         }
 
         private List<VisualBubble> ConvertMessageToBubbles(List<IMessage> messages)

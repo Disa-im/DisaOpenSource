@@ -191,6 +191,7 @@ namespace Disa.Framework.Telegram
                     cachedChat.Pts = pts;
                     database.Store.Delete(x => x.Id == channelId);
                     database.Add(cachedChat);
+                    Utils.DebugPrint("$$$$ saved pts for chat as " + cachedChat.Pts);
                 }
             }
         }
@@ -204,9 +205,12 @@ namespace Disa.Framework.Telegram
                     var cachedChat = database.Store.Where(x => x.Id == channelId).FirstOrDefault();
                     if (cachedChat == null)
                     {
+                        Utils.DebugPrint("$$$$ cached chat retrning pts 0");
                         return 0;
                     }
-                    return cachedChat.Pts;
+                    var pts = cachedChat.Pts;
+                    Utils.DebugPrint("$$$$ cached chat retrning pts" + pts);
+                    return pts;
                 }
             }
         }

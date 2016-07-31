@@ -440,7 +440,6 @@ namespace Disa.Framework.Telegram
                                 DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
                                 var replyMessage = iReplyMessage as Message;
                                 AddQuotedMessageToBubble(replyMessage, textBubble);
-
                             }
                         }
 
@@ -623,8 +622,14 @@ namespace Disa.Framework.Telegram
                         EventBubble(bubble);
                         var bubbleGroupToSwitch = BubbleGroupManager.FindWithAddress(this, address);
                         var bubbleGroupToDelete = Platform.GetCurrentBubbleGroupOnUI();
-                        Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
-                        Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroupToDelete });
+                        if (bubbleGroupToSwitch != null)
+                        {
+                            Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
+                        }
+                        if (bubbleGroupToDelete != null)
+                        {
+                            Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroupToDelete });
+                        }
                     }
                     else
                     {
@@ -1544,6 +1549,8 @@ namespace Disa.Framework.Telegram
                 Again:
                     var channelAddress = uint.Parse(bubbleGroup.Address);
                     var channel = _dialogs.GetChat(uint.Parse(bubbleGroup.Address));
+                    Utils.DebugPrint("Channel name " + (channel as Channel).Title);
+                    Utils.DebugPrint("Channel Pts " + _dialogs.GetChatPts(channelAddress));
                     var result = TelegramUtils.RunSynchronously(
                         client.Methods.UpdatesGetChannelDifferenceAsync(new UpdatesGetChannelDifferenceArgs
                         {
@@ -1571,7 +1578,17 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private List<object> ProcessChannelDifferenceResult(uint channelAddress, IUpdatesChannelDifference result)
+        private uint GetLastMessageIdService(BubbleGroup bubbleGroup)
+        {
+            var id = bubbleGroup.LastBubbleSafe().IdService;
+            if (id == null)
+            {
+                return 0;
+            }
+            return uint.Parse(id);
+        }
+
+        private List<object> ProcessChannelDifferenceResult(uint channelId, IUpdatesChannelDifference result)
         {
             var updatesChannelDifference = result as UpdatesChannelDifference;
             var updatesChannelDifferenceEmpty = result as UpdatesChannelDifferenceEmpty;
@@ -1584,18 +1601,18 @@ namespace Disa.Framework.Telegram
                 updatesList.AddRange(updatesChannelDifference.NewMessages);
                 updatesList.AddRange(updatesChannelDifference.OtherUpdates);
                 updatesList.AddRange(updatesChannelDifference.Chats);
-                _dialogs.UpdateChatPts(channelAddress, updatesChannelDifference.Pts);
+                SaveChannelState(channelId, updatesChannelDifference.Pts);
             }
             else if (updatesChannelDifferenceEmpty != null)
             {
-                _dialogs.UpdateChatPts(channelAddress, updatesChannelDifferenceEmpty.Pts);
+                SaveChannelState(channelId, updatesChannelDifferenceEmpty.Pts);
             }
             else if (updatesChannelDifferenceTooLong != null)
             {
                 updatesList.AddRange(updatesChannelDifferenceTooLong.Messages);
                 updatesList.AddRange(updatesChannelDifferenceTooLong.Users);
                 updatesList.AddRange(updatesChannelDifferenceTooLong.Chats);
-                _dialogs.UpdateChatPts(channelAddress, updatesChannelDifference.Pts);
+                SaveChannelState(channelId, updatesChannelDifferenceTooLong.Pts);
             }
             return updatesList;
         }
