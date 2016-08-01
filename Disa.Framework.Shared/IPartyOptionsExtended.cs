@@ -11,6 +11,13 @@ namespace Disa.Framework
         Failure
     }
 
+    public enum DemotePartyParticipantsResult
+    { 
+        Success,
+        Failure,
+        AllMembersAreAdministratorsEnabled
+    }
+
     public interface IPartyOptionsExtended
     {
         //links
@@ -131,6 +138,24 @@ namespace Disa.Framework
         /// <param name="group">The BubbleGroup in context</param>
         /// <param name="result">Action on which the result should be set</param>
         Task CanViewPartyBlockedParticipants(BubbleGroup group, Action<bool> result);
+
+        //demote participants
+        /// <summary>
+        /// Set the result of the action with true if the curent user can demote party participants, false otherwise
+        /// </summary>
+        /// <returns>A new task that sets the result action</returns>
+        /// <param name="group">The BubbleGroup in context</param>
+        /// <param name="result">Action on which the result should be set</param>
+        Task CanDemotePartyParticpantsFromLeader(BubbleGroup group, Action<bool> result);
+
+        /// <summary>
+        /// Set the result of the action with true if the participant was successfully demoted from a leader to a normal user, false otherwise
+        /// </summary>
+        /// <returns>A new task that sets the result action</returns>
+        /// <param name="group">The BubbleGroup in context.</param>
+        /// <param name="participant">The Participant address of the user that has to be demoted from a leader</param>
+        /// <param name="result">Action on which the result should be set.</param>
+        Task DemotePartyParticipantsFromLeader(BubbleGroup group, DisaParticipant participant, Action<DemotePartyParticipantsResult> result);
     }
 }
 

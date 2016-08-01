@@ -342,7 +342,70 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        public Task CanDemotePartyParticpantsFromLeader(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() => 
+            {
+               result(IsCreator(group.Address, group.IsExtendedParty));
+            });
+        }
 
+        public Task DemotePartyParticipantsFromLeader(BubbleGroup group, DisaParticipant participant, Action<DemotePartyParticipantsResult> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var inputUser = new InputUser { UserId = uint.Parse(participant.Address) };
+
+                using (var client = new FullClientDisposable(this))
+                {
+                    if (!group.IsExtendedParty)
+                    {
+                        if (!ChatAdminsEnabled(group.Address))
+                        {
+                            result(DemotePartyParticipantsResult.AllMembersAreAdministratorsEnabled);
+                            return;
+                        }
+                        try
+                        {
+                            TelegramUtils.RunSynchronously(client.Client.Methods.MessagesEditChatAdminAsync(new MessagesEditChatAdminArgs
+                            {
+                                ChatId = uint.Parse(group.Address),
+                                IsAdmin = false,
+                                UserId = inputUser,
+                            }));
+                            result(DemotePartyParticipantsResult.Success);
+                        }
+                        catch (Exception e)
+                        {
+                            result(DemotePartyParticipantsResult.Failure);
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var response = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsEditAdminAsync(new ChannelsEditAdminArgs
+                            {
+                                Channel = new InputChannel
+                                {
+                                    ChannelId = uint.Parse(group.Address),
+                                    AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                                },
+                                Role = new ChannelRoleEmpty(),
+                                UserId = inputUser
+                            }));
+                            SendToResponseDispatcher(response, client.Client);
+                            result(DemotePartyParticipantsResult.Success);
+                        }
+                        catch (Exception e)
+                        {
+                            result(DemotePartyParticipantsResult.Failure);
+                        }
+                    }
+                }
+
+            });
+        }
     }
 }
 
