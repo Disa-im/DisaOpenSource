@@ -242,6 +242,7 @@ namespace Disa.Framework.Telegram
                 var updateChannelTooLong = update as UpdateChannelTooLong;
                 var updateDeleteChannelMessage = update as UpdateDeleteChannelMessages;
                 var updateEditChannelMessage = update as UpdateEditChannelMessage;
+                var updateChatAdmins = update as UpdateChatAdmins;
                 var message = update as SharpTelegram.Schema.Message;
                 var user = update as IUser;
                 var chat = update as IChat;
@@ -300,6 +301,22 @@ namespace Disa.Framework.Telegram
                         updatedUser.Photo = updateUserPhoto.Photo;
                     }
                     _dialogs.AddUser(updatedUser);
+                }
+                else if (updateChatAdmins != null)
+                {
+                    var chatToUpdate = _dialogs.GetUser(updateChatAdmins.ChatId) as Chat;
+                    if (chatToUpdate != null)
+                    {
+                        if(updateChatAdmins.Enabled)
+                        {
+                            chatToUpdate.AdminsEnabled = new True();
+                        }
+                        else
+                        {
+                            chatToUpdate.AdminsEnabled = null;
+                        }
+                    }
+                    _dialogs.AddChat(chatToUpdate);
                 }
                 else if (updateReadHistoryOutbox != null)
                 {
@@ -411,7 +428,6 @@ namespace Disa.Framework.Telegram
                         NotificationManager.Remove(this, updateReadChannelInbox.ChannelId.ToString(CultureInfo.InvariantCulture));
                     }
                 }
-
                 else if (shortChatMessage != null)
                 {
                     if (!string.IsNullOrWhiteSpace(shortChatMessage.Message))
