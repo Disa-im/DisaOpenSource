@@ -16,6 +16,7 @@ namespace Disa.Framework.Bubbles
     [ProtoInclude(208, typeof(FileBubble))]
     [ProtoInclude(209, typeof(StickerBubble))]
     [ProtoInclude(210, typeof(ContactBubble))]
+    [ProtoInclude(211, typeof(SoloInformationBubble))]
     public abstract class VisualBubble : Bubble
     {
         public enum MediaType

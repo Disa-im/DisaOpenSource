@@ -120,6 +120,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bubbles\TypingBubble.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bubbles\VideoBubble.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bubbles\VisualBubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\SoloInformationBubble.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Bubbles\" />
