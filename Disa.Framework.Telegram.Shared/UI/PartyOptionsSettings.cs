@@ -80,6 +80,7 @@ namespace Disa.Framework.Telegram
                             ChatId = uint.Parse(group.Address)
                         }));
                         SendToResponseDispatcher(response, client.Client);
+                        _upgradeToSuperGroup = true;
                         result(true);
                     }
                     catch (Exception e)
@@ -215,6 +216,7 @@ namespace Disa.Framework.Telegram
                     if (type == PartyOptionsSettingsPartyType.Public)
                     {
                         var randomUserName = RandomString(32);
+                        DebugPrint("The random username is " + randomUserName);
                         using (var client = new FullClientDisposable(this))
                         {
                             var response = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsUpdateUsernameAsync(new SharpTelegram.Schema.ChannelsUpdateUsernameArgs
@@ -257,7 +259,7 @@ namespace Disa.Framework.Telegram
         private string RandomString(int length)
         {
             var random = new Random();
-            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }

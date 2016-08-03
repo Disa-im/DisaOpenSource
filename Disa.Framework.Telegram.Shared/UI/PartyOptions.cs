@@ -826,17 +826,22 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                lock (_fullChatLock)
-                {
-                    _fullChat = null;
-                    GC.Collect();
-                }
-                lock(_participantsLock)
-                {
-                    _participants = null;
-                    GC.Collect();
-                }
+                DisposeFullChat();
             });
+        }
+
+        private void DisposeFullChat()
+        {
+            lock (_fullChatLock)
+            {
+                _fullChat = null;
+                GC.Collect();
+            }
+            lock (_participantsLock)
+            {
+                _participants = null;
+                GC.Collect();
+            }
         }
 
         private MessagesChatFull FetchFullChat(string address, bool superGroup)
