@@ -444,26 +444,31 @@ namespace Disa.Framework.Telegram
                 var messageService = iMessage as MessageService;
                 if (message != null)
                 {
-                    var bubble = ProcessFullMessage(message, false);
-                    if (bubble != null)
+                    var messageBubbles = ProcessFullMessage(message, false);
+                    foreach (var bubble in messageBubbles)
                     {
-                        if (message.ReplyToMsgId != 0)
+                        if (bubble != null)
                         {
-                            var iReplyMessage = GetMessage(message.ReplyToMsgId, null, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-                            DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
-                            var replyMessage = iReplyMessage as Message;
-                            AddQuotedMessageToBubble(replyMessage, bubble);
+                            if (message.ReplyToMsgId != 0)
+                            {
+                                var iReplyMessage = GetMessage(message.ReplyToMsgId, null, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
+                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+                                var replyMessage = iReplyMessage as Message;
+                                AddQuotedMessageToBubble(replyMessage, bubble);
+                            }
+                            bubbles.Add(bubble);
                         }
-                        bubbles.Add(bubble);
                     }
                 }
                 if (messageService != null)
                 {
+                    _oldMessages = true;
                     var serviceBubbles = MakePartyInformationBubble(messageService, false);
                     if (serviceBubbles != null)
                     {
                         bubbles.AddRange(serviceBubbles);
                     }
+                    _oldMessages = false;
                 }
             }
             return bubbles;

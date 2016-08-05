@@ -49,7 +49,7 @@ namespace Disa.Framework.Telegram
 
         private TelegramClient cachedClient;
 
-        private bool _upgradeToSuperGroup;
+        private bool _oldMessages = false;
 
         //msgid, address, date
         private Dictionary<uint,Tuple<uint,uint,bool>> messagesUnreadCache = new Dictionary<uint, Tuple<uint, uint,bool>>();
@@ -470,27 +470,30 @@ namespace Disa.Framework.Telegram
                 }
                 else if (message != null)
                 {
-                    var bubble = ProcessFullMessage(message, useCurrentTime);
-                    if (bubble != null)
+                    var bubbles = ProcessFullMessage(message, useCurrentTime);
+                    foreach (var bubble in bubbles)
                     {
-                        if (bubble.Direction == Bubble.BubbleDirection.Incoming)
+                        if (bubble != null)
                         {
-                            var fromId = message.FromId.ToString(CultureInfo.InvariantCulture);
-                            var messageUser = _dialogs.GetUser(message.FromId);
-                            if (messageUser == null)
+                            if (bubble.Direction == Bubble.BubbleDirection.Incoming)
                             {
-                                DebugPrint(">>>>> User is null, fetching user from the server");
-                                GetMessage(message.Id, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
+                                var fromId = message.FromId.ToString(CultureInfo.InvariantCulture);
+                                var messageUser = _dialogs.GetUser(message.FromId);
+                                if (messageUser == null)
+                                {
+                                    DebugPrint(">>>>> User is null, fetching user from the server");
+                                    GetMessage(message.Id, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
+                                }
+                                if (message.ReplyToMsgId != 0)
+                                {
+                                    var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
+                                    DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+                                    var replyMessage = iReplyMessage as Message;
+                                    AddQuotedMessageToBubble(replyMessage, bubble);
+                                }
                             }
-                            if (message.ReplyToMsgId != 0)
-                            {
-                                var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
-                                var replyMessage = iReplyMessage as Message;
-                                AddQuotedMessageToBubble(replyMessage, bubble);
-                            }
+                            EventBubble(bubble);
                         }
-                        EventBubble(bubble);
                     }
                     if (message.Id > maxMessageId)
                     {
@@ -715,7 +718,7 @@ namespace Disa.Framework.Telegram
             }
             else if (chatMigaratedToSuperGroup != null)
             {
-                if (_upgradeToSuperGroup)
+                if (!_oldMessages)
                 {
                     var bubbleGroupToSwitch = BubbleGroupManager.FindWithAddress(this, address);
                     var bubbleGroupToDelete = Platform.GetCurrentBubbleGroupOnUI();
@@ -727,7 +730,6 @@ namespace Disa.Framework.Telegram
                     {
                         Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroupToDelete });
                     }
-                    _upgradeToSuperGroup = false;
                 }
                 return new List<VisualBubble>();
             }
@@ -829,7 +831,7 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private VisualBubble ProcessFullMessage(Message message,bool useCurrentTime)
+        private List<VisualBubble> ProcessFullMessage(Message message,bool useCurrentTime)
         {
             var peerUser = message.ToId as PeerUser;
             var peerChat = message.ToId as PeerChat;
@@ -879,7 +881,10 @@ namespace Disa.Framework.Telegram
                 {
                     tb.Status = Bubble.BubbleStatus.Sent;
                 }
-                return tb;
+                return new List<VisualBubble> 
+                { 
+                    tb
+                };
             }
             else
             {
@@ -903,9 +908,12 @@ namespace Disa.Framework.Telegram
                 {
                     var address = peerChannel.ChannelId.ToString(CultureInfo.InvariantCulture);
                     var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
-                    var bubble = MakeMediaBubble(message, useCurrentTime, false, address, participantAddress);
-                    bubble.ExtendedParty = true;
-                    return bubble;
+                    var bubbles = MakeMediaBubble(message, useCurrentTime, false, address, participantAddress);
+                    foreach (var bubble in bubbles)
+                    {
+                        bubble.ExtendedParty = true;   
+                    }
+                    return bubbles;
                 }
 
             }
@@ -982,7 +990,7 @@ namespace Disa.Framework.Telegram
             }  
         }
 
-        private VisualBubble MakeMediaBubble(Message message, bool useCurrentTime, bool isUser, string addressStr, string participantAddress = null)
+        private List<VisualBubble> MakeMediaBubble(Message message, bool useCurrentTime, bool isUser, string addressStr, string participantAddress = null)
         {
             DebugPrint(">>>>>>> Making media bubble");
             var messageMedia = message.Media;
@@ -1027,7 +1035,30 @@ namespace Disa.Framework.Telegram
                         imageBubble.Status = Bubble.BubbleStatus.Sent;
                     }
                     imageBubble.AdditionalData = memoryStream.ToArray();
-                    return imageBubble;
+                    var returnList = new List<VisualBubble>
+                    {
+                        imageBubble  
+                    };e
+                    if (!string.IsNullOrEmpty(messageMediaPhoto.Caption))
+                    {
+                        TextBubble captionBubble = null;
+                        if (isUser)
+                        {
+                            captionBubble = new TextBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
+                                addressStr, null, false, this, messageMediaPhoto.Caption,
+                                message.Id.ToString(CultureInfo.InvariantCulture));
+                        }
+                        else
+                        {
+                            captionBubble = new TextBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
+                                addressStr, participantAddress, true, this, messageMediaPhoto.Caption,
+                                message.Id.ToString(CultureInfo.InvariantCulture));
+                        }
+                        returnList.Add(captionBubble);
+                    }
+                    return returnList;
                 }
                 
             }
@@ -1108,7 +1139,30 @@ namespace Disa.Framework.Telegram
                         }
                         bubble.AdditionalData = memoryStream.ToArray();
 
-                        return bubble;
+                        var returnList = new List<VisualBubble>
+                        {
+                            bubble
+                        };
+                        if (!string.IsNullOrEmpty(messageMediaDocument.Caption))
+                        {
+                            TextBubble captionBubble = null;
+                            if (isUser)
+                            {
+                                captionBubble = new TextBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                    message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
+                                    addressStr, null, false, this, messageMediaDocument.Caption,
+                                    message.Id.ToString(CultureInfo.InvariantCulture));
+                            }
+                            else
+                            {
+                                captionBubble = new TextBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                    message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
+                                    addressStr, participantAddress, true, this, messageMediaDocument.Caption,
+                                    message.Id.ToString(CultureInfo.InvariantCulture));
+                            }
+                            returnList.Add(captionBubble);
+                        }
+                        return returnList;
                     }
 
                 }
@@ -1122,7 +1176,10 @@ namespace Disa.Framework.Telegram
                 if (geoPoint != null)
                 {
                     var geoBubble = MakeGeoBubble(geoPoint, message, isUser, useCurrentTime, addressStr, participantAddress, null);
-                    return geoBubble;
+                    return new List<VisualBubble>
+                    {
+                        geoBubble
+                    };
                 }
 
 
@@ -1134,7 +1191,10 @@ namespace Disa.Framework.Telegram
                 if (geoPoint != null)
                 {
                     var geoBubble = MakeGeoBubble(geoPoint,message,isUser,useCurrentTime,addressStr,participantAddress,messageMediaVenue.Title);
-                    return geoBubble;
+                    return new List<VisualBubble>
+                    {
+                        geoBubble
+                    };
                 }
 
             }
@@ -1152,7 +1212,10 @@ namespace Disa.Framework.Telegram
                 var vCardData = Platform.GenerateBytesFromContactCard(contactCard);
                 var contactBubble = MakeContactBubble(message, isUser, useCurrentTime, addressStr, participantAddress, vCardData, messageMediaContact.FirstName);
 
-                return contactBubble;
+                return new List<VisualBubble>
+                { 
+                    contactBubble
+                };
             }
 
             return null;
@@ -3077,8 +3140,11 @@ namespace Disa.Framework.Telegram
                     if (message != null)
                     {
                         DebugPrint(">>>>> Message " + ObjectDumper.Dump(message));
-                        var bubble = ProcessFullMessage(message, false);
-                        EventBubble(bubble);
+                        var bubbles = ProcessFullMessage(message, false);
+                        foreach (var bubble in bubbles)
+                        {
+                            EventBubble(bubble);
+                        }
                         if (message.Unread == null)
                         {
                             SetRead(message);

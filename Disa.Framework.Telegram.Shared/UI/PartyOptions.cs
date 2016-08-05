@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using SharpTelegram.Schema;
+using System.Linq;
 
 namespace Disa.Framework.Telegram
 {
@@ -25,6 +26,21 @@ namespace Disa.Framework.Telegram
             public ParticipantsType Type { get; set; }
             public List<IChatParticipant> ChatParticipants { get; set; }
             public List<IChannelParticipant> ChannelParticipants { get; set; }
+        }
+
+        private class ChannelParticipantComparer : IEqualityComparer<IChannelParticipant>
+        {
+            public bool Equals(IChannelParticipant x, IChannelParticipant y)
+            {
+                var userIdX = TelegramUtils.GetUserIdFromChannelParticipant(x);
+                var userIdY = TelegramUtils.GetUserIdFromChannelParticipant(y);
+                return userIdX == userIdY;
+            }
+
+            public int GetHashCode(IChannelParticipant obj)
+            {
+                return int.Parse(TelegramUtils.GetUserIdFromChannelParticipant(obj));
+            }
         }
 
 
@@ -128,14 +144,23 @@ namespace Disa.Framework.Telegram
                 }
                 if (channelFull != null)
                 {
+                    if (channelFull.CanViewParticipants == null)
+                    {
+                        return new Participants
+                        {
+                            Type = ParticipantsType.Channel,
+                            ChannelParticipants = new List<IChannelParticipant>()
+                        };
+                    }
+
                     var channelParticipants = GetChannelParticipants(channelFull, new ChannelParticipantsRecent());
                     var channelAdmins = GetChannelParticipants(channelFull, new ChannelParticipantsAdmins());
-                    channelAdmins.AddRange(channelParticipants);
+                    var mergedList = channelAdmins.Union(channelParticipants, new ChannelParticipantComparer()).ToList();
                     DebugPrint("###### Party participants " + ObjectDumper.Dump(channelAdmins));
                     _participants = new Participants
                     {
                         Type = ParticipantsType.Channel,
-                        ChannelParticipants = channelAdmins
+                        ChannelParticipants = mergedList
                     };
                     return _participants;
                 }
