@@ -155,6 +155,46 @@ namespace Disa.Framework.Telegram
                         return 0;
                     };
 
+                    Action<List<IMessage>, string> changeAddress = (messages, address) =>
+                    {
+                        foreach (var message in messages)
+                        {
+                            var normalMessage = message as Message;
+                            var serviceMessage = message as MessageService;
+
+                            if (normalMessage != null)
+                            {
+                                normalMessage.ToId = new PeerChannel
+                                {
+                                    ChannelId = uint.Parse(address)
+                                };
+                            }
+                            if (serviceMessage != null)
+                            {
+                                serviceMessage.ToId = new PeerChannel
+                                {
+                                    ChannelId = uint.Parse(address)
+                                };
+                            }
+                        }
+                    };
+
+                    Action<IMessagesMessages,string> updateChatMessageAddresses = (chatMessages, address) =>
+                    {
+                        var messagesChats = chatMessages as MessagesMessages;
+                        var messagesChatsSlice = chatMessages as MessagesMessagesSlice;
+
+                        if (messagesChats != null)
+                        {
+                            changeAddress(messagesChats.Messages, address);
+                        }
+                        if (messagesChatsSlice != null)
+                        {
+                            changeAddress(messagesChatsSlice.Messages, address);
+                        }
+                    };
+
+
                     do
                     {
                         if (isNewBubbleGroup(group))
@@ -167,6 +207,7 @@ namespace Disa.Framework.Telegram
                                 if (max - remainingCount > 0)
                                 {
                                     var chatMessages = GetChatMessagesForChannel(group, Time.GetNowUnixTimestamp(), max - remainingCount , client);
+                                    updateChatMessageAddresses(chatMessages, group.Address);
                                     MergeMessagesMessages(finalMessages, chatMessages);
                                 }
                             }
@@ -174,12 +215,18 @@ namespace Disa.Framework.Telegram
                         }
 
                         bool queryChat;
+                        bool lastMessageIsExtendedParty;
 
-                        var offsetId = GetMessagePtsForTime(group, fromTime, out queryChat);
+                        var offsetId = GetMessagePtsForTime(group, fromTime, out queryChat, out lastMessageIsExtendedParty);
 
                         if (queryChat)
                         {
+                            if (lastMessageIsExtendedParty)
+                            {
+                                finalMessages = GetChannelMessages(group, 1, max, client);
+                            }
                             var chatMessages =  GetChatMessagesForChannel(group, fromTime, max, client);
+                            updateChatMessageAddresses(chatMessages, group.Address);
                             MergeMessagesMessages(finalMessages, chatMessages);
                             break;
                         }
@@ -189,6 +236,7 @@ namespace Disa.Framework.Telegram
                         if (max - finalMessagesCount > 0)
                         {
                             var chatMessages = GetChatMessagesForChannel(group, fromTime, max - finalMessagesCount, client);
+                            updateChatMessageAddresses(chatMessages, group.Address);
                             MergeMessagesMessages(finalMessages, chatMessages);
                         }
 
@@ -199,14 +247,19 @@ namespace Disa.Framework.Telegram
                 else
                 {
                     var peer = GetInputPeer(group.Address, group.IsParty, group.IsExtendedParty);
+
+                    bool queryChat;
+                    bool lastMessageIsExtendedParty;
+
+                    var offsetId = GetMessagePtsForTime(group, fromTime, out queryChat, out lastMessageIsExtendedParty);
+
                     var response =
                         TelegramUtils.RunSynchronously(
                             client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs
                             {
                                 Peer = peer,
-                                OffsetDate = (uint)fromTime,
+                                OffsetId = offsetId +1,
                                 Limit = (uint)max
-
                             }));
                     return response;
                 }
@@ -338,10 +391,12 @@ namespace Disa.Framework.Telegram
             };
         }
 
-        private uint GetMessagePtsForTime(BubbleGroup group, long fromTime, out bool queryChat)
+        private uint GetMessagePtsForTime(BubbleGroup group, long fromTime, out bool queryChat, out bool lastMessageIsExtendedParty)
         {
             VisualBubble bubbleToSyncFrom = null;
             bool localQueryChat = false;
+            bool localLastMessageIsExtendedParty = false;
+
             foreach (var bubble in BubbleGroupSync.ReadBubblesFromDatabase(group))
             {
                 if (bubble is PartyInformationBubble)
@@ -349,6 +404,12 @@ namespace Disa.Framework.Telegram
                     if ((bubble as PartyInformationBubble).Type == PartyInformationBubble.InformationType.UpgradedToExtendedParty)
                     {
                         localQueryChat = true;
+                        if (bubble.Time <= fromTime)
+                        {
+                            localLastMessageIsExtendedParty = true;
+                            bubbleToSyncFrom = bubble;
+                            break;
+                        }
                     }
                 }
                 if (bubble.Time <= fromTime)
@@ -362,12 +423,15 @@ namespace Disa.Framework.Telegram
                 if (bubbleToSyncFrom.IdService == null)
                 {
                     queryChat = localQueryChat;
+                    lastMessageIsExtendedParty = localLastMessageIsExtendedParty;
                     return 1;
                 }
                 queryChat = localQueryChat;
+                lastMessageIsExtendedParty = localLastMessageIsExtendedParty;
                 return uint.Parse(bubbleToSyncFrom.IdService);
             }
             queryChat = localQueryChat;
+            lastMessageIsExtendedParty = localLastMessageIsExtendedParty;
             return 1;
         }
 

@@ -360,7 +360,7 @@ namespace Disa.Framework.Telegram
                                     new ReadBubble(
                                         Time.GetNowUnixTimestamp(),
                                         Bubble.BubbleDirection.Incoming, this,
-                                        peerChat.ChatId.ToString(CultureInfo.InvariantCulture), _settings.AccountId.ToString(CultureInfo.InvariantCulture),
+                                        peerChat.ChatId.ToString(CultureInfo.InvariantCulture), DisaReadTime.SingletonPartyParticipantAddress,
                                         Time.GetNowUnixTimestamp(), true, false));
                             }
                         }
@@ -916,19 +916,27 @@ namespace Disa.Framework.Telegram
         {
             if (superGroup)
             {
-                var result =  TelegramUtils.RunSynchronously(client.Methods.ChannelsGetMessagesAsync(new ChannelsGetMessagesArgs
+                try
                 {
-                    Channel = new InputChannel
+                    var result = TelegramUtils.RunSynchronously(client.Methods.ChannelsGetMessagesAsync(new ChannelsGetMessagesArgs
                     {
-                        ChannelId = toId,
-                        AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(toId))
-                    },
-                    Id = new List<uint>
-                    {
-                        id
-                    }
-                }));
-                return result;
+                        Channel = new InputChannel
+                        {
+                            ChannelId = toId,
+                            AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(toId))
+                        },
+                        Id = new List<uint>
+                        {
+                            id
+                        }
+                    }));
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    DebugPrint("Exeption while getting channel message" +  e);
+                    return MakeMessagesMessages(new List<IChat>(), new List<IUser>(), new List<IMessage>());
+                }
             }
             else
             {

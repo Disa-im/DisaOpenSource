@@ -5,13 +5,15 @@ using SharpTelegram.Schema;
 using System.Linq;
 using System.Globalization;
 using SharpMTProto;
+using System.Diagnostics.Contracts;
 
 namespace Disa.Framework.Telegram
 {
     public partial class Telegram : INewMessage
     {
-        public Task GetContacts(string query, bool searchForParties, Action<List<Contact>> result)
+        Task INewMessage.GetContacts(string query, bool searchForParties, Action<List<Contact>> result)
         {
+            Contract.Ensures(Contract.Result<Task>() != null);
             return Task.Factory.StartNew(async () =>
             {
 
@@ -71,6 +73,15 @@ namespace Disa.Framework.Telegram
                     foreach (var chat in _dialogs.GetAllChats())
                     {
                         var name = TelegramUtils.GetChatTitle(chat);
+                        var upgraded = TelegramUtils.GetChatUpgraded(chat);
+                        if (upgraded)
+                            continue;
+                        var left = TelegramUtils.GetChatLeft(chat);
+                        if (left)
+                            continue;
+                        var kicked = TelegramUtils.GetChatKicked(chat);
+                        if (kicked)
+                            continue;
                         partyContacts.Add(new TelegramPartyContact
                         {
                             FirstName = name,
@@ -86,29 +97,81 @@ namespace Disa.Framework.Telegram
                         });
                     }
 
+                    //partyContacts.Sort((x, y) => x.FullName.CompareTo(y.FullName));
+
+
                     if (string.IsNullOrWhiteSpace(query))
                     {
                         result(partyContacts);
                     }
                     else
                     {
-                        result(partyContacts.FindAll(x => Utils.Search(x.FullName, query)));
+                        if (query.Length >= 5)
+                        {
+                            var localContacts = partyContacts.FindAll(x => Utils.Search(x.FirstName, query));
+                            using (var client = new FullClientDisposable(this))
+                            {
+                                var searchResult =
+                                    TelegramUtils.RunSynchronously(
+                                        client.Client.Methods.ContactsSearchAsync(new ContactsSearchArgs
+                                        {
+                                            Q = query,
+                                            Limit = 50 //like the official client
+                                        }));
+                                var contactsFound = searchResult as ContactsFound;
+                                var globalContacts = GetGlobalPartyContacts(contactsFound);
+                                localContacts.AddRange(globalContacts);
+                            }
+                            result(localContacts);
+                        }
+                        else
+                        {
+                            var searchResult = partyContacts.FindAll(x => Utils.Search(x.FirstName, query));
+                            result(searchResult);
+                        }
                     }
 
                 }
-
-
             });
 
+        }
+
+        private List<Contact> GetGlobalPartyContacts(ContactsFound contactsFound)
+        {
+            var globalContacts = new List<Contact>();
+            _dialogs.AddChats(contactsFound.Chats);
+            Utils.DebugPrint("Chats found " + ObjectDumper.Dump(contactsFound.Chats));
+            foreach (var chat in contactsFound.Chats)
+            {
+                var name = TelegramUtils.GetChatTitle(chat);
+                var kicked = TelegramUtils.GetChatKicked(chat);
+                if (kicked)
+                    continue;
+                globalContacts.Add(new TelegramPartyContact
+                {
+                    FirstName = name,
+                    Ids = new List<Contact.ID>
+                            {
+                                new Contact.PartyID
+                                {
+                                    Service = this,
+                                    Id = TelegramUtils.GetChatId(chat),
+                                    ExtendedParty = chat is Channel
+                                }
+                            },
+                });
+            }
+            return globalContacts;
         }
 
         private List<Contact> GetGlobalContacts(ContactsFound contactsFound)
         {
             var globalContacts = new List<Contact>();
+            _dialogs.AddUsers(contactsFound.Users);
             foreach (var iUser in contactsFound.Users)
             {
                 var user = iUser as User;
-                if (user != null)
+                if (user != null && user.Bot == null)
                 {
                     globalContacts.Add(new TelegramContact
                     {
@@ -279,6 +342,7 @@ namespace Disa.Framework.Telegram
                 {
                     if (contacts[0].Item2 is Contact.PartyID)
                     {
+                        JoinChannelIfLeft(contacts[0].Item2.Id);
                         result(true, contacts[0].Item2.Id);
                     }
                     else
@@ -289,6 +353,29 @@ namespace Disa.Framework.Telegram
                     }
                 }
             });
+        }
+
+        private void JoinChannelIfLeft(string id)
+        {
+            var channel = _dialogs.GetChat(uint.Parse(id)) as Channel;
+            if (channel != null)
+            {
+                if (channel.Left != null)
+                {
+                    using (var client = new FullClientDisposable(this))
+                    {
+                        var updates = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsJoinChannelAsync(new ChannelsJoinChannelArgs
+                        {
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(id),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(id)))
+                            }
+                        }));
+                        SendToResponseDispatcher(updates, client.Client);
+                    }
+                }
+            }
         }
 
         public Task GetContactFromAddress(string address, Action<Contact, Contact.ID> result)

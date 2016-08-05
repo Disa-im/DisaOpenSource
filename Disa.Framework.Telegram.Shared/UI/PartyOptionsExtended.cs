@@ -79,14 +79,7 @@ namespace Disa.Framework.Telegram
                 var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
                 if (channel != null)
                 {
-                    if (IsAdmin(group.Address, true))
-                    {
-                        result(true);
-                    }
-                    else
-                    {
-                        result(false);
-                    }
+                    result(true);
                 }
                 else
                 {

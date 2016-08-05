@@ -338,6 +338,15 @@ namespace Disa.Framework.Telegram
                         ProtoBufBytes = memoryStream.ToArray(),
                     };
                 }
+                //Additional check to prevent overwritng a channel without a access hash
+                if (chat is Channel)
+                {
+                    var channel = chat as Channel;
+                    if (channel.AccessHash == 0)
+                    {
+                        return;
+                    }
+                }
 
                 var dbChat = database.Store.Where(x => x.Id == chatId).FirstOrDefault();
                 if (dbChat != null)
