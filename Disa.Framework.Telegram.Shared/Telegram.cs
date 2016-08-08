@@ -243,6 +243,7 @@ namespace Disa.Framework.Telegram
                 var updateReadHistoryInbox = update as UpdateReadHistoryInbox;
                 var updateReadHistoryOutbox = update as UpdateReadHistoryOutbox;
                 var updateReadChannelInbox = update as UpdateReadChannelInbox;
+                var updateReadChannelOutbox = update as UpdateReadChannelOutbox;
                 var updateChannelTooLong = update as UpdateChannelTooLong;
                 var updateDeleteChannelMessage = update as UpdateDeleteChannelMessages;
                 var updateEditChannelMessage = update as UpdateEditChannelMessage;
@@ -311,7 +312,7 @@ namespace Disa.Framework.Telegram
                     var chatToUpdate = _dialogs.GetUser(updateChatAdmins.ChatId) as Chat;
                     if (chatToUpdate != null)
                     {
-                        if(updateChatAdmins.Enabled)
+                        if (updateChatAdmins.Enabled)
                         {
                             chatToUpdate.AdminsEnabled = new True();
                         }
@@ -369,6 +370,24 @@ namespace Disa.Framework.Telegram
 
                     }
 
+                }
+                else if (updateReadChannelOutbox != null)
+                {
+                    BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
+                          updateReadChannelOutbox.ChannelId.ToString(CultureInfo.InvariantCulture));
+                    if (bubbleGroup != null)
+                    {
+                        string idString = bubbleGroup.LastBubbleSafe().IdService;
+                        if (idString == updateReadChannelOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
+                        {
+                            EventBubble(
+                                new ReadBubble(
+                                    Time.GetNowUnixTimestamp(),
+                                    Bubble.BubbleDirection.Incoming, this,
+                                    updateReadChannelOutbox.ChannelId.ToString(CultureInfo.InvariantCulture), DisaReadTime.SingletonPartyParticipantAddress,
+                                    Time.GetNowUnixTimestamp(), true, false));
+                        }
+                    }
                 }
                 else if (updateReadHistoryInbox != null)
                 {
@@ -1112,7 +1131,7 @@ namespace Disa.Framework.Telegram
                         {
                             //TODO: localize
                             var filename = document.MimeType.Contains("video")
-                                ? "Video Clip"
+                                ? ""
                                 : GetDocumentFileName(document);GetDocumentFileName(document);
 
                             if (isUser)

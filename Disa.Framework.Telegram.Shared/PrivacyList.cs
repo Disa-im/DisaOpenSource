@@ -16,18 +16,21 @@ namespace Disa.Framework.Telegram
             List<string> addressList;
             return Task.Factory.StartNew(() =>
             {
+                uint offset = 0;
                 //TODO: check when it returns a chunk or a full list
                 using (var client = new FullClientDisposable(this))
                 {
+
+                Again:
                     var blocked =
                         TelegramUtils.RunSynchronously(
                             client.Client.Methods.ContactsGetBlockedAsync(new ContactsGetBlockedArgs
                             {
                                 Limit = 100,
-                                Offset = 0
+                                Offset = offset
                             }));
                     var contactsBlocked = blocked as ContactsBlocked;
-                    var contatsBlockedSlice = blocked as ContactsBlockedSlice;
+                    var contactsBlockedSlice = blocked as ContactsBlockedSlice;
 
                     addressList = new List<string>();
                     if (contactsBlocked != null)
@@ -38,14 +41,21 @@ namespace Disa.Framework.Telegram
                             if (contactBlocked == null) continue;
                             addressList.Add(contactBlocked.UserId.ToString(CultureInfo.InvariantCulture));
                         }
+                        _dialogs.AddUsers(contactsBlocked.Users);
                     }
-                    if (contatsBlockedSlice != null)
+                    if (contactsBlockedSlice != null)
                     {
-                        foreach (var blockedContact in contatsBlockedSlice.Blocked)
+                        foreach (var blockedContact in contactsBlockedSlice.Blocked)
                         {
                             var contactBlocked = blockedContact as ContactBlocked;
                             if (contactBlocked == null) continue;
                             addressList.Add(contactBlocked.UserId.ToString(CultureInfo.InvariantCulture));
+                        }
+                        _dialogs.AddUsers(contactsBlockedSlice.Users);
+                        if (contactsBlockedSlice.Blocked.Any())
+                        {
+                            offset += contactsBlockedSlice.Count;
+                            goto Again;
                         }
                     }
                     previousAddresses = addressList.ToArray();
@@ -72,7 +82,8 @@ namespace Disa.Framework.Telegram
                                 {
                                     Id = new InputUser
                                     {
-                                        UserId = uint.Parse(address)
+                                        UserId = uint.Parse(address),
+                                        AccessHash = GetUserAccessHashIfForeign(address)
                                     }
                                 }));
                             break;
