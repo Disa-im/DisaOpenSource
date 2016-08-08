@@ -180,6 +180,8 @@ namespace Disa.Framework.Telegram
 
         private void SaveChannelState(uint channelId, uint pts)
         {
+            if (pts == 0)
+                return;
             _dialogs.UpdateChatPts(channelId, pts);
         }
 
@@ -471,6 +473,7 @@ namespace Disa.Framework.Telegram
                 else if (message != null)
                 {
                     var bubbles = ProcessFullMessage(message, useCurrentTime);
+                    var i = 0;
                     foreach (var bubble in bubbles)
                     {
                         if (bubble != null)
@@ -484,7 +487,7 @@ namespace Disa.Framework.Telegram
                                     DebugPrint(">>>>> User is null, fetching user from the server");
                                     GetMessage(message.Id, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
                                 }
-                                if (message.ReplyToMsgId != 0)
+                                if (message.ReplyToMsgId != 0 && i == 0)//we should only add quoted message to first bubble if multiple bubbles exist
                                 {
                                     var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
                                     DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
@@ -494,6 +497,7 @@ namespace Disa.Framework.Telegram
                             }
                             EventBubble(bubble);
                         }
+                        i++;
                     }
                     if (message.Id > maxMessageId)
                     {
@@ -597,7 +601,8 @@ namespace Disa.Framework.Telegram
                 }
                 else if (updateChannelTooLong != null)
                 {
-                    SaveChannelState(updateChannelTooLong.ChannelId, updateChannelTooLong.Pts);
+                    //this dude gives me a pts of 0, which messes up shit. So we wont do nothin mah man
+                    //SaveChannelState(updateChannelTooLong.ChannelId, updateChannelTooLong.Pts);
                 }
                 else if (updateEditChannelMessage != null)
                 {
@@ -1038,7 +1043,7 @@ namespace Disa.Framework.Telegram
                     var returnList = new List<VisualBubble>
                     {
                         imageBubble  
-                    };e
+                    };
                     if (!string.IsNullOrEmpty(messageMediaPhoto.Caption))
                     {
                         TextBubble captionBubble = null;
@@ -1793,11 +1798,6 @@ namespace Disa.Framework.Telegram
                 {
                     TokenType = 7,
                     Token = sessionId.ToString(CultureInfo.InvariantCulture),
-                    DeviceModel = AppInfo.DeviceModel,
-                    SystemVersion = AppInfo.SystemVersion,
-                    AppVersion = AppInfo.AppVersion,
-                    AppSandbox = false,
-                    LangCode = AppInfo.LangCode
                 }));
                 if (!registerDeviceResult)
                 {
@@ -3145,7 +3145,7 @@ namespace Disa.Framework.Telegram
                         {
                             EventBubble(bubble);
                         }
-                        if (message.Unread == null)
+                        if (message.MediaUnread == null)
                         {
                             SetRead(message);
                         }
@@ -3157,7 +3157,7 @@ namespace Disa.Framework.Telegram
                         {
                             EventBubble(partyInformationBubble);
                         }
-                        if (messageService.Unread == null)
+                        if (messageService.MediaUnread == null)
                         {
                             SetRead(messageService);
                         }
@@ -3168,19 +3168,14 @@ namespace Disa.Framework.Telegram
             foreach (var idialog in dialogs)
             {
                 var dialog = idialog as Dialog;
-                var dialogChannel = idialog as DialogChannel;
                 if (dialog != null)
                 {
                     var iMessage  = FindMessage(dialog.TopMessage, messages);
                     processMessage(iMessage);
-                    if (i >= 10)
-                        break;
-                    i++;
-                }
-                if (dialogChannel != null)
-                {
-                    var iMessage = FindMessage(dialogChannel.TopMessage, messages);
-                    processMessage(iMessage);
+                    if (dialog.Peer is PeerChannel)
+                    { 
+                        SaveChannelState(uint.Parse(TelegramUtils.GetPeerId(dialog.Peer)), dialog.Pts);
+                    }
                     if (i >= 10)
                         break;
                     i++;

@@ -74,10 +74,8 @@ namespace Disa.Framework.Telegram
                             var result = await client.Methods.AuthSendCodeAsync(new AuthSendCodeArgs
                             {
                                 PhoneNumber = number,
-                                //SmsType = 0,
                                 ApiId = AppInfo.ApiId,
                                 ApiHash = "f8f2562579817ddcec76a8aae4cd86f6",
-                                LangCode = PhoneBook.Language
                             });
                             DebugPrint(ObjectDumper.Dump(result));
                         }

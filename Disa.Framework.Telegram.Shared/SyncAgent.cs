@@ -253,15 +253,32 @@ namespace Disa.Framework.Telegram
 
                     var offsetId = GetMessagePtsForTime(group, fromTime, out queryChat, out lastMessageIsExtendedParty);
 
-                    var response =
-                        TelegramUtils.RunSynchronously(
-                            client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs
-                            {
-                                Peer = peer,
-                                OffsetId = offsetId +1,
-                                Limit = (uint)max
-                            }));
-                    return response;
+                    if (offsetId != 1)
+                    {
+
+                        var response =
+                            TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs
+                                {
+                                    Peer = peer,
+                                    OffsetId = offsetId + 1,
+                                    Limit = (uint)max
+                                }));
+                        return response;
+                    }
+                    else
+                    {
+                        var response =
+                           TelegramUtils.RunSynchronously(
+                               client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs
+                               {
+                                   Peer = peer,
+                                   OffsetDate = (uint)fromTime,
+                                   Limit = (uint)max
+                               }));
+                        return response;
+                    
+                    }
                 }
             }
 
@@ -275,10 +292,10 @@ namespace Disa.Framework.Telegram
 
         Again:
 
-            var iDialogs = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsGetDialogsAsync(new ChannelsGetDialogsArgs
+            var iDialogs = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
             {
                 Limit = 100,
-                Offset = offset
+                OffsetPeer = new InputPeerEmpty()
             }));
             var dialogs = iDialogs as MessagesDialogs;
             var dialogsSlice = iDialogs as MessagesDialogsSlice;
@@ -303,12 +320,12 @@ namespace Disa.Framework.Telegram
         {
             foreach (var dialog in dialogs)
             {
-                var dialogChannel = dialog as DialogChannel;
-                if (dialogChannel != null)
+                var dialogObj = dialog as Dialog;
+                if (dialogObj != null)
                 {
-                    if (TelegramUtils.GetPeerId(dialogChannel.Peer) == address)
+                    if (TelegramUtils.GetPeerId(dialogObj.Peer) == address)
                     {
-                        return dialogChannel.Pts;
+                        return dialogObj.Pts;
                     }
                 }
             }
@@ -445,11 +462,12 @@ namespace Disa.Framework.Telegram
                 if (message != null)
                 {
                     var messageBubbles = ProcessFullMessage(message, false);
+                    var i = 0;
                     foreach (var bubble in messageBubbles)
                     {
                         if (bubble != null)
                         {
-                            if (message.ReplyToMsgId != 0)
+                            if (message.ReplyToMsgId != 0 && i == 0)//add quoted message only to the first bubble
                             {
                                 var iReplyMessage = GetMessage(message.ReplyToMsgId, null, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
                                 DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
@@ -458,6 +476,7 @@ namespace Disa.Framework.Telegram
                             }
                             bubbles.Add(bubble);
                         }
+                        i++;
                     }
                 }
                 if (messageService != null)

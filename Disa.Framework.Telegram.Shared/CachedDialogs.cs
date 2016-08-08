@@ -351,6 +351,7 @@ namespace Disa.Framework.Telegram
                 var dbChat = database.Store.Where(x => x.Id == chatId).FirstOrDefault();
                 if (dbChat != null)
                 {
+                    cachedChat.Pts = dbChat.Pts;
                     database.Store.Delete(x => x.Id == chatId);
                     database.Add(cachedChat);
                 }
