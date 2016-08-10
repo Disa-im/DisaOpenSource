@@ -250,6 +250,7 @@ namespace Disa.Framework.Telegram
                 var updateDeleteChannelMessage = update as UpdateDeleteChannelMessages;
                 var updateEditChannelMessage = update as UpdateEditChannelMessage;
                 var updateChatAdmins = update as UpdateChatAdmins;
+                var updateChannel = update as UpdateChannel;
                 var message = update as SharpTelegram.Schema.Message;
                 var user = update as IUser;
                 var chat = update as IChat;
@@ -310,6 +311,18 @@ namespace Disa.Framework.Telegram
                     InvalidateThumbnail(updatedUser.Id.ToString(), false, false);
                     InvalidateThumbnail(updatedUser.Id.ToString(), false, true);
                     _dialogs.AddUser(updatedUser);
+                }
+                else if (updateChannel != null)
+                {
+                    var channel = _dialogs.GetChat(updateChannel.ChannelId) as Channel;
+                    if (channel != null)
+                    {
+                        if (channel.Left != null)
+                        { 
+                            var bubbleGroup = BubbleGroupManager.FindWithAddress(this, updateChannel.ChannelId.ToString());
+                            Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroup });
+                        }
+                    }
                 }
                 else if (updateChatAdmins != null)
                 {
@@ -1890,7 +1903,6 @@ namespace Disa.Framework.Telegram
 
         public override void SendBubble(Bubble b)
         {
-            DebugPrint(">>>> Sending bubble " + ObjectDumper.Dump(b));
             var presenceBubble = b as PresenceBubble;
             if (presenceBubble != null)
             {

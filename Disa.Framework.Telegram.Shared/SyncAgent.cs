@@ -356,6 +356,7 @@ namespace Disa.Framework.Telegram
                 if (fullChannel.MigratedFromChatId != 0)
                 {
                     var peerChat = GetInputPeer(fullChannel.MigratedFromChatId.ToString(), true, false);
+                    DisposeFullChat();
                     return TelegramUtils.RunSynchronously(
                             client.Client.Methods.MessagesGetHistoryAsync(new MessagesGetHistoryArgs
                             {
@@ -365,8 +366,10 @@ namespace Disa.Framework.Telegram
 
                             }));
                 }
+                DisposeFullChat();
                 return MakeMessagesMessages(new List<IChat>(), new List<IUser>(), new List<IMessage>());
             }
+            DisposeFullChat();
             return MakeMessagesMessages(new List<IChat>(), new List<IUser>(), new List<IMessage>());
         }
 
