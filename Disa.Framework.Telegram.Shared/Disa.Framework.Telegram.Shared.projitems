@@ -1299,6 +1299,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptionsExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyBlockedParticipants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptionsSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CachedThumbnail.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)BigMath\" />

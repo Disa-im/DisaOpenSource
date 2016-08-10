@@ -28,11 +28,11 @@ namespace Disa.Framework.Telegram
     [ServiceInfo("Telegram", true, true, true, false, true, typeof(TelegramSettings),
         ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(ReadBubble),
                  typeof(TypingBubble), typeof(PresenceBubble), typeof(ImageBubble), typeof(FileBubble), typeof(AudioBubble), typeof(LocationBubble), typeof(ContactBubble))]
-    [FileParameters(55000000)] //55mb
+    [FileParameters(1000000000)] //1GB
     [AudioParameters(AudioParameters.RecordType.M4A, AudioParameters.NoDurationLimit, 25000000, ".mp3", ".aac", ".m4a", ".mp4", ".wav", ".3ga", ".3gp", ".3gpp", ".amr", ".ogg", ".webm", ".weba", ".opus")]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
-        private Dictionary<string, DisaThumbnail> _cachedThumbnails = new Dictionary<string, DisaThumbnail>();
+        private object _cachedThumbnailsLock = new object();
 
         private static TcpClientTransportConfig DefaultTransportConfig = 
             new TcpClientTransportConfig("149.154.167.50", 443);
@@ -119,6 +119,8 @@ namespace Disa.Framework.Telegram
         private Dictionary<string, Timer> _typingTimers = new Dictionary<string, Timer>();
 
         private WakeLockBalancer.GracefulWakeLock _longPollHeartbeart;
+
+        private string _thumbnailDatabasePathCached;
 
         private void CancelTypingTimer(string id)
         {
@@ -305,6 +307,8 @@ namespace Disa.Framework.Telegram
                     {
                         updatedUser.Photo = updateUserPhoto.Photo;
                     }
+                    InvalidateThumbnail(updatedUser.Id.ToString(), false, false);
+                    InvalidateThumbnail(updatedUser.Id.ToString(), false, true);
                     _dialogs.AddUser(updatedUser);
                 }
                 else if (updateChatAdmins != null)
@@ -649,12 +653,13 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private List<VisualBubble> MakePartyInformationBubble(MessageService messageService, bool useCurrentTime)
+      private List<VisualBubble> MakePartyInformationBubble(MessageService messageService, bool useCurrentTime)
         {
             var editTitle = messageService.Action as MessageActionChatEditTitle;
             var deleteUser = messageService.Action as MessageActionChatDeleteUser;
             var addUser = messageService.Action as MessageActionChatAddUser;
             var created = messageService.Action as MessageActionChatCreate;
+            var thumbnailChanged = messageService.Action as MessageActionChatEditPhoto;
             var upgradedToSuperGroup = messageService.Action as MessageActionChannelMigrateFrom;
             var chatMigaratedToSuperGroup = messageService.Action as MessageActionChatMigrateTo;
 
@@ -677,6 +682,18 @@ namespace Disa.Framework.Telegram
                     bubble.ExtendedParty = true;
                 }
                 BubbleGroupUpdater.Update(this, address);
+                return new List<VisualBubble>
+                {
+                    bubble
+                };
+            }
+            else if (thumbnailChanged != null)
+            {
+                InvalidateThumbnail(address, true, true);
+                InvalidateThumbnail(address, true, false);
+                var bubble = PartyInformationBubble.CreateThumbnailChanged(
+                    useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
+                    this, messageService.Id.ToString(), null);
                 return new List<VisualBubble>
                 {
                     bubble
@@ -2534,8 +2551,10 @@ namespace Disa.Framework.Telegram
                     Hash = string.Empty
                 });
                 contactsCache.AddRange(response.Users.OfType<User>().ToList());
+                _dialogs.AddUsers(response.Users);
                 return contactsCache;
             }
+
         }
 
         public override Task GetBubbleGroupName(BubbleGroup group, Action<string> result)
@@ -2755,6 +2774,42 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private void InvalidateThumbnail(string id, bool group, bool small)
+        {
+            if (id == null)
+            {
+                return;
+            }
+            var key = id + group + small;
+
+            using (var database = new SqlDatabase<CachedThumbnail>(GetThumbnailDatabasePath()))
+            {
+                var dbThumbnail = database.Store.Where(x => x.Id == key).FirstOrDefault();
+                if (dbThumbnail != null)
+                {
+                    database.Store.Delete(x => x.Id == key);
+                }
+            }
+
+        }
+
+        private string GetThumbnailDatabasePath()
+        {
+            if (_thumbnailDatabasePathCached != null)
+                return _thumbnailDatabasePathCached;
+
+            var databasePath = Platform.GetDatabasePath();
+            if (!Directory.Exists(databasePath))
+            {
+                Utils.DebugPrint("Creating database directory.");
+                Directory.CreateDirectory(databasePath);
+            }
+
+            _thumbnailDatabasePathCached = Path.Combine(databasePath, "thumbnailCache.db");
+            return _thumbnailDatabasePathCached;
+        }
+
+
         public DisaThumbnail GetThumbnail(string id, bool group, bool small)
         {
             if (id == null)
@@ -2763,20 +2818,77 @@ namespace Disa.Framework.Telegram
             }
             var key = id + group + small;
 
+
+            Func<DisaThumbnail, MemoryStream> convertThumbnailToMemoryStream = thumbnail =>
+            {
+                MemoryStream memoryStream = new MemoryStream();
+                Serializer.Serialize<DisaThumbnail>(memoryStream, thumbnail);
+                return memoryStream;
+            };
+
+
+            Func<DisaThumbnail, byte[]> serializeDisaThumbnail = thumbnail =>
+            {
+                using (var memoryStream = convertThumbnailToMemoryStream(thumbnail))
+                {
+                    return memoryStream.ToArray();
+                }
+            };
+
             Func<DisaThumbnail, DisaThumbnail> cache = thumbnail =>
             {
-                lock (_cachedThumbnails)
+                if (thumbnail == null)
                 {
-                    _cachedThumbnails[key] = thumbnail;
+                    return thumbnail;
+                }
+                lock (_cachedThumbnailsLock)
+                {
+                    using (var database = new SqlDatabase<CachedThumbnail>(GetThumbnailDatabasePath()))
+                    {
+                        var bytes = serializeDisaThumbnail(thumbnail);
+                        if (bytes == null)
+                        {
+                            return null;
+                        }
+                        var cachedThumbnail = new CachedThumbnail
+                        {
+                            Id = key,
+                            ThumbnailBytes = bytes
+                        };
+
+                        var dbThumbnail = database.Store.Where(x => x.Id == key).FirstOrDefault();
+                        if (dbThumbnail != null)
+                        {
+                            database.Store.Delete(x => x.Id == key);
+                            database.Add(cachedThumbnail);
+                        }
+                        else
+                        {
+                            database.Add(cachedThumbnail);
+                        }
+                    }
                 }
                 return thumbnail;
             };
 
-            lock (_cachedThumbnails)
+            lock (_cachedThumbnailsLock)
             {
-                if (_cachedThumbnails.ContainsKey(key))
+                using (var database = new SqlDatabase<CachedThumbnail>(GetThumbnailDatabasePath()))
                 {
-                    return _cachedThumbnails[key];
+                    var dbThumbnail = database.Store.Where(x => x.Id == key).FirstOrDefault();
+                    if (dbThumbnail != null)
+                    {
+                        if (dbThumbnail.ThumbnailBytes == null)
+                        {
+                            return null;
+                        }
+                        using (var stream = new MemoryStream(dbThumbnail.ThumbnailBytes))
+                        {
+                            var disaThumbnail = Serializer.Deserialize<DisaThumbnail>(stream);
+                            disaThumbnail.Failed = false;
+                            return disaThumbnail;
+                        }
+                    }
                 }
             }
             if (group)
@@ -2823,19 +2935,19 @@ namespace Disa.Framework.Telegram
             var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
                 new UploadGetFileArgs
             {
-                Location = new InputFileLocation
+                    Location = new InputFileLocation
                 {
                     VolumeId = fileLocation.VolumeId,
                     LocalId = fileLocation.LocalId,
                     Secret = fileLocation.Secret
                 },
-                Offset = 0,
-                Limit = uint.MaxValue,
-            }));
+                    Offset = 0,
+                    Limit = uint.MaxValue,
+                }));
             return response.Bytes;
         }
 
-        private static byte[] FetchFileBytes(TelegramClient client, FileLocation fileLocation,uint offset,uint limit)
+        private static byte[] FetchFileBytes(TelegramClient client, FileLocation fileLocation, uint offset, uint limit)
         {
             var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
                 new UploadGetFileArgs

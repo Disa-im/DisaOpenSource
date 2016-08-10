@@ -200,6 +200,7 @@ namespace Disa.Framework.Telegram
                         if (isNewBubbleGroup(group))
                         {
                             var newOffsetId = GetLastPtsForChannel(client, group.Address);
+                            SaveChannelState(uint.Parse(group.Address), newOffsetId); //save the state for this channel since it wount have any as its a new bubblegroup
                             finalMessages = GetChannelMessages(group, newOffsetId, max, client);
                             if (hasSuperGroupCreatedMessage(finalMessages))
                             {
