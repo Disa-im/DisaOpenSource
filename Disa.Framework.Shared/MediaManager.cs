@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
 
 namespace Disa.Framework
@@ -365,10 +367,55 @@ namespace Disa.Framework
             return Path.Combine(picturesLocation, fileName);
         }
 
-        public static bool IsFileInDisaDirectory(Func<string> disaDirectory, string pathToTest)
+        public static async Task<string> IsFileInDisaDirectory(Func<string> disaDirectory, string path)
         {
-            var newPath = Path.Combine(disaDirectory(), Path.GetFileName(pathToTest));
-            return pathToTest == newPath;
+            try
+            {
+                if (!File.Exists(path))
+                {
+                    return null;
+                }
+                var newPath = Path.Combine(disaDirectory(), Path.GetFileName(path));
+                var newPathFileInfo = new FileInfo(newPath);
+                if (!newPathFileInfo.Exists)
+                {
+                    return null;
+                }
+                if (newPath == path)
+                {
+                    return newPath;
+                }
+                if (newPathFileInfo.Length != new FileInfo(path).Length)
+                {
+                    return null;
+                }
+                return await Task<string>.Factory.StartNew(() =>
+                {
+                    var hash1 = ComputeHash(path);
+                    var hash2 = ComputeHash(newPath);
+                    if (hash1.SequenceEqual(hash2))
+                    {
+                        return newPath;
+                    }
+                    return null;
+                });
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static byte[] ComputeHash(string fileLocation)
+        {
+            using (var fs = File.OpenRead(fileLocation))
+            {
+                using (var sha1 = new SHA1Managed())
+                {
+                    var hash = sha1.ComputeHash(fs);
+                    return hash;
+                }
+            }
         }
 
 		private static Tuple<bool, string> CopyFileToDirectoryIfNeeded(Func<string> directory, string oldPath)
