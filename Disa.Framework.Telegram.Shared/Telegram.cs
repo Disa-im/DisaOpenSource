@@ -1923,6 +1923,14 @@ namespace Disa.Framework.Telegram
                 using (var client = new FullClientDisposable(this))
                 {
                     SendPresence(client.Client);
+                    if (presenceBubble.Available)
+                    {
+                        //we are forground, we need to fetch difference
+                        if (_mutableSettings.Date != 0)
+                        {
+                            FetchDifference(client.Client);
+                        }
+                    }
                 }
             }
 
@@ -2851,7 +2859,7 @@ namespace Disa.Framework.Telegram
             {
                 if (thumbnail == null)
                 {
-                    return thumbnail;
+                    return null;
                 }
                 lock (_cachedThumbnailsLock)
                 {
@@ -2887,6 +2895,7 @@ namespace Disa.Framework.Telegram
             {
                 using (var database = new SqlDatabase<CachedThumbnail>(GetThumbnailDatabasePath()))
                 {
+                    Retry:
                     var dbThumbnail = database.Store.Where(x => x.Id == key).FirstOrDefault();
                     if (dbThumbnail != null)
                     {
@@ -2898,6 +2907,12 @@ namespace Disa.Framework.Telegram
                         {
                             var disaThumbnail = Serializer.Deserialize<DisaThumbnail>(stream);
                             disaThumbnail.Failed = false;
+                            if (!File.Exists(disaThumbnail.Location))
+                            {
+                                DebugPrint("The thumbnail cache was purged! purging the database so that everything is redownloaded");
+                                database.DeleteAll();
+                                goto Retry;
+                            }
                             return disaThumbnail;
                         }
                     }

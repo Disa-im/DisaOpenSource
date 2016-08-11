@@ -78,6 +78,11 @@ namespace Disa.Framework
         {
             _connection.Delete(item);
         }
+
+        public void DeleteAll()
+        {
+            _connection.DeleteAll<T>();
+        }
     }
 }
 
