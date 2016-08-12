@@ -649,11 +649,6 @@ namespace Disa.Framework
 
             var currentlyUnread = BubbleGroupSettingsManager.GetUnread(@group);
 
-            if (!unread)
-            {
-                BubbleGroupSettingsManager.SetUnreadIndicatorGuid(group, group.LastBubbleSafe().ID, false);
-            }
-
             if ((onlySetIfServiceRunning && ServiceManager.IsRunning(@group.Service)) || !onlySetIfServiceRunning)
             {
                 BubbleGroupSettingsManager.SetUnread(@group, unread);
@@ -665,7 +660,7 @@ namespace Disa.Framework
                         {
                             var readBubble = new ReadBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Outgoing,
                                                  @group.Service, @group.Address, null, Time.GetNowUnixTimestamp(), @group.IsParty, currentlyUnread);
-                            if (@group.IsExtendedParty) 
+                            if (@group.IsExtendedParty)
                             {
                                 readBubble.ExtendedParty = true;
                             }
@@ -675,6 +670,10 @@ namespace Disa.Framework
                 }
                 if (updateUi)
                     BubbleGroupEvents.RaiseRefreshed(@group);
+            }
+            else
+            {
+                BubbleGroupSettingsManager.SetUnreadOffline(@group, unread);
             }
         }
 

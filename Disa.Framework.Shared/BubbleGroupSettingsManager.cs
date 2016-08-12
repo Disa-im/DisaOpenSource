@@ -86,6 +86,7 @@ namespace Disa.Framework
                         {
                             Mute = false,
                             Unread = true,
+                            UnreadOffline = true,
                             Guid = group.ID,
 							UnreadIndicatorGuid = null,
                             LastUnreadSetTime = 0,
@@ -129,13 +130,28 @@ namespace Disa.Framework
 				group.Settings.Unread = unread;
                 Update(group.Settings);
 			}
+            SetUnreadOffline(group, unread);
+        }
+
+        internal static void SetUnreadOffline(BubbleGroup group, bool unread)
+        {
+            InsertDefaultIfNull(group);
+            if (group.Settings.UnreadOffline != unread)
+            {
+                group.Settings.UnreadOffline = unread;
+                Update(group.Settings);
+            } 
         }
 
         public static void SetUnreadIndicatorGuid(BubbleGroup group, string guid, bool isNew)
         {
             InsertDefaultIfNull(group);
-            group.Settings.UnreadIndicatorGuid = guid + "|" + (isNew ? "true" : "false");
-            Update(group.Settings);
+            var toSet = guid + "|" + (isNew ? "true" : "false");
+            if (group.Settings.UnreadIndicatorGuid != toSet)
+            {
+                group.Settings.UnreadIndicatorGuid = toSet;
+                Update(group.Settings);
+            }
         }
 
         public static void SetMute(BubbleGroup group, bool mute)
@@ -241,9 +257,15 @@ namespace Disa.Framework
             return group.Settings.LastUnreadSetTime;
         }
 
-		public static string GetUnreadIndicatorGuid(BubbleGroup group)
-		{
-			InsertDefaultIfNull(group);
+        public static bool GetUnreadOffline(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
+            return group.Settings.UnreadOffline;
+        }
+
+        public static string GetUnreadIndicatorGuid(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
             var guid = group.Settings.UnreadIndicatorGuid;
             if (!string.IsNullOrWhiteSpace(guid))
             {
@@ -251,11 +273,19 @@ namespace Disa.Framework
                 if (indexOf > -1)
                 {
                     var editedGuid = guid.Substring(0, indexOf);
+                    if (string.IsNullOrWhiteSpace(editedGuid))
+                    {
+                        return null;
+                    }
                     return editedGuid;
                 }
             }
+            else
+            {
+                return null;
+            }
             return guid;
-		}
+        }
 
         public static bool GetUnreadIndicatorGuidIsNew(BubbleGroup group)
         {

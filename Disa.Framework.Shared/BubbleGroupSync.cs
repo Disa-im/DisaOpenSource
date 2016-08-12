@@ -850,7 +850,7 @@ namespace Disa.Framework
                     {
                         groupsToSync.Add(group);
                     }
-                        
+
                     foreach (var groupToSync in groupsToSync)
                     {
                         if (!groupToSync.NeedsSync && !force)
@@ -967,43 +967,6 @@ namespace Disa.Framework
                             if (sendingBubbles.Any())
                             {
                                 BubbleManager.Replace(group, sendingBubbles);
-                            }
-                            Action<BubbleGroup> adjustUnreadIndicators = groupToAdjust =>
-                            {
-                                var unreadIndicatorGuid = BubbleGroupSettingsManager.GetUnreadIndicatorGuid(groupToAdjust);
-                                var lastOutgoingBubbleIndex = -1;
-                                var lastUnreadIndicatorIndex = -1;
-                                for (int i = groupToAdjust.Bubbles.Count - 1; i >= 0; i--)
-                                {
-                                    var bubble = groupToAdjust.Bubbles[i];
-                                    if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
-                                    {
-                                        lastOutgoingBubbleIndex = i;
-                                    }
-                                    if (bubble.ID == unreadIndicatorGuid)
-                                    {
-                                        lastUnreadIndicatorIndex = i;
-                                    }
-                                    if (lastUnreadIndicatorIndex != -1 && lastOutgoingBubbleIndex != -1)
-                                    {
-                                        break;
-                                    }
-                                }
-                                var newIndicatorIndex = Math.Max(lastOutgoingBubbleIndex, lastUnreadIndicatorIndex);
-                                if (newIndicatorIndex != -1)
-                                {
-                                    BubbleGroupSettingsManager.SetUnreadIndicatorGuid(groupToAdjust, 
-                                                                                      groupToAdjust.Bubbles[newIndicatorIndex].ID, 
-                                                                                      false);
-                                }
-                            };
-                            if (unifiedGroup != null)
-                            {
-                                adjustUnreadIndicators(unifiedGroup);
-                            }
-                            foreach (var groupToAdjust in groupsToSync)
-                            {
-                                adjustUnreadIndicators(groupToAdjust);
                             }
                             group.RaiseBubblesSynced();
                         }

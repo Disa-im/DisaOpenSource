@@ -239,6 +239,7 @@ namespace Disa.Framework
                 var unified = CreateUnifiedInternal(groups, primaryGroup);
                 BubbleGroupIndex.AddUnified(unified);
                 BubbleGroupManager.BubbleGroupsAdd(unified);
+                BubbleGroupSettingsManager.SetUnreadIndicatorGuid(unified, unified.LastBubbleSafe().ID, false);
                 return unified;
             }
         }
