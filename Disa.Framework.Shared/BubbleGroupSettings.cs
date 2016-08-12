@@ -22,6 +22,8 @@ namespace Disa.Framework
 
         public bool Unread { get; set; }
 
+        public bool UnreadOffline { get; set; }
+
 		public string UnreadIndicatorGuid { get; set; }
 
         public long LastUnreadSetTime { get; set; }

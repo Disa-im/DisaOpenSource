@@ -165,44 +165,47 @@ namespace Disa.Framework
                 Bubbles.RemoveAt(0);
             }
 
-            var unreadIndicatorGuid = BubbleGroupSettingsManager.GetUnreadIndicatorGuid(this);
-            for (int i = Bubbles.Count - 1; i >= 0; i--)
+            if (!(this is ComposeBubbleGroup))
             {
-                var nBubble = Bubbles[i];
-
-                var unreadIndicatorIndex = -1;
-                if (unreadIndicatorGuid != null && unreadIndicatorGuid == nBubble.ID)
+                var unreadIndicatorGuid = BubbleGroupSettingsManager.GetUnreadIndicatorGuid(this);
+                for (int i = Bubbles.Count - 1; i >= 0; i--)
                 {
-                    unreadIndicatorIndex = i;
-                }
+                    var nBubble = Bubbles[i];
 
-                if (nBubble.Time <= b.Time)
-                {
-                    // adding it to the end, we can do a simple contract
-                    if (i == Bubbles.Count - 1)
+                    var unreadIndicatorIndex = -1;
+                    if (unreadIndicatorGuid != null && unreadIndicatorGuid == nBubble.ID)
                     {
-                        Bubbles.Add(b);
-                        if (b.Direction == Bubble.BubbleDirection.Incoming)
+                        unreadIndicatorIndex = i;
+                    }
+
+                    if (nBubble.Time <= b.Time)
+                    {
+                        // adding it to the end, we can do a simple contract
+                        if (i == Bubbles.Count - 1)
                         {
-							BubbleGroupSettingsManager.SetUnread(this, true);
+                            Bubbles.Add(b);
+                            if (b.Direction == Bubble.BubbleDirection.Incoming)
+                            {
+                                BubbleGroupSettingsManager.SetUnread(this, true);
+                            }
                         }
+                        // inserting, do a full contract
+                        else
+                        {
+                            Bubbles.Insert(i + 1, b);
+                        }
+                        if (i >= unreadIndicatorIndex && b.Direction == Bubble.BubbleDirection.Outgoing)
+                        {
+                            BubbleGroupSettingsManager.SetUnreadIndicatorGuid(this, b.ID, false);
+                        }
+                        break;
                     }
-                    // inserting, do a full contract
-                    else
-                    {
-                        Bubbles.Insert(i + 1, b);
-                    }
-                    if (i >= unreadIndicatorIndex && b.Direction == Bubble.BubbleDirection.Outgoing)
-                    {
-                        BubbleGroupSettingsManager.SetUnreadIndicatorGuid(this, b.ID, false);
-                    }
-                    break;
-                }
 
-                // could not find a valid place to insert, then skip insertion.
-                if (i == 0)
-                {
-                    return;
+                    // could not find a valid place to insert, then skip insertion.
+                    if (i == 0)
+                    {
+                        return;
+                    }
                 }
             }
 
