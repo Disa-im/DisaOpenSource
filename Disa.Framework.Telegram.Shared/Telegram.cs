@@ -774,8 +774,8 @@ namespace Disa.Framework.Telegram
             {
                 if (!_oldMessages)
                 {
-                    var bubbleGroupToSwitch = BubbleGroupManager.FindWithAddress(this, address);
-                    var bubbleGroupToDelete = Platform.GetCurrentBubbleGroupOnUI();
+                    var bubbleGroupToSwitch = BubbleGroupManager.FindWithAddress(this, chatMigaratedToSuperGroup.ChannelId.ToString());
+                    var bubbleGroupToDelete = BubbleGroupManager.FindWithAddress(this, address);
                     if (bubbleGroupToSwitch != null)
                     {
                         Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
@@ -1681,6 +1681,11 @@ namespace Disa.Framework.Telegram
 
             DebugPrint("Fetching difference");
 
+            //sometimes fetchdifference gives new channel message, which updates the state of the channel 
+            //which leads to missed messasges, hence we should first fetch difference for the channels, then fetch the total 
+            //difference.
+            FetchChannelDifference(client);
+
             Again:
 
             DebugPrint("Difference Page: " + counter);
@@ -1720,12 +1725,16 @@ namespace Disa.Framework.Telegram
                 dispatchUpdates();
                 var state = (UpdatesState)diff.State;
                 SaveState(state.Date, state.Pts, state.Qts, state.Seq);
+                _dialogs.AddUsers(diff.Users);
+                _dialogs.AddChats(diff.Chats);
             }
             else if (slice != null)
             {
                 dispatchUpdates();
                 var state = (UpdatesState)slice.IntermediateState;
                 SaveState(state.Date, state.Pts, state.Qts, state.Seq);
+                _dialogs.AddUsers(slice.Users);
+                _dialogs.AddChats(slice.Chats);
                 counter++;
                 goto Again;
             }
@@ -1733,7 +1742,6 @@ namespace Disa.Framework.Telegram
             {
                 SaveState(empty.Date, 0, 0, empty.Seq);
             }
-            FetchChannelDifference(client);
         }
 
         private void FetchChannelDifference(TelegramClient client)
@@ -1908,29 +1916,26 @@ namespace Disa.Framework.Telegram
             {
                 _hasPresence = presenceBubble.Available;
                 SetFullClientPingDelayDisconnect();
-                if (_hasPresence)
-                {
-                    var updatedUsers = GetUpdatedUsersOfAllDialogs();
-                    if (updatedUsers != null)
-                    {
-                        foreach (var updatedUser in updatedUsers)
-                        {
-                            EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming, 
-                                TelegramUtils.GetUserId(updatedUser), false, this, TelegramUtils.GetAvailable(updatedUser)));
-                        }
-                    }
-                }
                 using (var client = new FullClientDisposable(this))
                 {
-                    SendPresence(client.Client);
-                    if (presenceBubble.Available)
+                    if (_hasPresence)
                     {
-                        //we are forground, we need to fetch difference
                         if (_mutableSettings.Date != 0)
                         {
+                            // as thy come forth, thy shall get difference
                             FetchDifference(client.Client);
                         }
+                        var updatedUsers = GetUpdatedUsersOfAllDialogs(client.Client);
+                        if (updatedUsers != null)
+                        {
+                            foreach (var updatedUser in updatedUsers)
+                            {
+                                EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming,
+                                    TelegramUtils.GetUserId(updatedUser), false, this, TelegramUtils.GetAvailable(updatedUser)));
+                            }
+                        }
                     }
+                    SendPresence(client.Client);
                 }
             }
 
@@ -2118,7 +2123,7 @@ namespace Disa.Framework.Telegram
             {
                 using (var client = new FullClientDisposable(this))
                 {
-                    TelegramUtils.RunSynchronously(
+                    var updates = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
                         {
 
@@ -2132,6 +2137,9 @@ namespace Disa.Framework.Telegram
                             },
                             RandomId = GenerateRandomId(),
                         }));
+                    var id = GetMessageId(updates);
+                    contactBubble.IdService = id;
+                    SendToResponseDispatcher(updates, client.Client);
                 }
             }
         }
@@ -2141,7 +2149,7 @@ namespace Disa.Framework.Telegram
             var inputPeer = GetInputPeer(locationBubble.Address, locationBubble.Party, locationBubble.ExtendedParty);
             using (var client = new FullClientDisposable(this))
             {
-                TelegramUtils.RunSynchronously(
+                var updates = TelegramUtils.RunSynchronously(
                     client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
                     {
 
@@ -2157,6 +2165,9 @@ namespace Disa.Framework.Telegram
                         },
                         RandomId = GenerateRandomId(),
                     }));
+                var id = GetMessageId(updates);
+                locationBubble.IdService = id;
+                SendToResponseDispatcher(updates,client.Client);
             }
 
         }
@@ -2331,36 +2342,36 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private string GetMessageId(IUpdates iUpdates)
+        {
+            var updates = iUpdates as Updates;
+            if (updates != null)
+            {
+                foreach (var update in updates.UpdatesProperty)
+                {
+                    var updateNewMessage = update as UpdateNewMessage;
+                    var updateNewChannelMessage = update as UpdateNewChannelMessage;
+                    if (updateNewMessage != null)
+                    {
+                        var message = updateNewMessage.Message as Message;
+                        return message?.Id.ToString(CultureInfo.InvariantCulture);
+                    }
+                    if (updateNewChannelMessage != null)
+                    {
+                        var message = updateNewChannelMessage.Message as Message;
+                        return message?.Id.ToString(CultureInfo.InvariantCulture);
+                    }
+                }
+            }
+            return null;
+        }
+
         private void SendFile(VisualBubble bubble, IInputFile inputFile)
         {
             var inputPeer = GetInputPeer(bubble.Address, bubble.Party, bubble.ExtendedParty);
             var imageBubble = bubble as ImageBubble;
             var fileBubble = bubble as FileBubble;
             var audioBubble = bubble as AudioBubble;
-
-            Func<IUpdates, string> getMessageId = iUpdates => 
-            {
-                var updates = iUpdates as Updates;
-                if (updates != null)
-                {
-                    foreach (var update in updates.UpdatesProperty)
-                    {
-                        var updateNewMessage = update as UpdateNewMessage;
-                        var updateNewChannelMessage = update as UpdateNewChannelMessage;
-                        if (updateNewMessage != null)
-                        {
-                            var message = updateNewMessage.Message as Message;
-                            return message?.Id.ToString(CultureInfo.InvariantCulture);
-                        }
-                        if (updateNewChannelMessage != null)
-                        {
-                            var message = updateNewChannelMessage.Message as Message;
-                            return message?.Id.ToString(CultureInfo.InvariantCulture);
-                        }
-                    }
-                }
-                return null;
-            };
 
             using (var client = new FullClientDisposable(this))
             {
@@ -2380,7 +2391,7 @@ namespace Disa.Framework.Telegram
                             },
                             RandomId = GenerateRandomId(),
                         }));
-                    var messageId = getMessageId(iUpdates);
+                    var messageId = GetMessageId(iUpdates);
                     imageBubble.IdService = messageId;
                     var updates = iUpdates as Updates;
 
@@ -2410,7 +2421,7 @@ namespace Disa.Framework.Telegram
                             },
                             RandomId = GenerateRandomId(),
                         }));
-                    var messageId = getMessageId(iUpdates);
+                    var messageId = GetMessageId(iUpdates);
                     fileBubble.IdService = messageId;
                     SendToResponseDispatcher(iUpdates, client.Client);
 
@@ -2464,7 +2475,7 @@ namespace Disa.Framework.Telegram
                     };
                     var iUpdates = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMediaAsync(media));
-                    var messageId = getMessageId(iUpdates);
+                    var messageId = GetMessageId(iUpdates);
                     audioBubble.IdService = messageId;
                     SendToResponseDispatcher(iUpdates, client.Client);
                 }
@@ -2711,15 +2722,18 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
-        private List<IUser> GetUpdatedUsersOfAllDialogs()
+        private List<IUser> GetUpdatedUsersOfAllDialogs(TelegramClient client)
         {
             var users = new List<IUser>();
             foreach (var userBubbleGroup in BubbleGroupManager.FindAll(this).Where(x => !x.IsParty))
             {
                 var user = _dialogs.GetUser(uint.Parse(userBubbleGroup.Address));
+                var inputUser = TelegramUtils.CastUserToInputUser(user);
+                var updatedUser = GetUser(inputUser, client).Result;
+                _dialogs.AddUser(updatedUser);
                 if (user != null)
                 {
-                    users.Add(user);
+                    users.Add(updatedUser);
                 }
             }
 
@@ -2879,11 +2893,13 @@ namespace Disa.Framework.Telegram
                         var dbThumbnail = database.Store.Where(x => x.Id == key).FirstOrDefault();
                         if (dbThumbnail != null)
                         {
+                            DebugPrint(">>>>>> Saving cached thumbnail after deletion " + ObjectDumper.Dump(cachedThumbnail));
                             database.Store.Delete(x => x.Id == key);
                             database.Add(cachedThumbnail);
                         }
                         else
                         {
+                            DebugPrint(">>>>>> Saving cached thumbnail " + ObjectDumper.Dump(cachedThumbnail));
                             database.Add(cachedThumbnail);
                         }
                     }
@@ -2921,6 +2937,7 @@ namespace Disa.Framework.Telegram
             if (group)
             {
                 var chat = _dialogs.GetChat(uint.Parse(id));
+                DebugPrint(">>>> Getting Thumbail for " + TelegramUtils.GetChatTitle(chat));
                 if (chat == null)
                 {
                     return null;
@@ -2928,18 +2945,28 @@ namespace Disa.Framework.Telegram
                 var fileLocation = TelegramUtils.GetChatThumbnailLocation(chat, small);
                 if (fileLocation == null)
                 {
-                    return cache(null);
+                    return null;
                 }
                 else
                 {
                     var bytes = FetchFileBytes(fileLocation);
-                    return cache(new DisaThumbnail(this, bytes, key));
+                    DebugPrint(">>>> Got Thumbnail for " + TelegramUtils.GetChatTitle(chat) + " as " + ObjectDumper.Dump(bytes));
+                    if (bytes == null)
+                    {
+                        //download failed
+                        return null;
+                    }
+                    else
+                    {
+                        return cache(new DisaThumbnail(this, bytes, key));
+                    }
                 }
             }
             else
             {
                 Func<IUser, DisaThumbnail> getThumbnail = user =>
                 {
+                    DebugPrint(">>>> Getting Thumbail for " + TelegramUtils.GetUserName(user));
                     var fileLocation = TelegramUtils.GetUserPhotoLocation(user, small);
                     if (fileLocation == null)
                     {
@@ -2948,7 +2975,16 @@ namespace Disa.Framework.Telegram
                     else
                     {
                         var bytes = FetchFileBytes(fileLocation);
-                        return cache(new DisaThumbnail(this, bytes, key));
+                        DebugPrint(">>>> Got Thumbail for " + TelegramUtils.GetUserName(user) + " as " + ObjectDumper.Dump(bytes));
+                        if (bytes == null)
+                        {
+                            //download failed, no need to cache
+                            return null;
+                        }
+                        else
+                        {
+                            return cache(new DisaThumbnail(this, bytes, key));
+                        }
                     }
                 };
 

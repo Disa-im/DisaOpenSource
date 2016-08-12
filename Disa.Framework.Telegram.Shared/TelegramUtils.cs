@@ -522,7 +522,14 @@ namespace Disa.Framework.Telegram
             }
             if (userObj != null)
             {
-                return "@" + userObj.Username.ToString(CultureInfo.InvariantCulture);
+                if (!string.IsNullOrEmpty(userObj.Username))
+                {
+                    return "@" + userObj.Username.ToString(CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    return "";
+                }
             }
             return null;
         }

@@ -138,7 +138,7 @@ namespace Disa.Framework.Telegram
 
         public Task GetUserInformation(string address, Action<Disa.Framework.UserInformation> result)
         {
-            return Task.Factory.StartNew(async () =>
+            return Task.Factory.StartNew(() =>
             {
 
                 if (address == null)
@@ -149,12 +149,10 @@ namespace Disa.Framework.Telegram
                 var user = _dialogs.GetUser(uint.Parse(address));
                 using (var client = new FullClientDisposable(this))
                 {
-                    var inputUser = TelegramUtils.CastUserToInputUser(user);
-                    var updatedUser = await GetUser(inputUser, client.Client);
-                    var name = TelegramUtils.GetUserName(updatedUser);
-                    var lastSeen = TelegramUtils.GetLastSeenTime(updatedUser);
-                    var presence = TelegramUtils.GetAvailable(updatedUser);
-                    var phoneNumber = TelegramUtils.GetUserPhoneNumber(updatedUser);
+                    var name = TelegramUtils.GetUserName(user);
+                    var lastSeen = TelegramUtils.GetLastSeenTime(user);
+                    var presence = TelegramUtils.GetAvailable(user);
+                    var phoneNumber = TelegramUtils.GetUserPhoneNumber(user);
 
                     if (string.IsNullOrWhiteSpace(name))
                     {
@@ -168,7 +166,7 @@ namespace Disa.Framework.Telegram
                             ? UserInformation.TypeSubtitle.Other
                             : UserInformation.TypeSubtitle.PhoneNumber,
                         Subtitle = string.IsNullOrWhiteSpace(phoneNumber)
-                            ? TelegramUtils.GetUserHandle(updatedUser)
+                            ? TelegramUtils.GetUserHandle(user)
                             : TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber),
                         LastSeen = lastSeen,
                         Presence = presence,
