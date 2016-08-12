@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using SharpTelegram.Schema;
+using System.Linq;
 
 namespace Disa.Framework.Telegram
 {
@@ -25,6 +26,21 @@ namespace Disa.Framework.Telegram
             public ParticipantsType Type { get; set; }
             public List<IChatParticipant> ChatParticipants { get; set; }
             public List<IChannelParticipant> ChannelParticipants { get; set; }
+        }
+
+        private class ChannelParticipantComparer : IEqualityComparer<IChannelParticipant>
+        {
+            public bool Equals(IChannelParticipant x, IChannelParticipant y)
+            {
+                var userIdX = TelegramUtils.GetUserIdFromChannelParticipant(x);
+                var userIdY = TelegramUtils.GetUserIdFromChannelParticipant(y);
+                return userIdX == userIdY;
+            }
+
+            public int GetHashCode(IChannelParticipant obj)
+            {
+                return int.Parse(TelegramUtils.GetUserIdFromChannelParticipant(obj));
+            }
         }
 
 
@@ -128,12 +144,23 @@ namespace Disa.Framework.Telegram
                 }
                 if (channelFull != null)
                 {
+                    if (channelFull.CanViewParticipants == null)
+                    {
+                        return new Participants
+                        {
+                            Type = ParticipantsType.Channel,
+                            ChannelParticipants = new List<IChannelParticipant>()
+                        };
+                    }
+
                     var channelParticipants = GetChannelParticipants(channelFull, new ChannelParticipantsRecent());
-                    DebugPrint("###### Party participants " + ObjectDumper.Dump(channelParticipants));
+                    var channelAdmins = GetChannelParticipants(channelFull, new ChannelParticipantsAdmins());
+                    var mergedList = channelAdmins.Union(channelParticipants, new ChannelParticipantComparer()).ToList();
+                    DebugPrint("###### Party participants " + ObjectDumper.Dump(channelAdmins));
                     _participants = new Participants
                     {
                         Type = ParticipantsType.Channel,
-                        ChannelParticipants = channelParticipants
+                        ChannelParticipants = mergedList
                     };
                     return _participants;
                 }
@@ -148,26 +175,21 @@ namespace Disa.Framework.Telegram
             {
                 uint count = 100;
                 uint offset = 0;
-                while (count > 0)
-                {
-                    var result = (ChannelsChannelParticipants)TelegramUtils.RunSynchronously(
-                        client.Client.Methods.ChannelsGetParticipantsAsync(new ChannelsGetParticipantsArgs
+                var result = (ChannelsChannelParticipants)TelegramUtils.RunSynchronously(
+                    client.Client.Methods.ChannelsGetParticipantsAsync(new ChannelsGetParticipantsArgs
+                    {
+                        Channel = new InputChannel
                         {
-                            Channel = new InputChannel
-                            {
-                                ChannelId = channelFull.Id,
-                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(channelFull.Id))
-                            },
-                            Filter = filter,
-                            Limit = 100,
-                            Offset = offset
-                        }));
-                    DebugPrint("channel result " + ObjectDumper.Dump(result));
-                    participantsList.AddRange(result.Participants);
-                    count = (uint)result.Participants.Count;
-                    offset += count;
-                    _dialogs.AddUsers(result.Users);
-                }
+                            ChannelId = channelFull.Id,
+                            AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(channelFull.Id))
+                        },
+                        Filter = filter,
+                        Limit = 100,
+                        Offset = offset
+                    }));
+                DebugPrint("channel result " + ObjectDumper.Dump(result));
+                participantsList.AddRange(result.Participants);
+                _dialogs.AddUsers(result.Users);
 
             }
             return participantsList;
@@ -798,7 +820,7 @@ namespace Disa.Framework.Telegram
                 var inputUser = new InputUser { UserId = Settings.AccountId };
                 using (var client = new FullClientDisposable(this))
                 {
-                    if (group.IsExtendedParty)
+                    if (!group.IsExtendedParty)
                     {
                         var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesDeleteChatUserAsync(new MessagesDeleteChatUserArgs
                         {
@@ -817,6 +839,7 @@ namespace Disa.Framework.Telegram
                                 AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
                             }
                         }));
+                        SendToResponseDispatcher(update, client.Client);
                     }
                 }
             });

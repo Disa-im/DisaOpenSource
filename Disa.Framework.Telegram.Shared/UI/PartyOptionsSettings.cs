@@ -80,7 +80,6 @@ namespace Disa.Framework.Telegram
                             ChatId = uint.Parse(group.Address)
                         }));
                         SendToResponseDispatcher(response, client.Client);
-                        _upgradeToSuperGroup = true;
                         result(true);
                     }
                     catch (Exception e)

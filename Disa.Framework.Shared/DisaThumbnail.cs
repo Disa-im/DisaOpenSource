@@ -18,7 +18,7 @@ namespace Disa.Framework
         [ProtoMember(3)]
         public bool IsUrl { get; private set; }
 
-        public bool Failed { get; private set; }
+        public bool Failed { get; set; }
 
         public DisaThumbnail(Service service, byte[] bytes, string name)
         {

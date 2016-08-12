@@ -76,7 +76,6 @@ namespace Disa.Framework.Telegram
                                 PhoneNumber = number,
                                 ApiId = AppInfo.ApiId,
                                 ApiHash = "f8f2562579817ddcec76a8aae4cd86f6",
-                                LangCode = PhoneBook.Language
                             })) as AuthSentCode;
                             return new CodeRequest
                             {

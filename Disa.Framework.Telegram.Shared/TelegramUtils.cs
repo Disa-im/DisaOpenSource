@@ -127,6 +127,84 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        public static bool GetChatUpgraded(IChat chat)
+        {
+            var chatForbidden = chat as ChatForbidden;
+            var chatChat = chat as Chat;
+            var chatChannel = chat as Channel;
+            var chatChannelForbidden = chat as ChannelForbidden;
+
+            if (chatForbidden != null)
+            {
+                return false;
+            }
+            if (chatChat != null)
+            {
+                return chatChat.MigratedTo != null;
+            }
+            if (chatChannel != null)
+            {
+                return false;
+            }
+            if (chatChannelForbidden != null)
+            {
+                return false;
+            }
+            return false;
+        }
+
+        public static bool GetChatKicked(IChat chat)
+        {
+            var chatForbidden = chat as ChatForbidden;
+            var chatChat = chat as Chat;
+            var chatChannel = chat as Channel;
+            var chatChannelForbidden = chat as ChannelForbidden;
+
+            if (chatForbidden != null)
+            {
+                return true;
+            }
+            if (chatChat != null)
+            {
+                return chatChat.Kicked != null;
+            }
+            if (chatChannel != null)
+            {
+                return chatChannel.Kicked != null;
+            }
+            if (chatChannelForbidden != null)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool GetChatLeft(IChat chat)
+        {
+            var chatForbidden = chat as ChatForbidden;
+            var chatChat = chat as Chat;
+            var chatChannel = chat as Channel;
+            var chatChannelForbidden = chat as ChannelForbidden;
+
+            if (chatForbidden != null)
+            {
+                return true;
+            }
+            if (chatChat != null)
+            {
+                return chatChat.Left != null;
+            }
+            if (chatChannel != null)
+            {
+                return chatChannel.Left != null;
+            }
+            if (chatChannelForbidden != null)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public static string GetPeerId(IPeer peer)
         {
             var peerChat = peer as PeerChat;
