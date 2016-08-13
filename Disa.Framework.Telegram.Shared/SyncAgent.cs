@@ -225,6 +225,7 @@ namespace Disa.Framework.Telegram
                             if (lastMessageIsExtendedParty)
                             {
                                 finalMessages = GetChannelMessages(group, 1, max, client);
+                                SaveChannelState(uint.Parse(group.Address), 1); //this group was just upgraded to an extended party, we need to explicity save its state otherwise itll be zero
                             }
                             var chatMessages =  GetChatMessagesForChannel(group, fromTime, max, client);
                             updateChatMessageAddresses(chatMessages, group.Address);
