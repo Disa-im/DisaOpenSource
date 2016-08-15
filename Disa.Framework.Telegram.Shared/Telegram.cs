@@ -2893,13 +2893,13 @@ namespace Disa.Framework.Telegram
                         var dbThumbnail = database.Store.Where(x => x.Id == key).FirstOrDefault();
                         if (dbThumbnail != null)
                         {
-                            DebugPrint(">>>>>> Saving cached thumbnail after deletion " + ObjectDumper.Dump(cachedThumbnail));
+                            DebugPrint(">>>>>> Saving cached thumbnail after deletion ");
                             database.Store.Delete(x => x.Id == key);
                             database.Add(cachedThumbnail);
                         }
                         else
                         {
-                            DebugPrint(">>>>>> Saving cached thumbnail " + ObjectDumper.Dump(cachedThumbnail));
+                            DebugPrint(">>>>>> Saving cached thumbnail ");
                             database.Add(cachedThumbnail);
                         }
                     }
@@ -2950,7 +2950,7 @@ namespace Disa.Framework.Telegram
                 else
                 {
                     var bytes = FetchFileBytes(fileLocation);
-                    DebugPrint(">>>> Got Thumbnail for " + TelegramUtils.GetChatTitle(chat) + " as " + ObjectDumper.Dump(bytes));
+                    DebugPrint(">>>> Got Thumbnail for " + TelegramUtils.GetChatTitle(chat));
                     if (bytes == null)
                     {
                         //download failed
@@ -2975,7 +2975,7 @@ namespace Disa.Framework.Telegram
                     else
                     {
                         var bytes = FetchFileBytes(fileLocation);
-                        DebugPrint(">>>> Got Thumbail for " + TelegramUtils.GetUserName(user) + " as " + ObjectDumper.Dump(bytes));
+                        DebugPrint(">>>> Got Thumbail for " + TelegramUtils.GetUserName(user));
                         if (bytes == null)
                         {
                             //download failed, no need to cache
@@ -3088,128 +3088,7 @@ namespace Disa.Framework.Telegram
 			DebugPrint (ObjectDumper.Dump(_config));
         }
  
-//        private MessagesChatFull GetFullChat(string address, TelegramClient optionalClient = null)
-//        {
-//            using (var disposable = new OptionalClientDisposable(this, optionalClient))
-//            {
-//                return GetFullChat(disposable.Client, address);
-//            }
-//        }
 
-//        private MessagesChatFull GetFullChat(TelegramClient client, string address)
-//        {
-//            var id = uint.Parse(address);
-//            foreach (var iChatFull in _dialogs.FullChats)
-//            {
-//                var chatFull = iChatFull as MessagesChatFull;
-//                if (chatFull != null)
-//                {
-//                    var chatFull2 = chatFull.FullChat as ChatFull;
-//                    if (id == chatFull2.Id)
-//                    {
-//                        return chatFull;
-//                    }
-//                }
-//            }
-//            if (_dialogs.FullChatFailures.FirstOrDefault(x => x == address) != null)
-//            {
-//                return null;
-//            }
-//            else
-//            {
-//                return FetchAndCacheFullChat(client, _dialogs, address);
-//            }
-//        }
-
-//        private void RemoveFullChat(string address)
-//        {
-//            var id = uint.Parse(address);
-//            foreach (var iChatFull in _dialogs.FullChats)
-//            {
-//                var chatFull = iChatFull as MessagesChatFull;
-//                if (chatFull != null)
-//                {
-//                    var chatFull2 = chatFull.FullChat as ChatFull;
-//                    if (id == chatFull2.Id)
-//                    {
-//                        _dialogs.FullChats.Remove(iChatFull);
-//                        break;
-//                    }
-//                }
-//            }
-//            var chatFailure = _dialogs.FullChatFailures.FirstOrDefault(x => address == x);
-//            if (chatFailure != null)
-//            {
-//                _dialogs.FullChatFailures.Remove(chatFailure);
-//            }
-//        }
-//
-//        // See FetchAndCacheFullChat
-//        private void FetchFullChatsForParties(TelegramClient client, CachedDialogs dialogs)
-//        {
-//            foreach (var group in BubbleGroupManager.FindAll(this).Where(x => x.IsParty))
-//            {
-//                FetchAndCacheFullChat(client, dialogs, group.Address);
-//            }
-//        }
-
-        //FIXME: fully implement and persist to cache.
-        // This one is actually called because MessagesGetDialogs doesn't list participant information.
-        // When doing initial cache, or we're given info from starting a new party chat,
-        // or a new incoming party chat, or added/remove particpants, change name, thumbnails, etc.
-        // we need to refetch the full chat. This also needs to be cached in the same
-        // structure as GetDialogs (CachedDialogs). Some of this updating can be seen
-        // in ProcessIncomingPayload... although not all is yet implemented.
-//        private static MessagesChatFull FetchAndCacheFullChat(TelegramClient client, 
-//            CachedDialogs dialogs, string address)
-//        {
-//            var fullChat = FetchFullChat(client, address);
-//            Utils.DebugPrint(">>>> fullchat " + ObjectDumper.Dump(fullChat));
-//            if (fullChat != null)
-//            {
-//                dialogs.FullChats.Add(fullChat);
-//            }
-//            else
-//            {
-//                dialogs.FullChatFailures.Add(address);   
-//            }
-//            return fullChat;
-//        }
-
-//        private static MessagesChatFull FetchFullChat(TelegramClient client, string address)
-//        {
-//            var fullChat = (MessagesChatFull)TelegramUtils.RunSynchronously(client.Methods.MessagesGetFullChatAsync(new MessagesGetFullChatArgs
-//            {
-//                ChatId = uint.Parse(address) 
-//            }));
-//            return fullChat;
-//        }
-
-        //FIXME: If you have more than 100 convos, client will break.
-        // >>>>> Telegram's implementation:
-        // Telegram has a weird system and naming conventions. Basically:
-        // Dialogs are conversations. They can be both parties or solo conversations.
-        // Users are single users. They relate to solo conversations.
-        // Chats are parties. They relate to party conversations.
-        // When Telegram loads, it will load last 100 dialogs from a cache. If there's no cache, then it will call
-        // MessagesGetDialogs(). This is done by setting Limit = 100, and OffsetPeer = PeerEmpty.
-        // When you scroll to the bottom of the list in Telegram, it will load in an additional 100.
-        // This is done by setting OffsetDate, OffsetPeer and OffsetId. These values are obtained by picking the oldest message from CachedDialogs.Messege, 
-        // and then using it's attributes. 
-        // When the user/party sends you a brand new piece of information (message, etc.), 
-        // the dialogs/users/messages/chats will appear in and Update. Likewise when making the action (e.g starting a new chat, or party)
-        // you should also get information in the form of an update.
-        // >>>>> Disa's implementation:
-        // On first ever auth start, we load the last 100 dialogs, as like in official Telegram client.
-        // We then cache these and save them in a SQL database. If the SQL database ever corrupts, then we just redo it.
-        // When a new message comes in or we start a new party, etc, we must update this CachedDialogs cache with the provided incoming payload info. This can already
-        // be seen at work in ProcessIncomingPayload (an Update as aformentioned in Telegram impl.). We must just persist it to cache as well.
-        // In summary, we'll leave this for now, but we must move this to only ever being called once (on a new auth or re-auth, 
-        // or db corruption), and then accordingly update this cache when new information is provided.
-        // It should be noted that with out implementation, we don't need the offset code, since if a user has more than 100 convos,
-        // he's expected to manually load them in by going to NewMessage, which will force the Updates to come in.
-        // Please see FetchFullChatsForParties for further information.
-        //TODO: do this 100 at a time
         private void GetDialogs(TelegramClient client)
         {
             DebugPrint("Fetching conversations");
@@ -3339,10 +3218,6 @@ namespace Disa.Framework.Telegram
                         {
                             EventBubble(bubble);
                         }
-                        if (message.MediaUnread == null)
-                        {
-                            SetRead(message);
-                        }
                     }
                     if (messageService != null)
                     {
@@ -3350,10 +3225,6 @@ namespace Disa.Framework.Telegram
                         foreach (var partyInformationBubble in partyInformationBubbles)
                         {
                             EventBubble(partyInformationBubble);
-                        }
-                        if (messageService.MediaUnread == null)
-                        {
-                            SetRead(messageService);
                         }
                     }
                 }
@@ -3366,6 +3237,10 @@ namespace Disa.Framework.Telegram
                 {
                     var iMessage  = FindMessage(dialog.TopMessage, messages);
                     processMessage(iMessage);
+                    if (dialog.UnreadCount == 0)
+                    {
+                        SetRead(iMessage);
+                    }
                     if (dialog.Peer is PeerChannel)
                     { 
                         SaveChannelState(uint.Parse(TelegramUtils.GetPeerId(dialog.Peer)), dialog.Pts);
