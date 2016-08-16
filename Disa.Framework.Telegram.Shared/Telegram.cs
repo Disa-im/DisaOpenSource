@@ -382,6 +382,7 @@ namespace Disa.Framework.Telegram
                                         Bubble.BubbleDirection.Incoming, this,
                                         peerChat.ChatId.ToString(CultureInfo.InvariantCulture), DisaReadTime.SingletonPartyParticipantAddress,
                                         Time.GetNowUnixTimestamp(), true, false));
+                            
                             }
                         }
 
@@ -425,10 +426,13 @@ namespace Disa.Framework.Telegram
 
                         string idString = bubbleGroup.LastBubbleSafe().IdService;
                         DebugPrint("idstring" + idString);
-                        if (uint.Parse(idString) <= updateReadHistoryInbox.MaxId)
+                        if (idString != null)
                         {
-                            BubbleGroupManager.SetUnread(this, false, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
-                            NotificationManager.Remove(this, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
+                            if (uint.Parse(idString) <= updateReadHistoryInbox.MaxId)
+                            {
+                                BubbleGroupManager.SetUnread(this, false, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
+                                NotificationManager.Remove(this, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
+                            }
                         }
 
                     }
@@ -441,11 +445,14 @@ namespace Disa.Framework.Telegram
                             continue;
                         }
                         string idString = bubbleGroup.LastBubbleSafe().IdService;
-                        if (uint.Parse(idString) == updateReadHistoryInbox.MaxId)
+                        if (idString != null)
                         {
-                            BubbleGroupManager.SetUnread(this, false,
-                                peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
-                            NotificationManager.Remove(this, peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
+                            if (uint.Parse(idString) == updateReadHistoryInbox.MaxId)
+                            {
+                                BubbleGroupManager.SetUnread(this, false,
+                                    peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
+                                NotificationManager.Remove(this, peerChat.ChatId.ToString(CultureInfo.InvariantCulture));
+                            }
                         }
 
                     }
@@ -462,10 +469,13 @@ namespace Disa.Framework.Telegram
 
                     string idString = bubbleGroup.LastBubbleSafe().IdService;
                     DebugPrint("idstring" + idString);
-                    if (uint.Parse(idString) <= updateReadChannelInbox.MaxId)
+                    if (idString != null)
                     {
-                        BubbleGroupManager.SetUnread(this, false, updateReadChannelInbox.ChannelId.ToString(CultureInfo.InvariantCulture));
-                        NotificationManager.Remove(this, updateReadChannelInbox.ChannelId.ToString(CultureInfo.InvariantCulture));
+                        if (uint.Parse(idString) <= updateReadChannelInbox.MaxId)
+                        {
+                            BubbleGroupManager.SetUnread(this, false, updateReadChannelInbox.ChannelId.ToString(CultureInfo.InvariantCulture));
+                            NotificationManager.Remove(this, updateReadChannelInbox.ChannelId.ToString(CultureInfo.InvariantCulture));
+                        }
                     }
                 }
                 else if (shortChatMessage != null)
@@ -2195,7 +2205,7 @@ namespace Disa.Framework.Telegram
                                     FilePart = chunkNumber,
                                     FileTotalParts = fileTotalParts,
                                 }));
-
+                        DebugPrint("Uploading File part " + chunkNumber + " of " + fileTotalParts);
                         if (!uploaded)
                         {
                             throw new Exception("The file chunk failed to be uploaded");
