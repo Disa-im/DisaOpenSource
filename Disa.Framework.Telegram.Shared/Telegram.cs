@@ -2,6 +2,7 @@
 using System.CodeDom;
 using Disa.Framework.Bubbles;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using SharpTelegram;
 using SharpMTProto;
@@ -117,6 +118,8 @@ namespace Disa.Framework.Telegram
         private Config _config;
 
         private Dictionary<string, Timer> _typingTimers = new Dictionary<string, Timer>();
+
+        private ConcurrentDictionary<string, bool> _thumbnailDownloadingDictionary = new ConcurrentDictionary<string, bool>();
 
         private WakeLockBalancer.GracefulWakeLock _longPollHeartbeart;
 
@@ -1317,13 +1320,13 @@ namespace Disa.Framework.Telegram
             if (isUser)
             {
                 bubble = new LocationBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                    message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, geoPoint.Long, geoPoint.Long,
+                    message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, geoPoint.Long, geoPoint.Lat,
                     "", null, message.Id.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
                 bubble = new LocationBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                    message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true, this, geoPoint.Long, geoPoint.Long,
+                    message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true, this, geoPoint.Long, geoPoint.Lat,
                     "", null, message.Id.ToString(CultureInfo.InvariantCulture));
             }
             if (name != null) 
@@ -2123,6 +2126,8 @@ namespace Disa.Framework.Telegram
                 SendContact(contactBubble);
             }
 
+            DebugPrint(">>>> Sending visual bubble " + ObjectDumper.Dump(b));
+
         }
 
         private void SendContact(ContactBubble contactBubble)
@@ -2354,6 +2359,7 @@ namespace Disa.Framework.Telegram
 
         private string GetMessageId(IUpdates iUpdates)
         {
+            DebugPrint(">>>> Get message id updates " + ObjectDumper.Dump(iUpdates));
             var updates = iUpdates as Updates;
             if (updates != null)
             {
@@ -2361,6 +2367,7 @@ namespace Disa.Framework.Telegram
                 {
                     var updateNewMessage = update as UpdateNewMessage;
                     var updateNewChannelMessage = update as UpdateNewChannelMessage;
+                    var updateMessageId = update as UpdateMessageID;
                     if (updateNewMessage != null)
                     {
                         var message = updateNewMessage.Message as Message;
@@ -2959,6 +2966,14 @@ namespace Disa.Framework.Telegram
                 }
                 else
                 {
+                    if (_thumbnailDownloadingDictionary.ContainsKey(id))
+                    {
+                        return null; //there is a thread waiting to download the thumbnail 
+                    }
+                    else
+                    {
+                        _thumbnailDownloadingDictionary.TryAdd(key, true);
+                    }
                     var bytes = FetchFileBytes(fileLocation);
                     DebugPrint(">>>> Got Thumbnail for " + TelegramUtils.GetChatTitle(chat));
                     if (bytes == null)
@@ -2968,6 +2983,8 @@ namespace Disa.Framework.Telegram
                     }
                     else
                     {
+                        bool outValue;
+                        _thumbnailDownloadingDictionary.TryRemove(key, out outValue);
                         return cache(new DisaThumbnail(this, bytes, key));
                     }
                 }
@@ -2984,6 +3001,14 @@ namespace Disa.Framework.Telegram
                     }
                     else
                     {
+                        if (_thumbnailDownloadingDictionary.ContainsKey(id))
+                        {
+                            return null; //there is a thread waiting to download the thumbnail 
+                        }
+                        else
+                        {
+                            _thumbnailDownloadingDictionary.TryAdd(key, true);
+                        }
                         var bytes = FetchFileBytes(fileLocation);
                         DebugPrint(">>>> Got Thumbail for " + TelegramUtils.GetUserName(user));
                         if (bytes == null)
@@ -2993,6 +3018,8 @@ namespace Disa.Framework.Telegram
                         }
                         else
                         {
+                            bool outValue;
+                            _thumbnailDownloadingDictionary.TryRemove(key, out outValue);
                             return cache(new DisaThumbnail(this, bytes, key));
                         }
                     }
