@@ -2966,7 +2966,7 @@ namespace Disa.Framework.Telegram
                 }
                 else
                 {
-                    if (_thumbnailDownloadingDictionary.ContainsKey(id))
+                    if (_thumbnailDownloadingDictionary.ContainsKey(key))
                     {
                         return null; //there is a thread waiting to download the thumbnail 
                     }
@@ -2976,14 +2976,14 @@ namespace Disa.Framework.Telegram
                     }
                     var bytes = FetchFileBytes(fileLocation);
                     DebugPrint(">>>> Got Thumbnail for " + TelegramUtils.GetChatTitle(chat));
+                    bool outValue;
                     if (bytes == null)
                     {
-                        //download failed
+                        _thumbnailDownloadingDictionary.TryRemove(key, out outValue);
                         return null;
                     }
                     else
                     {
-                        bool outValue;
                         _thumbnailDownloadingDictionary.TryRemove(key, out outValue);
                         return cache(new DisaThumbnail(this, bytes, key));
                     }
@@ -3007,19 +3007,19 @@ namespace Disa.Framework.Telegram
                         }
                         else
                         {
-                            _thumbnailDownloadingDictionary.TryAdd(key, true);
+                            _thumbnailDownloadingDictionary.TryAdd(id, true);
                         }
                         var bytes = FetchFileBytes(fileLocation);
                         DebugPrint(">>>> Got Thumbail for " + TelegramUtils.GetUserName(user));
+                        bool outValue;
                         if (bytes == null)
                         {
-                            //download failed, no need to cache
+                            _thumbnailDownloadingDictionary.TryRemove(id, out outValue);
                             return null;
                         }
                         else
                         {
-                            bool outValue;
-                            _thumbnailDownloadingDictionary.TryRemove(key, out outValue);
+                            _thumbnailDownloadingDictionary.TryRemove(id, out outValue);
                             return cache(new DisaThumbnail(this, bytes, key));
                         }
                     }
@@ -3375,6 +3375,7 @@ namespace Disa.Framework.Telegram
                 var inputPeerChannel = new InputPeerChannel
                 {
                     ChannelId = peerChannel.ChannelId,
+                    AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(peerChannel.ChannelId))
                 };
                 retInputUser = inputPeerChannel;
             }
