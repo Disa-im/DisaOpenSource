@@ -66,14 +66,20 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(6)]
         public string FileName { get; set; }
 
+        [ProtoMember(7)]
+        public bool NullThumbnail { get; set; }
+
+        [ProtoMember(8)]
+        public int Width { get; set; }
+
+        [ProtoMember(9)]
+        public int Height { get; set; }
+
         [NonSerialized] 
         public BubbleTransfer Transfer;
 
         [NonSerialized]
         public ThumbnailTransfer ThumbnailTransfer;
-
-        [ProtoMember(7)]
-        public bool NullThumbnail { get; set;}
 
         [NonSerialized]
         public bool ThumbnailDownloadFailed;

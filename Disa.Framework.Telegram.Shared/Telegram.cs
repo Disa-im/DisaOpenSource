@@ -17,6 +17,7 @@ using System.Timers;
 using System.IO;
 using System.Reactive;
 using System.Security.Cryptography;
+using System.Drawing;
 using ProtoBuf;
 using IMessage = SharpTelegram.Schema.IMessage;
 using Message = SharpTelegram.Schema.Message;
@@ -1068,6 +1069,7 @@ namespace Disa.Framework.Telegram
             {
                 var fileLocation = GetPhotoFileLocation(messageMediaPhoto.Photo);
                 var fileSize = GetPhotoFileSize(messageMediaPhoto.Photo);
+                var dimensions = GetPhotoDimensions(messageMediaPhoto.Photo);
                 var cachedPhoto = GetCachedPhotoBytes(messageMediaPhoto.Photo);
                 FileInformation fileInfo = new FileInformation
                 {
@@ -1099,6 +1101,8 @@ namespace Disa.Framework.Telegram
                         imageBubble.Status = Bubble.BubbleStatus.Sent;
                     }
                     imageBubble.AdditionalData = memoryStream.ToArray();
+                    imageBubble.Width = dimensions.Width;
+                    imageBubble.Height = dimensions.Height;
                     var returnList = new List<VisualBubble>
                     {
                         imageBubble  
@@ -1383,6 +1387,39 @@ namespace Disa.Framework.Telegram
                 }
             }
             return 0;
+        }
+
+        private Size GetPhotoDimensions(IPhoto iPhoto)
+        {
+            var photo = iPhoto as Photo;
+
+            if (photo != null)
+            {
+                // Try and fetch the cached size.
+                foreach (var photoSize in photo.Sizes)
+                {
+                    var photoSizeCached = photoSize as PhotoCachedSize;
+                    if (photoSizeCached != null)
+                    {
+                        return new Size((int)photoSizeCached.W, (int)photoSizeCached.H);
+                    }
+                }
+
+                // Can't find the cached size? Use the downloaded size.
+                foreach (var photoSize in photo.Sizes)
+                {
+                    var photoSizeNormal = photoSize as PhotoSize;
+                    if (photoSizeNormal != null)
+                    {
+                        if (photoSizeNormal.Type == "x")
+                        {
+                            return new Size((int)photoSizeNormal.W, (int)photoSizeNormal.H);
+                        }
+                    }
+                }
+            }
+
+            return new Size(0, 0);
         }
 
         private FileLocation GetPhotoFileLocation(IPhoto iPhoto)
