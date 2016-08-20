@@ -349,7 +349,6 @@ namespace Disa.Framework.Telegram
                     var peerChat = iPeer as PeerChat;
                     var peerUser = iPeer as PeerUser;
 
-
                     if (peerUser != null)
                     {
                         BubbleGroup bubbleGroup = BubbleGroupManager.FindWithAddress(this,
@@ -367,8 +366,6 @@ namespace Disa.Framework.Telegram
                                         Time.GetNowUnixTimestamp(), false, false));
                             }
                         }
-
-
                     }
                     else if (peerChat != null)
                     {
@@ -385,7 +382,6 @@ namespace Disa.Framework.Telegram
                                         Bubble.BubbleDirection.Incoming, this,
                                         peerChat.ChatId.ToString(CultureInfo.InvariantCulture), DisaReadTime.SingletonPartyParticipantAddress,
                                         Time.GetNowUnixTimestamp(), true, false));
-                            
                             }
                         }
 
@@ -673,10 +669,10 @@ namespace Disa.Framework.Telegram
                 }
             }
 
-            if (maxMessageId != 0)
-            {
-                SendReceivedMessages(optionalClient, maxMessageId);
-            }
+            //if (maxMessageId != 0)
+            //{
+            //    SendReceivedMessages(optionalClient, maxMessageId);
+            //}
         }
 
       private List<VisualBubble> MakePartyInformationBubble(MessageService messageService, bool useCurrentTime)
@@ -778,6 +774,7 @@ namespace Disa.Framework.Telegram
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address, this,
                     messageService.Id.ToString(CultureInfo.InvariantCulture));
                 bubble.ExtendedParty = true;
+                SaveChannelState(uint.Parse(address), 1);
                 return new List<VisualBubble>
                 {
                     bubble
@@ -1502,8 +1499,9 @@ namespace Disa.Framework.Telegram
                     {
                             MaxId = maxId,
                     }));
+                    DebugPrint("items " + ObjectDumper.Dump(items));
                 }
-            });
+            }); 
         }
             
         private void OnLongPollClientClosed(object sender, EventArgs e)
@@ -1767,7 +1765,11 @@ namespace Disa.Framework.Telegram
                 Again:
                     var channelAddress = uint.Parse(bubbleGroup.Address);
                     var channel = _dialogs.GetChat(uint.Parse(bubbleGroup.Address));
-                    Utils.DebugPrint("Channel name " + (channel as Channel).Title);
+                    var channelObj = channel as Channel;
+                    if (channelObj != null)
+                    {
+                        Utils.DebugPrint("Channel name " + (channelObj.Title));
+                    }
                     Utils.DebugPrint("Channel Pts " + _dialogs.GetChatPts(channelAddress));
                     var result = TelegramUtils.RunSynchronously(
                         client.Methods.UpdatesGetChannelDifferenceAsync(new UpdatesGetChannelDifferenceArgs
@@ -1781,6 +1783,7 @@ namespace Disa.Framework.Telegram
                             Limit = 100,
                             Pts = _dialogs.GetChatPts(channelAddress)
                         }));
+                    DebugPrint("Got channel updates " + ObjectDumper.Dump(result));
                     var updates = ProcessChannelDifferenceResult(channelAddress, result);
                     if (updates.Any())
                     {
@@ -2189,8 +2192,12 @@ namespace Disa.Framework.Telegram
 
         private IInputFile UploadBigFile(VisualBubble bubble, ulong fileId, long fileSize)
         {
-            const uint chunkSize = 131072;
+            uint chunkSize = (uint)CalculateChunkSize(fileSize);
             var fileTotalParts = (uint)fileSize/chunkSize;
+            if (fileSize % 1024 != 0)
+            {
+                fileTotalParts++; 
+            }
             var chunk = new byte[chunkSize];
             uint chunkNumber = 0;
             var offset = 0;
@@ -2228,6 +2235,16 @@ namespace Disa.Framework.Telegram
                 }
             }
 
+        }
+
+        private int CalculateChunkSize(long fileSize)
+        {
+            var uploadChunkSize = 32*1024;
+            while ((fileSize / (int)uploadChunkSize) > 1000)
+            {
+                uploadChunkSize *= 2;
+            }
+            return uploadChunkSize;
         }
 
         private string GetNameFromBubble(VisualBubble bubble)

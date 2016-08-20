@@ -505,7 +505,11 @@ namespace Disa.Framework.Telegram
 
         public Task AddPartyParticipant(BubbleGroup group, DisaParticipant participant)
         {
-            var inputUser = new InputUser { UserId = uint.Parse(participant.Address) };
+            var inputUser = new InputUser 
+            { 
+                UserId = uint.Parse(participant.Address), 
+                AccessHash = GetUserAccessHashIfForeign(participant.Address)
+            };
             return Task.Factory.StartNew(() =>
             {
                 using (var client = new FullClientDisposable(this))
@@ -568,7 +572,11 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var inputUser = new InputUser {UserId = uint.Parse(participant.Address)};
+                var inputUser = new InputUser
+                {
+                    UserId = uint.Parse(participant.Address),
+                    AccessHash = GetUserAccessHashIfForeign(participant.Address)
+                };
                 using (var client = new FullClientDisposable(this))
                 {
                     if (!group.IsExtendedParty)
@@ -582,17 +590,24 @@ namespace Disa.Framework.Telegram
                     }
                     else
                     {
-                        var update = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsKickFromChannelAsync(new ChannelsKickFromChannelArgs
+                        try
                         {
-                            Channel = new InputChannel
+                            var update = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsKickFromChannelAsync(new ChannelsKickFromChannelArgs
                             {
-                                ChannelId = uint.Parse(group.Address),
-                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
-                            },
-                            Kicked = true,
-                            UserId = inputUser
-                        }));
-                        SendToResponseDispatcher(update, client.Client);
+                                Channel = new InputChannel
+                                {
+                                    ChannelId = uint.Parse(group.Address),
+                                    AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                                },
+                                Kicked = true,
+                                UserId = inputUser
+                            }));
+                            SendToResponseDispatcher(update, client.Client);
+                        }
+                        catch (Exception e)
+                        {
+                            DebugPrint("Exception " + e);
+                        }
                     }
                 }
             });
@@ -703,7 +718,11 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var inputUser = new InputUser {UserId = uint.Parse(participant.Address)};
+                var inputUser = new InputUser 
+                {
+                    UserId = uint.Parse(participant.Address),
+                    AccessHash = GetUserAccessHashIfForeign(participant.Address)
+                };
 
                 using (var client = new FullClientDisposable(this))
                 {

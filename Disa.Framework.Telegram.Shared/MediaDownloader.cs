@@ -82,10 +82,10 @@ namespace Disa.Framework.Telegram
                             {
                                 DebugPrint(">>>>>>>>>>>>>>>>>>>>>> Timer Elapsed!! ");
                                 DebugPrint(">>>>>>> current progress " + currentProgress);
-                                
+
                                 if (document.DcId != Settings.NearestDcId)
                                 {
-                                    cachedClient = GetClient((int) document.DcId);
+                                    cachedClient = GetClient((int)document.DcId);
                                 }
                             };
                         }
@@ -126,7 +126,7 @@ namespace Disa.Framework.Telegram
                                         {
                                             timer.Start();
                                         }
-                                       
+                                        chunkSize = (uint)CalculateChunkSize(fileSize);
                                         while (currentOffset <= fileSize)
                                         {
                                             var bytes = FetchDocumentBytes(document, currentOffset,

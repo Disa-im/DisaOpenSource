@@ -76,12 +76,12 @@ namespace Disa.Framework.Telegram
         {
             if (IsFullClientConnected)
             {
-                TelegramUtils.RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
-                {
-                    Offline = true
-                }));
                 try
                 {
+                    TelegramUtils.RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
+                    {
+                        Offline = true
+                    }));
                     TelegramUtils.RunSynchronously(_fullClient.Disconnect());
                 }
                 catch (Exception ex)
