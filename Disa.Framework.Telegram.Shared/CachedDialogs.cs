@@ -279,11 +279,24 @@ namespace Disa.Framework.Telegram
             {
                 return false;
             }
-            using (var database = new SqlDatabase<CachedUser>(GetDatabasePath(true)))
+            lock(_userLock)
             {
-                if (database.Failed)
+                using (var database = new SqlDatabase<CachedUser>(GetDatabasePath(true)))
                 {
-                    return false;
+                    if (database.Failed)
+                    {
+                        return false;
+                    }
+                }
+            }
+            lock(_chatLock)
+            {
+                using (var database = new SqlDatabase<CachedChat>(GetDatabasePath(false)))
+                {
+                    if (database.Failed)
+                    {
+                        return false;
+                    }
                 }
             }
             return true;

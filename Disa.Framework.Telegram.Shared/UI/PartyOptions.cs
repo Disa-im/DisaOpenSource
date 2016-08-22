@@ -926,7 +926,7 @@ namespace Disa.Framework.Telegram
                             DebugPrint(">>>> get full channel exception " + e);
                         }
                     }
-                    DebugPrint("#### fullchat " + ObjectDumper.Dump(_fullChat));
+                    //DebugPrint("#### fullchat " + ObjectDumper.Dump(_fullChat));
                     _dialogs.AddUsers(_fullChat.Users);
                     _dialogs.AddChats(_fullChat.Chats);
                     return _fullChat;

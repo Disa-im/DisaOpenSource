@@ -774,7 +774,6 @@ namespace Disa.Framework.Telegram
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address, this,
                     messageService.Id.ToString(CultureInfo.InvariantCulture));
                 bubble.ExtendedParty = true;
-                SaveChannelState(uint.Parse(address), 1);
                 return new List<VisualBubble>
                 {
                     bubble
@@ -1524,7 +1523,15 @@ namespace Disa.Framework.Telegram
                 using (var client = new TelegramClient(transportConfig, 
                     new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo))
                 {
-                    var result = TelegramUtils.RunSynchronously(client.Connect());
+                    MTProtoConnectResult result = MTProtoConnectResult.Other;
+                    try
+                    {
+                        result = TelegramUtils.RunSynchronously(client.Connect());
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugPrint("Exception while connecting " + ex);
+                    }
                     if (result != MTProtoConnectResult.Success)
                     {
                         throw new Exception("Failed to connect: " + result);
@@ -1770,7 +1777,16 @@ namespace Disa.Framework.Telegram
                     {
                         Utils.DebugPrint("Channel name " + (channelObj.Title));
                     }
-                    Utils.DebugPrint("Channel Pts " + _dialogs.GetChatPts(channelAddress));
+                    else
+                    {
+                        Utils.DebugPrint("### There is no channel in the database, we should reconstruct it");
+                    }
+                    var channelPts = _dialogs.GetChatPts(channelAddress);
+                    Utils.DebugPrint("Channel Pts " + channelPts);
+                    if (channelPts == 0)
+                    {
+                        //dont know why this is zero it should not be but we should prolly fetch the channel
+                    }
                     var result = TelegramUtils.RunSynchronously(
                         client.Methods.UpdatesGetChannelDifferenceAsync(new UpdatesGetChannelDifferenceArgs
                         {
@@ -1781,9 +1797,8 @@ namespace Disa.Framework.Telegram
                             },
                             Filter = new ChannelMessagesFilterEmpty(),
                             Limit = 100,
-                            Pts = _dialogs.GetChatPts(channelAddress)
+                            Pts = channelPts
                         }));
-                    DebugPrint("Got channel updates " + ObjectDumper.Dump(result));
                     var updates = ProcessChannelDifferenceResult(channelAddress, result);
                     if (updates.Any())
                     {

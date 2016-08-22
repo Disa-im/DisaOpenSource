@@ -4,6 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System;
 using System.Net.Sockets;
 
 namespace SharpMTProto.Utils
@@ -66,7 +67,7 @@ namespace SharpMTProto.Utils
             {
                 return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
             }
-            catch (SocketException)
+            catch (Exception)
             {
                 return false;
             }
