@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
+using SharpTelegram;
 using SharpTelegram.Schema;
 
 namespace Disa.Framework.Telegram
@@ -199,7 +200,7 @@ namespace Disa.Framework.Telegram
                     {
                         if (isNewBubbleGroup(group))
                         {
-                            var newOffsetId = GetLastPtsForChannel(client, group.Address);
+                            var newOffsetId = GetLastPtsForChannel(client.Client, group.Address);
                             SaveChannelState(uint.Parse(group.Address), newOffsetId); //save the state for this channel since it wount have any as its a new bubblegroup
                             finalMessages = GetChannelMessages(group, newOffsetId, max, client);
                             if (hasSuperGroupCreatedMessage(finalMessages))
@@ -286,7 +287,7 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private uint GetLastPtsForChannel(FullClientDisposable client, string address)
+        private uint GetLastPtsForChannel(TelegramClient client, string address)
         {
             uint offset = 0;
 
@@ -294,7 +295,7 @@ namespace Disa.Framework.Telegram
 
         Again:
 
-            var iDialogs = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
+            var iDialogs = TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
             {
                 Limit = 100,
                 OffsetPeer = new InputPeerEmpty()

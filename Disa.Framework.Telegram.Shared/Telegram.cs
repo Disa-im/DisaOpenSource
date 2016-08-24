@@ -1801,10 +1801,10 @@ namespace Disa.Framework.Telegram
 
         private void FetchChannelDifference(TelegramClient client)
         {
-            try
+            var extendedBubbleGroups = BubbleGroupManager.FindAll(this).Where(group => group.IsExtendedParty);
+            foreach (var bubbleGroup in extendedBubbleGroups)
             {
-                var extendedBubbleGroups = BubbleGroupManager.FindAll(this).Where(group => group.IsExtendedParty);
-                foreach (var bubbleGroup in extendedBubbleGroups)
+                try
                 {
                 Again:
                     var channelAddress = uint.Parse(bubbleGroup.Address);
@@ -1819,11 +1819,12 @@ namespace Disa.Framework.Telegram
                         Utils.DebugPrint("### There is no channel in the database, we should reconstruct it");
                     }
                     var channelPts = _dialogs.GetChatPts(channelAddress);
-                    Utils.DebugPrint("Channel Pts " + channelPts);
                     if (channelPts == 0)
                     {
-                        //dont know why this is zero it should not be but we should prolly fetch the channel
+                        uint pts = GetLastPtsForChannel(client, channelAddress.ToString());
+                        SaveChannelState(channelAddress, pts);
                     }
+                    Utils.DebugPrint("Channel Pts " + channelPts);
                     var result = TelegramUtils.RunSynchronously(
                         client.Methods.UpdatesGetChannelDifferenceAsync(new UpdatesGetChannelDifferenceArgs
                         {
@@ -1843,11 +1844,11 @@ namespace Disa.Framework.Telegram
                         goto Again;
                     }
                 }
-
-            }
-            catch (Exception e)
-            {
-                DebugPrint("#### Exception getting channels" + e);
+                catch (Exception e)
+                {
+                    DebugPrint("#### Exception getting channels" + e);
+                    continue;
+                }
             }
         }
 

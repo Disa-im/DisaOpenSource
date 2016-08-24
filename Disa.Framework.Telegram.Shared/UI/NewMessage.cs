@@ -254,7 +254,6 @@ namespace Disa.Framework.Telegram
             {
                 foreach (var group in BubbleGroupManager.FindAll(this))
                 {
-
                     if (contactIds.Length <= 1)
                     {
                         foreach (var contactId in contactIds)
