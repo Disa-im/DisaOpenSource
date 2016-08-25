@@ -1907,6 +1907,7 @@ namespace Disa.Framework.Telegram
 
         public override void Connect(WakeLock wakeLock)
         {
+            Disconnect();
             var sessionId = GetRandomId();
             var transportConfig = 
                 new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);
@@ -3102,19 +3103,28 @@ namespace Disa.Framework.Telegram
 
         private static byte[] FetchFileBytes(TelegramClient client, FileLocation fileLocation)
         {
-            var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
-                new UploadGetFileArgs
+            try
             {
-                    Location = new InputFileLocation
-                {
-                    VolumeId = fileLocation.VolumeId,
-                    LocalId = fileLocation.LocalId,
-                    Secret = fileLocation.Secret
-                },
-                    Offset = 0,
-                    Limit = uint.MaxValue,
-                }));
-            return response.Bytes;
+                var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
+                    new UploadGetFileArgs
+                    {
+                        Location = new InputFileLocation
+                        {
+                            VolumeId = fileLocation.VolumeId,
+                            LocalId = fileLocation.LocalId,
+                            Secret = fileLocation.Secret
+                        },
+                        Offset = 0,
+                        Limit = uint.MaxValue,
+                    }));
+                return response.Bytes;
+            }
+            catch (Exception ex)
+            {
+                Utils.DebugPrint("Exception while fetching file bytes");
+                return null;
+            }
+
         }
 
         private static byte[] FetchFileBytes(TelegramClient client, FileLocation fileLocation, uint offset, uint limit)
@@ -3133,8 +3143,6 @@ namespace Disa.Framework.Telegram
                 }));
             return response.Bytes;
         }
-
-
 
         private byte[] FetchFileBytes(FileLocation fileLocation)
         {

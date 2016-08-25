@@ -1300,6 +1300,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyBlockedParticipants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptionsSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachedThumbnail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\NewMessageExtended.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)BigMath\" />

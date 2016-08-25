@@ -347,7 +347,11 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var inputUser = new InputUser { UserId = uint.Parse(participant.Address) };
+                var inputUser = new InputUser
+                {
+                    UserId = uint.Parse(participant.Address),
+                    AccessHash = GetUserAccessHashIfForeign(participant.Address)
+                };
 
                 using (var client = new FullClientDisposable(this))
                 {
