@@ -685,6 +685,7 @@ namespace Disa.Framework.Telegram
             var thumbnailChanged = messageService.Action as MessageActionChatEditPhoto;
             var upgradedToSuperGroup = messageService.Action as MessageActionChannelMigrateFrom;
             var chatMigaratedToSuperGroup = messageService.Action as MessageActionChatMigrateTo;
+            var chatJoinedByInviteLink = messageService.Action as MessageActionChatJoinedByLink;
 
             var address = TelegramUtils.GetPeerId(messageService.ToId);
             var fromId = messageService.FromId.ToString(CultureInfo.InvariantCulture);
@@ -765,7 +766,22 @@ namespace Disa.Framework.Telegram
                     bubble.ExtendedParty = true;
                 }
                 return new List<VisualBubble>
-                {   
+                {
+                    bubble
+                };
+            }
+            else if (chatJoinedByInviteLink != null)
+            { 
+                var bubble = PartyInformationBubble.CreateParticipantAdded(
+                    useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
+                    this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
+                    _settings.AccountId.ToString(CultureInfo.InvariantCulture));
+                if (messageService.ToId is PeerChannel)
+                {
+                    bubble.ExtendedParty = true;
+                }
+                return new List<VisualBubble>
+                {
                     bubble
                 };
             }
