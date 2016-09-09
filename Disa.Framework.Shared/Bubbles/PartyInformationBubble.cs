@@ -24,6 +24,9 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(5)]
         public string NewTitle { get; private set; }
 
+        [ProtoMember(6)]
+        public bool RaiseNotification { get; set; }
+
         public PartyInformationBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string message) :
             base(time, direction, address, participantAddress, party, service)

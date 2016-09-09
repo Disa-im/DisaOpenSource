@@ -10,6 +10,9 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(1)]
         public string Message { get; private set; }
 
+        [ProtoMember(2)]
+        public bool RaiseNotification { get; set; }
+
         public SoloInformationBubble()
         {
         }
