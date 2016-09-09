@@ -311,9 +311,9 @@ namespace Disa.Framework.Telegram
                     if (updatedUser != null)
                     {
                         updatedUser.Photo = updateUserPhoto.Photo;
+                        InvalidateThumbnail(updatedUser.Id.ToString(), false, false);
+                        InvalidateThumbnail(updatedUser.Id.ToString(), false, true);
                     }
-                    InvalidateThumbnail(updatedUser.Id.ToString(), false, false);
-                    InvalidateThumbnail(updatedUser.Id.ToString(), false, true);
                     _dialogs.AddUser(updatedUser);
                 }
                 else if (updateChannel != null)
