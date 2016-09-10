@@ -53,7 +53,25 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(261)]
         public long QuotedSeconds{ get; set;}
         [ProtoMember(262)]
-        public byte[] QuotedThumbnail { get; set;}
+        private byte[] _quotedThumbnail { get; set;}
+        //FIXME: Temporary hack to support plugins that are built against older framework versions.
+        //       The Disa UI in framework version 30+ requires that HasQuotedThumbnail to be set true
+        //       whenever QuotedThumbnail is set. Will be removed in framework version 31.
+        public byte[] QuotedThumbnail
+        {
+            get
+            {
+                return _quotedThumbnail;
+            }
+            set
+            {
+                _quotedThumbnail = value;
+                if (_quotedThumbnail != null && _quotedThumbnail.Length != 0)
+                {
+                    HasQuotedThumbnail = true;
+                }
+            }
+        }
         [ProtoMember(263)]
         public bool HasQuotedThumbnail { get; set; }
         [ProtoMember(264)]
