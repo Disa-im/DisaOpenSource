@@ -1542,7 +1542,7 @@ namespace BigMath
         /// </returns>
         public static explicit operator ulong(Int256 value)
         {
-            if ((value < ushort.MinValue) || (value > ushort.MaxValue))
+            if ((value < ulong.MinValue) || (value > ulong.MaxValue))
             {
                 throw new OverflowException();
             }

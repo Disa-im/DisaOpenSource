@@ -175,14 +175,104 @@ namespace BigMath.Utils
 
         public static void GetPrimeMultipliers(this Int256 pq, out Int256 p, out Int256 q)
         {
-            p = PollardRho(pq);
-            q = pq/p;
-            if (p > q)
+            // new prime generation algorithm.
+            ulong what = (ulong)pq.ToType(typeof(ulong), null, false);
+            int it = 0, i, j;
+            ulong g = 0;
+
+            for (i = 0; i < 3 || it < 1000; i++)
             {
-                Int256 t = p;
-                p = q;
-                q = t;
+                ulong t = ((GenerateLongRand() & 15) + 17) % what;
+                ulong x = GenerateLongRand() % (what - 1) + 1, y = x;
+                int lim = 1 << (i + 18);
+                for (j = 1; j < lim; j++)
+                {
+                    ++it;
+                    ulong a = x, b = x, c = t;
+                    while (b != 0)
+                    {
+                        if ((b & 1) != 0)
+                        {
+                            c += a;
+                            if (c >= what)
+                            {
+                                c -= what;
+                            }
+                        }
+                        a += a;
+                        if (a >= what)
+                        {
+                            a -= what;
+                        }
+                        b >>= 1;
+                    }
+                    x = c;
+                    ulong z = x < y ? what + x - y : x - y;
+                    g = GCD(z, what);
+                    if (g != 1)
+                    {
+                        break;
+                    }
+                    if ((j & (j - 1)) == 0)
+                    {
+                        y = x;
+                    }
+                }
+                if (g > 1 && g < what)
+                {
+                    break;
+                }
             }
+
+            if (g > 1 && g < what)
+            {
+                p = g;
+                q = what / g;
+                if (p > q)
+                {
+                    var tmp = p;
+                    p = q;
+                    q = tmp;
+                }
+            }
+            else
+            {
+                p = 0;
+                q = 0;
+            }
+            // Old algorithm, can be removed in later versions
+            //p = PollardRho(pq);
+            //q = pq / p;
+            //if (p > q)
+            //{
+            //    Int256 t = p;
+            //    p = q;
+            //    q = t;
+            //}
+            Console.WriteLine("p {0} q {1}", p, q);
+        }
+
+        public static ulong GCD(ulong a, ulong b)
+        {
+            while (true)
+            {
+                if (b == 0)
+                {
+                    return a;
+                }
+                ulong a1 = a;
+                a = b;
+                b = a1 % b;
+            }
+        }
+
+        private static ulong GenerateLongRand()
+        {
+            Random rand = new Random();
+            byte[] buf = new byte[8];
+            rand.NextBytes(buf);
+            ulong longRand = BitConverter.ToUInt64(buf, 0);
+            return longRand;
         }
 
         public static Int256 PollardRho(Int256 number)
