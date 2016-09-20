@@ -258,6 +258,21 @@ namespace Disa.Terminal
         {
             throw new NotImplementedException();
         }
+
+        public override BubbleGroup GetCurrentBubbleGroupOnUI()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool SwitchCurrentBubbleGroupOnUI(BubbleGroup group)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void DeleteBubbleGroup(BubbleGroup[] bubbleGroups)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 
