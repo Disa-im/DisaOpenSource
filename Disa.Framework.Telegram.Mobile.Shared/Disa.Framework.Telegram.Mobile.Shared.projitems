@@ -13,21 +13,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Localize.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Setup.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ResX\AppResources.Designer.cs">
-      <DependentUpon>..\..\Disa.Framework.Telegram.Mobile\ResX\AppResources.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ResX\AppResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)ResX\" />
     <Folder Include="$(MSBuildThisFileDirectory)Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)ResX\AppResources.resx">
+      <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 </Project>
