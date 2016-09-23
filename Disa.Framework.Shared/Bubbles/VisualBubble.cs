@@ -84,8 +84,6 @@ namespace Disa.Framework.Bubbles
         [NonSerialized]
         public bool ContractInfo;
         [NonSerialized]
-        public bool NotNowTime;
-        [NonSerialized]
         public bool NeedsPhoto = true;
         [NonSerialized]
         internal BubbleGroup BubbleGroupReference;
