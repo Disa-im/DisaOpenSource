@@ -19,12 +19,12 @@ namespace Disa.Framework.Telegram
                 service.DebugPrint("Fetching nearest DC...");
                 var settings = new TelegramSettings();
                 var authInfo = TelegramUtils.RunSynchronously(FetchNewAuthentication(DefaultTransportConfig));
-                using (var client = new TelegramClient(DefaultTransportConfig, 
+                using (var client = new TelegramClient(DefaultTransportConfig,
                     new ConnectionConfig(authInfo.AuthKey, authInfo.Salt), AppInfo))
                 {
                     TelegramUtils.RunSynchronously(client.Connect());
-                    var nearestDcId = (NearestDc)TelegramUtils.RunSynchronously(client.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs{}));
-                    var config = (Config)TelegramUtils.RunSynchronously(client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs{ }));
+                    var nearestDcId = (NearestDc)TelegramUtils.RunSynchronously(client.Methods.HelpGetNearestDcAsync(new HelpGetNearestDcArgs { }));
+                    var config = (Config)TelegramUtils.RunSynchronously(client.Methods.HelpGetConfigAsync(new HelpGetConfigArgs { }));
                     var dcOption = config.DcOptions.OfType<DcOption>().FirstOrDefault(x => x.Id == nearestDcId.NearestDcProperty);
                     settings.NearestDcId = nearestDcId.NearestDcProperty;
                     settings.NearestDcIp = dcOption.IpAddress;
@@ -48,69 +48,78 @@ namespace Disa.Framework.Telegram
         public class CodeRequest
         {
             public enum Type { Success, Failure, NumberInvalid, Migrate }
+            public enum AuthType { Telegram, Text, Phone, Unknown }
 
             public bool Registered { get; set; }
             public string CodeHash { get; set; }
             public Type Response { get; set; }
-            public int MigrateId { get; set;}
+            public int MigrateId { get; set; }
+            public AuthType CurrentType { get; set; }
+            public AuthType NextType { get; set; }
         }
 
-        public static CodeRequest RequestCode(Service service, string number, string codeHash, TelegramSettings settings, bool call)
+        public static CodeRequest RequestCode(Service service, string number, string codeHash, TelegramSettings settings, bool reVerify)
         {
             try
             {
                 service.DebugPrint("Requesting code...");
-                var transportConfig = 
+                var transportConfig =
                     new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort);
                 using (var client = new TelegramClient(transportConfig,
                     new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
                 {
                     TelegramUtils.RunSynchronously(client.Connect());
-
-                    if (!call)
+                    try
                     {
-                        try
+                        AuthSentCode result;
+                        if (reVerify)
                         {
-                            var result = TelegramUtils.RunSynchronously(client.Methods.AuthSendCodeAsync(new AuthSendCodeArgs
+                            result = TelegramUtils.RunSynchronously(client.Methods.AuthResendCodeAsync(new AuthResendCodeArgs
+                            {
+                                PhoneNumber = number,
+                                PhoneCodeHash = codeHash
+                            })) as AuthSentCode;
+                        }
+                        else
+                        {
+                            result = TelegramUtils.RunSynchronously(client.Methods.AuthSendCodeAsync(new AuthSendCodeArgs
                             {
                                 PhoneNumber = number,
                                 ApiId = AppInfo.ApiId,
                                 ApiHash = "f8f2562579817ddcec76a8aae4cd86f6",
                             })) as AuthSentCode;
-                            return new CodeRequest
-                            {
-                                Registered = result.PhoneRegistered != null ? true : false,
-                                CodeHash = result.PhoneCodeHash,
-                            };
                         }
-                        catch (RpcErrorException ex)
+                        return new CodeRequest
                         {
-                            Utils.DebugPrint(">>>> Send code failure " + ObjectDumper.Dump(ex));
-                            var error = (RpcError)ex.Error;
-                            var cr = new CodeRequest();
-                            var response = CodeRequest.Type.Failure;
-                            switch (error.ErrorCode)
-                            {
-                                case 400:
-                                    cr.Response = CodeRequest.Type.NumberInvalid;
-                                    break;
-                                case 303:
-                                    var newDcId = GetDcId(error.ErrorMessage);
-                                    cr.Response = CodeRequest.Type.Migrate;
-                                    cr.MigrateId = newDcId;
-                                    break;
-                                default:
-                                    cr.Response = CodeRequest.Type.Failure;
-                                    break;
-                            }
-                            return cr;
-                        }
+                            Registered = result.PhoneRegistered != null ? true : false,
+                            CodeHash = result.PhoneCodeHash,
+                            CurrentType = GetAuthSentType(result.Type),
+                            NextType = GetAuthType(result.NextType)
+                        };
                     }
-//                    var result2 = (bool)TelegramUtils.RunSynchronously(client.Methods.AuthSendCallAsync(new AuthSendCallArgs
-//                    {
-//                        PhoneNumber = number,
-//                        PhoneCodeHash = codeHash,
-//                    }));
+                    catch (RpcErrorException ex)
+                    {
+                        Utils.DebugPrint(">>>> Send code failure " + ObjectDumper.Dump(ex));
+                        var error = (RpcError)ex.Error;
+                        var cr = new CodeRequest();
+                        var response = CodeRequest.Type.Failure;
+                        switch (error.ErrorCode)
+                        {
+                            case 400:
+                                cr.Response = CodeRequest.Type.NumberInvalid;
+                                break;
+                            case 303:
+                                var newDcId = GetDcId(error.ErrorMessage);
+                                cr.Response = CodeRequest.Type.Migrate;
+                                cr.MigrateId = newDcId;
+                                break;
+                            default:
+                                cr.Response = CodeRequest.Type.Failure;
+                                break;
+                        }
+                        return cr;
+                    }
+
                     return new CodeRequest
                     {
                         Response = CodeRequest.Type.Success
@@ -124,6 +133,42 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
+        static CodeRequest.AuthType GetAuthType(IAuthCodeType nextType)
+        {
+            var authCodeTypeSms = nextType as AuthCodeTypeSms;
+            var authCodeTypeCall = nextType as AuthCodeTypeCall;
+
+            if (authCodeTypeSms != null)
+            {
+                return CodeRequest.AuthType.Text;
+            }
+            if (authCodeTypeCall != null)
+            {
+                return CodeRequest.AuthType.Phone;
+            }
+            return CodeRequest.AuthType.Unknown;
+        }
+
+        private static CodeRequest.AuthType GetAuthSentType(IAuthSentCodeType type)
+        {
+            var authSentCodeTypeApp = type as AuthSentCodeTypeApp;
+            var authSentCodeTypeSms = type as AuthSentCodeTypeSms;
+            var authSentCodeTypeCall = type as AuthSentCodeTypeCall;
+
+            if (authSentCodeTypeApp != null)
+            {
+                return CodeRequest.AuthType.Telegram;
+            }
+            if (authSentCodeTypeSms != null)
+            {
+                return CodeRequest.AuthType.Text;
+            }
+            if (authSentCodeTypeCall != null)
+            {
+                return CodeRequest.AuthType.Phone;
+            }
+            return CodeRequest.AuthType.Unknown;
+        }
 
         public static TelegramClient GetNewClient(int migrateId, TelegramSettings settings, out TelegramSettings newSettings)
         {
@@ -191,11 +236,58 @@ namespace Disa.Framework.Telegram
 
         public class CodeRegister
         {
-            public enum Type { Success, Failure, NumberInvalid, CodeEmpty, CodeExpired, CodeInvalid, FirstNameInvalid, LastNameInvalid }
+            public enum Type { Success, Failure, NumberInvalid, CodeEmpty, CodeExpired, CodeInvalid, FirstNameInvalid, LastNameInvalid, PasswordNeeded, InvalidPassword }
 
             public uint AccountId { get; set; }
             public long Expires { get; set; }
             public Type Response { get; set; }
+            public byte[] CurrentSalt { get; set; }
+            public byte[] NewSalt { get; set; }
+            public string Hint { get; set; }
+            public bool HasRecovery { get; set; }
+        }
+
+
+        public static CodeRegister VerifyPassword(Service service, TelegramSettings settings, byte[] passwordHash)
+        {
+            try
+            {
+                var transportConfig =
+                      new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort);
+                using (var client = new TelegramClient(transportConfig,
+                    new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
+                {
+                    TelegramUtils.RunSynchronously(client.Connect());
+                    try
+                    {
+                        var iresult = TelegramUtils.RunSynchronously(client.Methods.AuthCheckPasswordAsync(new AuthCheckPasswordArgs
+                        {
+                            PasswordHash = passwordHash
+                        }));
+                        var result = (AuthAuthorization)iresult;
+                        return new CodeRegister
+                        {
+                            AccountId = (result.User as User).Id,
+                            Response = CodeRegister.Type.Success
+                        };
+                    }
+                    catch (RpcErrorException ex)
+                    {
+                        var error = (RpcError)ex.Error;
+                        var cr = new CodeRegister();
+                        if (error.ErrorMessage == "PASSWORD_HASH_INVALID")
+                        {
+                            cr.Response = CodeRegister.Type.InvalidPassword;
+                        }
+                        return cr;
+                    }
+                }
+            }
+            catch (Exception ex)
+            { 
+                service.DebugPrint("Error in VerifyPassword: " + ex);
+                return null;
+            }
         }
 
         public static CodeRegister RegisterCode(Service service, TelegramSettings settings, string number, string codeHash, string code, string firstName, string lastName, bool signIn)
@@ -237,7 +329,6 @@ namespace Disa.Framework.Telegram
                         return new CodeRegister
                         {
                             AccountId = (result.User as User).Id,
-//                            Expires = result.Expires,
                             Response = CodeRegister.Type.Success,
                         };
                     }
@@ -246,7 +337,6 @@ namespace Disa.Framework.Telegram
                         Utils.DebugPrint(">>>>>> Failed to sign in " + ex);
                         var error = (RpcError)ex.Error;
                         var cr = new CodeRegister();
-                        var response = CodeRegister.Type.Failure;
                         switch (error.ErrorMessage)
                         {
                             case "PHONE_NUMBER_INVALID":
@@ -267,6 +357,10 @@ namespace Disa.Framework.Telegram
                             case "LASTNAME_INVALID":
                                 cr.Response = CodeRegister.Type.LastNameInvalid;
                                 break;
+                            case "SESSION_PASSWORD_NEEDED":
+                                cr.Response = CodeRegister.Type.PasswordNeeded;
+                                GetPasswordDetails(client, cr);
+                                break;
                             default:
                                 cr.Response = CodeRegister.Type.Failure;
                                 break;
@@ -280,6 +374,23 @@ namespace Disa.Framework.Telegram
                 service.DebugPrint("Error in CodeRequest: " + ex);
             }
             return null;
+        }
+
+        private static void GetPasswordDetails(TelegramClient client, CodeRegister cr)
+        {
+            var result = TelegramUtils.RunSynchronously(client.Methods.AccountGetPasswordAsync(new AccountGetPasswordArgs
+            {
+            }));
+            var authPassword = result as AccountPassword;
+            var authNoPassword = result as AccountNoPassword;
+
+            if (authPassword != null)
+            {
+                cr.CurrentSalt = authPassword.CurrentSalt;
+                cr.NewSalt = authPassword.NewSalt;
+                cr.HasRecovery = authPassword.HasRecovery;
+                cr.Hint = authPassword.Hint;
+            }
         }
 
         public static async Task<AuthInfo> FetchNewAuthentication(TcpClientTransportConfig config)

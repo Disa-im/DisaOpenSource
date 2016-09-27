@@ -222,6 +222,12 @@
   <data name="TelegramVerifyViaSms" xml:space="preserve">
     <value>via SMS</value>
   </data>
+  <data name="TelegramVerifySentToTelegram" xml:space="preserve">
+    <value>The verification code was sent to the Telegram app on your other device</value>
+  </data>
+  <data name="TelegramVerifySentViaSms" xml:space="preserve">
+    <value>The verification code was sent via SMS to </value>
+  </data>
   <data name="TelegramVerifyError" xml:space="preserve">
     <value>An error has occured. Please try again.</value>
   </data>
@@ -297,7 +303,46 @@
   <data name="TelegramPrivacyList" xml:space="preserve">
     <value>Privacy List</value>
   </data>
+  <data name="TelegramCodeSentPhoneCall" xml:space="preserve">
+    <value>You will get a call from Telegram, which will tell you the code. Enter the code below.</value>
+  </data>
+  <data name="TelegramCodeSentTelegramApp" xml:space="preserve">
+    <value>The code was sent to a Telegram app on your other device</value>
+  </data>
+  <data name="TelegramCodeSentText" xml:space="preserve">
+    <value>The code was sent to you via SMS</value>
+  </data>
+  <data name="TelegramCodeResendViaPhoneCall" xml:space="preserve">
+    <value>Didn't get the code even after a minute? Press the button above to get a call that tells you the code to be entered.</value>
+  </data>
+  <data name="TelegramCodeResendViaText" xml:space="preserve">
+    <value>Didnt get the code? Press the button above to recieve the code via SMS</value>
+  </data>
   <data name="TelegramSelect" xml:space="preserve">
     <value>Select</value>
   </data>
+  <data name="TelegramVerify" xml:space="preserve">
+    <value>Verify</value>
+  </data>
+  <data name="TelegramPassword" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="TelegramEnterPassword" xml:space="preserve">
+    <value>Please enter your password to login</value>
+  </data>		
+  <data name="TelegramPasswordTitle" xml:space="preserve">
+    <value>Password</value>
+  </data>	
+  <data name="TelegramFinish" xml:space="preserve">
+    <value>Finish</value>
+  </data>	
+  <data name="TelegramForgotPassword" xml:space="preserve">
+    <value>Forgot Password?</value>
+  </data>
+  <data name="TelegramInvalidPassword" xml:space="preserve">
+    <value>Invalid Password</value>
+  </data>
+  <data name="TelegramPasswordError" xml:space="preserve">
+    <value>An error has occured. Please try again.</value>
+  </data>	
 </root>
