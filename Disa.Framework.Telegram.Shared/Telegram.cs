@@ -1301,7 +1301,7 @@ namespace Disa.Framework.Telegram
                 };
             }
 
-            return null;
+            return new List<VisualBubble>();
         }
 
         private ContactBubble MakeContactBubble(Message message, bool isUser, bool useCurrentTime, string addressStr, string participantAddress, byte[] vCardData, string name)
