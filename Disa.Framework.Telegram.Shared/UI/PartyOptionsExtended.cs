@@ -323,7 +323,6 @@ namespace Disa.Framework.Telegram
                             result(SetPartyShareLinkResult.LinkUnavailable);
                             return;
                         }
-
                     }
                     else 
                     {
@@ -401,6 +400,47 @@ namespace Disa.Framework.Telegram
                     }
                 }
 
+            });
+        }
+
+        public Task CanGeneratePartyShareLink(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var fullChat = FetchFullChat(group.Address, true);
+                var fullChannel = fullChat.FullChat as ChannelFull;
+
+                if (fullChannel != null)
+                {
+                    bool isPublic = false;
+                    var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                    if (channel != null)
+                    {
+                        isPublic = channel.Username != null;
+                    }
+                    result(!isPublic);
+                }
+                else
+                {
+                    result(true);
+                }
+            });
+        }
+
+        public Task GeneratePartyShareLink(BubbleGroup group, Action<string> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var iExportedInviteNew = ExportChatInvite(group);
+                var exportedInviteNew = iExportedInviteNew as ChatInviteExported;
+                if (exportedInviteNew != null)
+                {
+                    result(exportedInviteNew.Link);
+                }
+                else
+                {
+                    result(null);
+                }
             });
         }
     }

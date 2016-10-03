@@ -36,12 +36,20 @@ namespace Disa.Framework
         /// The second string in the Tuple the mutable part of the url
         /// In cases where the url doesnt have two parts, just set the fist string in the tuple to null, it will wook as if 
         /// the there was just a single url.
+        /// If there is a party share link, but it has to be generated, set both of the tuple results to null. i.e if if has a party share link,
+        /// and it has to be geenrated, set the result of both of these to null. In this case, you will get a call to
+        /// CanGeneratePartySharedLink, and if you set that to true, youll get a call to GeneratePartySharedLink, when the user requests that 
+        /// it needs a link to be generated for this party.
         /// Also as captain obvious says, this function will only be called if the HasPartyShareLink is set to true
         /// </summary>
         /// <returns>The party share link.</returns>
         /// <param name="group">The BubbleGroup in context</param>
         /// <param name="result">Action on which the result should be set</param>
         Task GetPartyShareLink(BubbleGroup group, Action<Tuple<string, string>> result);
+
+        Task CanGeneratePartyShareLink(BubbleGroup group, Action<bool> result);
+
+        Task GeneratePartyShareLink(BubbleGroup group, Action<string> result);
 
         /// <summary>
         /// Set the result of the action as true if the current user can set the party share link
