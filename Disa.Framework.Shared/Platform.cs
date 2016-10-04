@@ -208,5 +208,9 @@ namespace Disa.Framework
             PlatformImplementation.DeleteBubbleGroup(bubbleGroups);
         }
 
+        public static void ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately()
+        {
+            PlatformImplementation.ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
+        }
     }
 }
