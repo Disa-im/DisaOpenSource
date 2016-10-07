@@ -7,6 +7,7 @@ using SharpMTProto.Schema;
 using System.Threading.Tasks;
 using SharpMTProto.Authentication;
 using System.Linq;
+using System.Threading;
 
 namespace Disa.Framework.Telegram
 {
@@ -265,6 +266,7 @@ namespace Disa.Framework.Telegram
                             PasswordHash = passwordHash
                         }));
                         var result = (AuthAuthorization)iresult;
+                        Thread.Sleep(100); //wait until the other response comes in. 
                         return new CodeRegister
                         {
                             AccountId = (result.User as User).Id,
@@ -326,6 +328,7 @@ namespace Disa.Framework.Telegram
                             }));
                         }
                         var result = (AuthAuthorization)iresult;
+                        Thread.Sleep(100); //wait until the other response comes in, if it has to.
                         return new CodeRegister
                         {
                             AccountId = (result.User as User).Id,

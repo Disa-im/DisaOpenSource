@@ -187,7 +187,6 @@ namespace Disa.Framework.Telegram
                         Limit = 100,
                         Offset = offset
                     }));
-                DebugPrint("channel result " + ObjectDumper.Dump(result));
                 participantsList.AddRange(result.Participants);
                 _dialogs.AddUsers(result.Users);
 

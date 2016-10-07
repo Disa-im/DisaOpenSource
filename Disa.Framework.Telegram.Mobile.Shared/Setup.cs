@@ -264,26 +264,25 @@ namespace Disa.Framework.Telegram.Mobile
                     _progressBar.IsVisible = true;
                     DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
                     tabs.IsEnabled = false;
-
                     var password = _password.Text;
-                    var result = await VerifyPassword(password);
 
-                    if (result.Success)
-                    {
-                        Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
-                        DependencyService.Get<IPluginPageControls>().Finish();
-                        return;
-                    }
-                    else
-                    {
-                        _error.Text = result.ErrorMessage;
-                    }
+                    var result = await VerifyPassword(password);
 
                     _password.IsEnabled = true;
                     _finish.IsEnabled = true;
                     _progressBar.IsVisible = false;
                     DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
                     tabs.IsEnabled = true;
+
+                    if (result.Success)
+                    {
+                        Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
+                        DependencyService.Get<IPluginPageControls>().Finish();
+                    }
+                    else
+                    {
+                        _error.Text = result.ErrorMessage;
+                    }
                 };
 
                 _error = new Label();
@@ -366,7 +365,7 @@ namespace Disa.Framework.Telegram.Mobile
 
             public void SetFields(PasswordInformation info)
             {
-                if (string.IsNullOrWhiteSpace(info.Hint))
+                if (!string.IsNullOrWhiteSpace(info.Hint))
                 {
                     _password.Placeholder = info.Hint;
                 }
@@ -558,7 +557,7 @@ namespace Disa.Framework.Telegram.Mobile
             {
                 return Task<ActivationResult>.Factory.StartNew(() =>
                     {
-                    var result = Telegram.RegisterCode(_service, GetSettingsTelegramSettings(NationalNumber), CountryCode + NationalNumber, 
+                        var result = Telegram.RegisterCode(_service, GetSettingsTelegramSettings(NationalNumber), CountryCode + NationalNumber, 
                                                            GetSettingsCodeHash(NationalNumber), code, null, null, GetSettingsRegistered(NationalNumber));
 
                         if (result == null)
@@ -769,6 +768,7 @@ namespace Disa.Framework.Telegram.Mobile
                             password.SetFields(result.PasswordInformation);
                             tabs.Children.Add(password);
                             tabs.CurrentPage = password;
+                            return;
                         }
 
                         if (!result.Success)
