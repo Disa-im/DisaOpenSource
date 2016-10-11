@@ -248,6 +248,111 @@ namespace Disa.Framework.Telegram
             public bool HasRecovery { get; set; }
         }
 
+        public static bool RequestAccountReset(Service service, TelegramSettings settings)
+        {
+            try
+            {
+                var transportConfig =
+                      new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort);
+                using (var client = new TelegramClient(transportConfig,
+                    new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
+                {
+                    TelegramUtils.RunSynchronously(client.Connect());
+                    try
+                    {
+                        var result = TelegramUtils.RunSynchronously(client.Methods.AccountDeleteAccountAsync(new AccountDeleteAccountArgs
+                        {
+                            Reason = "Forgot Password"
+                        }));
+                        return result;
+                    }
+                    catch (RpcErrorException ex)
+                    {
+                        var error = (RpcError)ex.Error;
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                service.DebugPrint("Error in VerifyPassword: " + ex);
+                return false;
+            }
+        }
+
+
+        public static AuthPasswordRecovery RequestPasswordRecovery(Service service, TelegramSettings settings)
+        {
+            try
+            {
+                var transportConfig =
+                      new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort);
+                using (var client = new TelegramClient(transportConfig,
+                    new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
+                {
+                    TelegramUtils.RunSynchronously(client.Connect());
+                    try
+                    {
+                        var result = (AuthPasswordRecovery)TelegramUtils.RunSynchronously(client.Methods.AuthRequestPasswordRecoveryAsync(new AuthRequestPasswordRecoveryArgs
+                        {
+                        }));
+                        Thread.Sleep(100);
+                        return result;
+                    }
+                    catch (RpcErrorException ex)
+                    {
+                        var error = (RpcError)ex.Error;
+                        return null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                service.DebugPrint("Error in VerifyPassword: " + ex);
+                return null;
+            }
+        }
+
+        public static CodeRegister VerifyCode(Service service, TelegramSettings settings, string code)
+        {
+            try
+            {
+                var transportConfig =
+                      new TcpClientTransportConfig(settings.NearestDcIp, settings.NearestDcPort);
+                using (var client = new TelegramClient(transportConfig,
+                    new ConnectionConfig(settings.AuthKey, settings.Salt), AppInfo))
+                {
+                    TelegramUtils.RunSynchronously(client.Connect());
+                    try
+                    {
+                        var iresult = TelegramUtils.RunSynchronously(client.Methods.AuthRecoverPasswordAsync(new AuthRecoverPasswordArgs
+                        {
+                            Code = code
+                        }));
+                        var result = (AuthAuthorization)iresult;
+                        Thread.Sleep(100); //wait until the other response comes in. 
+                        return new CodeRegister
+                        {
+                            AccountId = (result.User as User).Id,
+                            Response = CodeRegister.Type.Success
+                        };
+                    }
+                    catch (RpcErrorException ex)
+                    {
+                        var error = (RpcError)ex.Error;
+                        var cr = new CodeRegister();
+                        cr.Response = CodeRegister.Type.Failure;
+                        return cr;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                service.DebugPrint("Error in VerifyPassword: " + ex);
+                return null;
+            }
+        }
+
 
         public static CodeRegister VerifyPassword(Service service, TelegramSettings settings, byte[] passwordHash)
         {

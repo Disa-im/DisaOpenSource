@@ -41,6 +41,74 @@ namespace Disa.Framework.Telegram.Mobile
             }
         }
 
+        private static Task<ActivationResult> Register(Service service, string nationalNumber, string countryCode, string code, string firstName = null, string lastName = null)
+        {
+            return Task<ActivationResult>.Factory.StartNew(() =>
+                {
+                    var result = Telegram.RegisterCode(service, GetSettingsTelegramSettings(nationalNumber), countryCode + nationalNumber,
+                                                       GetSettingsCodeHash(nationalNumber), code, firstName, lastName, GetSettingsRegistered(nationalNumber));
+
+                    if (result == null)
+                    {
+                        return new ActivationResult
+                        {
+                            Success = false,
+                            ErrorMessage = Localize.GetString("TelegramCodeError")
+                        };
+                    }
+
+                    if (result.Response != Telegram.CodeRegister.Type.Success)
+                    {
+                        string errorMessage = null;
+                        var info = new PasswordInformation();
+                        switch (result.Response)
+                        {
+                            case Telegram.CodeRegister.Type.NumberInvalid:
+                                errorMessage = Localize.GetString("TelegramCodeNumberInvalid");
+                                break;
+                            case Telegram.CodeRegister.Type.CodeEmpty:
+                                errorMessage = Localize.GetString("TelegramCodeInvalidMessage");
+                                break;
+                            case Telegram.CodeRegister.Type.CodeExpired:
+                                errorMessage = Localize.GetString("TelegramCodeCodeExpired");
+                                break;
+                            case Telegram.CodeRegister.Type.CodeInvalid:
+                                errorMessage = Localize.GetString("TelegramCodeCodeInvalid");
+                                break;
+                            case Telegram.CodeRegister.Type.FirstNameInvalid:
+                                errorMessage = Localize.GetString("TelegramCodeFirstNameInvalid");
+                                break;
+                            case Telegram.CodeRegister.Type.LastNameInvalid:
+                                errorMessage = Localize.GetString("TelegramCodeLastNameInvalid");
+                                break;
+                            case Telegram.CodeRegister.Type.PasswordNeeded:
+                                info.CurrentSalt = result.CurrentSalt;
+                                info.HasRecovery = result.HasRecovery;
+                                info.Hint = result.Hint;
+                                info.NewSalt = result.NewSalt;
+                                break;
+                            default:
+                                errorMessage = Localize.GetString("TelegramCodeError");
+                                break;
+                        }
+                        return new ActivationResult
+                        {
+                            Success = false,
+                            ErrorMessage = errorMessage,
+                            PasswordNeeded = result.Response == Telegram.CodeRegister.Type.PasswordNeeded,
+                            PasswordInformation = info
+                        };
+                    }
+
+                    return new ActivationResult
+                    {
+                        Success = true,
+                        AccountId = result.AccountId,
+                    };
+                });
+        }
+
+
         private static bool GetSettingsRegistered(string nationalNumber)
         {
             var state = _settings.States.FirstOrDefault(x => x.NationalNumber == nationalNumber);
@@ -144,6 +212,11 @@ namespace Disa.Framework.Telegram.Mobile
             public PasswordInformation PasswordInformation { get; set; }
         }
 
+        private class RecoverResult
+        {
+            public string EmailPattern { get; set; }
+        }
+
         private class PasswordInformation
         { 
             public byte[] CurrentSalt { get; set; }
@@ -193,8 +266,10 @@ namespace Disa.Framework.Telegram.Mobile
             }
 
             var tabs = new TabbedPage();
-            var password = new Password(service, tabs);
-            var code = new Code(service, tabs, password);
+            var userInformation = new UserInformation(service, tabs);
+            var passwordCode = new PasswordCode(service, tabs, userInformation);
+            var password = new Password(service, tabs, passwordCode);
+            var code = new Code(service, tabs, password, userInformation);
             var info = new Info(service, tabs, code);
 
             tabs.Children.Add(info);
@@ -207,10 +282,23 @@ namespace Disa.Framework.Telegram.Mobile
                         {
                             tabs.Children.Remove(code);
                             tabs.Children.Remove(password);
+                            tabs.Children.Remove(passwordCode);
+                            tabs.Children.Remove(userInformation);
                         }
                         if (selected is Code)
                         {
                             tabs.Children.Remove(password);
+                            tabs.Children.Remove(passwordCode);
+                            tabs.Children.Remove(userInformation);
+                        }
+                        if (selected is Password)
+                        {
+                            tabs.Children.Remove(passwordCode);
+                            tabs.Children.Remove(userInformation);
+                        }
+                        if (selected is PasswordCode)
+                        {
+                            tabs.Children.Remove(userInformation);
                         }
                     }
                 };
@@ -218,6 +306,298 @@ namespace Disa.Framework.Telegram.Mobile
             tabs.Title = Localize.GetString("TelegramSetupWizardTitle");
             _cachedPage = tabs;
             return tabs;
+        }
+
+
+        private class UserInformation : ContentPage
+        {
+            private Entry _firstName;
+            private Entry _lastName;    
+            private Button _finish;
+            private Label _error;
+
+            public string CountryCode { get; set; }
+            public string NationalNumber { get; set; }
+            public string Code { get; set; }
+
+            private ActivityIndicator _progressBar;
+
+            private Service _service;
+
+            public UserInformation(Service service, TabbedPage tabs)
+            {
+                _service = service;
+
+                _firstName = new Entry();
+                _firstName.Placeholder = Localize.GetString("TelegramFirstName");
+
+                _lastName = new Entry();
+                _lastName.Placeholder = Localize.GetString("TelegramLastName");
+
+                _finish = new Button();
+                _finish.Text = Localize.GetString("TelegramFinish");
+                _finish.TextColor = Color.White;
+                _finish.BackgroundColor = Color.FromHex("77D065");
+                _finish.Clicked += async (sender, e) =>
+                {
+                    _firstName.IsEnabled = false;
+                    _lastName.IsEnabled = false;
+                    _finish.IsEnabled = false;
+                    _progressBar.IsVisible = true;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
+                    tabs.IsEnabled = false;
+                    var firstName = _firstName.Text;
+                    var lastName = _lastName.Text;
+
+                    if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
+                    {
+                        await DisplayAlert(Localize.GetString("TelegramCodeInvalidTitle"),
+                                    Localize.GetString("TelegramInvalidCodeDetail"), Localize.GetString("TelegramOkay"));
+                        return;
+                    }
+
+                    SetSettingsRegistered(false, true, NationalNumber);
+
+                    var result = await Register(service, NationalNumber, CountryCode, Code, firstName, lastName);
+
+                    _firstName.IsEnabled = true;
+                    _lastName.IsEnabled = true;
+                    _finish.IsEnabled = true;
+                    _progressBar.IsVisible = false;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
+                    tabs.IsEnabled = true;
+
+                    if (result.Success)
+                    {
+                        Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
+                        DependencyService.Get<IPluginPageControls>().Finish();
+                    }
+                    else
+                    {
+                        _error.Text = result.ErrorMessage;
+                    }
+                };
+
+                _error = new Label();
+                _error.VerticalOptions = LayoutOptions.EndAndExpand;
+                _error.IsVisible = false;
+                _error.Font = Font.SystemFontOfSize(18);
+                _error.XAlign = TextAlignment.Center;
+                _error.TextColor = Color.Red;
+
+                _progressBar = new ActivityIndicator();
+                _progressBar.VerticalOptions = LayoutOptions.CenterAndExpand;
+                _progressBar.IsRunning = true;
+                _progressBar.IsVisible = false;
+
+                var stackLayout = new StackLayout();
+                stackLayout.Spacing = 20;
+                stackLayout.Padding = 25;
+                stackLayout.VerticalOptions = LayoutOptions.Start;
+                var children = stackLayout.Children;
+                children.Add(_firstName);
+                children.Add(_lastName);
+                children.Add(_finish);
+                children.Add(_error);
+                children.Add(_progressBar);
+
+                Content = new ScrollView { Content = stackLayout };
+                Title = Localize.GetString("TelegramUserInformationTitle");
+            }
+        }
+
+
+
+        private class PasswordCode : ContentPage
+        {
+            private Label _passwordCodeLabel;
+            private Entry _code;
+            private Button _finish;
+            private Label _error;
+            private Button _resetAccount;
+
+            public string CountryCode { get; set; }
+            public string NationalNumber { get; set; }
+            private string _emailPattern;
+            public string EmailPattern 
+            {   get
+                {
+                    return _emailPattern;
+                }
+                set 
+                {
+                    _emailPattern = value;
+                    _passwordCodeLabel.Text = Localize.GetString("TelegramEnterCodeSentToEmail").Replace("[emailPattern]", _emailPattern);
+                }
+            }
+            public string Code { get; set; }
+
+            private ActivityIndicator _progressBar;
+
+            private Service _service;
+            UserInformation userInformation;
+
+            public PasswordCode(Service service, TabbedPage tabs, UserInformation userInformation)
+            {
+                _service = service;
+
+                _passwordCodeLabel = new Label();
+                _passwordCodeLabel.VerticalOptions = LayoutOptions.CenterAndExpand;
+                _passwordCodeLabel.Text = Localize.GetString("TelegramEnterCodeSentToEmail").Replace("[emailPattern]", EmailPattern);
+                _passwordCodeLabel.IsVisible = true;
+                _passwordCodeLabel.Font = Font.SystemFontOfSize(18);
+                _passwordCodeLabel.XAlign = TextAlignment.Center;
+
+                _code = new Entry();
+                _code.Placeholder = Localize.GetString("TelegramCode");
+
+                _finish = new Button();
+                _finish.Text = Localize.GetString("TelegramFinish");
+                _finish.TextColor = Color.White;
+                _finish.BackgroundColor = Color.FromHex("77D065");
+                _finish.Clicked += async (sender, e) =>
+                {
+                    _code.IsEnabled = false;
+                    _finish.IsEnabled = false;
+                    _progressBar.IsVisible = true;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
+                    tabs.IsEnabled = false;
+                    var code = _code.Text;
+
+                    if (string.IsNullOrEmpty(code))
+                    {
+                        await DisplayAlert(Localize.GetString("TelegramCodeInvalidTitle"),
+                                    Localize.GetString("TelegramInvalidCodeDetail"), Localize.GetString("TelegramOkay"));
+                        return;
+                    }
+
+                    var result = await VerifyCode(code);
+
+                    _code.IsEnabled = true;
+                    _finish.IsEnabled = true;
+                    _progressBar.IsVisible = false;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
+                    tabs.IsEnabled = true;
+
+                    if (result.Success)
+                    {
+                        Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
+                        DependencyService.Get<IPluginPageControls>().Finish();
+                    }
+                    else
+                    {
+                        _error.Text = result.ErrorMessage;
+                    }
+                };
+
+                _error = new Label();
+                _error.VerticalOptions = LayoutOptions.EndAndExpand;
+                _error.IsVisible = false;
+                _error.Font = Font.SystemFontOfSize(18);
+                _error.XAlign = TextAlignment.Center;
+                _error.TextColor = Color.Red;
+
+                _resetAccount = new Button();
+                _resetAccount.VerticalOptions = LayoutOptions.EndAndExpand;
+                _resetAccount.Text = Localize.GetString("TelegramCannotAccessEmail");
+                _resetAccount.TextColor = Color.White;
+                _resetAccount.BackgroundColor = Color.FromHex("77D065");
+                _resetAccount.Clicked += async (sender, e) =>
+                {
+                    _code.IsEnabled = false;
+                    _finish.IsEnabled = false;
+                    _progressBar.IsVisible = true;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
+                    tabs.IsEnabled = false;
+
+                    bool returnValue = await DisplayAlert(Localize.GetString("TelegramResetAccount"),
+                                       Localize.GetString("TelegramNeedToResetAccount"), Localize.GetString("TelegramOkay") , Localize.GetString("TelegramCancel"));
+
+                    if (!returnValue)
+                    {
+                        _code.IsEnabled = true;
+                        _finish.IsEnabled = true;
+                        _progressBar.IsVisible = false;
+                        DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
+                        tabs.IsEnabled = true;
+                        return;
+                    }
+
+                    bool resetted = await ResetAccount();
+
+                    if (resetted)
+                    {
+                        userInformation.CountryCode = CountryCode;
+                        userInformation.NationalNumber = NationalNumber;
+                        userInformation.Code = Code;
+                        tabs.Children.Add(userInformation);
+                        tabs.CurrentPage = userInformation;
+                    }
+                    else
+                    {
+                        _error.Text = Localize.GetString("TelegramVerifyError");
+                    }
+
+                    _code.IsEnabled = true;
+                    _finish.IsEnabled = true;
+                    _progressBar.IsVisible = false;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
+                    tabs.IsEnabled = true;
+
+                };
+
+                _progressBar = new ActivityIndicator();
+                _progressBar.VerticalOptions = LayoutOptions.CenterAndExpand;
+                _progressBar.IsRunning = true;
+                _progressBar.IsVisible = false;
+
+                var stackLayout = new StackLayout();
+                stackLayout.Spacing = 20;
+                stackLayout.Padding = 25;
+                stackLayout.VerticalOptions = LayoutOptions.Start;
+                var children = stackLayout.Children;
+                children.Add(_passwordCodeLabel);
+                children.Add(_code);
+                children.Add(_finish);
+                children.Add(_error);
+                children.Add(_progressBar);
+                children.Add(_resetAccount);
+
+                Content = new ScrollView { Content = stackLayout };
+                Title = Localize.GetString("TelegramPasswordCodeTitle");
+            }
+
+            private Task<bool> ResetAccount()
+            {
+                return Task<bool>.Factory.StartNew(() =>
+                {
+                    var result = Telegram.RequestAccountReset(_service, GetSettingsTelegramSettings(NationalNumber));
+                    return result;
+                });
+            }
+
+            private Task<ActivationResult> VerifyCode(string code)
+            {
+                return Task<ActivationResult>.Factory.StartNew(() =>
+                {
+                    var result = Telegram.VerifyCode(_service, GetSettingsTelegramSettings(NationalNumber), code);
+                    if (result.Response == Telegram.CodeRegister.Type.Success)
+                    {
+                        return new ActivationResult
+                        {
+                            AccountId = result.AccountId,
+                            Success = true
+                        };
+                    }
+                    else
+                    {
+                        return new ActivationResult
+                        {
+                            ErrorMessage = Localize.GetString("TelegramCodeError")
+                        };
+                    }
+                });
+            }
         }
 
         private class Password : ContentPage
@@ -233,12 +613,13 @@ namespace Disa.Framework.Telegram.Mobile
 
             public string CountryCode { get; set; }
             public string NationalNumber { get; set; }
+            public string Code { get; internal set; }
 
             private ActivityIndicator _progressBar;
 
             private Service _service;
 
-            public Password(Service service, TabbedPage tabs)
+            public Password(Service service, TabbedPage tabs, PasswordCode passwordCode)
             {
                 _service = service;
 
@@ -266,7 +647,15 @@ namespace Disa.Framework.Telegram.Mobile
                     tabs.IsEnabled = false;
                     var password = _password.Text;
 
+                    if (string.IsNullOrEmpty(password))
+                    {
+                        await DisplayAlert(Localize.GetString("TelegramInvalidPassword"),
+                                    Localize.GetString("TelegramInvalidPasswordDetail"), Localize.GetString("TelegramOkay"));
+                    }
+
                     var result = await VerifyPassword(password);
+
+                    password = null;
 
                     _password.IsEnabled = true;
                     _finish.IsEnabled = true;
@@ -300,7 +689,29 @@ namespace Disa.Framework.Telegram.Mobile
                 _forgotPassword.BackgroundColor = Color.FromHex("77D065");
                 _forgotPassword.Clicked += async (sender, e) =>
                 {
-                    
+                    _password.IsEnabled = false;
+                    _finish.IsEnabled = false;
+                    _progressBar.IsVisible = true;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
+                    tabs.IsEnabled = false;
+
+                    var result = await RecoverPassword();
+
+                    _password.IsEnabled = true;
+                    _finish.IsEnabled = true;
+                    _progressBar.IsVisible = false;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
+                    tabs.IsEnabled = true;
+
+                    if (result != null)
+                    {
+                        passwordCode.CountryCode = CountryCode;
+                        passwordCode.NationalNumber = NationalNumber;
+                        passwordCode.EmailPattern = result.EmailPattern;
+                        passwordCode.Code = Code;
+                        tabs.Children.Add(passwordCode);
+                        tabs.CurrentPage = passwordCode;
+                    }
 
                 };
 
@@ -323,6 +734,24 @@ namespace Disa.Framework.Telegram.Mobile
 
                 Content = new ScrollView { Content = stackLayout };
                 Title = Localize.GetString("TelegramPasswordTitle");
+            }
+
+
+
+            private Task<RecoverResult> RecoverPassword() 
+            {
+                return Task<RecoverResult>.Factory.StartNew(() =>
+                {
+                    var result = Telegram.RequestPasswordRecovery(_service, GetSettingsTelegramSettings(NationalNumber));
+                    if (result == null)
+                    {
+                        return null;
+                    }
+                    return new RecoverResult
+                    {
+                        EmailPattern = result.EmailPattern
+                    };
+                });
             }
 
             private Task<ActivationResult> VerifyPassword(string password)
@@ -553,74 +982,7 @@ namespace Disa.Framework.Telegram.Mobile
             public string NationalNumber { get; set; }
 
 
-            private Task<ActivationResult> Register(string code)
-            {
-                return Task<ActivationResult>.Factory.StartNew(() =>
-                    {
-                        var result = Telegram.RegisterCode(_service, GetSettingsTelegramSettings(NationalNumber), CountryCode + NationalNumber, 
-                                                           GetSettingsCodeHash(NationalNumber), code, null, null, GetSettingsRegistered(NationalNumber));
-
-                        if (result == null)
-                        {
-                            return new ActivationResult
-                            {
-                                Success = false,
-                                ErrorMessage = Localize.GetString("TelegramCodeError")
-                            };
-                        }
-
-                        if (result.Response != Telegram.CodeRegister.Type.Success)
-                        {
-                            string errorMessage = null;
-                            var info = new PasswordInformation(); 
-                            switch (result.Response)
-                            {
-                                case Telegram.CodeRegister.Type.NumberInvalid:
-                                    errorMessage = Localize.GetString("TelegramCodeNumberInvalid");
-                                    break;
-                                case Telegram.CodeRegister.Type.CodeEmpty:
-                                    errorMessage = Localize.GetString("TelegramCodeInvalidMessage");
-                                    break;
-                                case Telegram.CodeRegister.Type.CodeExpired:
-                                    errorMessage = Localize.GetString("TelegramCodeCodeExpired");
-                                    break;
-                                case Telegram.CodeRegister.Type.CodeInvalid:
-                                    errorMessage = Localize.GetString("TelegramCodeCodeInvalid");
-                                    break;
-                                case Telegram.CodeRegister.Type.FirstNameInvalid:
-                                    errorMessage = Localize.GetString("TelegramCodeFirstNameInvalid");
-                                    break;
-                                case Telegram.CodeRegister.Type.LastNameInvalid:
-                                    errorMessage = Localize.GetString("TelegramCodeLastNameInvalid");
-                                    break;
-                                case Telegram.CodeRegister.Type.PasswordNeeded:
-                                    info.CurrentSalt = result.CurrentSalt;
-                                    info.HasRecovery = result.HasRecovery;
-                                    info.Hint = result.Hint;
-                                    info.NewSalt = result.NewSalt;
-                                    break;
-                                default:
-                                    errorMessage = Localize.GetString("TelegramCodeError");
-                                    break;
-                            }
-                            return new ActivationResult
-                            {
-                                Success = false,
-                                ErrorMessage = errorMessage,
-                                PasswordNeeded = result.Response == Telegram.CodeRegister.Type.PasswordNeeded, 
-                                PasswordInformation = info                   
-                            };
-                        }
-
-                        return new ActivationResult
-                        {
-                            Success = true,
-                            AccountId = result.AccountId,
-                        };
-                    });
-            }
-
-            public Code(Service service, TabbedPage tabs, Password password)
+            public Code(Service service, TabbedPage tabs, Password password, UserInformation userInformation)
             {
 
                 Action<Label, ActivationResult.ActivationType> setLabelText = (label, type) =>
@@ -662,9 +1024,12 @@ namespace Disa.Framework.Telegram.Mobile
                 {
                     _error.IsVisible = false;
                     _progressBar.IsVisible = true;
+                    _code.IsEnabled = false;
+                    _submit.IsEnabled = false;
+                    _verify.IsEnabled = false;
 
-                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
                     tabs.IsEnabled = false;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
 
                     var result = await DoVerify(reVerify);
 
@@ -672,10 +1037,15 @@ namespace Disa.Framework.Telegram.Mobile
 
                     setLabelNextText(_label2, result.NextType);
 
-                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
-                    tabs.IsEnabled = true;
-
+                    _error.IsVisible = true;
                     _progressBar.IsVisible = false;
+                    _code.IsEnabled = true;
+                    _submit.IsEnabled = true;
+                    if(result.NextType != ActivationResult.ActivationType.Unknown)
+                        _verify.IsEnabled = true;
+                    
+                    tabs.IsEnabled = true;
+                    DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
 
                     if (!result.Success)
                     {
@@ -691,6 +1061,7 @@ namespace Disa.Framework.Telegram.Mobile
                 _label = new Label();
                 _label.Font = Font.SystemFontOfSize(18);
                 _label.XAlign = TextAlignment.Center;
+                _label.Text = Localize.GetString("TelegramCodeIntitalText");
 
                 _label2 = new Label();
                 _label2.Font = Font.SystemFontOfSize(18);
@@ -698,6 +1069,7 @@ namespace Disa.Framework.Telegram.Mobile
 
                 _code = new Entry();
                 _code.Placeholder = Localize.GetString("TelegramCode");
+                _code.IsEnabled = false;
 
                 _verify = new Button();
                 _verify.Text = Localize.GetString("TelegramVerify");
@@ -721,13 +1093,14 @@ namespace Disa.Framework.Telegram.Mobile
                 _submit.Text = Localize.GetString("TelegramSubmit");
                 _submit.TextColor = Color.White;
                 _submit.BackgroundColor = Color.FromHex("77D065");
+                _submit.IsEnabled = false;
                 _submit.Clicked += async (sender, e) =>
                     {
                         Func<Task> invalidCode = () =>
-                            {
-                                return DisplayAlert(Localize.GetString("TelegramCodeInvalidTitle"), 
-                                    Localize.GetString("TelegramCodeInvalidMessage"), Localize.GetString("TelegramOkay"));
-                            };
+                        {
+                            return DisplayAlert(Localize.GetString("TelegramCodeInvalidTitle"),
+                                Localize.GetString("TelegramCodeInvalidMessage"), Localize.GetString("TelegramOkay"));
+                        };
 
                         if (String.IsNullOrWhiteSpace(_code.Text))
                         {
@@ -746,12 +1119,22 @@ namespace Disa.Framework.Telegram.Mobile
                         _progressBar.IsVisible = true;
                         _error.IsVisible = false;
 
+                        if (!GetSettingsRegistered(NationalNumber))
+                        {
+                            userInformation.CountryCode = CountryCode;
+                            userInformation.NationalNumber = NationalNumber;
+                            userInformation.Code = code;
+                            tabs.Children.Add(userInformation);
+                            tabs.CurrentPage = userInformation;
+                            return;
+                        }
+
                         DependencyService.Get<IPluginPageControls>().BackPressEnabled = false;
                         _code.IsEnabled = false;
                         _submit.IsEnabled = false;
                         tabs.IsEnabled = false;
 
-                        var result = await Register(code);
+                        var result = await Register(service, NationalNumber, CountryCode, code);
 
                         DependencyService.Get<IPluginPageControls>().BackPressEnabled = true;
                         _code.IsEnabled = true;
@@ -761,10 +1144,11 @@ namespace Disa.Framework.Telegram.Mobile
                         _progressBar.IsVisible = false;
 
                         if (!result.Success && result.PasswordNeeded)
-                        { 
+                        {
                             //add a tab for the password selection
                             password.CountryCode = CountryCode;
                             password.NationalNumber = NationalNumber;
+                            password.Code = code;
                             password.SetFields(result.PasswordInformation);
                             tabs.Children.Add(password);
                             tabs.CurrentPage = password;
@@ -824,7 +1208,7 @@ namespace Disa.Framework.Telegram.Mobile
                         if (response.Response == Telegram.CodeRequest.Type.Migrate)
                         {
                             TelegramSettings newSettings;
-                        using (var migratedClient = Telegram.GetNewClient(response.MigrateId, GetSettingsTelegramSettings(NationalNumber), out newSettings))
+                            using (var migratedClient = Telegram.GetNewClient(response.MigrateId, GetSettingsTelegramSettings(NationalNumber), out newSettings))
                             {
                                 TelegramUtils.RunSynchronously(migratedClient.Connect());
                                 response = Telegram.RequestCode(_service, CountryCode + NationalNumber,
@@ -833,8 +1217,8 @@ namespace Disa.Framework.Telegram.Mobile
                                 Utils.DebugPrint(">>>>> Response from the server " + ObjectDumper.Dump(response));
 
                                 SetSettingsSettings(newSettings, false, NationalNumber);
-                                SetSettingsCodeHash(response.CodeHash, false, NationalNumber);
-                                SetSettingsRegistered(response.Registered, false, NationalNumber);
+                                SetSettingsCodeHash(response.CodeHash, true, NationalNumber);
+                                SetSettingsRegistered(response.Registered, true, NationalNumber);
 
                                 var type = GetActivationType(response.NextType);
                                 if (type == ActivationResult.ActivationType.Unknown)

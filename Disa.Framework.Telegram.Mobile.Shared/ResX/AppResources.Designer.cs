@@ -89,6 +89,24 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string TelegramCancel {
+            get {
+                return ResourceManager.GetString("TelegramCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cant Access Email?.
+        /// </summary>
+        internal static string TelegramCannotAccessEmail {
+            get {
+                return ResourceManager.GetString("TelegramCannotAccessEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Code.
         /// </summary>
         internal static string TelegramCode {
@@ -130,6 +148,15 @@ namespace Disa.Framework.Telegram.Mobile {
         internal static string TelegramCodeFirstNameInvalid {
             get {
                 return ResourceManager.GetString("TelegramCodeFirstNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click the button below to verify your phone number..
+        /// </summary>
+        internal static string TelegramCodeIntitalText {
+            get {
+                return ResourceManager.GetString("TelegramCodeIntitalText", resourceCulture);
             }
         }
         
@@ -296,6 +323,15 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please enter the code sent at your recovery email address at [emailPattern].
+        /// </summary>
+        internal static string TelegramEnterCodeSentToEmail {
+            get {
+                return ResourceManager.GetString("TelegramEnterCodeSentToEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please enter your password to login.
         /// </summary>
         internal static string TelegramEnterPassword {
@@ -355,6 +391,15 @@ namespace Disa.Framework.Telegram.Mobile {
         internal static string TelegramInformationTitle {
             get {
                 return ResourceManager.GetString("TelegramInformationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The code entered is invalid.
+        /// </summary>
+        internal static string TelegramInvalidCodeDetail {
+            get {
+                return ResourceManager.GetString("TelegramInvalidCodeDetail", resourceCulture);
             }
         }
         
@@ -422,6 +467,15 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The password you entered is invalid. Please try again..
+        /// </summary>
+        internal static string TelegramInvalidPasswordDetail {
+            get {
+                return ResourceManager.GetString("TelegramInvalidPasswordDetail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Last Name.
         /// </summary>
         internal static string TelegramLastName {
@@ -445,6 +499,15 @@ namespace Disa.Framework.Telegram.Mobile {
         internal static string TelegramLoadConversations {
             get {
                 return ResourceManager.GetString("TelegramLoadConversations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If you cant access your email, the only option you have is to reset your account. WARNING! Clicking the okay button will delete all your chats and data from the Telegram servers. .
+        /// </summary>
+        internal static string TelegramNeedToResetAccount {
+            get {
+                return ResourceManager.GetString("TelegramNeedToResetAccount", resourceCulture);
             }
         }
         
@@ -521,6 +584,15 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Password Recovery Code.
+        /// </summary>
+        internal static string TelegramPasswordCodeTitle {
+            get {
+                return ResourceManager.GetString("TelegramPasswordCodeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error has occured. Please try again..
         /// </summary>
         internal static string TelegramPasswordError {
@@ -593,6 +665,33 @@ namespace Disa.Framework.Telegram.Mobile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Password Recovery.
+        /// </summary>
+        internal static string TelegramRecoverPassword {
+            get {
+                return ResourceManager.GetString("TelegramRecoverPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password Recovery.
+        /// </summary>
+        internal static string TelegramRecoverPasswordEmail {
+            get {
+                return ResourceManager.GetString("TelegramRecoverPasswordEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reset Account.
+        /// </summary>
+        internal static string TelegramResetAccount {
+            get {
+                return ResourceManager.GetString("TelegramResetAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Telegram is Running.
         /// </summary>
         internal static string TelegramRunning {
@@ -643,6 +742,15 @@ namespace Disa.Framework.Telegram.Mobile {
         internal static string TelegramSubmit {
             get {
                 return ResourceManager.GetString("TelegramSubmit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User Information.
+        /// </summary>
+        internal static string TelegramUserInformationTitle {
+            get {
+                return ResourceManager.GetString("TelegramUserInformationTitle", resourceCulture);
             }
         }
         

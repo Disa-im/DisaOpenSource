@@ -36,11 +36,11 @@ namespace Disa.Framework.Telegram
                         }
 
                         if (bubble is ImageBubble)
-                        {   
+                        {
                             savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
                                 MediaManager.GetDisaPicturesPath, Platform.GetExtensionFromMimeType("image/jpeg"));
                         }
-                        else if(bubble is FileBubble)
+                        else if (bubble is FileBubble)
                         {
 
                             if (GetDocumentFileName(document) != null)
@@ -56,7 +56,7 @@ namespace Disa.Framework.Telegram
 
                             }
                         }
-                        else if(bubble is AudioBubble)
+                        else if (bubble is AudioBubble)
                         {
                             if (document == null) return null;
 
@@ -110,9 +110,9 @@ namespace Disa.Framework.Telegram
                                                 break;
                                             }
                                             fs.Write(bytes, 0, bytes.Length);
-                                            currentProgress = currentOffset/(float) fileSize;
+                                            currentProgress = currentOffset / (float)fileSize;
 
-                                            progress((int) (currentProgress*100));
+                                            progress((int)(currentProgress * 100));
                                             currentOffset += chunkSize;
                                         }
                                     }
@@ -136,9 +136,9 @@ namespace Disa.Framework.Telegram
                                                 break;
                                             }
                                             fs.Write(bytes, 0, bytes.Length);
-                                            currentProgress = currentOffset/(float) fileSize;
+                                            currentProgress = currentOffset / (float)fileSize;
 
-                                            progress((int) (currentProgress*100));
+                                            progress((int)(currentProgress * 100));
                                             currentOffset += chunkSize;
                                         }
                                         if (timer != null)
