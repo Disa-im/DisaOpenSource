@@ -30,6 +30,14 @@ namespace Disa.Framework
                 if (deleteAndRecreateOnException)
                 {
                     Utils.DebugPrint("Failed to load SqlDatabase: " + ex + ". Nuking database if possible...");
+					try
+					{
+						File.Move(_fileLocation, _fileLocation + ".dead");
+					}
+					catch (Exception ex2)
+					{
+						Utils.DebugPrint("Failed to move SqlDatabase: " + ex2);
+					}
                     if (File.Exists(_fileLocation))
                     {
                         File.Delete(_fileLocation);
