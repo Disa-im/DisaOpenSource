@@ -63,6 +63,7 @@ namespace Disa.Framework
             public ActionObject Action { get; private set; }
             public long Earliest { get; private set; }
             public long Latest { get; private set; }
+			public long LastExecution { get; set; }
             public int Interval { get; private set; }
             public int Tolerance { get; private set; }
             public bool Reoccurring { get; private set; }
