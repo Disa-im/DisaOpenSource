@@ -837,7 +837,7 @@ namespace Disa.Framework
                 {
                     Utils.DebugPrint("Syncing convo " + group.ID + " (after lock)");
 
-                    var somethingSynced = true;
+					var somethingSynced = false;
 
                     var groupsToSync = new List<BubbleGroup>();
                   
@@ -865,6 +865,8 @@ namespace Disa.Framework
                         {
                             continue;
                         }
+
+						somethingSynced = true;
 
                         try
                         {
@@ -938,7 +940,6 @@ namespace Disa.Framework
                                 Utils.DebugPrint("Sync for bubble group " + 
                                     groupToSync.ID + " on service " + groupToSync.Service.Information.ServiceName + 
                                     " returned an empty result (" + syncResult.ResultType.ToString() + ").");
-                                somethingSynced = syncResult.JustRefresh;
                             }
                             if (!syncResult.NullActionId)
                             {
@@ -950,7 +951,6 @@ namespace Disa.Framework
                         {
                             Utils.DebugPrint("Failed to sync bubble group " + groupToSync.ID 
                                 + " on service " + groupToSync.Service.Information.ServiceName + ": " + ex);
-                            somethingSynced = false;
                         }
                     }
                         
