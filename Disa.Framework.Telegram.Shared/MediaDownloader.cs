@@ -6,22 +6,60 @@ using Disa.Framework.Bubbles;
 using ProtoBuf;
 using SharpMTProto.Messaging;
 using SharpTelegram.Schema;
+using SQLite;
 
 namespace Disa.Framework.Telegram
 {
     public partial class Telegram : IMediaDownloaderCustom
     {
+        private class DownloadEntry
+        {
+            [PrimaryKey][AutoIncrement]
+            public uint Id { get; set;}
+
+            public string BubbleId { get; set; }
+
+            public string TemporaryFileName { get; set; }
+        }
+
+        private object _downloadDatabaseLock = new object();
+        private string _downloadDatabaseLocation = Path.Combine(Platform.GetDatabasePath(),"TelegramDownloadsDatabase.db");
+
         public Task<string> Download(VisualBubble bubble, Action<int> progress)
         {
             return Task.Factory.StartNew(() =>
             {
                 DebugPrint(">>>> started download task");
                 string savePath = null;
+                string savePathTemp = null;
                 uint chunkSize = 32768;
+                bool downloadedPreviously = false;
+
                 if (bubble.AdditionalData != null)
                 {
                     using (var memoryStream = new MemoryStream(bubble.AdditionalData))
                     {
+                        var databasePath = Platform.GetDatabasePath();
+                        if (!Directory.Exists(databasePath))
+                        {
+                            Utils.DebugPrint("Creating database directory.");
+                            Directory.CreateDirectory(databasePath);
+                        }
+
+                        lock(_downloadDatabaseLock)
+                        {
+                            using (var database = new SqlDatabase<DownloadEntry>(_downloadDatabaseLocation))
+                            {
+                                var downloadEntry = database.Store.Where(x => x.BubbleId == bubble.ID).FirstOrDefault();
+                                if (downloadEntry != null)
+                                {
+                                    downloadedPreviously = true;
+                                    savePath = downloadEntry.TemporaryFileName;
+                                    savePathTemp = savePath + ".tmp";
+                                }
+                            }
+                        }
+
                         var fileInformation = Serializer.Deserialize<FileInformation>(memoryStream);
                         var type = fileInformation.FileType;
                         var document = fileInformation.Document as Document;
@@ -34,65 +72,53 @@ namespace Disa.Framework.Telegram
                         {
                             return null;
                         }
-
-                        if (bubble is ImageBubble)
+                        if (!downloadedPreviously)
                         {
-                            savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
-                                MediaManager.GetDisaPicturesPath, Platform.GetExtensionFromMimeType("image/jpeg"));
-                        }
-                        else if (bubble is FileBubble)
-                        {
-
-                            if (GetDocumentFileName(document) != null)
+                            if (bubble is ImageBubble)
                             {
                                 savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
-                                    MediaManager.GetDisaFilesPath, GetDocumentFileName(document));
+                                    MediaManager.GetDisaPicturesPath, Platform.GetExtensionFromMimeType("image/jpeg"));
                             }
-                            else
+                            else if (bubble is FileBubble)
                             {
-                                savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
-                                    MediaManager.GetDisaFilesPath,
-                                    Platform.GetExtensionFromMimeType(document.MimeType));
-
-                            }
-                        }
-                        else if (bubble is AudioBubble)
-                        {
-                            if (document == null) return null;
-
-                            savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
-                                       MediaManager.GetDisaAudioPath,
-                                       Platform.GetExtensionFromMimeType(document.MimeType));
-
-                        }
-                        if (savePath == null) return savePath;
-                        var savePathTemp = savePath + ".tmp";
-                        Platform.MarkTemporaryFileForDeletion(savePath);
-                        Platform.MarkTemporaryFileForDeletion(savePathTemp);
-
-                        float currentProgress = 0;
-
-                        Timer timer = null;
-
-                        if (type == "document")
-                        {
-                            timer = new Timer(55000);
-
-                            timer.Elapsed += (sender, args) =>
-                            {
-                                DebugPrint(">>>>>>>>>>>>>>>>>>>>>> Timer Elapsed!! ");
-                                DebugPrint(">>>>>>> current progress " + currentProgress);
-
-                                if (document.DcId != Settings.NearestDcId)
+                                if (GetDocumentFileName(document) != null)
                                 {
-                                    cachedClient = GetClient((int)document.DcId);
+                                    savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
+                                        MediaManager.GetDisaFilesPath, GetDocumentFileName(document));
                                 }
-                            };
-                        }
+                                else
+                                {
+                                    savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
+                                        MediaManager.GetDisaFilesPath,
+                                        Platform.GetExtensionFromMimeType(document.MimeType));
+                                }
+                            }
+                            else if (bubble is AudioBubble)
+                            {
+                                if (document == null) return null;
 
+                                savePath = MediaManager.GenerateDisaMediaLocationUsingExtension(
+                                           MediaManager.GetDisaAudioPath,
+                                           Platform.GetExtensionFromMimeType(document.MimeType));
+                            }
+                            if (savePath == null) return savePath;
+                            lock (_downloadDatabaseLock)
+                            {
+                                using (var database = new SqlDatabase<DownloadEntry>(_downloadDatabaseLocation))
+                                {
+                                    database.Add(new DownloadEntry
+                                    {
+                                        BubbleId = bubble.ID,
+                                        TemporaryFileName = savePath
+                                    });
+                                }
+                            }
+                            savePathTemp = savePath + ".tmp";
+                            Platform.MarkTemporaryFileForDeletion(savePath);
+                        }
+                        float currentProgress = 0;
                         try
                         {
-
                             switch (type)
                             {
                                 case "image":
@@ -118,32 +144,20 @@ namespace Disa.Framework.Telegram
                                     }
                                     break;
                                 case "document":
-                                    using (var fs = File.OpenWrite(savePathTemp))
+                                    using (var fs = File.Open(savePathTemp,FileMode.Append))
                                     {
                                         var fileSize = document.Size;
                                         uint currentOffset = 0;
-                                        if (timer != null)
+                                        if (downloadedPreviously)
                                         {
-                                            timer.Start();
+                                            currentOffset = (uint)new FileInfo(savePathTemp).Length;   
                                         }
-                                        chunkSize = (uint)CalculateChunkSize(fileSize);
-                                        while (currentOffset <= fileSize)
+                                        while (currentOffset < fileSize)
                                         {
-                                            var bytes = FetchDocumentBytes(document, currentOffset,
-                                                chunkSize);
-                                            if (bytes.Length == 0)
+                                            using (var downloadManager = new DownloadManager(document, this))
                                             {
-                                                break;
+                                                currentOffset = downloadManager.DownloadDocument(fs, currentOffset, progress);
                                             }
-                                            fs.Write(bytes, 0, bytes.Length);
-                                            currentProgress = currentOffset / (float)fileSize;
-
-                                            progress((int)(currentProgress * 100));
-                                            currentOffset += chunkSize;
-                                        }
-                                        if (timer != null)
-                                        {
-                                            timer.Stop();
                                         }
                                     }
                                     break;
@@ -155,6 +169,17 @@ namespace Disa.Framework.Telegram
                                 File.Delete(savePath);
                             }
                             File.Move(savePathTemp, savePath);
+
+                            lock (_downloadDatabaseLock)
+                            {
+                                using (var database = new SqlDatabase<DownloadEntry>(_downloadDatabaseLocation))
+                                {
+                                    foreach (var item in database.Store.Where(x => x.BubbleId == bubble.ID))
+                                    {
+                                        database.Remove(item);
+                                    }
+                                }
+                            }
                         }
                         catch (Exception e)
                         {
@@ -162,22 +187,11 @@ namespace Disa.Framework.Telegram
                             {
                                 File.Delete(savePath);
                             }
-                            if (File.Exists(savePathTemp))
-                            {
-                                File.Delete(savePathTemp);
-                            }
                             return null;
                         }
                         finally
                         {
-                            Platform.UnmarkTemporaryFileForDeletion(savePathTemp, true);
                             Platform.UnmarkTemporaryFileForDeletion(savePath, false);
-                            if (timer != null)
-                            {
-                                timer.Stop();
-                                timer.Dispose();
-                            }
-                            cachedClient = null;
                         }
 
                     }

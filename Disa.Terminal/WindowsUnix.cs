@@ -273,6 +273,11 @@ namespace Disa.Terminal
         {
             throw new NotImplementedException();
         }
+
+        public override void ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

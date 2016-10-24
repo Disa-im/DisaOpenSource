@@ -1301,6 +1301,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptionsSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachedThumbnail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\NewMessageExtended.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DownloadManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)BigMath\" />

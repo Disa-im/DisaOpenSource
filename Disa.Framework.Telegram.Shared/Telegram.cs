@@ -2262,7 +2262,7 @@ namespace Disa.Framework.Telegram
 
         private IInputFile UploadBigFile(VisualBubble bubble, ulong fileId, long fileSize)
         {
-            uint chunkSize = (uint)CalculateChunkSize(fileSize);
+            uint chunkSize = 524288;
             var fileTotalParts = (uint)fileSize/chunkSize;
             if (fileSize % 1024 != 0)
             {
@@ -2309,7 +2309,7 @@ namespace Disa.Framework.Telegram
 
         private int CalculateChunkSize(long fileSize)
         {
-            var uploadChunkSize = 32*1024;
+            var uploadChunkSize = 64*1024;
             while ((fileSize / (int)uploadChunkSize) > 1000)
             {
                 uploadChunkSize *= 2;
@@ -2364,7 +2364,7 @@ namespace Disa.Framework.Telegram
 
         private IInputFile UploadFile(VisualBubble bubble, ulong fileId, long fileSize)
         {
-            const int chunkSize = 65536;
+            int chunkSize = CalculateChunkSize(fileSize);
             var chunk = new byte[chunkSize];
             uint chunkNumber = 0;
             var offset = 0;
