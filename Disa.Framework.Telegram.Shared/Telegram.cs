@@ -1757,9 +1757,11 @@ namespace Disa.Framework.Telegram
             //difference.
             FetchChannelDifference(client);
 
-            Again:
+        Again:
 
             DebugPrint("Difference Page: " + counter);
+
+            Utils.DebugPrint(">>> Current State PTS: " + _mutableSettings.Pts + " QTS: " + _mutableSettings.Qts + " Date: " + _mutableSettings.Date);
 
             var difference = TelegramUtils.RunSynchronously(
                 client.Methods.UpdatesGetDifferenceAsync(new UpdatesGetDifferenceArgs
@@ -1832,7 +1834,8 @@ namespace Disa.Framework.Telegram
                     }
                     else
                     {
-                        Utils.DebugPrint("### There is no channel in the database, we should reconstruct it");
+                        Utils.DebugPrint("### There is no channel in the database, reconstructing it from server");
+                        FetchNewDialogs(client);
                     }
                     var channelPts = _dialogs.GetChatPts(channelAddress);
                     if (channelPts == 0)
@@ -2682,9 +2685,9 @@ namespace Disa.Framework.Telegram
             {
                 var response = (ContactsContacts)await client.Client.Methods.ContactsGetContactsAsync(
                     new ContactsGetContactsArgs
-                {
-                    Hash = string.Empty
-                });
+                    {
+                        Hash = string.Empty
+                    });
                 contactsCache.AddRange(response.Users.OfType<User>().ToList());
                 _dialogs.AddUsers(response.Users);
                 return contactsCache;
@@ -3223,90 +3226,95 @@ namespace Disa.Framework.Telegram
         private void GetDialogs(TelegramClient client)
         {
             DebugPrint("Fetching conversations");
-            var masterDialogs = new CachedDialogs();
 
-            if (!masterDialogs.DatabasesExist())
+            _dialogs = new CachedDialogs();
+
+            if (!_dialogs.DatabasesExist())
             {
-                DebugPrint("Databases dont exist! creating new ones from data from server");
-                var iDialogs =
-                    TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
-                    {
-                        Limit = 100,
-                        OffsetPeer = new InputPeerEmpty(),
-                    }));
-                var messagesDialogs = iDialogs as MessagesDialogs;
-
-                var messagesDialogsSlice = iDialogs as MessagesDialogsSlice;
-
-                if (messagesDialogs != null)
-                {
-                    masterDialogs.AddChats(messagesDialogs.Chats);
-                    masterDialogs.AddUsers(messagesDialogs.Users);
-                    if (LoadConversations)
-                    {
-                        LoadLast10Conversations(messagesDialogs);
-                    }
-                }
-                else if (messagesDialogsSlice != null)
-                {
-                    //first add whatever we have got until now
-                    masterDialogs.AddChats(messagesDialogsSlice.Chats);
-                    masterDialogs.AddUsers(messagesDialogsSlice.Users);
-                    if (LoadConversations)
-                    {
-                        LoadLast10Conversations(messagesDialogsSlice);
-                    }
-                    var numDialogs = 0;
-                    do
-                    {
-                        numDialogs = messagesDialogsSlice.Dialogs.Count;
-
-                        DebugPrint("%%%%%%% Number of Dialogs " + numDialogs);
-
-                        var lastDialog = messagesDialogsSlice.Dialogs.LastOrDefault() as Dialog;
-
-                        DebugPrint("%%%%%%% Last Dialog " + ObjectDumper.Dump(lastDialog));
-
-                        if (lastDialog != null)
-                        {
-                            var lastPeer = GetInputPeerFromIPeer(lastDialog.Peer);
-                            DebugPrint("%%%%%%% Last Peer " + ObjectDumper.Dump(lastPeer));
-                            var offsetId = Math.Max(lastDialog.ReadInboxMaxId, lastDialog.TopMessage);
-                            DebugPrint("%%%%%%% message offset " + ObjectDumper.Dump(offsetId));
-                            var offsetDate = FindDateForMessageId(offsetId,messagesDialogsSlice);
-                            DebugPrint("%%%%%%% offset date " + ObjectDumper.Dump(offsetDate));
-                            var nextDialogs = TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
-                            {
-                                Limit = 100,
-                                OffsetPeer = lastPeer,
-                                OffsetId = offsetId,
-                                OffsetDate = offsetDate
-                            }));
-
-                            messagesDialogsSlice = nextDialogs as MessagesDialogsSlice;
-                            if (messagesDialogsSlice == null)
-                            {
-                                DebugPrint("%%%%%%% Next messages dialogs null ");
-                                break;
-                            }
-
-                            DebugPrint("%%%%%%% users " + ObjectDumper.Dump(messagesDialogsSlice.Users));
-
-                            DebugPrint("%%%%%%% chats " + ObjectDumper.Dump(messagesDialogsSlice.Chats));
-
-                            masterDialogs.AddUsers(messagesDialogsSlice.Users);
-                            masterDialogs.AddChats(messagesDialogsSlice.Chats);
-                        }
-
-                        DebugPrint("%%%%%%% Number of Dialogs At end " + numDialogs);
-
-                    } while (numDialogs >= 100);
-                }
+                FetchNewDialogs(client);
+                return;
             }
 
-            _dialogs = masterDialogs;
-
             DebugPrint("Obtained conversations.");
+        }
+
+        private void FetchNewDialogs(TelegramClient client)
+        {
+            DebugPrint("Databases dont exist! creating new ones from data from server");
+            var iDialogs =
+                TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
+                {
+                    Limit = 100,
+                    OffsetPeer = new InputPeerEmpty(),
+                }));
+            var messagesDialogs = iDialogs as MessagesDialogs;
+
+            var messagesDialogsSlice = iDialogs as MessagesDialogsSlice;
+
+            if (messagesDialogs != null)
+            {
+                _dialogs.AddChats(messagesDialogs.Chats);
+                _dialogs.AddUsers(messagesDialogs.Users);
+                if (LoadConversations)
+                {
+                    LoadLast10Conversations(messagesDialogs);
+                }
+            }
+            else if (messagesDialogsSlice != null)
+            {
+                //first add whatever we have got until now
+                _dialogs.AddChats(messagesDialogsSlice.Chats);
+                _dialogs.AddUsers(messagesDialogsSlice.Users);
+                if (LoadConversations)
+                {
+                    LoadLast10Conversations(messagesDialogsSlice);
+                }
+                var numDialogs = 0;
+                do
+                {
+                    numDialogs = messagesDialogsSlice.Dialogs.Count;
+
+                    DebugPrint("%%%%%%% Number of Dialogs " + numDialogs);
+
+                    var lastDialog = messagesDialogsSlice.Dialogs.LastOrDefault() as Dialog;
+
+                    DebugPrint("%%%%%%% Last Dialog " + ObjectDumper.Dump(lastDialog));
+
+                    if (lastDialog != null)
+                    {
+                        var lastPeer = GetInputPeerFromIPeer(lastDialog.Peer);
+                        DebugPrint("%%%%%%% Last Peer " + ObjectDumper.Dump(lastPeer));
+                        var offsetId = Math.Max(lastDialog.ReadInboxMaxId, lastDialog.TopMessage);
+                        DebugPrint("%%%%%%% message offset " + ObjectDumper.Dump(offsetId));
+                        var offsetDate = FindDateForMessageId(offsetId, messagesDialogsSlice);
+                        DebugPrint("%%%%%%% offset date " + ObjectDumper.Dump(offsetDate));
+                        var nextDialogs = TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
+                        {
+                            Limit = 100,
+                            OffsetPeer = lastPeer,
+                            OffsetId = offsetId,
+                            OffsetDate = offsetDate
+                        }));
+
+                        messagesDialogsSlice = nextDialogs as MessagesDialogsSlice;
+                        if (messagesDialogsSlice == null)
+                        {
+                            DebugPrint("%%%%%%% Next messages dialogs null ");
+                            break;
+                        }
+
+                        DebugPrint("%%%%%%% users " + ObjectDumper.Dump(messagesDialogsSlice.Users));
+
+                        DebugPrint("%%%%%%% chats " + ObjectDumper.Dump(messagesDialogsSlice.Chats));
+
+                        _dialogs.AddUsers(messagesDialogsSlice.Users);
+                        _dialogs.AddChats(messagesDialogsSlice.Chats);
+                    }
+
+                    DebugPrint("%%%%%%% Number of Dialogs At end " + numDialogs);
+
+                } while (numDialogs >= 100);
+            }
         }
 
         private void LoadLast10Conversations(IMessagesDialogs iMessagesDialogs)

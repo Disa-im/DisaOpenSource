@@ -309,7 +309,8 @@ namespace Disa.Framework.Telegram
             if (dialogsSlice != null)
             {
                 pts  = FindPtsFromDialogs(dialogsSlice.Dialogs, address);
-                if (pts == 0)
+                //pts can never be zero, so we use this
+                if (pts == 0) 
                 {
                     offset += dialogsSlice.Count;
                     goto Again;
