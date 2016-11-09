@@ -36,7 +36,7 @@ namespace Disa.Framework.Telegram
                                         Id = x.Id.ToString(CultureInfo.InvariantCulture)
                                     }
                             },
-                        }).OfType<Contact>().OrderBy(x => x.FirstName).ToList();
+					}).Where(x => !string.IsNullOrWhiteSpace(x.FirstName)).OfType<Contact>().OrderBy(x => x.FirstName).ToList();
                     if (string.IsNullOrWhiteSpace(query))
                     {
                         result(contacts);
