@@ -10,6 +10,7 @@
         public string Subtitle { get; set; }
         public long LastSeen { get; set; }
         public bool Presence { get; set; }
+        public string UserHandle { get; set; }
     }
 }
 

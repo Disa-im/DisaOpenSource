@@ -170,6 +170,7 @@ namespace Disa.Framework.Telegram
                             : TelegramUtils.ConvertTelegramPhoneNumberIntoInternational(phoneNumber),
                         LastSeen = lastSeen,
                         Presence = presence,
+                        UserHandle = TelegramUtils.GetUserHandle(user),
                     });
                 }
             });
