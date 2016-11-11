@@ -76,18 +76,21 @@ namespace Disa.Framework.Telegram
         {
             if (IsFullClientConnected)
             {
-                try
-                {
-                    TelegramUtils.RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
-                    {
-                        Offline = true
-                    }));
-                    TelegramUtils.RunSynchronously(_fullClient.Disconnect());
-                }
-                catch (Exception ex)
-                {
-                    DebugPrint("Failed to disconnect full client: " + ex);
-                }
+				try
+				{
+					TelegramUtils.RunSynchronously(_fullClient.Methods.AccountUpdateStatusAsync(new AccountUpdateStatusArgs
+					{
+						Offline = true
+					}));
+				}
+				catch (Exception ex)
+				{
+					DebugPrint("Failed to disconnect full client: " + ex);
+				}
+				finally
+				{ 
+					TelegramUtils.RunSynchronously(_fullClient.Disconnect()); //since the client should disconnect regardless of the rpc call.
+				}
                 RemoveFullClientPingIfPossible();
             }
         }
