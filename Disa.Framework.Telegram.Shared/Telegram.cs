@@ -140,7 +140,7 @@ namespace Disa.Framework.Telegram
         {
             lock (_mutableSettingsLock)
             {
-                DebugPrint("Saving new state");
+				DebugPrint("Saving new state date " + date + " pts " + pts + " qts " + qts + " seq " + seq);;
                 if (date != 0)
                 {
                     _mutableSettings.Date = date;
@@ -285,6 +285,8 @@ namespace Disa.Framework.Telegram
                         if (shortMessage.Out != null)
                         {
                             textBubble.Status = Bubble.BubbleStatus.Sent;
+							BubbleGroupManager.SetUnread(this, false, fromId);
+							NotificationManager.Remove(this, fromId);
                         }
                         if (textBubble.Direction == Bubble.BubbleDirection.Incoming)
                         {
@@ -426,15 +428,14 @@ namespace Disa.Framework.Telegram
 
                         string idString = bubbleGroup.LastBubbleSafe().IdService;
                         DebugPrint("idstring" + idString);
-                        if (idString != null)
-                        {
-                            if (uint.Parse(idString) <= updateReadHistoryInbox.MaxId)
-                            {
-                                BubbleGroupManager.SetUnread(this, false, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
-                                NotificationManager.Remove(this, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
-                            }
-                        }
-
+						if (idString != null)
+						{
+							if (uint.Parse(idString) <= updateReadHistoryInbox.MaxId)
+							{
+								BubbleGroupManager.SetUnread(this, false, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
+								NotificationManager.Remove(this, peerUser.UserId.ToString(CultureInfo.InvariantCulture));
+							}
+						}
                     }
                     else if (peerChat != null)
                     {
@@ -497,6 +498,8 @@ namespace Disa.Framework.Telegram
                         if (shortChatMessage.Out != null)
                         {
                             textBubble.Status = Bubble.BubbleStatus.Sent;
+							BubbleGroupManager.SetUnread(this, false, address);
+							NotificationManager.Remove(this, address);
                         }
                         if (textBubble.Direction == Bubble.BubbleDirection.Incoming)
                         {
@@ -524,23 +527,28 @@ namespace Disa.Framework.Telegram
                     {
                         if (bubble != null)
                         {
-                            if (bubble.Direction == Bubble.BubbleDirection.Incoming)
-                            {
-                                var fromId = message.FromId.ToString(CultureInfo.InvariantCulture);
-                                var messageUser = _dialogs.GetUser(message.FromId);
-                                if (messageUser == null)
-                                {
-                                    DebugPrint(">>>>> User is null, fetching user from the server");
-                                    GetMessage(message.Id, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-                                }
-                                if (message.ReplyToMsgId != 0 && i == 0)//we should only add quoted message to first bubble if multiple bubbles exist
-                                {
-                                    var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-                                    DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
-                                    var replyMessage = iReplyMessage as Message;
-                                    AddQuotedMessageToBubble(replyMessage, bubble);
-                                }
-                            }
+							if (bubble.Direction == Bubble.BubbleDirection.Incoming)
+							{
+								var fromId = message.FromId.ToString(CultureInfo.InvariantCulture);
+								var messageUser = _dialogs.GetUser(message.FromId);
+								if (messageUser == null)
+								{
+									DebugPrint(">>>>> User is null, fetching user from the server");
+									GetMessage(message.Id, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
+								}
+								if (message.ReplyToMsgId != 0 && i == 0)//we should only add quoted message to first bubble if multiple bubbles exist
+								{
+									var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
+									DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+									var replyMessage = iReplyMessage as Message;
+									AddQuotedMessageToBubble(replyMessage, bubble);
+								}
+							}
+							else if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
+							{
+								BubbleGroupManager.SetUnread(this, false, bubble.Address);
+								NotificationManager.Remove(this, bubble.Address);
+							}
                             EventBubble(bubble);
                         }
                         i++;
@@ -2069,12 +2077,20 @@ namespace Disa.Framework.Telegram
                     {
                         foreach (var update in updates.UpdatesProperty)
                         {
+							var updateMessageId = update as UpdateMessageID;
+							if (updateMessageId != null)
+							{
+								textBubble.IdService = updateMessageId.Id.ToString(CultureInfo.InvariantCulture);
+								break;
+							}
                             var updateNewChannelMessage = update as UpdateNewChannelMessage;
-                            if (updateNewChannelMessage == null) continue;
+                            if (updateNewChannelMessage == null) 
+								continue;
                             var message = updateNewChannelMessage.Message as Message;
                             if (message != null)
                             {
                                 textBubble.IdService = message.Id.ToString(CultureInfo.InvariantCulture);
+								break;
                             }
                         }
                     }
@@ -2110,10 +2126,10 @@ namespace Disa.Framework.Telegram
                                 MaxId = 0,
 
                             })) as MessagesAffectedMessages;
-                        if (messagesAffectedMessages != null)
-                        {
-                            SaveState(0, messagesAffectedMessages.Pts, 0, 0);
-                        }
+                        //if (messagesAffectedMessages != null)
+                        //{
+                        //    SaveState(0, messagesAffectedMessages.Pts, 0, 0);
+                        //}
                     }
                 }
             }
@@ -2312,7 +2328,7 @@ namespace Disa.Framework.Telegram
 
         private int CalculateChunkSize(long fileSize)
         {
-            var uploadChunkSize = 64*1024;
+            var uploadChunkSize = 32*1024;
             while ((fileSize / (int)uploadChunkSize) > 1000)
             {
                 uploadChunkSize *= 2;
@@ -2378,24 +2394,31 @@ namespace Disa.Framework.Telegram
                     int bytesRead;
                     while ((bytesRead = file.Read(chunk, 0, chunk.Length)) > 0)
                     {
-                        //RPC call
+						//RPC call
+						try
+						{
+							var uploaded =
+								TelegramUtils.RunSynchronously(
+									client.Client.Methods.UploadSaveFilePartAsync(new UploadSaveFilePartArgs
+									{
+										Bytes = chunk,
+										FileId = fileId,
+										FilePart = chunkNumber
+									}));
 
-                        var uploaded =
-                            TelegramUtils.RunSynchronously(
-                                client.Client.Methods.UploadSaveFilePartAsync(new UploadSaveFilePartArgs
-                                {
-                                    Bytes = chunk,
-                                    FileId = fileId,
-                                    FilePart = chunkNumber
-                                }));
-
-                        if (!uploaded)
-                        {
-                            throw new Exception("The file chunk failed to be uploaded");
-                        }
-                        chunkNumber++;
-                        offset += bytesRead;
-                        UpdateSendProgress(bubble, offset, fileSize);
+							if (!uploaded)
+							{
+								throw new Exception("The file chunk failed to be uploaded");
+							}
+							chunkNumber++;
+							offset += bytesRead;
+							UpdateSendProgress(bubble, offset, fileSize);
+						}
+						catch (TaskCanceledException ex)
+						{
+							Utils.DebugPrint("Exception while uploading file " + ex.InnerException.Message);
+							throw ex;
+						}
                     }
                     return new InputFile
                     {
