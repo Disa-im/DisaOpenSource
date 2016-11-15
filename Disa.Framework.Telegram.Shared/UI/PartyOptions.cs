@@ -818,8 +818,16 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var telegramContact = contact as TelegramContact;
-                result(new DisaParticipant(TelegramUtils.GetUserName(telegramContact.User),telegramContact.User.Id.ToString(CultureInfo.InvariantCulture)));
+                User user = null;
+                if (contact is TelegramContact)
+                { 
+                    user = (contact as TelegramContact).User;
+                }
+                else if(contact is TelegramBotContact)
+                {
+                    user = (contact as TelegramBotContact).User;
+                }
+                result(new DisaParticipant(TelegramUtils.GetUserName(user),user.Id.ToString(CultureInfo.InvariantCulture)));
             });
         }
 
