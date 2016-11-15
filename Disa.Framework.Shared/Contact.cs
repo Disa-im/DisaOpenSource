@@ -50,4 +50,8 @@ namespace Disa.Framework
     public class PartyContact : Contact
     {
     }
+
+    public class BotContact : Contact
+    {
+    }
 }
