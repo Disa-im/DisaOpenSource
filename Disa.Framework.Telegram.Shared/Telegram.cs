@@ -2414,9 +2414,9 @@ namespace Disa.Framework.Telegram
 							offset += bytesRead;
 							UpdateSendProgress(bubble, offset, fileSize);
 						}
-						catch (TaskCanceledException ex)
+						catch (Exception ex)
 						{
-							Utils.DebugPrint("Exception while uploading file " + ex.InnerException.Message);
+							Utils.DebugPrint("Exception while uploading file " + ex.InnerException);
 							throw ex;
 						}
                     }
