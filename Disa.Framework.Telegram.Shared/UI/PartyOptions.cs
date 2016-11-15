@@ -511,36 +511,43 @@ namespace Disa.Framework.Telegram
             };
             return Task.Factory.StartNew(() =>
             {
-                using (var client = new FullClientDisposable(this))
-                {
-                    if (!group.IsExtendedParty)
-                    {
-                        var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesAddChatUserAsync(new MessagesAddChatUserArgs
-                        {
-                            UserId = inputUser,
-                            ChatId = uint.Parse(group.Address),
-                            FwdLimit = 0
-                        }));
-                        SendToResponseDispatcher(update, client.Client);
-                    }
-                    else
-                    { 
-                        var update = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsInviteToChannelAsync(new ChannelsInviteToChannelArgs 
-                        {
-                            Channel = new InputChannel
-                            {
-                                ChannelId = uint.Parse(group.Address),
-                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
-                            },
-                            Users = new List<IInputUser> 
-                            {
-                                inputUser
-                            }
-                        }));
-                        SendToResponseDispatcher(update, client.Client);
-                    
-                    }
-                }
+				try
+				{
+					using (var client = new FullClientDisposable(this))
+					{
+						if (!group.IsExtendedParty)
+						{
+							var update = TelegramUtils.RunSynchronously(client.Client.Methods.MessagesAddChatUserAsync(new MessagesAddChatUserArgs
+							{
+								UserId = inputUser,
+								ChatId = uint.Parse(group.Address),
+								FwdLimit = 0
+							}));
+							SendToResponseDispatcher(update, client.Client);
+						}
+						else
+						{
+							var update = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsInviteToChannelAsync(new ChannelsInviteToChannelArgs
+							{
+								Channel = new InputChannel
+								{
+									ChannelId = uint.Parse(group.Address),
+									AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+								},
+								Users = new List<IInputUser>
+							{
+								inputUser
+							}
+							}));
+							SendToResponseDispatcher(update, client.Client);
+
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					Utils.DebugPrint("Exception while adding user to the group " + e);
+				}
             });
         }
 
