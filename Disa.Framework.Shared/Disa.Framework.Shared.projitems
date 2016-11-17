@@ -122,6 +122,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bubbles\VisualBubble.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bubbles\SoloInformationBubble.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INewMessageExtended.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAnnouncement.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Bubbles\" />
