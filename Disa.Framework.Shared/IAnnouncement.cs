@@ -6,7 +6,7 @@ namespace Disa.Framework
 	{
 		string GetAnnouncementMessage();
 
-		bool IsAnnouncementReoccuring();
+		bool IsAnnouncementRecurring();
 
 		int GetAnnouncementRecurringInterval();
 

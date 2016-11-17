@@ -20,7 +20,7 @@ namespace Disa.Framework.Telegram
 			throw new NotImplementedException();
 		}
 
-		public bool IsAnnouncementReoccuring()
+		public bool IsAnnouncementRecurring()
 		{
 			return false;
 		}
