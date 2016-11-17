@@ -1302,6 +1302,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CachedThumbnail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\NewMessageExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DownloadManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\Announcement.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)BigMath\" />
