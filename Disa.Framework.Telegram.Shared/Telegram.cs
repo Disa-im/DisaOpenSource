@@ -123,6 +123,8 @@ namespace Disa.Framework.Telegram
 
         private ConcurrentDictionary<string, bool> _thumbnailDownloadingDictionary = new ConcurrentDictionary<string, bool>();
 
+		private ConcurrentDictionary<string, DisaThumbnail> _thumbnailCache = new ConcurrentDictionary<string, DisaThumbnail>();
+
         private WakeLockBalancer.GracefulWakeLock _longPollHeartbeart;
 
         private string _thumbnailDatabasePathCached;
@@ -2954,15 +2956,21 @@ namespace Disa.Framework.Telegram
             }
             var key = id + group + small;
 
-            using (var database = new SqlDatabase<CachedThumbnail>(GetThumbnailDatabasePath()))
-            {
-                var dbThumbnail = database.Store.Where(x => x.Id == key).FirstOrDefault();
-                if (dbThumbnail != null)
-                {
-                    database.Store.Delete(x => x.Id == key);
-                }
-            }
+			DisaThumbnail thumbnail = null;
 
+			_thumbnailCache.TryRemove(key, out thumbnail);
+
+			lock(_cachedThumbnailsLock)
+			{
+				using (var database = new SqlDatabase<CachedThumbnail>(GetThumbnailDatabasePath()))
+				{
+					var dbThumbnail = database.Store.Where(x => x.Id == key).FirstOrDefault();
+					if (dbThumbnail != null)
+					{
+						database.Store.Delete(x => x.Id == key);
+					}
+				}
+			}
         }
 
         private string GetThumbnailDatabasePath()
@@ -3042,8 +3050,12 @@ namespace Disa.Framework.Telegram
                         }
                     }
                 }
+				_thumbnailCache[key] = thumbnail;
                 return thumbnail;
             };
+
+			if (_thumbnailCache.ContainsKey(key))
+				return _thumbnailCache[key];
 
             lock (_cachedThumbnailsLock)
             {
@@ -3067,6 +3079,7 @@ namespace Disa.Framework.Telegram
                                 database.DeleteAll();
                                 goto Retry;
                             }
+							_thumbnailCache[key] = disaThumbnail;
                             return disaThumbnail;
                         }
                     }
