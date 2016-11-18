@@ -53,6 +53,7 @@ namespace Disa.Framework.Telegram
 
         private bool _oldMessages = false;
 
+		private object _globalBubbleLock = new object();
         //msgid, address, date
         private Dictionary<uint,Tuple<uint,uint,bool>> messagesUnreadCache = new Dictionary<uint, Tuple<uint, uint,bool>>();
 
@@ -228,6 +229,14 @@ namespace Disa.Framework.Telegram
             });
         }
 
+		public void TelegramEventBubble(Bubble bubble)
+		{ 
+			lock(_globalBubbleLock)
+			{
+				EventBubble(bubble);
+			}
+		}
+
         private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime, TelegramClient optionalClient = null)
         {
             uint maxMessageId = 0;
@@ -273,7 +282,7 @@ namespace Disa.Framework.Telegram
                             GetMessage(shortMessage.Id, optionalClient);
                         }
 
-                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+                        TelegramEventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                             Bubble.BubbleDirection.Incoming,
                             fromId, false, this, false, false));
                         TextBubble textBubble = new TextBubble(
@@ -299,7 +308,7 @@ namespace Disa.Framework.Telegram
 
                             }
                         }
-                        EventBubble(textBubble);
+                        TelegramEventBubble(textBubble);
                     }
                     if (shortMessage.Id > maxMessageId)
                     {
@@ -362,7 +371,7 @@ namespace Disa.Framework.Telegram
                             string idString = bubbleGroup.LastBubbleSafe().IdService;
                             if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
                             {
-                                EventBubble(
+                                TelegramEventBubble(
                                     new ReadBubble(Time.GetNowUnixTimestamp(),
                                         Bubble.BubbleDirection.Incoming, this,
                                         peerUser.UserId.ToString(CultureInfo.InvariantCulture), null,
@@ -379,7 +388,7 @@ namespace Disa.Framework.Telegram
                             string idString = bubbleGroup.LastBubbleSafe().IdService;
                             if (idString == updateReadHistoryOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
                             {
-                                EventBubble(
+                                TelegramEventBubble(
                                     new ReadBubble(
                                         Time.GetNowUnixTimestamp(),
                                         Bubble.BubbleDirection.Incoming, this,
@@ -400,7 +409,7 @@ namespace Disa.Framework.Telegram
                         string idString = bubbleGroup.LastBubbleSafe().IdService;
                         if (idString == updateReadChannelOutbox.MaxId.ToString(CultureInfo.InvariantCulture))
                         {
-                            EventBubble(
+                            TelegramEventBubble(
                                 new ReadBubble(
                                     Time.GetNowUnixTimestamp(),
                                     Bubble.BubbleDirection.Incoming, this,
@@ -485,7 +494,7 @@ namespace Disa.Framework.Telegram
                     {
                         var address = shortChatMessage.ChatId.ToString(CultureInfo.InvariantCulture);
                         var participantAddress = shortChatMessage.FromId.ToString(CultureInfo.InvariantCulture);
-                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+                        TelegramEventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                             Bubble.BubbleDirection.Incoming,
                             address, participantAddress, true, this, false, false));
                         TextBubble textBubble = new TextBubble(
@@ -511,8 +520,7 @@ namespace Disa.Framework.Telegram
                                 AddQuotedMessageToBubble(replyMessage, textBubble);
                             }
                         }
-
-                        EventBubble(textBubble);
+                        TelegramEventBubble(textBubble);
                     }
                     if (shortChatMessage.Id > maxMessageId)
                     {
@@ -549,7 +557,7 @@ namespace Disa.Framework.Telegram
 								BubbleGroupManager.SetUnread(this, false, bubble.Address);
 								NotificationManager.Remove(this, bubble.Address);
 							}
-                            EventBubble(bubble);
+                            TelegramEventBubble(bubble);
                         }
                         i++;
                     }
@@ -580,7 +588,7 @@ namespace Disa.Framework.Telegram
                         }
                     }
 
-                    EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(),
+                    TelegramEventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(),
                         Bubble.BubbleDirection.Incoming,
                         userStatus.UserId.ToString(CultureInfo.InvariantCulture),
                         false, this, available));
@@ -610,7 +618,7 @@ namespace Disa.Framework.Telegram
 
                     if (isAudio || isTyping)
                     {
-                        EventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
+                        TelegramEventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                             Bubble.BubbleDirection.Incoming,
                             address, participantAddress, party,
                             this, true, isAudio));
@@ -650,7 +658,7 @@ namespace Disa.Framework.Telegram
                     var partyInformationBubbles = MakePartyInformationBubble(messageService, useCurrentTime);
                     foreach (var partyInformationBubble in partyInformationBubbles)
                     {
-                        EventBubble(partyInformationBubble);
+                        TelegramEventBubble(partyInformationBubble);
                     }
                 }
                 else if (updateChannelTooLong != null)
@@ -2027,7 +2035,7 @@ namespace Disa.Framework.Telegram
                         {
                             foreach (var updatedUser in updatedUsers)
                             {
-                                EventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming,
+                                TelegramEventBubble(new PresenceBubble(Time.GetNowUnixTimestamp(), Bubble.BubbleDirection.Incoming,
                                     TelegramUtils.GetUserId(updatedUser), false, this, TelegramUtils.GetAvailable(updatedUser)));
                             }
                         }
@@ -3378,7 +3386,7 @@ namespace Disa.Framework.Telegram
                         var bubbles = ProcessFullMessage(message, false);
                         foreach (var bubble in bubbles)
                         {
-                            EventBubble(bubble);
+                            TelegramEventBubble(bubble);
                         }
                     }
                     if (messageService != null)
@@ -3386,7 +3394,7 @@ namespace Disa.Framework.Telegram
                         var partyInformationBubbles = MakePartyInformationBubble(messageService, false);
                         foreach (var partyInformationBubble in partyInformationBubbles)
                         {
-                            EventBubble(partyInformationBubble);
+                            TelegramEventBubble(partyInformationBubble);
                         }
                     }
                 }

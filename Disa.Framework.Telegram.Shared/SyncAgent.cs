@@ -20,12 +20,15 @@ namespace Disa.Framework.Telegram
 
                 if (actionIdLong == 0)
                 {
-                   var bubbles = LoadBubblesForBubbleGroup(group, Time.GetNowUnixTimestamp(), limit);
-                    if (bubbles.LastOrDefault() != null)
-                    {
-                        var lastActionId = bubbles.LastOrDefault().IdService;
-                        return new BubbleGroupSync.Result(BubbleGroupSync.Result.Type.Purge,lastActionId,null,bubbles.ToArray());
-                    }
+					lock(_globalBubbleLock)
+					{
+						var bubbles = LoadBubblesForBubbleGroup(group, Time.GetNowUnixTimestamp(), limit);
+						if (bubbles.LastOrDefault() != null)
+						{
+							var lastActionId = bubbles.LastOrDefault().IdService;
+							return new BubbleGroupSync.Result(BubbleGroupSync.Result.Type.Purge, lastActionId, null, bubbles.ToArray());
+						}
+					}
                 }
                 return new BubbleGroupSync.Result();
             });
@@ -52,37 +55,40 @@ namespace Disa.Framework.Telegram
 
         private List<VisualBubble> LoadBubblesForBubbleGroup(BubbleGroup @group, long fromTime, int max)
         {
-            var response = GetMessageHistory(group, fromTime, max);
-            var messages = response as MessagesMessages;
-            var messagesSlice = response as MessagesMessagesSlice;
-            var messagesChannels = response as MessagesChannelMessages;
-            if (messages != null)
-            {
-                _dialogs.AddChats(messages.Chats);
-                _dialogs.AddUsers(messages.Users);
-                //DebugPrint("Messages are as follows " + ObjectDumper.Dump(messages.Messages));
-                messages.Messages.Reverse();
-                return ConvertMessageToBubbles(messages.Messages);
+			lock(_globalBubbleLock)
+			{
+				var response = GetMessageHistory(group, fromTime, max);
+				var messages = response as MessagesMessages;
+				var messagesSlice = response as MessagesMessagesSlice;
+				var messagesChannels = response as MessagesChannelMessages;
+				if (messages != null)
+				{
+					_dialogs.AddChats(messages.Chats);
+					_dialogs.AddUsers(messages.Users);
+					//DebugPrint("Messages are as follows " + ObjectDumper.Dump(messages.Messages));
+					messages.Messages.Reverse();
+					return ConvertMessageToBubbles(messages.Messages);
 
-            }
-            if (messagesSlice != null)
-            {
-                _dialogs.AddChats(messagesSlice.Chats);
-                _dialogs.AddUsers(messagesSlice.Users);
-                //DebugPrint("Messages are as follows " + ObjectDumper.Dump(messagesSlice.Messages));
-                messagesSlice.Messages.Reverse();
-                return ConvertMessageToBubbles(messagesSlice.Messages);
-            }
-            if (messagesChannels != null)
-            {
-                _dialogs.AddChats(messagesChannels.Chats);
-                _dialogs.AddUsers(messagesChannels.Users);
-                messagesChannels.Messages.Reverse();
-                var bubbles = ConvertMessageToBubbles(messagesChannels.Messages);
-                SetExtendedFlag(bubbles);
-                return bubbles;
-            }
-            return new List<VisualBubble>();
+				}
+				if (messagesSlice != null)
+				{
+					_dialogs.AddChats(messagesSlice.Chats);
+					_dialogs.AddUsers(messagesSlice.Users);
+					//DebugPrint("Messages are as follows " + ObjectDumper.Dump(messagesSlice.Messages));
+					messagesSlice.Messages.Reverse();
+					return ConvertMessageToBubbles(messagesSlice.Messages);
+				}
+				if (messagesChannels != null)
+				{
+					_dialogs.AddChats(messagesChannels.Chats);
+					_dialogs.AddUsers(messagesChannels.Users);
+					messagesChannels.Messages.Reverse();
+					var bubbles = ConvertMessageToBubbles(messagesChannels.Messages);
+					SetExtendedFlag(bubbles);
+					return bubbles;
+				}
+				return new List<VisualBubble>();
+			}
         }
 
         private void SetExtendedFlag(List<VisualBubble> bubbles)
