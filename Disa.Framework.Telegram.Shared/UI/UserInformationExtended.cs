@@ -7,21 +7,36 @@ namespace Disa.Framework.Telegram
 {
     public partial class Telegram : IUserInformationExtended
     {
-        public Task IsUserBotStopped(Action<bool> result)
+        // TODO: Remove, testing
+        private bool _isBotStopped;
+
+        public Task IsUserBot(string address, Action<bool> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                // do stuff here
-                result(false);
+                var user = _dialogs.GetUser(uint.Parse(address)) as User;
+
+                result(user.Bot != null);
             });
         }
 
-        public Task EnableUserBot(bool enable, Action<bool> result)
+        public Task IsUserBotStopped(string address, Action<bool> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                // do stuff here
-                result(false);
+                // TODO
+                result(_isBotStopped);
+            });
+        }
+
+        public Task EnableUserBot(string address, bool enable, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                _isBotStopped = !enable;
+
+                // TODO
+                result(true);
             });
         }
     }

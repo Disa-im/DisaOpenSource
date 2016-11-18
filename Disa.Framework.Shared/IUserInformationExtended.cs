@@ -5,9 +5,11 @@ namespace Disa.Framework
 {
     public interface IUserInformationExtended
     {
-        Task IsUserBotStopped(Action<bool> result);
+        Task IsUserBotStopped(string address, Action<bool> result);
 
-        Task EnableUserBot(bool enable, Action<bool> result);
+        Task EnableUserBot(string address, bool enable, Action<bool> result);
+
+        Task IsUserBot(string address, Action<bool> result);
     }
 }
 
