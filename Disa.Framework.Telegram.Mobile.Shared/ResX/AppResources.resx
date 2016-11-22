@@ -319,7 +319,7 @@
     <value>Didn't get the code even after a minute? Press the button above to get a call that tells you the code to be entered.</value>
   </data>
   <data name="TelegramCodeResendViaText" xml:space="preserve">
-    <value>Didnt get the code? Press the button above to recieve the code via SMS</value>
+    <value>Did not get the code? Press the button above to recieve the code via SMS.</value>
   </data>
   <data name="TelegramSelect" xml:space="preserve">
     <value>Select</value>
@@ -361,7 +361,7 @@
     <value>Password Recovery</value>
   </data>
   <data name="TelegramEnterCodeSentToEmail" xml:space="preserve">
-    <value>Please enter the code sent at your recovery email address at [emailPattern]</value>
+    <value>Please enter the code sent at your recovery email address at [emailPattern].</value>
   </data>
   <data name="TelegramCannotAccessEmail" xml:space="preserve">
     <value>Cant Access Email?</value>
