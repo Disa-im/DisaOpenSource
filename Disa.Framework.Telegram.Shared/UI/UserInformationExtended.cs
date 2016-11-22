@@ -7,9 +7,6 @@ namespace Disa.Framework.Telegram
 {
     public partial class Telegram : IUserInformationExtended
     {
-        // TODO: Remove, testing
-        private bool _isBotStopped;
-
         public Task IsUserBot(string address, Action<bool> result)
         {
             return Task.Factory.StartNew(() =>
@@ -24,8 +21,11 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                // TODO
-                result(_isBotStopped);
+                GetPrivacyList((addresses) =>
+                {
+                    var isUserBotStopped = addresses.Contains(address);
+                    result(isUserBotStopped);
+                });
             });
         }
 
@@ -33,10 +33,21 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                _isBotStopped = !enable;
+                GetPrivacyList((addresses) =>
+                {
+                    var newPrivacyList = addresses.ToList();
+                    if (enable)
+                    {
+                        newPrivacyList.Remove(address);
+                    }
+                    else
+                    {
+                        newPrivacyList.Add(address);
+                    }
 
-                // TODO
-                result(true);
+                    SetPrivacyList(newPrivacyList.ToArray())
+                        .ContinueWith((t) => { result(true); });
+                });
             });
         }
     }
