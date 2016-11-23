@@ -11,5 +11,6 @@ namespace Disa.Framework
 
         Task IsUserBot(string address, Action<bool> result);
     }
+
 }
 
