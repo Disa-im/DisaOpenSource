@@ -20,5 +20,17 @@ namespace Disa.Framework.Telegram
             
         }
     }
+
+    public class TelegramBotContact : Disa.Framework.BotContact
+    {
+        public TelegramBotContact()
+        {
+
+        }
+
+
+        public User User { get; set; }
+    }
+
 }
 

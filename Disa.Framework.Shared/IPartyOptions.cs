@@ -3,6 +3,14 @@ using System.Threading.Tasks;
 
 namespace Disa.Framework
 {
+    public enum AddPartyResult
+    {
+        Success,
+        Error,
+        BotNoChat,
+        Flood
+    }
+
     public interface IPartyOptions
     {
         // thumbnail
