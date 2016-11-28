@@ -104,17 +104,17 @@ namespace SharpMTProto.Messaging.Handlers
             {
                 state.Date = updatesCombined.Date;
                 state.Seq = updatesCombined.Seq;
+				updateList.AddRange(updatesCombined.Users);
+				updateList.AddRange(updatesCombined.Chats);
                 updateList.AddRange(updatesCombined.Updates);
-                updateList.AddRange(updatesCombined.Users);
-                updateList.AddRange(updatesCombined.Chats);
             }
             else if (updates != null)
             {
                 state.Date = updates.Date;
                 state.Seq = updates.Seq;
-                updateList.AddRange(updates.UpdatesProperty);
-                updateList.AddRange(updates.Users);
-                updateList.AddRange(updates.Chats);
+				updateList.AddRange(updates.Users);
+				updateList.AddRange(updates.Chats);
+				updateList.AddRange(updates.UpdatesProperty);
             }
             else if (updateShortSentMessage != null)
             {

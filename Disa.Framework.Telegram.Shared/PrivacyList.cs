@@ -103,7 +103,8 @@ namespace Disa.Framework.Telegram
                                 {
                                     Id = new InputUser
                                     {
-                                        UserId = uint.Parse(address)
+                                        UserId = uint.Parse(address),
+                                        AccessHash = GetUserAccessHashIfForeign(address)
                                     }
                                 }));
                             break;
