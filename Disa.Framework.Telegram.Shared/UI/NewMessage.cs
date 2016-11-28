@@ -20,23 +20,8 @@ namespace Disa.Framework.Telegram
                 if (!searchForParties)
                 {
                     var users = await FetchContacts();
-                    var contacts = users.Select(x =>
-                        new TelegramContact
-                        {
-                            Available = TelegramUtils.GetAvailable(x),
-                            LastSeen = TelegramUtils.GetLastSeenTime(x),
-                            FirstName = x.FirstName,
-                            LastName = x.LastName,
-                            User = x,
-                            Ids = new List<Contact.ID>
-                            {
-                                    new Contact.ID
-                                    {
-                                        Service = this,
-                                        Id = x.Id.ToString(CultureInfo.InvariantCulture)
-                                    }
-                            },
-					}).Where(x => !string.IsNullOrWhiteSpace(x.FirstName)).OfType<Contact>().OrderBy(x => x.FirstName).ToList();
+                    var contacts = users.Select(x => CreateTelegramContact(x))
+                        .OfType<Contact>().OrderBy(x => x.FirstName).ToList();
                     if (string.IsNullOrWhiteSpace(query))
                     {
                         result(contacts);
@@ -171,27 +156,48 @@ namespace Disa.Framework.Telegram
             foreach (var iUser in contactsFound.Users)
             {
                 var user = iUser as User;
-                if (user != null && user.Bot == null)
+                if (user != null)
                 {
-                    globalContacts.Add(new TelegramContact
-                    {
-                        Available = TelegramUtils.GetAvailable(user),
-                        LastSeen = TelegramUtils.GetLastSeenTime(user),
-                        FirstName = user.FirstName,
-                        LastName = user.LastName,
-                        User = user,
-                        Ids = new List<Contact.ID>
-                        {
-                            new Contact.ID
-                            {
-                                Service = this,
-                                Id = user.Id.ToString(CultureInfo.InvariantCulture)
-                            }
-                        },
-                    });
+                    var globalContact = CreateTelegramContact(user);
+                    globalContacts.Add(globalContact);
                 }
             }
             return globalContacts;
+        }
+        
+        private Contact CreateTelegramContact(User user)
+        {
+            Contact globalContact;
+
+            if (user.Bot != null)
+            {
+                globalContact = new TelegramBotContact
+                {
+                    User = user
+                };
+            }
+            else
+            {
+                globalContact = new TelegramContact
+                {
+                    User = user
+                };
+            }
+
+            globalContact.Available = TelegramUtils.GetAvailable(user);
+            globalContact.LastSeen = TelegramUtils.GetLastSeenTime(user);
+            globalContact.FirstName = user.FirstName;
+            globalContact.LastName = user.LastName;
+            globalContact.Ids = new List<Contact.ID>
+                {
+                    new Contact.ID
+                    {
+                        Service = this,
+                        Id = user.Id.ToString(CultureInfo.InvariantCulture)
+                    }
+                };
+
+            return globalContact;
         }
 
         public Task GetContactsFavorites(Action<List<Contact>> result)
@@ -199,11 +205,11 @@ namespace Disa.Framework.Telegram
             return Task.Factory.StartNew(() =>
             {
                 var count = 0;
-                var users = new List<IUser>();
+                var users = new List<User>();
                 foreach (var bubbleGroup in BubbleGroupManager.SortByMostPopular(this, true))
                 {
                     var address = bubbleGroup.Address;
-                    var user = _dialogs.GetUser(uint.Parse(address));
+                    var user = _dialogs.GetUser(uint.Parse(address)) as User;
                     if (user != null)
                     {
                         users.Add(user);
@@ -219,22 +225,8 @@ namespace Disa.Framework.Telegram
                     return;
                 }
 
-                var contacts = users.Select(x =>
-                    new TelegramContact
-                    {
-                        Available = TelegramUtils.GetAvailable(x),
-                        LastSeen = TelegramUtils.GetLastSeenTime(x),
-                        FirstName = TelegramUtils.GetUserName(x),
-                        Ids = new List<Contact.ID>
-                        {
-                            new Contact.ID
-                            {
-                                Service = this,
-                                Id = TelegramUtils.GetUserId(x).ToString(CultureInfo.InvariantCulture)
-                            }
-                        },
-                        User = x as User
-                    }).OfType<Contact>().OrderBy(x => x.FirstName).ToList();
+                var contacts = users.Select(x => CreateTelegramContact(x))
+                    .OfType<Contact>().OrderBy(x => x.FirstName).ToList();
 
                 result(contacts);
             });
@@ -282,8 +274,16 @@ namespace Disa.Framework.Telegram
                     foreach (var contact in contacts)
                     {
                         names.Add(contact.Item1.FullName);
-                        var telegramContact = contact.Item1 as TelegramContact;
-                        var inputUser = TelegramUtils.CastUserToInputUser(telegramContact.User);
+                        IUser user = null;
+                        if (contact.Item1 is TelegramContact)
+                        {
+                            user = (contact.Item1 as TelegramContact).User;
+                        }
+                        else if (contact.Item1 is TelegramBotContact)
+                        {
+                            user = (contact.Item1 as TelegramBotContact).User;
+                        }
+                        var inputUser = TelegramUtils.CastUserToInputUser(user);
                         if (inputUser != null)
                         {
                             inputUsers.Add(inputUser);
@@ -342,6 +342,12 @@ namespace Disa.Framework.Telegram
                     if (contacts[0].Item2 is Contact.PartyID)
                     {
                         JoinChannelIfLeft(contacts[0].Item2.Id);
+                        result(true, contacts[0].Item2.Id);
+                    }
+                    else if (contacts[0].Item1 is TelegramBotContact)
+                    {
+                        var telegramContact = contacts[0].Item1 as TelegramBotContact;
+                        _dialogs.AddUser(telegramContact.User);
                         result(true, contacts[0].Item2.Id);
                     }
                     else

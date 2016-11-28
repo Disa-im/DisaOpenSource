@@ -52,7 +52,6 @@ local.properties
 [Rr]elease/
 x64/
 build/
-!packages/*
 [Bb]in/
 [Oo]bj/
 
@@ -135,9 +134,7 @@ publish/
 *.pubxml
 
 # NuGet Packages Directory
-## TODO: If you have NuGet Package Restore enabled, uncomment the next line
-#packages/
-!packages/*/build
+packages/
 
 # Windows Azure Build Output
 csx
@@ -224,4 +221,3 @@ pip-log.txt
 DisaOpenSource.VC.db
 Tooling/Sharp.TL.Compiler/.nuget/
 Tooling/Sharp.TL.Compiler/packages/
-packages/

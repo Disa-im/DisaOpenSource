@@ -319,7 +319,7 @@
     <value>Didn't get the code even after a minute? Press the button above to get a call that tells you the code to be entered.</value>
   </data>
   <data name="TelegramCodeResendViaText" xml:space="preserve">
-    <value>Didnt get the code? Press the button above to recieve the code via SMS</value>
+    <value>Did not get the code? Press the button above to recieve the code via SMS.</value>
   </data>
   <data name="TelegramSelect" xml:space="preserve">
     <value>Select</value>
@@ -361,7 +361,7 @@
     <value>Password Recovery</value>
   </data>
   <data name="TelegramEnterCodeSentToEmail" xml:space="preserve">
-    <value>Please enter the code sent at your recovery email address at [emailPattern]</value>
+    <value>Please enter the code sent at your recovery email address at [emailPattern].</value>
   </data>
   <data name="TelegramCannotAccessEmail" xml:space="preserve">
     <value>Cant Access Email?</value>
@@ -380,5 +380,47 @@
   </data>	
   <data name="TelegramUserInformationTitle" xml:space="preserve">
     <value>User Information</value>
-  </data>	
+  </data>
+  <data name="TelegramUsername" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="TelegramEdit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="TelegramDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="TelegramNoUsernameSet" xml:space="preserve">
+    <value>No username set</value>
+  </data>
+  <data name="TelegramEnterUsername" xml:space="preserve">
+    <value>Enter a username</value>
+  </data>
+  <data name="TelegramEnterLastName" xml:space="preserve">
+    <value>Enter your last name</value>
+  </data>
+  <data name="TelegramUserInformation" xml:space="preserve">
+    <value>You can use a-z, 0-9 and underscores. Minimum length is 5 characters.</value>
+  </data>
+  <data name="TelegramUsernameNotLongEnough" xml:space="preserve">
+    <value>A username must have at least 5 characters.</value>
+  </data>
+  <data name="TelegramUsernameInvalid" xml:space="preserve">
+    <value>Sorry, this username is invalid.</value>
+  </data>
+  <data name="TelegramUsernameTaken" xml:space="preserve">
+    <value>Sorry, this username is already taken.</value>
+  </data>
+  <data name="TelegramUsernameAvailable" xml:space="preserve">
+    <value>[username] is available!</value>
+  </data>
+  <data name="TelegramUsernameChecking" xml:space="preserve">
+    <value>Checking username...</value>
+  </data>
+  <data name="TelegramUsernameTryAgainLater" xml:space="preserve">
+    <value>Please try again later...</value>
+  </data>
+  <data name="TelegramNameFirstNameEmpty" xml:space="preserve">
+    <value>Your first name cannot be empty.</value>
+  </data>
 </root>

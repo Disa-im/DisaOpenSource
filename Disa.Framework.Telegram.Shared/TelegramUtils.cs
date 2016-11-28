@@ -292,6 +292,22 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
+		public static Tuple<string, string> GetName(IUser user)
+		{
+			var userEmpty = user as UserEmpty;
+			var userObj = user as User;
+
+			if (userEmpty != null)
+			{
+				return Tuple.Create(userEmpty.Id.ToString(CultureInfo.InvariantCulture), (string)null);
+			}
+			if (userObj != null)
+			{
+				return Tuple.Create(userObj.FirstName, userObj.LastName);
+			}
+			return null;
+		}
+
         public static ulong GetAccessHash(IUser user)
         {
 			var userObj = user as User;

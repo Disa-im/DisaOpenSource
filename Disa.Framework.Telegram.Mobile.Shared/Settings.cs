@@ -123,6 +123,7 @@ namespace Disa.Framework.Telegram.Mobile
             private Picker _groupsPicker;
             private UserProfile _userProfile;
             private Button _privacyList;
+			private UserInformationEditor _userInformationEditor;
 
             private string[] _privacyOptionsLastSeenStrings =
             {
@@ -215,6 +216,8 @@ namespace Disa.Framework.Telegram.Mobile
                     CanRemoveThumbnail = true,
                 };
 
+				_userInformationEditor = new UserInformationEditor(service, DisplayAlert);
+
                 _privacyList = new Button
                 {
                     Text = Localize.GetString("TelegramPrivacyList"),
@@ -226,6 +229,7 @@ namespace Disa.Framework.Telegram.Mobile
                 page.Spacing = 20;
                 page.Padding = 30;
                 page.Children.Add(_userProfile);
+				page.Children.Add(_userInformationEditor);
                 page.Children.Add(_lastSeen);
                 page.Children.Add(_groups);
                 page.Children.Add(_error);
@@ -240,6 +244,503 @@ namespace Disa.Framework.Telegram.Mobile
                 };
                 Title = Localize.GetString("TelegramSettingsTitle");
             }
+
+			private class UserInformationEditor : StackLayout
+			{
+				private static string FirstNameTitle
+				{
+					get
+					{
+						return Localize.GetString("TelegramFirstName");
+					}
+				}
+				private static string LastNameTitle
+				{
+					get
+					{
+						return Localize.GetString("TelegramLastName");
+					}
+				}
+				private static string UsernameTitle
+				{
+					get
+					{
+						return Localize.GetString("TelegramUsername");
+					}
+				}
+				private static string EditTitle
+				{
+					get
+					{
+						return Localize.GetString("TelegramEdit");
+					}
+				}
+				private static string EditDoneButton
+				{
+					get
+					{
+						return Localize.GetString("TelegramDone");
+					}
+				}
+				private static string NoUsernameSet
+				{
+					get
+					{
+						return Localize.GetString("TelegramNoUsernameSet");
+					}
+				}
+				private static string EnterUsername
+				{
+					get
+					{
+						return Localize.GetString("TelegramEnterUsername");
+					}
+				}
+				private static string EnterLastName
+				{
+					get
+					{
+						return Localize.GetString("TelegramEnterLastName");
+					}
+				}
+				private static string UsernameInfo
+				{
+					get
+					{
+						return Localize.GetString("TelegramUserInformation");
+					}
+				}
+				private static string UsernameNotLongEnough
+				{
+					get
+					{
+						return Localize.GetString("TelegramUsernameNotLongEnough");
+					}
+				}
+				private static string UsernameInvalid
+				{
+					get
+					{
+						return Localize.GetString("TelegramUsernameInvalid");
+					}
+				}
+				private static string UsernameTaken
+				{
+					get
+					{
+						return Localize.GetString("TelegramUsernameTaken");
+					}
+				}
+				private static string UsernameAvailable
+				{
+					get
+					{
+						return Localize.GetString("TelegramUsernameAvailable");
+					}
+				}
+				private static string UsernameChecking
+				{
+					get
+					{
+						return Localize.GetString("TelegramUsernameChecking");
+					}
+				}
+				private static string UsernameTryAgainLater
+				{
+					get
+					{
+						return Localize.GetString("TelegramUsernameTryAgainLater");
+					}
+				}
+				private static string NameFirstNameEmpty
+				{
+					get
+					{
+						return Localize.GetString("TelegramNameFirstNameEmpty");
+					}
+				}
+				private static string NameOk
+				{
+					get
+					{
+						return Localize.GetString("TelegramOkay");
+					}
+				}
+
+				private StackLayout BuildNameLayoutViewer(string firstName, string lastName)
+				{
+					var first = new Label();
+					first.FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label));
+					first.Text = firstName;
+					first.VerticalOptions = LayoutOptions.Center;
+					var last = new Label();
+					if (!string.IsNullOrWhiteSpace(lastName))
+					{
+						last.Text = lastName;
+					}
+					last.FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label));
+					last.VerticalOptions = LayoutOptions.Center;
+					var edit = new Button();
+					edit.VerticalOptions = LayoutOptions.Start;
+					edit.Text = EditTitle;
+					var layout = new StackLayout { Orientation = StackOrientation.Horizontal };
+					layout.Children.Add(first);
+					layout.Children.Add(last);
+					layout.Children.Add(edit);
+					layout.VerticalOptions = LayoutOptions.Start;
+					if (string.IsNullOrWhiteSpace(lastName))
+					{
+						last.IsVisible = false;
+					}
+					return layout;
+				}
+
+				private StackLayout BuildNameLayoutEditor(string firstName, string lastName)
+				{
+					var first = new Entry();
+					first.Text = firstName;
+					var last = new Entry();
+					if (!string.IsNullOrWhiteSpace(lastName))
+					{
+						last.Text = lastName;
+					}
+					else
+					{
+						last.Placeholder = EnterLastName;
+					}
+					var firstTitle = new Label();
+					firstTitle.Text = FirstNameTitle;
+					firstTitle.Font = Font.BoldSystemFontOfSize(16);
+					var lastTitle = new Label();
+					lastTitle.Text = LastNameTitle;
+					lastTitle.Font = Font.BoldSystemFontOfSize(16);
+					var done = new Button();
+					done.Text = EditDoneButton;
+					var layout = new StackLayout { Orientation = StackOrientation.Vertical };
+					layout.Children.Add(firstTitle);
+					layout.Children.Add(first);
+					layout.Children.Add(lastTitle);
+					layout.Children.Add(last);
+					layout.Children.Add(done);
+					return layout;
+				}
+
+				private Layout BuildNameLayout(string firstName, string lastName)
+				{
+					var masterLayout = new StackLayout();
+					var layoutViewer = BuildNameLayoutViewer(firstName, lastName);
+					masterLayout.Children.Add(layoutViewer);
+					var edit = layoutViewer.Children.OfType<Button>().First();
+					Action switchToEditor = null;
+					switchToEditor = () =>
+					{
+						var layoutEditor = BuildNameLayoutEditor(firstName, lastName);
+						masterLayout.Children.Remove(layoutViewer);
+						masterLayout.Children.Add(layoutEditor);
+						var done = layoutEditor.Children.OfType<Button>().First();
+						done.Clicked += async (sender2, e2) =>
+						{
+							var firstNameLayout = layoutEditor.Children.OfType<Entry>().First();
+							var lastNameLayout = layoutEditor.Children.OfType<Entry>().Last();
+							var firstNameTemp = firstNameLayout.Text;
+							var lastNameTemp = lastNameLayout.Text;
+							if (string.IsNullOrWhiteSpace(firstNameTemp))
+							{
+								await _displayAlert(string.Empty, NameFirstNameEmpty, NameOk);
+							}
+							else
+							{
+								if (string.IsNullOrWhiteSpace(lastNameTemp))
+								{
+									lastName = string.Empty;
+								}
+								try
+								{
+									await UpdateUserAccount(firstNameTemp, lastNameTemp);
+									firstName = firstNameTemp;
+									lastName = lastNameTemp;
+								}
+								catch
+								{
+									//fall-through
+								}
+							}
+							layoutViewer = BuildNameLayoutViewer(firstName, lastName);
+							masterLayout.Children.Remove(layoutEditor);
+							masterLayout.Children.Add(layoutViewer);
+							edit = layoutViewer.Children.OfType<Button>().First();
+							edit.Clicked += (sender, e) =>
+							{
+								switchToEditor();
+							};
+						};
+					};
+					edit.Clicked += (sender, e) =>
+					{
+						switchToEditor();
+					};
+					return masterLayout;
+				}
+
+				private StackLayout BuildUsernameLayoutViewer(string currentUsername)
+				{
+					var username = new Label();
+					if (!string.IsNullOrWhiteSpace(currentUsername))
+					{
+						username.FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label));
+						username.Text = currentUsername;
+					}
+					else
+					{
+						username.FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
+						username.FontAttributes = FontAttributes.Italic;
+						username.Text = NoUsernameSet;
+					}
+					username.VerticalOptions = LayoutOptions.Center;
+					var edit = new Button();
+					edit.VerticalOptions = LayoutOptions.Start;
+					edit.Text = EditTitle;
+					var layout = new StackLayout { Orientation = StackOrientation.Horizontal };
+					layout.Children.Add(username);
+					layout.Children.Add(edit);
+					layout.VerticalOptions = LayoutOptions.Start;
+					return layout;
+				}
+
+				private StackLayout BuildUsernameLayoutEditor(string currentUsername)
+				{
+					var username = new Entry();
+					var usernameErrorStatus = new Label();
+					var defaultUsernameErrorStatusColor = usernameErrorStatus.TextColor;
+					if (!string.IsNullOrWhiteSpace(currentUsername))
+					{
+						if (currentUsername.StartsWith("@") && currentUsername.Length >= 2)
+						{
+							currentUsername = currentUsername.Remove(0, 1);
+						}
+						username.Text = currentUsername;
+					}
+					else
+					{
+						username.Placeholder = EnterUsername;
+					}
+					username.TextChanged += async (sender, e) =>
+					{
+						usernameErrorStatus.TextColor = defaultUsernameErrorStatusColor;
+						usernameErrorStatus.Text = UsernameChecking;
+						var error = false;
+						var green = false;
+						var newUsername = e.NewTextValue;
+						if (string.IsNullOrWhiteSpace(newUsername))
+						{
+							goto End;
+						}
+						if (newUsername.Length >= 1 && newUsername.Length < 5)
+						{
+							usernameErrorStatus.Text = UsernameNotLongEnough;
+							error = true;
+							goto End;
+						}
+						const string validCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+						foreach (var chr in newUsername)
+						{
+							var found = false;
+							foreach (var validChar in validCharacters)
+							{
+								if (validChar == chr)
+								{
+									found = true;
+									break;
+								}
+							}
+							if (!found)
+							{
+								usernameErrorStatus.Text = UsernameInvalid;
+								error = true;
+								goto End;
+							}
+						}
+						bool checkUsername = false;
+						try
+						{
+							checkUsername = await CheckUsername(newUsername);
+						}
+						catch (Exception ex)
+						{
+							// fall-through
+						}
+						if (!checkUsername)
+						{
+							usernameErrorStatus.Text = UsernameTaken;
+							error = true;
+						}
+						else
+						{
+							usernameErrorStatus.Text = UsernameAvailable.Replace("[username]", newUsername);
+							error = true;
+							green = true;
+						}
+					End:
+						usernameErrorStatus.TextColor = green ? Color.Green : Color.Red;
+						usernameErrorStatus.IsVisible = error;
+					};
+					var usernameTitle = new Label();
+					usernameTitle.Font = Font.BoldSystemFontOfSize(16);
+					usernameTitle.Text = UsernameTitle;
+					var info = new Label();
+					info.Text = UsernameInfo;
+					usernameErrorStatus.IsVisible = false;
+					var done = new Button();
+					done.Text = EditDoneButton;
+					var layout = new StackLayout { Orientation = StackOrientation.Vertical };
+					layout.Children.Add(usernameTitle);
+					layout.Children.Add(username);
+					layout.Children.Add(usernameErrorStatus);
+					layout.Children.Add(info);
+					layout.Children.Add(done);
+					return layout;
+				}
+
+				private StackLayout BuildUsernameLayout(string username)
+				{
+					var masterLayout = new StackLayout();
+					var layoutViewer = BuildUsernameLayoutViewer(username);
+					masterLayout.Children.Add(layoutViewer);
+					var edit = layoutViewer.Children.OfType<Button>().First();
+					Action switchToEditor = null;
+					switchToEditor = () =>
+					{
+						var layoutEditor = BuildUsernameLayoutEditor(username);
+						masterLayout.Children.Remove(layoutViewer);
+						masterLayout.Children.Add(layoutEditor);
+						var done = layoutEditor.Children.OfType<Button>().First();
+						done.Clicked += async (sender2, e2) =>
+						{
+							var usernameLayout = layoutEditor.Children.OfType<Entry>().First();
+							var newUsername = usernameLayout.Text;
+							if (string.IsNullOrWhiteSpace(newUsername))
+							{
+								newUsername = string.Empty;
+							}
+							var success = true;
+							if (!string.IsNullOrWhiteSpace(newUsername))
+							{
+								try
+								{
+									if (!await CheckUsername(newUsername))
+									{
+										return;
+									}
+								}
+								catch
+								{
+									success = false;
+								}
+							}
+							try
+							{
+								await UpdateUsername(newUsername);
+								success = true;
+							}
+							catch
+							{
+								success = false;
+							}
+							if (!string.IsNullOrWhiteSpace(newUsername) && !newUsername.StartsWith("@"))
+							{
+								newUsername = "@" + newUsername;
+							}
+							if (success)
+							{
+								username = newUsername;
+								Username = username;
+							}
+							layoutViewer = BuildUsernameLayoutViewer(username);
+							masterLayout.Children.Remove(layoutEditor);
+							masterLayout.Children.Add(layoutViewer);
+							edit = layoutViewer.Children.OfType<Button>().First();
+							edit.Clicked += (sender, e) =>
+							{
+								switchToEditor();
+							};
+						};
+					};
+					edit.Clicked += (sender, e) =>
+					{
+						switchToEditor();
+					};
+					return masterLayout;
+				}
+
+				public string Username { get; set; }
+				public string FirstName { get; set; }
+				public string LastName { get; set; }
+				public bool DisableNameInput { get; set; }
+
+				private readonly Service _service;
+				private readonly Func<string, string, string, Task> _displayAlert;
+
+				public UserInformationEditor(Service service, Func<string, string, string, Task> displayAlert)
+				{
+					_service = service;
+					_displayAlert = displayAlert;
+				}
+
+				private async Task<bool> CheckUsername(string username)
+				{
+					using (var client = new Telegram.FullClientDisposable(_service as Telegram))
+					{
+						return await client.Client.Methods.AccountCheckUsernameAsync(new AccountCheckUsernameArgs
+						{
+							Username = username
+						});
+					}
+				}
+
+				private async Task UpdateUserAccount(string firstName, string lastName)
+				{
+					if (string.IsNullOrWhiteSpace(lastName))
+					{
+						lastName = string.Empty;
+					}
+					using (var client = new Telegram.FullClientDisposable(_service as Telegram))
+					{
+						var user = await client.Client.Methods.AccountUpdateProfileAsync(new AccountUpdateProfileArgs
+						{
+							Flags = 3,
+							FirstName = firstName,
+							LastName = lastName,
+						});
+						(_service as Telegram).Dialogs.AddUser(user);
+					}
+				}
+
+				private async Task UpdateUsername(string username)
+				{
+					using (var client = new Telegram.FullClientDisposable(_service as Telegram))
+					{
+						var user = await client.Client.Methods.AccountUpdateUsernameAsync(new AccountUpdateUsernameArgs
+						{
+							Username = username
+						});
+						(_service as Telegram).Dialogs.AddUser(user);
+					}
+				}
+
+				public void Build()
+				{
+					if (!DisableNameInput && string.IsNullOrWhiteSpace(FirstName))
+					{
+						throw new ArgumentNullException("First name cannot be null.");
+					}
+					Orientation = StackOrientation.Vertical;
+					if (!DisableNameInput)
+					{
+						Children.Add(BuildNameLayout(FirstName, LastName));
+					}
+					Children.Add(BuildUsernameLayout(Username));
+				}
+			}
 
             private async void Populate(Service service)
             {
@@ -306,7 +807,6 @@ namespace Disa.Framework.Telegram.Mobile
 
                     if (fileBytes != null)
                     {
-
                         var thumbnail = new DisaThumbnail(telegramService, fileBytes.Bytes, "userprofile");
 
                         _userProfile.SetThumbnail(thumbnail);
@@ -316,9 +816,24 @@ namespace Disa.Framework.Telegram.Mobile
                         _userProfile.SetThumbnail(null);
                     }
 
-                    _userProfile.Title = TelegramUtils.GetUserName(user);
+					_userInformationEditor.FirstName = TelegramUtils.GetUserName(user);
 
-                    _userProfile.Subtitle = TelegramUtils.GetUserHandle(user);
+					var name = TelegramUtils.GetName(user);
+					if (name != null)
+					{
+						_userInformationEditor.FirstName = name.Item1;
+						_userInformationEditor.LastName = name.Item2;
+					}
+					else
+					{
+						_userInformationEditor.DisableNameInput = true;
+					}
+
+
+					var username = TelegramUtils.GetUserHandle(user);
+					_userInformationEditor.Username = !string.IsNullOrWhiteSpace(username) ? username : null;
+
+					_userInformationEditor.Build();
                 }
 
                 _progressBar.IsVisible = false;
