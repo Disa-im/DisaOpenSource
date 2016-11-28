@@ -139,7 +139,7 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private void SaveState(uint date, uint pts, uint qts, uint seq)
+        public void SaveState(uint date, uint pts, uint qts, uint seq)
         {
             lock (_mutableSettingsLock)
             {
@@ -499,6 +499,12 @@ namespace Disa.Framework.Telegram
                         TelegramEventBubble(new TypingBubble(Time.GetNowUnixTimestamp(),
                             Bubble.BubbleDirection.Incoming,
                             address, participantAddress, true, this, false, false));
+						var shortMessageChat = _dialogs.GetChat(shortChatMessage.ChatId);
+						if (shortMessageChat == null)
+						{
+							DebugPrint(">>>>> Chat is null, fetching user from the server");
+							GetMessage(shortChatMessage.Id, optionalClient);
+						}
                         TextBubble textBubble = new TextBubble(
                             useCurrentTime ? Time.GetNowUnixTimestamp() : (long)shortChatMessage.Date,
                             shortChatMessage.Out != null
@@ -657,7 +663,7 @@ namespace Disa.Framework.Telegram
                 }
                 else if (messageService != null)
                 {
-                    var partyInformationBubbles = MakePartyInformationBubble(messageService, useCurrentTime);
+					var partyInformationBubbles = MakePartyInformationBubble(messageService, useCurrentTime, optionalClient);
                     foreach (var partyInformationBubble in partyInformationBubbles)
                     {
                         TelegramEventBubble(partyInformationBubble);
@@ -694,8 +700,8 @@ namespace Disa.Framework.Telegram
             //}
         }
 
-      private List<VisualBubble> MakePartyInformationBubble(MessageService messageService, bool useCurrentTime)
-        {
+		private List<VisualBubble> MakePartyInformationBubble(MessageService messageService, bool useCurrentTime, TelegramClient optionalClient)
+	    {
             var editTitle = messageService.Action as MessageActionChatEditTitle;
             var deleteUser = messageService.Action as MessageActionChatDeleteUser;
             var addUser = messageService.Action as MessageActionChatAddUser;
@@ -779,10 +785,17 @@ namespace Disa.Framework.Telegram
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                     this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
                     _settings.AccountId.ToString(CultureInfo.InvariantCulture));
+				
                 if (messageService.ToId is PeerChannel)
                 {
                     bubble.ExtendedParty = true;
                 }
+				var shortMessageChat = _dialogs.GetChat(uint.Parse(address));
+				if (shortMessageChat == null)
+				{
+					DebugPrint(">>>>> Chat is null, fetching user from the server");
+					GetMessage(messageService.Id, optionalClient);
+				}
                 return new List<VisualBubble>
                 {
                     bubble
@@ -1829,7 +1842,7 @@ namespace Disa.Framework.Telegram
                 counter++;
                 goto Again;
             }
-            else if (empty != null)
+            else if (empty != null)	
             {
                 SaveState(empty.Date, 0, 0, empty.Seq);
             }
@@ -1951,24 +1964,37 @@ namespace Disa.Framework.Telegram
             using (var client = new TelegramClient(transportConfig, 
                                     new ConnectionConfig(_settings.AuthKey, _settings.Salt), AppInfo))
             {
-                var result = TelegramUtils.RunSynchronously(client.Connect());
-                if (result != MTProtoConnectResult.Success)
-                {
-                    throw new Exception("Failed to connect: " + result);
-                }   
-                DebugPrint("Registering long poller...");
-                var registerDeviceResult = TelegramUtils.RunSynchronously(client.Methods.AccountRegisterDeviceAsync(
-                    new AccountRegisterDeviceArgs
-                {
-                    TokenType = 7,
-                    Token = sessionId.ToString(CultureInfo.InvariantCulture),
-                }));
-                if (!registerDeviceResult)
-                {
-                    throw new Exception("Failed to register long poller...");
-                }
+				try
+				{
+					var result = TelegramUtils.RunSynchronously(client.Connect());
+					if (result != MTProtoConnectResult.Success)
+					{
+						throw new Exception("Failed to connect: " + result);
+					}
+				
+	                DebugPrint("Registering long poller...");
+	                var registerDeviceResult = TelegramUtils.RunSynchronously(client.Methods.AccountRegisterDeviceAsync(
+	                    new AccountRegisterDeviceArgs
+	                {
+	                    TokenType = 7,
+	                    Token = sessionId.ToString(CultureInfo.InvariantCulture),
+	                }));
+	                if (!registerDeviceResult)
+	                {
+	                    throw new Exception("Failed to register long poller...");
+	                }
+				}
+				catch (RpcErrorException ex)
+				{
+					if (ex.Message.Contains("USER_DEACTIVATED"))
+					{
+						ResetTelegram();
+					}
+					throw ex;
+				}
 
-                DebugPrint(">>>>>>>>>>>>>> Fetching state!");
+
+				DebugPrint(">>>>>>>>>>>>>> Fetching state!");
                 FetchState(client);
                 DebugPrint (">>>>>>>>>>>>>> Fetching dialogs!");
                 GetDialogs(client);
@@ -1995,7 +2021,12 @@ namespace Disa.Framework.Telegram
             DebugPrint("Long poller started!");
         }
 
-        public override void Disconnect()
+		private void ResetTelegram()
+		{
+			SettingsManager.Delete(this);
+		}
+
+		public override void Disconnect()
         {
             DisconnectFullClientIfPossible();
             DisconnectLongPollerIfPossible();
@@ -3404,7 +3435,7 @@ namespace Disa.Framework.Telegram
                     }
                     if (messageService != null)
                     {
-                        var partyInformationBubbles = MakePartyInformationBubble(messageService, false);
+						var partyInformationBubbles = MakePartyInformationBubble(messageService, false, null);
                         foreach (var partyInformationBubble in partyInformationBubbles)
                         {
                             TelegramEventBubble(partyInformationBubble);

@@ -495,7 +495,7 @@ namespace Disa.Framework.Telegram
                 if (messageService != null)
                 {
                     _oldMessages = true;
-                    var serviceBubbles = MakePartyInformationBubble(messageService, false);
+                    var serviceBubbles = MakePartyInformationBubble(messageService, false, null);
                     if (serviceBubbles != null)
                     {
                         bubbles.AddRange(serviceBubbles);

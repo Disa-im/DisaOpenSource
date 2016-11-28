@@ -1303,6 +1303,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\NewMessageExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DownloadManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\Announcement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MessageIntent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)BigMath\" />

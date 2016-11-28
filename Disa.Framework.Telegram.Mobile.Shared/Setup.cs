@@ -11,6 +11,7 @@ using SharpTelegram;
 using SharpMTProto;
 using System.Text;
 using System.Security.Cryptography;
+using System.IO;
 
 namespace Disa.Framework.Telegram.Mobile
 {
@@ -369,6 +370,7 @@ namespace Disa.Framework.Telegram.Mobile
 
                     if (result.Success)
                     {
+						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
                         DependencyService.Get<IPluginPageControls>().Finish();
                     }
@@ -481,6 +483,7 @@ namespace Disa.Framework.Telegram.Mobile
 
                     if (result.Success)
                     {
+						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
                         DependencyService.Get<IPluginPageControls>().Finish();
                     }
@@ -665,6 +668,7 @@ namespace Disa.Framework.Telegram.Mobile
 
                     if (result.Success)
                     {
+						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
                         DependencyService.Get<IPluginPageControls>().Finish();
                     }
@@ -1161,7 +1165,7 @@ namespace Disa.Framework.Telegram.Mobile
                             _error.Text = result.ErrorMessage;
                             return;
                         }
-
+						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
                         DependencyService.Get<IPluginPageControls>().Finish();
                     };
@@ -1196,7 +1200,7 @@ namespace Disa.Framework.Telegram.Mobile
                 Title = Localize.GetString("TelegramCodeTitle");
             }
 
-            private Task<ActivationResult> DoVerify(bool reVerify)
+			private Task<ActivationResult> DoVerify(bool reVerify)
             {
                 return Task<ActivationResult>.Factory.StartNew(() =>
                     {
@@ -1289,6 +1293,26 @@ namespace Disa.Framework.Telegram.Mobile
             }
 
         }
+
+		private static void CleanUp(Service service)
+		{
+			var bubbleGroups = BubbleGroupManager.FindAll(service);
+			foreach(var groups in bubbleGroups)
+			{
+				BubbleGroupFactory.Delete(groups);
+			}
+			try
+			{
+				var databasePath = Platform.GetDatabasePath();
+				File.Delete(Path.Combine(databasePath, "userscache.db"));
+				File.Delete(Path.Combine(databasePath, "chatscache.db"));
+				MutableSettingsManager.Delete<TelegramMutableSettings>();
+			}
+			catch (Exception ex)
+			{
+				//nothing to do
+			}
+		}
     }
 }
 
