@@ -21,7 +21,8 @@ namespace Disa.Framework.Telegram
                 {
                     var users = await FetchContacts();
                     var contacts = users.Select(x => CreateTelegramContact(x))
-                        .OfType<Contact>().OrderBy(x => x.FirstName).ToList();
+                                   .Where(x => !string.IsNullOrWhiteSpace(x.FirstName)).OfType<Contact>().OrderBy(x => x.FirstName).ToList();
+					
                     if (string.IsNullOrWhiteSpace(query))
                     {
                         result(contacts);
