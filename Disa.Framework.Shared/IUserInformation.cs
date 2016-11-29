@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace Disa.Framework
 {
+    [PluginFramework]
     public interface IUserInformation
     {
         Task GetUserInformationThumbnail(string address, bool preview, Action<DisaThumbnail> result);
@@ -16,6 +17,8 @@ namespace Disa.Framework
         Task ClickUserInformationPrimaryAction(string address);
 
         Task GetUserInformation(string address, Action<UserInformation> result);
+
+        void Test();
     }
 }
 

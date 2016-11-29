@@ -85,6 +85,16 @@ namespace Disa.Framework
         }
     }
 
+    [AttributeUsage(AttributeTargets.Interface)]
+    public class PluginFramework : Attribute
+    {
+    }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public class PluginFrameworkNOP : Attribute
+    {
+    }
+
     [AttributeUsage(AttributeTargets.All)]
     public class AudioParameters : Attribute
     {
