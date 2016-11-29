@@ -1826,19 +1826,19 @@ namespace Disa.Framework.Telegram
 
             if (diff != null)
             {
+				_dialogs.AddUsers(diff.Users);
+				_dialogs.AddChats(diff.Chats);
                 dispatchUpdates();
                 var state = (UpdatesState)diff.State;
-                SaveState(state.Date, state.Pts, state.Qts, state.Seq);
-                _dialogs.AddUsers(diff.Users);
-                _dialogs.AddChats(diff.Chats);
+				SaveState(state.Date, state.Pts, state.Qts, state.Seq);
             }
             else if (slice != null)
             {
+				_dialogs.AddUsers(slice.Users);
+				_dialogs.AddChats(slice.Chats);
                 dispatchUpdates();
                 var state = (UpdatesState)slice.IntermediateState;
-                SaveState(state.Date, state.Pts, state.Qts, state.Seq);
-                _dialogs.AddUsers(slice.Users);
-                _dialogs.AddChats(slice.Chats);
+				SaveState(state.Date, state.Pts, state.Qts, state.Seq);
                 counter++;
                 goto Again;
             }
@@ -1921,10 +1921,10 @@ namespace Disa.Framework.Telegram
             var updatesList = new List<object>();
 
             if (updatesChannelDifference != null)
-            {
-                updatesList.AddRange(updatesChannelDifference.NewMessages);
+			{
                 updatesList.AddRange(updatesChannelDifference.OtherUpdates);
                 updatesList.AddRange(updatesChannelDifference.Chats);
+				updatesList.AddRange(updatesChannelDifference.NewMessages);
                 SaveChannelState(channelId, updatesChannelDifference.Pts);
             }
             else if (updatesChannelDifferenceEmpty != null)
@@ -1933,9 +1933,9 @@ namespace Disa.Framework.Telegram
             }
             else if (updatesChannelDifferenceTooLong != null)
             {
-                updatesList.AddRange(updatesChannelDifferenceTooLong.Messages);
-                updatesList.AddRange(updatesChannelDifferenceTooLong.Users);
-                updatesList.AddRange(updatesChannelDifferenceTooLong.Chats);
+				updatesList.AddRange(updatesChannelDifferenceTooLong.Users);
+				updatesList.AddRange(updatesChannelDifferenceTooLong.Chats);
+				updatesList.AddRange(updatesChannelDifferenceTooLong.Messages);
                 SaveChannelState(channelId, updatesChannelDifferenceTooLong.Pts);
             }
             return updatesList;

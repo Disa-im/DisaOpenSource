@@ -3,7 +3,7 @@ using Disa.Framework;
 
 namespace Disa.Framework.Telegram
 {
-	public partial class Telegram : IMessageIntent
+	public partial class Telegram //: IMessageIntent This class should implement IMessage intent. its disabled for now, but after contact caching is done locally, this wil be updated
 	{
 		public string PhoneNumberToServiceAddress(string number)
 		{
