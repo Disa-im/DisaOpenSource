@@ -24,5 +24,15 @@ namespace Disa.Framework.Telegram
 		{
 			return false;
 		}
+
+		public string GetAnnouncementExternalLink()
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool HasAnnouncementExternalLink()
+		{
+			return false;
+		}
 	}
 }
