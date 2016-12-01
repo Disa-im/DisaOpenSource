@@ -283,7 +283,7 @@
     <value>The last name entered is invalid. Please try another.</value>
   </data>
   <data name="TelegramContact" xml:space="preserve">
-    <value>Contact</value>
+    <value>Contacts</value>
   </data>
   <data name="TelegramEveryone" xml:space="preserve">
     <value>Everyone</value>

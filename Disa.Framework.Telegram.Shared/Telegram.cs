@@ -1984,8 +1984,9 @@ namespace Disa.Framework.Telegram
 	                    throw new Exception("Failed to register long poller...");
 	                }
 				}
-				catch (RpcErrorException ex)
+				catch (Exception ex)
 				{
+					Utils.DebugPrint("Exception while connecting telegram! " + ex);
 					if (ex.Message.Contains("USER_DEACTIVATED"))
 					{
 						ResetTelegram();
@@ -2844,7 +2845,7 @@ namespace Disa.Framework.Telegram
                     inputContacts.Add(new InputPhoneContact
                     {
                         ClientId = ulong.Parse(clientId),
-                        Phone = phoneNumber.Number,
+						Phone = FormatNumber(phoneNumber.Number),
                         FirstName = contact.FirstName,
                         LastName = contact.LastName,
                     });
