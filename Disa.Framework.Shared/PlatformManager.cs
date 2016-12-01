@@ -72,9 +72,9 @@ namespace Disa.Framework
         public static string FrameworkVersion
         {
             get
-            {
-                return "40";
-            }
+			{
+				return "40";
+			}
         }
 
         public static int FrameworkVersionInt
