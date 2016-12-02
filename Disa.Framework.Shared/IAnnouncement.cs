@@ -2,6 +2,7 @@
 
 namespace Disa.Framework
 {
+    [DisaFramework]
 	public interface IAnnouncement
 	{
 		string GetAnnouncementMessage();

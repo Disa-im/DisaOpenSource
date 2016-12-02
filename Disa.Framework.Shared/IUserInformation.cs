@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Disa.Framework
 {
-    [PluginFramework]
+    [DisaFramework]
     public interface IUserInformation
     {
         Task GetUserInformationThumbnail(string address, bool preview, Action<DisaThumbnail> result);
@@ -18,7 +18,16 @@ namespace Disa.Framework
 
         Task GetUserInformation(string address, Action<UserInformation> result);
 
-        void Test();
+        //
+        // IUserInformationExtended
+        //
+
+        Task IsUserBotStopped(string address, Action<bool> result);
+
+        Task EnableUserBot(string address, bool enable, Action<bool> result);
+
+        Task IsUserBot(string address, Action<bool> result);
+
     }
 }
 

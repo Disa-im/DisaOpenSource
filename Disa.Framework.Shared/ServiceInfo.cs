@@ -9,7 +9,7 @@ namespace Disa.Framework
     {
         public enum ProcedureType { ConnectAuthenticate, AuthenticateConnect };
 
-        public string ServiceName {get; private set;}
+        public string ServiceName { get; private set; }
         public Type[] SupportedBubbles { get; private set; }
         public Type Settings { get; private set; }
         public bool EventDrivenBubbles { get; private set; }
@@ -20,7 +20,7 @@ namespace Disa.Framework
         public bool DelayedNotifications { get; private set; }
 
         public ServiceInfo(string serviceName, bool eventDrivenBubbles, bool usesMediaProgress,
-            bool usesInternet, bool supportsBatterySavingsMode, bool delayedNotifications, Type settings, ProcedureType procedureType, 
+            bool usesInternet, bool supportsBatterySavingsMode, bool delayedNotifications, Type settings, ProcedureType procedureType,
             params Type[] supportedBubbles)
         {
             ServiceName = serviceName;
@@ -86,12 +86,12 @@ namespace Disa.Framework
     }
 
     [AttributeUsage(AttributeTargets.Interface)]
-    public class PluginFramework : Attribute
+    public class DisaFrameworkAttribute : Attribute
     {
     }
 
-    [AttributeUsage(AttributeTargets.Method)]
-    public class PluginFrameworkNOP : Attribute
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
+    public class DisaFrameworkNOP : Attribute
     {
     }
 

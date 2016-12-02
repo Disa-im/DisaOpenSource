@@ -1,5 +1,6 @@
 namespace Disa.Framework
 {
+    [DisaFramework]
     public interface ITimeFormatter
     {
         string GetDayDisplayTime(long unixTime);

@@ -7,11 +7,6 @@ namespace Disa.Framework.Telegram
 {
     public partial class Telegram : IUserInformation
     {
-        public void Test()
-        {
-
-        }
-
         public Task GetUserInformationThumbnail(string address, bool preview, Action<DisaThumbnail> result)
         {
             return Task.Factory.StartNew(() =>
