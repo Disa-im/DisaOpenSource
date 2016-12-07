@@ -126,6 +126,9 @@
   <data name="TelegramAllGood" xml:space="preserve">
     <value>Everything is looking good.</value>
   </data>
+  <data name="TelegramHelp" xml:space="preserve">
+    <value>Help</value>
+  </data>	
   <data name="TelegramSettingsTitle" xml:space="preserve">
     <value>Telegram Settings</value>
   </data>

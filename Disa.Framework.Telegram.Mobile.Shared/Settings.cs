@@ -25,7 +25,16 @@ namespace Disa.Framework.Telegram.Mobile
             }
             else
             {
-                navigationPage = new NavigationPage(new Main(service));
+				var main  = new Main(service);
+				var help = new ToolbarItem();
+				help.Text = Localize.GetString("TelegramHelp");
+				help.Order = ToolbarItemOrder.Primary;
+				help.Clicked += (sender, e) => 
+				{
+					Platform.LaunchViewIntent("http://www.disa.im/telegram.html");
+				};
+				main.ToolbarItems.Add(help);
+                navigationPage = new NavigationPage(main);
             }
             return navigationPage;
         }
