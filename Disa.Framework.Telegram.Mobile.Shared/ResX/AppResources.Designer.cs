@@ -664,5 +664,11 @@ namespace Disa.Framework.Telegram.Mobile {
                 return ResourceManager.GetString("TelegramNameFirstNameEmpty", resourceCulture);
             }
         }
+        
+        internal static string TelegramAlpha {
+            get {
+                return ResourceManager.GetString("TelegramAlpha", resourceCulture);
+            }
+        }
     }
 }

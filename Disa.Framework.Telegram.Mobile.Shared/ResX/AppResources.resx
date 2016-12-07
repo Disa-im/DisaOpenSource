@@ -426,4 +426,7 @@
   <data name="TelegramNameFirstNameEmpty" xml:space="preserve">
     <value>Your first name cannot be empty.</value>
   </data>
+  <data name="TelegramAlpha" xml:space="preserve">
+    <value>This is an alpha build</value>
+  </data>	
 </root>
