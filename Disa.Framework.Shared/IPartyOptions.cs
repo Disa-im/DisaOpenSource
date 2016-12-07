@@ -71,7 +71,7 @@ namespace Disa.Framework
         Task PartyOptionsClosed();
 
         //
-        // IPartyOptionsExtended
+        // Begin IPartyOptions new methods (previously IPartyOptionsExtended)
         //
 
         //links

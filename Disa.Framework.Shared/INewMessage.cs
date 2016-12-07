@@ -35,7 +35,7 @@ namespace Disa.Framework
         }
 
         //
-        // INewMessageExtended
+        // Begin INewMessage new methods (previously INewMethodsExtended
         //
 
         Task FetchBubbleGroupAddressFromLink(string link, Action<Tuple<Contact, Contact.ID>> result);

@@ -19,7 +19,7 @@ namespace Disa.Framework
         Task GetUserInformation(string address, Action<UserInformation> result);
 
         //
-        // IUserInformationExtended
+        // Begin IUserInformation new methods (previously IUserInformationExtended)
         //
 
         Task IsUserBotStopped(string address, Action<bool> result);
