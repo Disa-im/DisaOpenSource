@@ -274,6 +274,14 @@ namespace Disa.Framework.Telegram.Mobile
             var info = new Info(service, tabs, code);
 
             tabs.Children.Add(info);
+			var help = new ToolbarItem();
+			help.Text = Localize.GetString("TelegramHelp");
+			help.Order = ToolbarItemOrder.Primary;
+			help.Clicked += (sender, e) =>
+			{
+				Platform.LaunchViewIntent("http://www.disa.im/telegram.html");
+			};
+			tabs.ToolbarItems.Add(help);
             tabs.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName == "CurrentPage")
