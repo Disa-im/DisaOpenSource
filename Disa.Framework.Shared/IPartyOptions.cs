@@ -14,6 +14,7 @@ namespace Disa.Framework
     [DisaFramework]
     public interface IPartyOptions
     {
+
         // thumbnail
         Task GetPartyPhoto(BubbleGroup group, DisaParticipant participant, bool preview, Action<DisaThumbnail> result);
 
