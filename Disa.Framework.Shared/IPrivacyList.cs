@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace Disa.Framework
 {
+    [DisaFramework]
     public interface IPrivacyList
     {
         Task GetPrivacyList(Action<string[]> addresses);

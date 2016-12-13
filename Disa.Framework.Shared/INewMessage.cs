@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace Disa.Framework
 {
+    [DisaFramework]
     public interface INewMessage
     {
         Task GetContacts(string query, bool searchForParties, Action<List<Contact>> result);
@@ -32,6 +33,18 @@ namespace Disa.Framework
         {
             get;
         }
+
+        //
+        // Begin INewMessage new methods (previously INewMethodsExtended
+        //
+
+        Task FetchBubbleGroupAddressFromLink(string link, Action<Tuple<Contact, Contact.ID>> result);
+
+        bool SupportsShareLinks
+        {
+            get;
+        }
+
     }
 }
 

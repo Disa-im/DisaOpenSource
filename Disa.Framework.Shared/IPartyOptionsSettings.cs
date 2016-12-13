@@ -17,6 +17,7 @@ namespace Disa.Framework
         Unknown
     };
 
+    [DisaFramework]
     public interface IPartyOptionsSettings
     {
         Task CanSetPartyType(BubbleGroup group, Action<bool> result);

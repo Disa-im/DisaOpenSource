@@ -3,6 +3,7 @@ using Disa.Framework.Bubbles;
 
 namespace Disa.Framework
 {
+    [DisaFramework]
     public interface IThumbnailDownloader
     {
         /// <summary>
