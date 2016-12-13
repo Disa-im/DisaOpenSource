@@ -72,7 +72,7 @@ namespace Disa.Framework
         Task PartyOptionsClosed();
 
         //
-        // Begin IPartyOptions new methods (previously IPartyOptionsExtended)
+        // Begin IPartyOptions new methods that WERE previously in IPartyOptionsExtended
         //
 
         //links
@@ -160,7 +160,7 @@ namespace Disa.Framework
         Task GetPartyDescription(BubbleGroup group, Action<string> result);
 
         /// <summary>
-        /// Set the result of the action as true if the  the current user can set the party description, flase otherwise
+        /// Set the result of the action as true if the  the current user can set the party description, false otherwise
         /// </summary>
         /// <returns>A new task that sets the result action.</returns>
         /// <param name="group">The BubbleGroup in context</param>
@@ -220,6 +220,55 @@ namespace Disa.Framework
         /// <param name="result">Action on which the result should be set.</param>
         Task DemotePartyParticipantsFromLeader(BubbleGroup group, DisaParticipant participant, Action<DemotePartyParticipantsResult> result);
 
+
+        //
+        // Begin IPartyOptions new methods NOT previously in IPartyOptionsExtended
+        //
+
+        /// <summary>
+        /// Set the result of the <see cref="Action"/> as true if the party has the ability to approve new members, false otherwise.
+        /// </summary>
+        /// <param name="group">The <see cref="BubbleGroup"/> in context.</param>
+        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/>.</returns>
+        Task HasApproveNewMembers(BubbleGroup group, Action<bool> result);
+
+        /// <summary>
+        /// Set the result of the <see cref="Action"/> as true if the current user can set the ability to 
+        /// approve new members to true or false, false otherwise.
+        /// </summary>
+        /// <param name="group">The <see cref="BubbleGroup"/> in context.</param>
+        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/></returns>
+        Task CanApproveNewMembers(BubbleGroup group, Action<bool> result);
+
+        /// <summary>
+        /// Set the result of the <see cref="Action"/> as the current value for approve new members
+        /// for this <see cref="BubbleGroup"/>.
+        /// </summary>
+        /// <param name="group">The <see cref="BubbleGroup"/> in context.</param>
+        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/></returns>
+        Task GetApproveNewMembers(BubbleGroup group, Action<bool> result);
+
+        /// <summary>
+        /// Set the result of the <see cref="Action"/> as true if the <see cref="BubbleGroup"/>'s approve new members value 
+        /// was successfully set, flase otherwise.
+        /// </summary>
+        /// <param name="group">The <see cref="BubbleGroup"/> in context.</param>
+        /// <param name="approve">The approve new members value.</param>
+        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/></returns>
+        Task ApproveNewMembers(BubbleGroup group, bool approve, Action<bool> result);
+
+        /// <summary>
+        /// Set the result of the <see cref="Action"/> to the current approve new members count waiting to be approved
+        /// for this <see cref="BubbleGroup"/>.
+        /// </summary>
+        /// <param name="group">The <see cref="BubbleGroup"/> in context.</param>
+        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/></returns>
+        Task ApproveNewMembersCount(BubbleGroup group, Action<int> result);
     }
 }
 

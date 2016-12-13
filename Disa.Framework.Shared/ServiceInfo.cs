@@ -139,6 +139,13 @@ namespace Disa.Framework
         public static readonly string IPartyOptionsCanDemotePartyParticpantsFromLeader = "CanDemotePartyParticpantsFromLeader";
         public static readonly string IPartyOptionsDemotePartyParticipantsFromLeader = "DemotePartyParticipantsFromLeader";
 
+        // IPartyOptions - Approve New Members
+        public static readonly string IPartyOptionsHasApproveNewMembers = "HasApproveNewMembers";
+        public static readonly string IPartyOptionsCanApproveNewMembers = "CanApproveNewMembers";
+        public static readonly string IPartyOptionsGetApproveNewMembers = "GetApproveNewMembers";
+        public static readonly string IPartyOptionsApproveNewMembers = "ApproveNewMembers";
+        public static readonly string IPartyOptionsApproveNewMembersCount = "ApproveNewMembersCount";
+
         // IUserInformtaion
         public static readonly string IUserInformationIsUserBotStopped = "IsUserBotStopped";
         public static readonly string IUserInformationEnableuserBot = "EnableUserBot";

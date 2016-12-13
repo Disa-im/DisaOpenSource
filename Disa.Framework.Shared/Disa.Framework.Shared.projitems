@@ -9,6 +9,7 @@
     <Import_RootNamespace>Disa.Framework.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IPartyParticipantRequests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IUserInformationExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ZipStorer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Axolotl.cs" />

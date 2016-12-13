@@ -255,6 +255,21 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        public Task CanSignMessages(BubbleGroup group, Action<bool> result)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task GetSignMessages(BubbleGroup group, Action<bool> result)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SignMessages(BubbleGroup group, bool sign, Action<bool> result)
+        {
+            throw new NotImplementedException();
+        }
+
         private string RandomString(int length)
         {
             var random = new Random();
