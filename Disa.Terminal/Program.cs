@@ -20,7 +20,7 @@ namespace Disa.Terminal
         {
             Console.WriteLine("Welcome to Disa.Terminal!");
 
-			Initialize(new Service[] { new Telegram() });
+			Initialize(new Service[] {});
 
             Console.WriteLine("Initialized.");
 
@@ -314,6 +314,10 @@ namespace Disa.Terminal
                         Console.WriteLine("Disa restarted!");
                     }
                     break;
+				case "conversation-export":
+					BubbleGroupExport.OutputBubblesInJsonFormat(args[1],args[2]);
+					Console.WriteLine("Done");
+					break;	
                 case "deploy-print-dependencies":
                     {
                         var pluginName = args[1];
@@ -355,6 +359,7 @@ namespace Disa.Terminal
                     break;
             }
         }
+
 
         private static void PrintHelp()
         {
