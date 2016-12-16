@@ -1,3 +1,4 @@
 <plugins>
+	<plugin version="3" minimumframeworkversion="33" url="http://disa-im.github.io/DisaOpenSource/telegram/Disa.Framework.Telegram.Mobile-3.dpk" production="false"/>
 	<plugin version="2" minimumframeworkversion="33" url="http://disa-im.github.io/DisaOpenSource/telegram/Disa.Framework.Telegram.Mobile-2.dpk" production="false"/>
 </plugins>
