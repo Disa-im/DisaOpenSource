@@ -315,7 +315,7 @@ namespace Disa.Terminal
                     }
                     break;
 				case "conversation-export":
-					BubbleGroupExport.OutputBubblesInJsonFormat(args[1],args[2]);
+					BubbleGroupExport.ExportConversation(args[1],args[2]);
 					Console.WriteLine("Done");
 					break;	
                 case "deploy-print-dependencies":
