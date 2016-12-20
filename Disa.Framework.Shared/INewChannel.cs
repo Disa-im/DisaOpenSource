@@ -7,9 +7,9 @@ namespace Disa.Framework
     [DisaFramework]
     public interface INewChannel
     {
-        Task FetchBubbleGroup(Contact.ID[] contactIds, Action<BubbleGroup> result);
+        Task FetchChannelBubbleGroupAddress(string name, string description, Action<bool, string> result);
 
-        Task FetchBubbleGroupAddress(Tuple<Contact, Contact.ID>[] contacts, Action<bool, string> result);
+        Task InviteToChannel(BubbleGroup group, Tuple<Contact, Contact.ID>[] contacts, Action<bool> result);
     }
 }
 
