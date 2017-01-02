@@ -21,13 +21,12 @@ namespace Disa.Framework
 			 int count = int.MaxValue, bool skipDeleted = true)
 		{
 			var outputHtml = Path.Combine(outputLocation, "conversation.html");
-			using (var fs = File.OpenWrite(outputLocation))
+			using (var fs = File.OpenWrite(outputHtml))
 			{
 				using (var sw = new StreamWriter(fs))
 				{
 					using (var writer = new JsonTextWriter(sw))
 					{
-						sw.Write("var json_bubbles = '");
 						writer.WriteStartArray();
 						foreach (var bubble in BubbleGroupDatabase.FetchBubbles(bubbleGroupLocation, null, count, skipDeleted))
 						{
@@ -37,13 +36,9 @@ namespace Disa.Framework
 							var jobject = JObject.FromObject(bubble);
 							jobject.Add("ID", bubble.ID);
 							jobject.Add("Type", bubble.GetType().Name);
-							writer.WriteStartObject();
-							writer.WritePropertyName("bubble");
-							writer.WriteValue(jobject.ToString(Formatting.None));
-							writer.WriteEndObject();
+							writer.WriteRawValue(jobject.ToString(Formatting.None));
 						}
 						writer.WriteEndArray();
-						sw.Write("';");
 					}
 				}
 			}
