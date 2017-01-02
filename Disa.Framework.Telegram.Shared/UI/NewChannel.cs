@@ -75,7 +75,7 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        Task INewChannel.FetchChannelBubbleGroupAddress(string name, string description, Action<bool, string> result)
+        public Task FetchChannelBubbleGroupAddress(string name, string description, Action<bool, string> result)
         {
             return Task.Factory.StartNew(async () =>
             {
@@ -113,6 +113,74 @@ namespace Disa.Framework.Telegram
                         {
                             result(false, null);
                         }
+                    }
+                }
+            });
+        }
+
+        public Task GetChannelContacts(string query, Action<List<Contact>> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var partyContacts = new List<Contact>();
+                foreach (var chat in _dialogs.GetAllChats())
+                {
+                    var name = TelegramUtils.GetChatTitle(chat);
+                    var upgraded = TelegramUtils.GetChatUpgraded(chat);
+                    if (upgraded)
+                        continue;
+                    var left = TelegramUtils.GetChatLeft(chat);
+                    if (left)
+                        continue;
+                    var kicked = TelegramUtils.GetChatKicked(chat);
+                    if (kicked)
+                        continue;
+                    var isChannel = chat is Channel;
+                    if (!isChannel)
+                        continue;
+                    partyContacts.Add(new TelegramPartyContact
+                    {
+                        FirstName = name,
+                        Ids = new List<Contact.ID>
+                                {
+                                    new Contact.PartyID
+                                    {
+                                        Service = this,
+                                        Id = TelegramUtils.GetChatId(chat),
+                                        ExtendedParty = isChannel
+                                    }
+                                },
+                    });
+                }
+
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    result(partyContacts);
+                }
+                else
+                {
+                    if (query.Length >= 5)
+                    {
+                        var localContacts = partyContacts.FindAll(x => Utils.Search(x.FirstName, query));
+                        using (var client = new FullClientDisposable(this))
+                        {
+                            var searchResult =
+                                TelegramUtils.RunSynchronously(
+                                    client.Client.Methods.ContactsSearchAsync(new ContactsSearchArgs
+                                    {
+                                        Q = query,
+                                        Limit = 50 //like the official client
+                                    }));
+                            var contactsFound = searchResult as ContactsFound;
+                            var globalContacts = GetGlobalPartyContacts(contactsFound: contactsFound, forChannels: true);
+                            localContacts.AddRange(globalContacts);
+                        }
+                        result(localContacts);
+                    }
+                    else
+                    {
+                        var searchResult = partyContacts.FindAll(x => Utils.Search(x.FirstName, query));
+                        result(searchResult);
                     }
                 }
             });

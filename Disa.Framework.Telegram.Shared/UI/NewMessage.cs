@@ -68,6 +68,9 @@ namespace Disa.Framework.Telegram
                         var kicked = TelegramUtils.GetChatKicked(chat);
                         if (kicked)
                             continue;
+                        var isChannel = chat is Channel;
+                        if (isChannel)
+                            continue;
                         partyContacts.Add(new TelegramPartyContact
                         {
                             FirstName = name,
@@ -77,7 +80,7 @@ namespace Disa.Framework.Telegram
                                     {
                                         Service = this,
                                         Id = TelegramUtils.GetChatId(chat),
-                                        ExtendedParty = chat is Channel
+                                        ExtendedParty = isChannel
                                     }
                                 },
                         });
@@ -105,7 +108,7 @@ namespace Disa.Framework.Telegram
                                             Limit = 50 //like the official client
                                         }));
                                 var contactsFound = searchResult as ContactsFound;
-                                var globalContacts = GetGlobalPartyContacts(contactsFound);
+                                var globalContacts = GetGlobalPartyContacts(contactsFound: contactsFound, forChannels: false);
                                 localContacts.AddRange(globalContacts);
                             }
                             result(localContacts);
@@ -122,7 +125,7 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private List<Contact> GetGlobalPartyContacts(ContactsFound contactsFound)
+        private List<Contact> GetGlobalPartyContacts(ContactsFound contactsFound, bool forChannels)
         {
             var globalContacts = new List<Contact>();
             _dialogs.AddChats(contactsFound.Chats);
@@ -133,6 +136,15 @@ namespace Disa.Framework.Telegram
                 var kicked = TelegramUtils.GetChatKicked(chat);
                 if (kicked)
                     continue;
+                var isChannel = chat is Channel;
+                if (forChannels && !isChannel)
+                {
+                    continue;
+                }
+                else if (!forChannels && isChannel)
+                {
+                    continue;
+                }
                 globalContacts.Add(new TelegramPartyContact
                 {
                     FirstName = name,
@@ -142,7 +154,7 @@ namespace Disa.Framework.Telegram
                                 {
                                     Service = this,
                                     Id = TelegramUtils.GetChatId(chat),
-                                    ExtendedParty = chat is Channel
+                                    ExtendedParty = isChannel
                                 }
                             },
                 });
