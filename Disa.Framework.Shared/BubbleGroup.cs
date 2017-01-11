@@ -94,6 +94,8 @@ namespace Disa.Framework
 
         private long _bubblesInsertedCount;
 
+		public bool InputDisabled { get; set; }
+
         public void RegisterSynced(Action<BubbleGroup> updated)
         {
             _synced = updated;
