@@ -1,0 +1,179 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+
+
+    <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+    <script src="js/vendor/angular.min.js"></script>
+</head>
+<body ng-app="app" class="gray-background">
+<!--[if lt IE 8]>
+<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
+    your browser</a> to improve your experience.</p>
+<![endif]-->
+
+<!-- Add your site or application content here -->
+
+<!-- Fixed navbar -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="#">Conversation</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+
+<div class="container-fluid pull-down" ng-controller="BubbleController" ng-cloak>
+    <div>
+        <div>
+            <div ng-repeat="bubble in bubbles" class="row">
+
+                <!--Text Bubbles-->
+                <div ng-if="bubble.Direction === 0 && bubble.Type == 'TextBubble'" class="sent-message col-md-12">
+                    <div class="row talk-bubble tri-right right-top inline-block status-padding-added">
+                        <div class="talktext status-padding-removed">
+                            <p>{{bubble.Message}}</p>
+                            <small class="text-status">Delivered</small>
+                        </div>
+                    </div>
+                    <p class="sent-message-status">{{formatDate(bubble.Time)}}</p>
+                </div>
+                <div ng-if="bubble.Direction === 1 && bubble.Type == 'TextBubble'" class="received-message row">
+                    <div class="row">
+                        <div class="talk-bubble left tri-right left-top">
+                            <div class="talktext">
+                                <p>{{bubble.Message}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <p class="received-message-status">{{formatDate(bubble.Time)}}</p>
+                    </div>
+                </div>
+
+                <!--Image Bubbles-->
+                <div ng-if="bubble.Direction === 0 && bubble.Type == 'ImageBubble'" class="sent-message col-md-12">
+                    <div class="row talk-bubble tri-right right-top inline-block status-padding-added">
+                        <div class="talktext status-padding-removed">
+                            <img ng-if="bubble.ImagePathNative!==null && bubble.ImageType===1" class="img-responsive" ng-src="{{getPath(bubble.ImagePathNative)}}"
+                                 src = "img/ic_broken_image_black_48dp_2x.png">
+                            <small class="text-status">Delivered</small>
+                        </div>
+                    </div>
+                    <p class="sent-message-status">{{formatDate(bubble.Time)}}</p>
+                </div>
+                <div ng-if="bubble.Direction === 1 && bubble.Type == 'ImageBubble'" class="received-message row">
+                    <div class="row">
+                        <div class="talk-bubble left tri-right left-top">
+                            <div class="talktext">
+                                <img ng-if="bubble.ImagePathNative!==null &&  bubble.ImageType===1" class="img-responsive" ng-src="{{getPath(bubble.ImagePathNative)}}"
+                                     src = "img/ic_broken_image_black_48dp_2x.png">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <p class="received-message-status">{{formatDate(bubble.Time)}}</p>
+                    </div>
+                </div>
+
+                <!--Audio Bubbles-->
+                <div ng-if="bubble.Direction === 0 && bubble.Type == 'AudioBubble'" class="sent-message col-md-12">
+                    <div class="row talk-bubble tri-right right-top inline-block status-padding-added">
+                        <div class="talktext status-padding-removed">
+                            <audio src="{{getPath(bubble.AudioPathNative) | trustUrl}}" audioplayer controls></audio>
+                            <br>
+                            <small class="text-status">Delivered</small>
+                        </div>
+                    </div>
+                    <p class="sent-message-status">{{formatDate(bubble.Time)}}</p>
+                </div>
+                <div ng-if="bubble.Direction === 1 && bubble.Type == 'AudioBubble'" class="received-message row">
+                    <div class="row">
+                        <div class="talk-bubble left tri-right left-top">
+                            <div class="talktext">
+                                <audio src="{{getPath(bubble.AudioPathNative) | trustUrl}}" audioplayer controls></audio>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <p class="received-message-status">{{formatDate(bubble.Time)}}</p>
+                    </div>
+                </div>
+
+                <!--Video Bubbles-->
+                <div ng-if="bubble.Direction === 0 && bubble.Type == 'VideoBubble'" class="sent-message col-md-12">
+                    <div class="row talk-bubble tri-right right-top inline-block status-padding-added">
+                        <div class="talktext status-padding-removed">
+                            <video src="{{getPath(bubble.VideoPathNative) | trustUrl}}" controls class="img-responsive" ></video>
+                            <small class="text-status">Delivered</small>
+                        </div>
+                    </div>
+                    <p class="sent-message-status">{{formatDate(bubble.Time)}}</p>
+                </div>
+                <div ng-if="bubble.Direction === 1 && bubble.Type == 'VideoBubble'" class="received-message row">
+                    <div class="row">
+                        <div class="talk-bubble left tri-right left-top">
+                            <div class="talktext">
+                                <video src="{{getPath(bubble.VideoPathNative) | trustUrl}}" controls class="img-responsive" ></video>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <p class="received-message-status">{{formatDate(bubble.Time)}}</p>
+                    </div>
+                </div>
+
+                <!--File Bubbles-->
+
+                <div ng-if="bubble.Direction === 0 && bubble.Type == 'FileBubble'" class="sent-message col-md-12">
+                    <div class="row talk-bubble tri-right right-top inline-block status-padding-added">
+                        <div class="talktext status-padding-removed">
+                            <p>{{(bubble.FileName || 0 === bubble.FileName.length) ? bubble.FileName : "File"}}</p>
+                            <a ng-if="bubble.PathNative!==null &&  bubble.PathType===1" class="btn-block" href="{{getPath(bubble.PathNative)}}" download>Download</a>
+                            <small class="text-status">Delivered</small>
+                        </div>
+                    </div>
+                    <p class="sent-message-status">{{formatDate(bubble.Time)}}</p>
+                </div>
+                <div ng-if="bubble.Direction === 1 && bubble.Type == 'FileBubble'" class="received-message row">
+                    <div class="row">
+                        <div class="talk-bubble left tri-right left-top">
+                            <div class="talktext">
+                                <p>{{(bubble.FileName || 0 !== bubble.FileName.length)  ? bubble.FileName : "File"}}</p>
+                                <a ng-if="bubble.PathNative!==null &&  bubble.PathType===1" class="btn-block" href="{{getPath(bubble.PathNative)}}" download>Download</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <p class="received-message-status">{{formatDate(bubble.Time)}}</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.12.0.min.js"><\/script>')</script>
+<script src="js/plugins.js"></script>
+<script src="js/bootstrap.js"></script>
+<script src="js/main.js"></script>
+<script src="js/bubbles.js"></script>
+
+</body>
+</html>

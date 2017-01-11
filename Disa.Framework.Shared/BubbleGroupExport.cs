@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 using Disa.Framework.Bubbles;
 using Newtonsoft.Json;
@@ -20,16 +21,25 @@ namespace Disa.Framework
 		public static void ExportConversation(string bubbleGroupLocation, string outputLocation, long untilTime = long.MaxValue,
 			 int count = int.MaxValue, bool skipDeleted = true)
 		{
-			var outputHtml = Path.Combine(outputLocation, "conversation.html");
-			using (var fs = File.OpenWrite(outputHtml))
+			outputLocation = Path.Combine(outputLocation, "Conversation");
+			ExtractArchive(Platform.GetConversationExportAssetsArchiveStream(), outputLocation);
+			var bubblesJs = Path.Combine(outputLocation, "js", "bubbles.js");
+			if (File.Exists(bubblesJs))
+				File.Delete(bubblesJs);
+			using (var fs = File.OpenWrite(bubblesJs))
 			{
 				using (var sw = new StreamWriter(fs))
 				{
 					using (var writer = new JsonTextWriter(sw))
 					{
+						sw.Write("angular.module(\"app\").service('exportedBubbles', function () {");
+						sw.Write("\n");
+						sw.Write("this.bubbles = ");
 						writer.WriteStartArray();
 						foreach (var bubble in BubbleGroupDatabase.FetchBubbles(bubbleGroupLocation, null, count, skipDeleted))
 						{
+							if (bubble is PartyInformationBubble)
+								continue;
 							if (bubble.Time > untilTime)
 								break;
 							CopyBubbleFilesToTargetIfNeeded(bubble,outputLocation);
@@ -39,8 +49,20 @@ namespace Disa.Framework
 							writer.WriteRawValue(jobject.ToString(Formatting.None));
 						}
 						writer.WriteEndArray();
+						sw.Write(";");
+						sw.Write("\n");
+						sw.Write("});");
 					}
 				}
+			}
+		}
+
+		private static void ExtractArchive(Stream stream, string outputLocation)
+		{
+			var zipFile = ZipStorer.Open(stream, FileAccess.Read);
+			foreach (var file in zipFile.ReadCentralDir())
+			{
+				zipFile.ExtractFile(file, Path.Combine(outputLocation, file.FilenameInZip));
 			}
 		}
 
@@ -53,36 +75,43 @@ namespace Disa.Framework
 
 			string outputMediaLocation = Path.Combine(outputLocation, "media");
 			Directory.CreateDirectory(outputMediaLocation);
-
 			if (fileBubble != null)
 			{
-				if (fileBubble.PathType == FileBubble.Type.File)
+				if (fileBubble.PathType == FileBubble.Type.File && fileBubble.PathNative != null)
 				{
-					File.Copy(Path.Combine(Platform.GetFilesPath(), fileBubble.FileName), outputMediaLocation);
+					string fileName = Path.GetFileName(fileBubble.PathNative);
+					string source = Path.Combine(Platform.GetFilesPath(), fileName);
+					File.Copy(source, Path.Combine(outputMediaLocation, fileName),true);
 				}
 			}
 
 			if (audioBubble != null)
 			{
-				if (audioBubble.AudioType == AudioBubble.Type.File)
+				if (audioBubble.AudioType == AudioBubble.Type.File && audioBubble.AudioPathNative != null) 
 				{
-					File.Copy(Path.Combine(Platform.GetAudioPath(), audioBubble.FileName), outputMediaLocation);
+					string fileName = Path.GetFileName(audioBubble.AudioPathNative);
+					string source = Path.Combine(Platform.GetAudioPath(), fileName);
+					File.Copy(source, Path.Combine(outputMediaLocation, fileName),true);
 				}
 			}
 
 			if (videoBubble != null)
 			{
-				if (videoBubble.VideoType == VideoBubble.Type.File)
+				if (videoBubble.VideoType == VideoBubble.Type.File && videoBubble.VideoPathNative != null)
 				{
-					File.Copy(Path.Combine(Platform.GetVideosPath(), videoBubble.FileName), outputMediaLocation);
+					string fileName = Path.GetFileName(videoBubble.VideoPathNative);
+					string source = Path.Combine(Platform.GetVideosPath(), fileName);
+					File.Copy(source, Path.Combine(outputMediaLocation, fileName),true);
 				}
 			}
 
 			if (imageBubble != null)
 			{
-				if (imageBubble.ImageType == ImageBubble.Type.File)
+				if (imageBubble.ImageType == ImageBubble.Type.File && imageBubble.ImagePathNative != null)
 				{
-					File.Copy(Path.Combine(Platform.GetPicturesPath(), videoBubble.FileName), outputMediaLocation);
+					string fileName = Path.GetFileName(imageBubble.ImagePathNative);
+					string source = Path.Combine(Platform.GetPicturesPath(), fileName);
+					File.Copy(source, Path.Combine(outputMediaLocation, fileName), true);
 				}
 			}
 		}
