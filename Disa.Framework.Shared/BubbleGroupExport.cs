@@ -57,6 +57,40 @@ namespace Disa.Framework
 			}
 		}
 
+		public static void ExportConversationCache(string outputLocation, BubbleGroupCache cache)
+		{
+			//Null out what we dont't need to export
+			cache = Utils.Clone(cache);
+			cache.Photo = null;
+			foreach (var participant in cache.Participants)
+			{
+				participant.Photo = null;
+			}
+
+			outputLocation = Path.Combine(outputLocation, "Conversation");
+			ExtractArchive(Platform.GetConversationExportAssetsArchiveStream(), outputLocation);
+			var bubblesJs = Path.Combine(outputLocation, "js", "cache.js");
+			if (File.Exists(bubblesJs))
+				File.Delete(bubblesJs);
+			using (var fs = File.OpenWrite(bubblesJs))
+			{
+				using (var sw = new StreamWriter(fs))
+				{
+					using (var writer = new JsonTextWriter(sw))
+					{
+						sw.Write("angular.module(\"app\").service('exportedBubbles', function () {");
+						sw.Write("\n");
+						sw.Write("this.cache = ");
+						var jobject = JObject.FromObject(cache);
+						writer.WriteRawValue(jobject.ToString(Formatting.None));
+						sw.Write(";");
+						sw.Write("\n");
+						sw.Write("});");
+					}
+				}
+			}
+		}
+
 		private static void ExtractArchive(Stream stream, string outputLocation)
 		{
 			var zipFile = ZipStorer.Open(stream, FileAccess.Read);

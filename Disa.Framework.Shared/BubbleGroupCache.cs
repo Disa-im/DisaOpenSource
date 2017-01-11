@@ -5,7 +5,7 @@ using ProtoBuf;
 namespace Disa.Framework
 {
     [ProtoContract]
-    internal class BubbleGroupCache
+    public class BubbleGroupCache
     {
         [ProtoMember(1)]
         public string Name { get; set; }
