@@ -12,6 +12,7 @@ using SharpMTProto;
 using System.Text;
 using System.Security.Cryptography;
 using System.IO;
+using Xamarin;
 
 namespace Disa.Framework.Telegram.Mobile
 {
@@ -41,6 +42,24 @@ namespace Disa.Framework.Telegram.Mobile
                 States = new List<State>();
             }
         }
+
+		//Setup exception class for Xamarin Insights Exception
+		public class SetupException : Exception
+		{ 
+			public SetupException()
+			{
+		    }
+
+		    public SetupException(string message)
+		        : base(message)
+		    {
+			}
+
+			public SetupException(string message, Exception inner)
+		        : base(message, inner)
+		    {
+			}
+		}
 
         private static Task<ActivationResult> Register(Service service, string nationalNumber, string countryCode, string code, string firstName = null, string lastName = null)
         {
@@ -185,6 +204,7 @@ namespace Disa.Framework.Telegram.Mobile
                 }
 
                 Utils.DebugPrint("Starting the service...!");
+				Insights.Report(new SetupException("Telegram Setup Ended"));
                 ServiceManager.Start(service, true);
             }
             catch (Exception ex)
@@ -274,6 +294,14 @@ namespace Disa.Framework.Telegram.Mobile
             var info = new Info(service, tabs, code);
 
             tabs.Children.Add(info);
+			var help = new ToolbarItem();
+			help.Text = Localize.GetString("TelegramHelp");
+			help.Order = ToolbarItemOrder.Primary;
+			help.Clicked += (sender, e) =>
+			{
+				Platform.LaunchViewIntent("http://www.disa.im/telegram.html");
+			};
+			tabs.ToolbarItems.Add(help);
             tabs.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName == "CurrentPage")
@@ -306,6 +334,7 @@ namespace Disa.Framework.Telegram.Mobile
 
             tabs.Title = Localize.GetString("TelegramSetupWizardTitle");
             _cachedPage = tabs;
+			Insights.Report(new SetupException("Telegram Setup Started"));
             return tabs;
         }
 
@@ -817,7 +846,7 @@ namespace Disa.Framework.Telegram.Mobile
             private StackLayout _loadConversationsLayout;
             private Label _loadConversationsTitle;
             private Switch _loadConversationsSwitch;
-
+			private Label _telegramAlphaWarning;
             private Button _next;
             private Image _image;
             private ActivityIndicator _progressBar;
@@ -832,7 +861,6 @@ namespace Disa.Framework.Telegram.Mobile
                 _phoneNumber.HorizontalOptions = LayoutOptions.FillAndExpand;
                 _phoneNumberContainer.Children.Add(_phoneNumber);
                 var programmaticChange = false;
-
 
                 _loadConversationsLayout = new StackLayout();
                 _loadConversationsLayout.Orientation = StackOrientation.Horizontal;
@@ -850,6 +878,12 @@ namespace Disa.Framework.Telegram.Mobile
                 _loadConversationsSwitch.IsToggled = true;
                 _loadConversationsLayout.Children.Add(_loadConversationsTitle);
                 _loadConversationsLayout.Children.Add(_loadConversationsSwitch);
+
+				_telegramAlphaWarning = new Label();
+				_telegramAlphaWarning.HorizontalOptions = LayoutOptions.CenterAndExpand;
+				_telegramAlphaWarning.TextColor = Color.Red;
+				_telegramAlphaWarning.FontAttributes = FontAttributes.Bold;
+				_telegramAlphaWarning.Text = Localize.GetString("TelegramAlpha");
 
                 _next = new Button();
                 _next.HorizontalOptions = LayoutOptions.FillAndExpand;
@@ -954,6 +988,7 @@ namespace Disa.Framework.Telegram.Mobile
                 stackLayout.VerticalOptions = LayoutOptions.Start;
                 var children = stackLayout.Children;
                 children.Add(_image);
+				children.Add(_telegramAlphaWarning);
                 children.Add(_phoneNumberContainer);
                 children.Add(_loadConversationsLayout);
                 var nextLayout = new StackLayout();

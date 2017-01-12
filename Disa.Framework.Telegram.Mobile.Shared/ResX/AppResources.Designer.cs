@@ -65,6 +65,12 @@ namespace Disa.Framework.Telegram.Mobile {
             }
         }
         
+        internal static string TelegramHelp {
+            get {
+                return ResourceManager.GetString("TelegramHelp", resourceCulture);
+            }
+        }
+        
         internal static string TelegramSettingsTitle {
             get {
                 return ResourceManager.GetString("TelegramSettingsTitle", resourceCulture);
@@ -656,6 +662,12 @@ namespace Disa.Framework.Telegram.Mobile {
         internal static string TelegramNameFirstNameEmpty {
             get {
                 return ResourceManager.GetString("TelegramNameFirstNameEmpty", resourceCulture);
+            }
+        }
+        
+        internal static string TelegramAlpha {
+            get {
+                return ResourceManager.GetString("TelegramAlpha", resourceCulture);
             }
         }
     }

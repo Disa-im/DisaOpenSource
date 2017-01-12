@@ -12,5 +12,9 @@ namespace Disa.Framework
 		int GetAnnouncementRecurringInterval();
 
 		string GetAnnouncementName();
+
+		bool HasAnnouncementExternalLink();
+
+		string GetAnnouncementExternalLink();
 	}
 }

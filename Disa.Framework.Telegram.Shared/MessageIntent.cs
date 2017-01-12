@@ -76,13 +76,13 @@ namespace Disa.Framework.Telegram
 					else
 					{
 						DebugPrint("Failed to format phone number with slammed area code. Giving up...");
-						return null;
+						return number;
 					}
 				}
 				else
 				{
 					DebugPrint("Could not resolve the area code number on the number " + number + " using locale " + countryLocale);
-					return null;
+					return number;
 				}
 			}
 		}

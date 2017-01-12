@@ -126,6 +126,9 @@
   <data name="TelegramAllGood" xml:space="preserve">
     <value>Everything is looking good.</value>
   </data>
+  <data name="TelegramHelp" xml:space="preserve">
+    <value>Help</value>
+  </data>	
   <data name="TelegramSettingsTitle" xml:space="preserve">
     <value>Telegram Settings</value>
   </data>
@@ -283,7 +286,7 @@
     <value>The last name entered is invalid. Please try another.</value>
   </data>
   <data name="TelegramContact" xml:space="preserve">
-    <value>Contact</value>
+    <value>Contacts</value>
   </data>
   <data name="TelegramEveryone" xml:space="preserve">
     <value>Everyone</value>
@@ -423,4 +426,7 @@
   <data name="TelegramNameFirstNameEmpty" xml:space="preserve">
     <value>Your first name cannot be empty.</value>
   </data>
+  <data name="TelegramAlpha" xml:space="preserve">
+    <value>This is an alpha build</value>
+  </data>	
 </root>
