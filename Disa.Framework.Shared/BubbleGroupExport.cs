@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 using Disa.Framework.Bubbles;
 using Newtonsoft.Json;
@@ -66,19 +67,18 @@ namespace Disa.Framework
 			{
 				participant.Photo = null;
 			}
-
 			outputLocation = Path.Combine(outputLocation, "Conversation");
 			ExtractArchive(Platform.GetConversationExportAssetsArchiveStream(), outputLocation);
-			var bubblesJs = Path.Combine(outputLocation, "js", "cache.js");
-			if (File.Exists(bubblesJs))
-				File.Delete(bubblesJs);
-			using (var fs = File.OpenWrite(bubblesJs))
+			var cacheJs = Path.Combine(outputLocation, "js", "cache.js");
+			if (File.Exists(cacheJs))
+				File.Delete(cacheJs);
+			using (var fs = File.OpenWrite(cacheJs))
 			{
 				using (var sw = new StreamWriter(fs))
 				{
 					using (var writer = new JsonTextWriter(sw))
 					{
-						sw.Write("angular.module(\"app\").service('exportedBubbles', function () {");
+						sw.Write("angular.module(\"app\").service('exportedBubblesCache', function () {");
 						sw.Write("\n");
 						sw.Write("this.cache = ");
 						var jobject = JObject.FromObject(cache);
