@@ -17,6 +17,7 @@ namespace Disa.Framework
         private static Action<IEnumerable<BubbleGroup>> _refreshed; // bubble group updated, conversation list needs refresh
         private static Action<IEnumerable<BubbleGroup>> _bubblesUpdated; // bubble group bubbles updated, conversation bubbldes need to be updated
         private static Action<IEnumerable<BubbleGroup>> _informationUpdated; // bubble group last-seen or name updated, conversation info needs update
+        private static Action<BubbleGroup> _inputUpdated; // bubble group input enabled or disabled
         private static Action<UnifiedBubbleGroup> _sendingServiceChanged;
         private static Action<BubbleGroup> _syncReset;
 
@@ -91,10 +92,21 @@ namespace Disa.Framework
             if (_informationUpdated != null)
                 _informationUpdated(new [] { @group });
         }
-
+        
         public static void RegisterInformationUpdated(Action<IEnumerable<BubbleGroup>> update)
         {
             _informationUpdated = update;
+        }
+
+        internal static void RaiseInputUpdated(BubbleGroup group)
+        {
+            if (_inputUpdated != null)
+                _inputUpdated(@group);
+        }
+
+        public static void RegisterInputUpdated(Action<BubbleGroup> update)
+        {
+            _inputUpdated = update;
         }
 
         public static void RaiseBubbleInserted(VisualBubble bubble, BubbleGroup bubbleGroup)
