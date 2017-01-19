@@ -835,7 +835,10 @@ namespace Disa.Framework.Telegram
                     var bubbleGroupToDelete = BubbleGroupManager.FindWithAddress(this, address);
                     if (bubbleGroupToSwitch != null)
                     {
-                        Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
+						if (Platform.GetCurrentBubbleGroupOnUI() == bubbleGroupToDelete)
+						{
+							Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
+						}
                     }
                     if (bubbleGroupToDelete != null)
                     {

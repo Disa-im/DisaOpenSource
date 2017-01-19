@@ -18,6 +18,7 @@ namespace Disa.Framework
         AllMembersAreAdministratorsEnabled
     }
 
+    [DisaFrameworkDeprecated]
     public interface IPartyOptionsExtended
     {
         //links

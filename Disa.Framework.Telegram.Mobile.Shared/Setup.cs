@@ -12,6 +12,7 @@ using SharpMTProto;
 using System.Text;
 using System.Security.Cryptography;
 using System.IO;
+using Xamarin;
 
 namespace Disa.Framework.Telegram.Mobile
 {
@@ -41,6 +42,24 @@ namespace Disa.Framework.Telegram.Mobile
                 States = new List<State>();
             }
         }
+
+		//Setup exception class for Xamarin Insights Exception
+		public class SetupException : Exception
+		{ 
+			public SetupException()
+			{
+		    }
+
+		    public SetupException(string message)
+		        : base(message)
+		    {
+			}
+
+			public SetupException(string message, Exception inner)
+		        : base(message, inner)
+		    {
+			}
+		}
 
         private static Task<ActivationResult> Register(Service service, string nationalNumber, string countryCode, string code, string firstName = null, string lastName = null)
         {
@@ -185,6 +204,7 @@ namespace Disa.Framework.Telegram.Mobile
                 }
 
                 Utils.DebugPrint("Starting the service...!");
+				Insights.Report(new SetupException("Telegram Setup Ended"));
                 ServiceManager.Start(service, true);
             }
             catch (Exception ex)
@@ -314,6 +334,7 @@ namespace Disa.Framework.Telegram.Mobile
 
             tabs.Title = Localize.GetString("TelegramSetupWizardTitle");
             _cachedPage = tabs;
+			Insights.Report(new SetupException("Telegram Setup Started"));
             return tabs;
         }
 
