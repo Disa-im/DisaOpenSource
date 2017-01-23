@@ -11,6 +11,7 @@ namespace Disa.Framework
         public static event EventHandler<Service> Started;
         public static event EventHandler<Service> ContactsUpdated;
         public static event EventHandler RequestToJoinChannel;
+        public static event EventHandler<Service> SettingsChanged;
 
         private static Action<ComposeBubbleGroup, BubbleGroup> _composeFinished;
         private static Action _privacyListUpdated;
@@ -93,6 +94,14 @@ namespace Disa.Framework
                 return;
 
             RequestToJoinChannel(null, null);
+        }
+
+        public static void RaiseServiceSettingsChanged(Service service)
+        {
+            if (SettingsChanged == null)
+                return;
+
+            SettingsChanged(null, service);
         }
     }
 }
