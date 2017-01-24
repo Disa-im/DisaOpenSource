@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Xamarin;
 
 namespace Disa.Framework
 {
@@ -75,7 +76,15 @@ namespace Disa.Framework
 			public string OutputLocation { get; set; }
 		}
 
-		public static async Task<Result> Export(BubbleGroup group, CancellationTokenSource cancellationToken, Options options)
+		public static Task<Result> ExportAsync(BubbleGroup group, CancellationTokenSource cancellationToken, Options option)
+		{
+			return Task<Result>.Factory.StartNew(() =>
+			{
+				return Export(group, cancellationToken, option);
+			});
+		}
+
+		public static Result Export(BubbleGroup group, CancellationTokenSource cancellationToken, Options options)
 		{
 			var untilTime = Options.ConvertToUnixTimestamp(options.ExportTime);
 			var outputLocation = Path.Combine(Platform.GetSettingsPath(), "ConversationExport");
@@ -131,7 +140,7 @@ namespace Disa.Framework
 							var cursor = new BubbleGroupFactory.Cursor(group, new BubbleGroupFactory.Cursor.Selection());
 							while (true)
 							{
-								var bubbles = await cursor.FetchNext();
+								var bubbles = cursor.FetchNext();
 								if (bubbles == null || !bubbles.Any())
 								{
 									goto End;
@@ -192,6 +201,7 @@ namespace Disa.Framework
 			}
 			catch (Exception ex)
 			{
+				Insights.Report(ex);
 				Utils.DebugPrint("Failed to export conversation: " + ex);
 			}
 			finally
@@ -284,13 +294,21 @@ namespace Disa.Framework
 					if (fileBubble.PathType == FileBubble.Type.File && File.Exists(path))
 					{
 						var fileName = Path.GetFileName(path);
-						try
+						var newPath = Path.Combine(filesPath, fileName);
+						if (!File.Exists(newPath))
 						{
-							File.Copy(path, Path.Combine(filesPath, fileName), true);
+							try
+							{
+								File.Copy(path, newPath);
+							}
+							catch (Exception ex)
+							{
+								Utils.DebugPrint("Failed to export file bubble file: " + ex);
+							}
 						}
-						catch (Exception ex)
+						else
 						{
-							Utils.DebugPrint("Failed to export file bubbl file: " + ex);
+							Utils.DebugPrint("File collision: " + newPath);
 						}
 					}
 				}
@@ -310,13 +328,21 @@ namespace Disa.Framework
 					if (audioBubble.AudioType == AudioBubble.Type.File && File.Exists(path))
 					{
 						var fileName = Path.GetFileName(path);
-						try
+						var newPath = Path.Combine(audioPath, fileName);
+						if (!File.Exists(newPath))
 						{
-							File.Copy(path, Path.Combine(audioPath, fileName), true);
+							try
+							{
+								File.Copy(path, newPath);
+							}
+							catch (Exception ex)
+							{
+								Utils.DebugPrint("Failed to export audio bubble file: " + ex);
+							}
 						}
-						catch (Exception ex)
+						else
 						{
-							Utils.DebugPrint("Failed to export audio bubble file: " + ex);
+							Utils.DebugPrint("File collision: " + newPath);
 						}
 					}
 				}
@@ -336,13 +362,21 @@ namespace Disa.Framework
 					if (videoBubble.VideoType == VideoBubble.Type.File && File.Exists(path))
 					{
 						var fileName = Path.GetFileName(path);
-						try
+						var newPath = Path.Combine(videosPath, fileName);
+						if (!File.Exists(newPath))
 						{
-							File.Copy(path, Path.Combine(videosPath, fileName), true);
+							try
+							{
+								File.Copy(path, newPath);
+							}
+							catch (Exception ex)
+							{
+								Utils.DebugPrint("Failed to export video bubble file: " + ex);
+							}
 						}
-						catch (Exception ex)
+						else
 						{
-							Utils.DebugPrint("Failed to export video bubble file: " + ex);
+							Utils.DebugPrint("File collision: " + newPath);
 						}
 					}
 				}
@@ -362,13 +396,21 @@ namespace Disa.Framework
 					if (imageBubble.ImageType == ImageBubble.Type.File && File.Exists(path))
 					{
 						var fileName = Path.GetFileName(path);
-						try
+						var newPath = Path.Combine(imagesPath, fileName);
+						if (!File.Exists(newPath))
 						{
-							File.Copy(path, Path.Combine(imagesPath, fileName), true);
+							try
+							{
+								File.Copy(path, newPath);
+							}
+							catch (Exception ex)
+							{
+								Utils.DebugPrint("Failed to export image bubble file: " + ex);
+							}
 						}
-						catch (Exception ex)
+						else
 						{
-							Utils.DebugPrint("Failed to export image bubble file: " + ex);
+							Utils.DebugPrint("File collision: " + newPath);
 						}
 					}
 				}
