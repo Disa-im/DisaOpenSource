@@ -218,5 +218,10 @@ namespace Disa.Framework
         {
             PlatformImplementation.ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
         }
+
+		public static void ShareContent(string mimeType, string uri)
+		{
+			PlatformImplementation.ShareContent(mimeType, uri);
+		}
     }
 }

@@ -89,5 +89,7 @@ namespace Disa.Framework
         public abstract void DeleteBubbleGroup(BubbleGroup[] bubbleGroups);
 
         public abstract void ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
+
+		public abstract void ShareContent(string mimeType, string uri);
     }
 }
