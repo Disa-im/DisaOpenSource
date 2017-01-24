@@ -60,8 +60,6 @@ namespace Disa.Framework.Telegram
                     {
                         var name = TelegramUtils.GetChatTitle(chat);
                         var upgraded = TelegramUtils.GetChatUpgraded(chat);
-                        if (upgraded)
-                            continue;
                         var left = TelegramUtils.GetChatLeft(chat);
                         if (left)
                             continue;
@@ -80,7 +78,7 @@ namespace Disa.Framework.Telegram
                                     {
                                         Service = this,
                                         Id = TelegramUtils.GetChatId(chat),
-                                        ExtendedParty = isChannel
+                                        ExtendedParty = upgraded
                                     }
                                 },
                         });
