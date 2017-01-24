@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using SQLite;
 using ProtoBuf;
+using System;
 
 namespace Disa.Framework
 {
+	[Serializable]
     [ProtoContract]
     public class BubbleGroupCache
     {

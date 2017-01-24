@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using ProtoBuf;
 
 namespace Disa.Framework.Bubbles
@@ -79,18 +80,25 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(265)]
         public double QuotedLocationLongitude { get; set; }
 
+		[JsonIgnore]
         [NonSerialized]
         public string ID;
+		[JsonIgnore]
         [NonSerialized]
         public bool ContractInfo;
+		[JsonIgnore]
         [NonSerialized]
         public bool NeedsPhoto = true;
+		[JsonIgnore]
         [NonSerialized]
         internal BubbleGroup BubbleGroupReference;
+		[JsonIgnore]
         [NonSerialized]
         public object Tag;
+		[JsonIgnore]
         [NonSerialized]
         public ThumbnailTransfer QuotedThumbnailTransfer;
+		[JsonIgnore]
         [NonSerialized]
         public bool QuotedThumbnailDownloadFailed;
 
