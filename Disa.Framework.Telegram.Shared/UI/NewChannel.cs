@@ -123,6 +123,11 @@ namespace Disa.Framework.Telegram
             return Task.Factory.StartNew(() =>
             {
                 var partyContacts = new List<Contact>();
+
+                // Only grab disa channel groups.
+                // Important: Don't get confused between disa channels and telegram channels.
+                //            Telegram channels include both supergroups and channels, differentiated 
+                //            by the telegram Channel.Broadcast and Channel.Megagroup fields.
                 foreach (var chat in _dialogs.GetAllChats())
                 {
                     var name = TelegramUtils.GetChatTitle(chat);
@@ -136,8 +141,18 @@ namespace Disa.Framework.Telegram
                     if (kicked)
                         continue;
                     var isChannel = chat is Channel;
-                    if (!isChannel)
+                    if (isChannel)
+                    {
+                        var channel = chat as Channel;
+                        if (channel.Broadcast == null)
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
                         continue;
+                    }
                     partyContacts.Add(new TelegramPartyContact
                     {
                         FirstName = name,
@@ -147,7 +162,7 @@ namespace Disa.Framework.Telegram
                                     {
                                         Service = this,
                                         Id = TelegramUtils.GetChatId(chat),
-                                        ExtendedParty = isChannel
+                                        ExtendedParty = true
                                     }
                                 },
                     });

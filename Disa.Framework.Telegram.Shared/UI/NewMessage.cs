@@ -56,10 +56,18 @@ namespace Disa.Framework.Telegram
                 else
                 {
                     var partyContacts = new List<Contact>();
+
+                    // Only grab disa solo, party and super groups.
+                    // Important: Don't get confused between disa channels and telegram channels.
+                    //            Telegram channels include both super groups and channels, differentiated 
+                    //            by the telegram Channel.Broadcast and Channel.Megagroup fields.
+
                     foreach (var chat in _dialogs.GetAllChats())
                     {
                         var name = TelegramUtils.GetChatTitle(chat);
                         var upgraded = TelegramUtils.GetChatUpgraded(chat);
+                        if (upgraded)
+                            continue;
                         var left = TelegramUtils.GetChatLeft(chat);
                         if (left)
                             continue;
@@ -68,7 +76,13 @@ namespace Disa.Framework.Telegram
                             continue;
                         var isChannel = chat is Channel;
                         if (isChannel)
-                            continue;
+                        {
+                            var channel = chat as Channel;
+                            if (channel.Megagroup == null)
+                            {
+                                continue;
+                            }
+                        }
                         partyContacts.Add(new TelegramPartyContact
                         {
                             FirstName = name,
@@ -78,7 +92,7 @@ namespace Disa.Framework.Telegram
                                     {
                                         Service = this,
                                         Id = TelegramUtils.GetChatId(chat),
-                                        ExtendedParty = upgraded
+                                        ExtendedParty = isChannel
                                     }
                                 },
                         });

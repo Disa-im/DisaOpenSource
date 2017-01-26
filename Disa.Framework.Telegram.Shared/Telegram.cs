@@ -2818,6 +2818,22 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        public override Task GetBubbleGroupInputDisabled(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                if (channel == null)
+                {
+                    result(true);
+                }
+                else
+                {
+                    result(channel.Editor != null);
+                }
+            });
+        }
+
         public void AddVisualBubbleIdServices(VisualBubble bubble)
         {
             bubble.IdService2 = NextMessageId;

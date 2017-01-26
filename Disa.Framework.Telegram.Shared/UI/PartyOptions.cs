@@ -804,7 +804,9 @@ namespace Disa.Framework.Telegram
                             Role = new ChannelRoleModerator(),
                             UserId = inputUser
                         }));
-                        
+
+                        // Let listeners know that this user can now input for this channel
+                        BubbleGroupEvents.RaiseInputUpdated(group);
                     }
                 }
                 

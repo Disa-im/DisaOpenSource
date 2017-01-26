@@ -98,7 +98,7 @@ namespace Disa.Framework
             _informationUpdated = update;
         }
 
-        internal static void RaiseInputUpdated(BubbleGroup group)
+        public static void RaiseInputUpdated(BubbleGroup group)
         {
             if (_inputUpdated != null)
                 _inputUpdated(@group);
