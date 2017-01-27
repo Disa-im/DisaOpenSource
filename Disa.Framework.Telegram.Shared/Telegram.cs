@@ -2822,14 +2822,22 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
+                // Are we a Telegram Channel?
                 var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
                 if (channel == null)
                 {
-                    result(true);
+                    // Ok, we are either a Disa Solo or Disa Pary group
+                    // so input is NOT disabled
+                    result(false);
                 }
                 else
                 {
-                    result(channel.Editor != null);
+                    // Ok, we are either a Disa Super or Disa Channel group at this point,
+                    // so:
+                    var inputDisabled = channel.Broadcast != null &&       // Are we are a Disa Channel
+                                        channel.Creator == null &&         // AND we are not the creator
+                                        channel.Editor != null;            // AND we are not an editor?
+                    result(inputDisabled);
                 }
             });
         }
