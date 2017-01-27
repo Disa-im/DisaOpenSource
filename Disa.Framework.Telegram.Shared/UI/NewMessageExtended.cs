@@ -175,7 +175,9 @@ namespace Disa.Framework.Telegram
             }
             if (uri != null)
             {
-                if (uri.Host != "telegram.me" && uri.Host != "telegram.dog") //yo dog i dunno why this shit aint a domain til now
+                if (uri.Host != "telegram.me" && 
+                    uri.Host != "telegram.dog" &&  //yo dog i dunno why this shit aint a domain til now
+                    uri.Host != "t.me") 
                 {
                     linkUsefulPart = null;
                     return LinkType.Invalid;
