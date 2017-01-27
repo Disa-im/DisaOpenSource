@@ -267,6 +267,9 @@ namespace Disa.Framework.Telegram
 
         public Task FetchBubbleGroup(Contact.ID[] contactIds, Action<BubbleGroup> result)
         {
+            // If we have a solo, party or super group based on a SINGLE Contact.ID 
+            // in our passed in collection return that, otherwise return
+            // null
             return Task.Factory.StartNew(() =>
             {
                 foreach (var group in BubbleGroupManager.FindAll(this))
@@ -277,7 +280,18 @@ namespace Disa.Framework.Telegram
                         {
                             if (BubbleGroupComparer(contactId.Id, group.Address))
                             {
-                                result(group);
+                                // Sanity check, make sure we DO NOT HAVE a Disa Channel
+                                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                                if (channel != null &&
+                                    channel.Broadcast != null)
+                                {
+                                    result(null);
+                                }
+                                else
+                                {
+                                    result(group);
+                                }
+
                                 return;
                             }
                         }

@@ -14,6 +14,18 @@ namespace Disa.Framework
     [DisaFramework]
     public interface IPartyOptions
     {
+        //
+        // Original interface - for these you can use the following test methodology:
+        //
+        // // Does the service implement the required interface?
+        // var partyOptionsUi = service as IPartyOptions
+        // if (partyOptionsUi != null)
+        // {
+        //     .
+        //     .
+        //     .
+        // }
+        //
 
         // thumbnail
         Task GetPartyPhoto(BubbleGroup group, DisaParticipant participant, bool preview, Action<DisaThumbnail> result);
@@ -71,8 +83,18 @@ namespace Disa.Framework
 
         Task PartyOptionsClosed();
 
+
         //
-        // Begin IPartyOptions new methods that WERE previously in IPartyOptionsExtended
+        // Begin interface extensions below (previously IPartyOptionsExtended). For these you must use the following test methodology
+        // or something similar:
+        // 
+        // // Do we have the required method?
+        // if(DisaFrameworkMethods.Missing(service, DisaFrameWorkMethods.IPartyOptionsXxx)
+        // {
+        //     return;
+        // }
+        //
+        // // Ok to proceed
         //
 
         //links

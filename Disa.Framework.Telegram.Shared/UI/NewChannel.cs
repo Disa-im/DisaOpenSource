@@ -75,6 +75,43 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        public Task FetchChannelBubbleGroup(Contact.ID[] contactIds, Action<BubbleGroup> result)
+        {
+            // If we have a channel group based on a SINGLE Contact.ID 
+            // in our passed in collection return that, otherwise return
+            // null
+            return Task.Factory.StartNew(() =>
+            {
+                foreach (var group in BubbleGroupManager.FindAll(this))
+                {
+                    if (contactIds.Length <= 1)
+                    {
+                        foreach (var contactId in contactIds)
+                        {
+                            if (BubbleGroupComparer(contactId.Id, group.Address))
+                            {
+                                // Sanity check, make sure we HAVE a Disa Channel
+                                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                                if (channel != null &&
+                                    channel.Broadcast != null)
+                                {
+                                    result(group);
+                                }
+                                else
+                                {
+                                    result(null);
+                                }
+
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                result(null);
+            });
+        }
+
         public Task FetchChannelBubbleGroupAddress(string name, string description, Action<bool, string> result)
         {
             return Task.Factory.StartNew(async () =>

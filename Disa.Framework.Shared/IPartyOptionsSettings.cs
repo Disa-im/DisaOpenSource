@@ -20,6 +20,19 @@ namespace Disa.Framework
     [DisaFramework]
     public interface IPartyOptionsSettings
     {
+        //
+        // Original interface - for these you can use the following test methodology:
+        //
+        // // Does the service implement the required interface?
+        // var partyOptionsSettings = service as IPartyOptionsSettings
+        // if (partyOptionsSettings != null)
+        // {
+        //     .
+        //     .
+        //     .
+        // }
+        //
+
         Task CanSetPartyType(BubbleGroup group, Action<bool> result);
         Task GetPartyType(BubbleGroup group, Action<PartyOptionsSettingsPartyType> result);
         Task SetPartyType(BubbleGroup group, PartyOptionsSettingsPartyType type,Action<bool> result);
@@ -32,8 +45,18 @@ namespace Disa.Framework
         Task CanConvertToExtendedParty(BubbleGroup group, Action<bool> result);
         Task ConvertToExtendedParty(BubbleGroup group, Action<bool> result);
 
+
         //
-        // New methods NOT in the original IPartyOptionsSettings interface
+        // Begin interface extensions below. For these you must use the following test methodology
+        // or something similar:
+        // 
+        // // Do we have the required method?
+        // if(DisaFrameworkMethods.Missing(service, DisaFrameWorkMethods.IPartyOptionsSettingsXxx)
+        // {
+        //     return;
+        // }
+        //
+        // // Ok to proceed
         //
 
         /// <summary>
