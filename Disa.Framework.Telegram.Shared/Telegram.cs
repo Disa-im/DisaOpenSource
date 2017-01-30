@@ -2836,7 +2836,7 @@ namespace Disa.Framework.Telegram
                     // so:
                     var inputDisabled = channel.Broadcast != null &&       // Are we are a Disa Channel
                                         channel.Creator == null &&         // AND we are not the creator
-                                        channel.Editor != null;            // AND we are not an editor?
+                                        channel.Editor == null;            // AND we are not an editor?
                     result(inputDisabled);
                 }
             });
