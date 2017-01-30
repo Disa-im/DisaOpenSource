@@ -98,12 +98,9 @@ namespace Disa.Framework.Telegram
                         });
                     }
 
-                    //partyContacts.Sort((x, y) => x.FullName.CompareTo(y.FullName));
-
-
                     if (string.IsNullOrWhiteSpace(query))
                     {
-                        result(partyContacts);
+                        result(partyContacts.OrderBy(c => c.FirstName).ToList());
                     }
                     else
                     {
@@ -123,12 +120,12 @@ namespace Disa.Framework.Telegram
                                 var globalContacts = GetGlobalPartyContacts(contactsFound: contactsFound, forChannels: false);
                                 localContacts.AddRange(globalContacts);
                             }
-                            result(localContacts);
+                            result(localContacts.OrderBy(c => c.FirstName).ToList());
                         }
                         else
                         {
                             var searchResult = partyContacts.FindAll(x => Utils.Search(x.FirstName, query));
-                            result(searchResult);
+                            result(searchResult.OrderBy(c => c.FirstName).ToList());
                         }
                     }
 

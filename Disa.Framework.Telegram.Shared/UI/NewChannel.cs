@@ -207,7 +207,7 @@ namespace Disa.Framework.Telegram
 
                 if (string.IsNullOrWhiteSpace(query))
                 {
-                    result(partyContacts);
+                    result(partyContacts.OrderBy(c => c.FirstName).ToList());
                 }
                 else
                 {
@@ -227,12 +227,12 @@ namespace Disa.Framework.Telegram
                             var globalContacts = GetGlobalPartyContacts(contactsFound: contactsFound, forChannels: true);
                             localContacts.AddRange(globalContacts);
                         }
-                        result(localContacts);
+                        result(localContacts.OrderBy(c => c.FirstName).ToList());
                     }
                     else
                     {
                         var searchResult = partyContacts.FindAll(x => Utils.Search(x.FirstName, query));
-                        result(searchResult);
+                        result(searchResult.OrderBy(c => c.FirstName).ToList());
                     }
                 }
             });
