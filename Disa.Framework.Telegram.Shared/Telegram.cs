@@ -344,9 +344,10 @@ namespace Disa.Framework.Telegram
                         }
                         else
                         {
-                            // Ok, we haven't left this group, so is this a new bubblegroup we need to kick start
-                            // with a partyinformation bubble?
-                            if (bubbleGroup == null)
+                            // Ok, we haven't left this group, so is this a new bubblegroup we have just been
+                            // added to that we need to kick start with a partyinformation bubble?
+                            if (bubbleGroup == null &&
+                                channel.Creator == null)
                             {
                                 var partyInformationBubble = new PartyInformationBubble(
                                     time: Time.GetNowUnixTimestamp(),

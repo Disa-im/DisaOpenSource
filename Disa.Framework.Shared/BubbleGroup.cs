@@ -22,7 +22,7 @@ namespace Disa.Framework
             
         public bool IsPhotoSetFromService { get; set; }
         public bool IsPhotoSetInitiallyFromCache { get; internal set; }
-        public DisaThumbnail Photo { get; internal set; }
+        public DisaThumbnail Photo { get; set; }
 
         public bool IsParticipantsSetFromService { get; internal set; }
         public ThreadSafeList<DisaParticipant> Participants = new ThreadSafeList<DisaParticipant>();
