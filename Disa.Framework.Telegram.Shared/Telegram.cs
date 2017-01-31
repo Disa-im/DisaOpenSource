@@ -21,6 +21,7 @@ using System.Drawing;
 using ProtoBuf;
 using IMessage = SharpTelegram.Schema.IMessage;
 using Message = SharpTelegram.Schema.Message;
+using static Disa.Framework.Bubbles.Bubble;
 
 //TODO:
 //1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
@@ -334,10 +335,33 @@ namespace Disa.Framework.Telegram
                     var channel = _dialogs.GetChat(updateChannel.ChannelId) as Channel;
                     if (channel != null)
                     {
+                        var bubbleGroupAddress = updateChannel.ChannelId.ToString();
+                        var bubbleGroup = BubbleGroupManager.FindWithAddress(this, bubbleGroupAddress);
+
                         if (channel.Left != null)
                         { 
-                            var bubbleGroup = BubbleGroupManager.FindWithAddress(this, updateChannel.ChannelId.ToString());
                             Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroup });
+                        }
+                        else
+                        {
+                            // Ok, we haven't left this group, so is this a new bubblegroup we need to kick start
+                            // with a partyinformation bubble?
+                            if (bubbleGroup == null)
+                            {
+                                var partyInformationBubble = new PartyInformationBubble(
+                                    time: Time.GetNowUnixTimestamp(),
+                                    direction: BubbleDirection.Incoming,
+                                    address: bubbleGroupAddress,
+                                    participantAddress: null,
+                                    party: true,
+                                    service: this,
+                                    idService: null,
+                                    type: PartyInformationBubble.InformationType.AddedToChannel,
+                                    influencer: null,
+                                    affected: null);
+
+                                TelegramEventBubble(partyInformationBubble);
+                            }
                         }
                     }
                 }
