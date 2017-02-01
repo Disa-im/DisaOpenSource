@@ -227,7 +227,7 @@ namespace Disa.Framework.Telegram
                 }
 
                 var contacts = users.Select(x => CreateTelegramContact(x))
-                    .OfType<Contact>().OrderBy(x => x.FirstName).ToList();
+				                    .OfType<Contact>().OrderBy(x => x.FullName).ToList();
 
                 result(contacts);
             });
