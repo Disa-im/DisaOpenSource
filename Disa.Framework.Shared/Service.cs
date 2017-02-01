@@ -59,6 +59,21 @@ namespace Disa.Framework
 			});
 		}
 
+        /// <summary>
+        /// Set the result of the <see cref="Action"/> as true if the <see cref="BubbleGroup"/> is
+        /// a Disa Channel, false otherwise.
+        /// </summary>
+        /// <param name="group">The <see cref="BubbleGroup"/> in context.</param>
+        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
+        /// <returns></returns>
+        public virtual Task GetBubbleGroupIsChannel(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                result(false);
+            });
+        }
+
         public virtual void RefreshPhoneBookContacts()
         {
             Utils.DebugPrint("Refresh contacts not implemented.... but the service has it enabled.");
