@@ -2848,56 +2848,50 @@ namespace Disa.Framework.Telegram
             return Task.Factory.StartNew(() =>
             {
                 // Are we a Disa Channel?
-                GetBubbleGroupIsChannel(group, (isDisaChannel) =>
-                {
-                    if (isDisaChannel)
+                if (group.IsChannel)
+                { 
+                    var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                    if (channel == null)
                     {
-                        var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
-                        if (channel == null)
-                        {
-                            // Should never happen
-                            result(false);
-                        }
-                        else
-                        {
-                            // Input is disabled if:
-                            var inputDisabled = channel.Creator == null &&         // We ARE NOT the creator
-                                                channel.Editor == null;            // AND we ARE NOT an editor
-
-                            result(inputDisabled);
-                        }
+                        // Should never happen
+                        result(false);
                     }
                     else
                     {
-                        // OK, we ARE NOT a Disa Channel so input
-                        // IS NOT disabled
-                        result(false);
-                    }
-                });
-            });
-        }
+                        // Input is disabled if:
+                        var inputDisabled = channel.Creator == null &&         // We ARE NOT the creator
+                                            channel.Editor == null;            // AND we ARE NOT an editor
 
-        public override Task GetBubbleGroupIsChannel(BubbleGroup group, Action<bool> result)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                // Are we a Telegram Channel?
-                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
-                if (channel == null)
-                {
-                    // Ok, we are either a Disa Solo or Disa Party group
-                    // so we ARE NOT a Disa Channel
-                    result(false);
+                        result(inputDisabled);
+                    }
                 }
                 else
                 {
-                    // Ok, we are either a Disa Super or Disa Channel group at this point,
-                    // so:
-                    var isDisaChannel = channel.Broadcast != null;       // Are we are a Disa Channel?
-
-                    result(isDisaChannel);
+                    // OK, we ARE NOT a Disa Channel so input
+                    // IS NOT disabled
+                    result(false);
                 }
             });
+        }
+
+        public override bool GetBubbleGroupIsChannel(BubbleGroup group)
+        {
+            // Are we a Telegram Channel?
+            var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+            if (channel == null)
+            {
+                // Ok, we are either a Disa Solo or Disa Party group
+                // so we ARE NOT a Disa Channel
+                return false;
+            }
+            else
+            {
+                // Ok, we are either a Disa Super or Disa Channel group at this point,
+                // so:
+                var isDisaChannel = channel.Broadcast != null;       // Are we are a Disa Channel?
+
+                 return isDisaChannel;
+            }
         }
 
         public void AddVisualBubbleIdServices(VisualBubble bubble)

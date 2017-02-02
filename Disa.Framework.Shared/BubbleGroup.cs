@@ -96,6 +96,25 @@ namespace Disa.Framework
 
 		public bool InputDisabled { get; set; }
 
+        private bool _isChannel;
+        public bool IsChannel
+        {
+            get
+            {
+                if (IsChannelSetFromService)
+                {
+                    return _isChannel;
+                }
+
+                _isChannel = Service.GetBubbleGroupIsChannel(this);
+                IsChannelSetFromService = true;
+
+                return _isChannel;
+            }
+        }
+
+        public bool IsChannelSetFromService { get; private set; }
+
         public void RegisterSynced(Action<BubbleGroup> updated)
         {
             _synced = updated;
