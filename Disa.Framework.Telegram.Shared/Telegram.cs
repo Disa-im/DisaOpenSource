@@ -236,6 +236,10 @@ namespace Disa.Framework.Telegram
 		{ 
 			lock(_globalBubbleLock)
 			{
+				if (bubble.ParticipantAddress == "0")
+				{
+					bubble.ParticipantAddress = VisualBubble.NonSignedChannel;
+				}
 				EventBubble(bubble);
 			}
 		}
@@ -2835,63 +2839,35 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                result(GetUpdatedLastOnline(group.Address));
-            });
-        }
+		public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
+		{
+			return Task.Factory.StartNew(() =>
+			{
+				result(GetUpdatedLastOnline(group.Address));
+			});
+		}
 
         public override Task GetBubbleGroupInputDisabled(BubbleGroup group, Action<bool> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                // Are we a Disa Channel?
-                if (group.IsChannel)
-                { 
-                    var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
-                    if (channel == null)
-                    {
-                        // Should never happen
-                        result(false);
-                    }
-                    else
-                    {
-                        // Input is disabled if:
-                        var inputDisabled = channel.Creator == null &&         // We ARE NOT the creator
-                                            channel.Editor == null;            // AND we ARE NOT an editor
+				// Are we a Telegram Channel?
+				var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+				if (channel == null)
+				{
+					// Ok, we are either a Disa Solo or Disa Party group
+					// so we ARE NOT a Disa Channel
+					result(false);
+				}
+				else
+				{
+					// Input is disabled if:
+					var inputDisabled = channel.Creator == null &&         // We ARE NOT the creator
+										channel.Editor == null;            // AND we ARE NOT an editor
 
-                        result(inputDisabled);
-                    }
-                }
-                else
-                {
-                    // OK, we ARE NOT a Disa Channel so input
-                    // IS NOT disabled
-                    result(false);
-                }
+					result(inputDisabled);
+				}
             });
-        }
-
-        public override bool GetBubbleGroupIsChannel(BubbleGroup group)
-        {
-            // Are we a Telegram Channel?
-            var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
-            if (channel == null)
-            {
-                // Ok, we are either a Disa Solo or Disa Party group
-                // so we ARE NOT a Disa Channel
-                return false;
-            }
-            else
-            {
-                // Ok, we are either a Disa Super or Disa Channel group at this point,
-                // so:
-                var isDisaChannel = channel.Broadcast != null;       // Are we are a Disa Channel?
-
-                 return isDisaChannel;
-            }
         }
 
         public void AddVisualBubbleIdServices(VisualBubble bubble)

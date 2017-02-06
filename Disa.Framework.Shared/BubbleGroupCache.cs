@@ -17,5 +17,7 @@ namespace Disa.Framework
         public string Guid { get; set; }
 		[ProtoMember(5)]
 		public bool InputDisabled { get; set; }
+		[ProtoMember(6)]
+		public bool IsChannel { get; set; }
     }
 }
