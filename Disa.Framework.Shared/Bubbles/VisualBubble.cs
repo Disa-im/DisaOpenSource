@@ -93,6 +93,8 @@ namespace Disa.Framework.Bubbles
         public ThumbnailTransfer QuotedThumbnailTransfer;
         [NonSerialized]
         public bool QuotedThumbnailDownloadFailed;
+		[NonSerialized]
+		public bool InvalidatedCache;
 
         protected VisualBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string id = null, string idService = null)
