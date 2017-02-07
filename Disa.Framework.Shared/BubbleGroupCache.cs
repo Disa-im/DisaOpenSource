@@ -15,5 +15,7 @@ namespace Disa.Framework
         public List<DisaParticipant> Participants { get; set; }
         [ProtoMember(4)]
         public string Guid { get; set; }
+		[ProtoMember(5)]
+		public bool InputDisabled { get; set; }
     }
 }

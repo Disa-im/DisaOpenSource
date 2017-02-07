@@ -255,6 +255,83 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        public Task CanSignMessages(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                // Are we a Telegram Channel?
+                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                if (channel == null)
+                {
+                    // Ok, we are either a Disa Solo or Disa Pary group
+                    // so signing is not available
+                    result(false);
+                }
+                else
+                {
+                    // Ok, we are either a Disa Super or Disa Channel group at this point,
+                    // so:
+                    var canSignMessages = channel.Broadcast != null &&       // Are we are a Disa Channel
+                                          (channel.Creator == null ||        // AND we are the creator
+                                           channel.Editor == null);          // OR we an editor?
+                    result(canSignMessages);
+                }
+            });
+        }
+
+        public Task GetSignMessages(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                // Are we a Telegram Channel?
+                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                if (channel == null)
+                {
+                    // Ok, we are either a Disa Solo or Disa Pary group
+                    // so signing is not available
+                    result(false);
+                }
+                else
+                {
+                    // Ok, we are either a Disa Super or Disa Channel group at this point,
+                    // so:
+                    var signMessages =  channel.Broadcast != null &&       // Are we are a Disa Channel
+                                        channel.Signatures != null;        // AND we group has signing on?
+                    result(signMessages);
+                }
+            });
+        }
+
+        public Task SignMessages(BubbleGroup group, bool sign, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                using (var client = new FullClientDisposable(this))
+                {
+                    try
+                    {
+                        var response = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsToggleSignaturesAsync(new ChannelsToggleSignaturesArgs
+                        {
+                            Channel = new InputChannel
+                            {
+                                ChannelId = uint.Parse(group.Address),
+                                AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
+                            },
+                            Enabled = sign
+                        }));
+                        SendToResponseDispatcher(response, client.Client);
+                        result(true);
+                    }
+                    catch (Exception e)
+                    {
+                        DebugPrint("## exception while migrating the chat " + e);
+                        result(false);
+                    }
+                }
+            });
+
+        }
+
         private string RandomString(int length)
         {
             var random = new Random();

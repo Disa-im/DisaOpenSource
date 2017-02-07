@@ -32,6 +32,14 @@ namespace Disa.Framework.Bubbles
             }
         }
 
+		public static string NonSignedChannel
+		{
+			get
+			{
+				return "&^%$#@?!nonSignedChannel!?@#$%^&";
+			}
+		}
+
         [ProtoMember(251)]
         public bool Deleted { get; set; }
         [ProtoMember(252)]

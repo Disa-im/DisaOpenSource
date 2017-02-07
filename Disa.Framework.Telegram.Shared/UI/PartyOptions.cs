@@ -804,7 +804,9 @@ namespace Disa.Framework.Telegram
                             Role = new ChannelRoleModerator(),
                             UserId = inputUser
                         }));
-                        
+
+                        // Let listeners know that this user can now input for this channel
+                        BubbleGroupEvents.RaiseInputUpdated(group);
                     }
                 }
                 
@@ -993,5 +995,32 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        public Task HasApproveNewMembers(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                result(false);
+            });
+        }
+
+        public Task CanApproveNewMembers(BubbleGroup group, Action<bool> result)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task GetApproveNewMembers(BubbleGroup group, Action<bool> result)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ApproveNewMembers(BubbleGroup group, bool approve, Action<bool> result)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ApproveNewMembersCount(BubbleGroup group, Action<int> result)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

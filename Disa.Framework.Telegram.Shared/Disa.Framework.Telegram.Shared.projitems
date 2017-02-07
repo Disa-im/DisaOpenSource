@@ -1279,6 +1279,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)SharpTL\TLVectorAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAgent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\NewChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\NewMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\UserInformationExtended.cs" />

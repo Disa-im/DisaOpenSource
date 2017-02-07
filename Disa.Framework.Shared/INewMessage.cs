@@ -7,6 +7,19 @@ namespace Disa.Framework
     [DisaFramework]
     public interface INewMessage
     {
+        //
+        // Original interface - for these you can use the following test methodology:
+        //
+        // // Does the service implement the required interface?
+        // var newMessageUi = service as INewMessage
+        // if (newMessageUi != null)
+        // {
+        //     .
+        //     .
+        //     .
+        // }
+        //
+
         Task GetContacts(string query, bool searchForParties, Action<List<Contact>> result);
 
         Task GetContactsFavorites(Action<List<Contact>> result);
@@ -34,8 +47,18 @@ namespace Disa.Framework
             get;
         }
 
+
         //
-        // Begin INewMessage new methods (previously INewMethodsExtended
+        // Begin interface extensions below (previously INewMethodsExtended). For these you must use the following test methodology
+        // or something similar:
+        // 
+        // // Do we have the required method?
+        // if(DisaFrameworkMethods.Missing(service, DisaFrameWorkMethods.INewMessageXxx)
+        // {
+        //     return;
+        // }
+        //
+        // // Ok to proceed
         //
 
         Task FetchBubbleGroupAddressFromLink(string link, Action<Tuple<Contact, Contact.ID>> result);

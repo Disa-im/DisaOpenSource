@@ -21,6 +21,7 @@ using System.Drawing;
 using ProtoBuf;
 using IMessage = SharpTelegram.Schema.IMessage;
 using Message = SharpTelegram.Schema.Message;
+using static Disa.Framework.Bubbles.Bubble;
 
 //TODO:
 //1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)
@@ -235,6 +236,10 @@ namespace Disa.Framework.Telegram
 		{ 
 			lock(_globalBubbleLock)
 			{
+				if (bubble.ParticipantAddress == "0")
+				{
+					bubble.ParticipantAddress = VisualBubble.NonSignedChannel;
+				}
 				EventBubble(bubble);
 			}
 		}
@@ -334,10 +339,34 @@ namespace Disa.Framework.Telegram
                     var channel = _dialogs.GetChat(updateChannel.ChannelId) as Channel;
                     if (channel != null)
                     {
+                        var bubbleGroupAddress = updateChannel.ChannelId.ToString();
+                        var bubbleGroup = BubbleGroupManager.FindWithAddress(this, bubbleGroupAddress);
+
                         if (channel.Left != null)
                         { 
-                            var bubbleGroup = BubbleGroupManager.FindWithAddress(this, updateChannel.ChannelId.ToString());
                             Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroup });
+                        }
+                        else
+                        {
+                            // Ok, we haven't left this group, so is this a new bubblegroup we have just been
+                            // added to that we need to kick start with a partyinformation bubble?
+                            if (bubbleGroup == null &&
+                                channel.Creator == null)
+                            {
+                                var partyInformationBubble = new PartyInformationBubble(
+                                    time: Time.GetNowUnixTimestamp(),
+                                    direction: BubbleDirection.Incoming,
+                                    address: bubbleGroupAddress,
+                                    participantAddress: null,
+                                    party: true,
+                                    service: this,
+                                    idService: null,
+                                    type: PartyInformationBubble.InformationType.AddedToChannel,
+                                    influencer: null,
+                                    affected: null);
+
+                                TelegramEventBubble(partyInformationBubble);
+                            }
                         }
                     }
                 }
@@ -2813,11 +2842,34 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
+		public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
+		{
+			return Task.Factory.StartNew(() =>
+			{
+				result(GetUpdatedLastOnline(group.Address));
+			});
+		}
+
+        public override Task GetBubbleGroupInputDisabled(BubbleGroup group, Action<bool> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                result(GetUpdatedLastOnline(group.Address));
+				// Are we a Telegram Channel?
+				var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+				if (channel == null)
+				{
+					// Ok, we are either a Disa Solo or Disa Party group
+					// so we ARE NOT a Disa Channel
+					result(false);
+				}
+				else
+				{
+					// Input is disabled if:
+					var inputDisabled = channel.Creator == null &&         // We ARE NOT the creator
+										channel.Editor == null;            // AND we ARE NOT an editor
+
+					result(inputDisabled);
+				}
             });
         }
 

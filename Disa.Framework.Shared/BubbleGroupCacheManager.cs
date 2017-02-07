@@ -21,12 +21,13 @@ namespace Disa.Framework
 
         private static BubbleGroupCache Generate(BubbleGroup group, string guid)
         {
-            var bubbleGroupCache = new BubbleGroupCache
-            {
-                Name = group.Title,
-                Photo = group.Photo,
-                Participants = group.Participants.ToList(),
-                Guid = guid,
+			var bubbleGroupCache = new BubbleGroupCache
+			{
+				Name = group.Title,
+				Photo = group.Photo,
+				Participants = group.Participants.ToList(),
+				Guid = guid,
+				InputDisabled = group.InputDisabled,
             };
             return bubbleGroupCache;
         }
@@ -81,6 +82,7 @@ namespace Disa.Framework
         private static void Bind(BubbleGroup associatedGroup, BubbleGroupCache item)
         {
             associatedGroup.Title = item.Name;
+			associatedGroup.InputDisabled = item.InputDisabled;
             associatedGroup.Photo = item.Photo;
             associatedGroup.IsPhotoSetInitiallyFromCache = true;
             if (item.Participants != null)

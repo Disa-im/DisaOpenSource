@@ -391,6 +391,10 @@ namespace Disa.Framework.Telegram
                                 UserId = inputUser
                             }));
                             SendToResponseDispatcher(response, client.Client);
+
+                            // Let listeners know that this user can no longer input for this channel
+                            BubbleGroupEvents.RaiseInputUpdated(group);
+
                             result(DemotePartyParticipantsResult.Success);
                         }
                         catch (Exception e)

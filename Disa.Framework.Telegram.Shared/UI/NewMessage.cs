@@ -56,6 +56,12 @@ namespace Disa.Framework.Telegram
                 else
                 {
                     var partyContacts = new List<Contact>();
+
+                    // Only grab disa solo, party and super groups.
+                    // Important: Don't get confused between disa channels and telegram channels.
+                    //            Telegram channels include both super groups and channels, differentiated 
+                    //            by the telegram Channel.Broadcast and Channel.Megagroup fields.
+
                     foreach (var chat in _dialogs.GetAllChats())
                     {
                         var name = TelegramUtils.GetChatTitle(chat);
@@ -68,6 +74,15 @@ namespace Disa.Framework.Telegram
                         var kicked = TelegramUtils.GetChatKicked(chat);
                         if (kicked)
                             continue;
+                        var isChannel = chat is Channel;
+                        if (isChannel)
+                        {
+                            var channel = chat as Channel;
+                            if (channel.Megagroup == null)
+                            {
+                                continue;
+                            }
+                        }
                         partyContacts.Add(new TelegramPartyContact
                         {
                             FirstName = name,
@@ -77,18 +92,15 @@ namespace Disa.Framework.Telegram
                                     {
                                         Service = this,
                                         Id = TelegramUtils.GetChatId(chat),
-                                        ExtendedParty = chat is Channel
+                                        ExtendedParty = isChannel
                                     }
                                 },
                         });
                     }
 
-                    //partyContacts.Sort((x, y) => x.FullName.CompareTo(y.FullName));
-
-
                     if (string.IsNullOrWhiteSpace(query))
                     {
-                        result(partyContacts);
+                        result(partyContacts.OrderBy(c => c.FirstName).ToList());
                     }
                     else
                     {
@@ -105,15 +117,15 @@ namespace Disa.Framework.Telegram
                                             Limit = 50 //like the official client
                                         }));
                                 var contactsFound = searchResult as ContactsFound;
-                                var globalContacts = GetGlobalPartyContacts(contactsFound);
+                                var globalContacts = GetGlobalPartyContacts(contactsFound: contactsFound, forChannels: false);
                                 localContacts.AddRange(globalContacts);
                             }
-                            result(localContacts);
+                            result(localContacts.OrderBy(c => c.FirstName).ToList());
                         }
                         else
                         {
                             var searchResult = partyContacts.FindAll(x => Utils.Search(x.FirstName, query));
-                            result(searchResult);
+                            result(searchResult.OrderBy(c => c.FirstName).ToList());
                         }
                     }
 
@@ -122,7 +134,7 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private List<Contact> GetGlobalPartyContacts(ContactsFound contactsFound)
+        private List<Contact> GetGlobalPartyContacts(ContactsFound contactsFound, bool forChannels)
         {
             var globalContacts = new List<Contact>();
             _dialogs.AddChats(contactsFound.Chats);
@@ -133,6 +145,15 @@ namespace Disa.Framework.Telegram
                 var kicked = TelegramUtils.GetChatKicked(chat);
                 if (kicked)
                     continue;
+                var isChannel = chat is Channel;
+                if (forChannels && !isChannel)
+                {
+                    continue;
+                }
+                else if (!forChannels && isChannel)
+                {
+                    continue;
+                }
                 globalContacts.Add(new TelegramPartyContact
                 {
                     FirstName = name,
@@ -142,7 +163,7 @@ namespace Disa.Framework.Telegram
                                 {
                                     Service = this,
                                     Id = TelegramUtils.GetChatId(chat),
-                                    ExtendedParty = chat is Channel
+                                    ExtendedParty = isChannel
                                 }
                             },
                 });
@@ -243,6 +264,9 @@ namespace Disa.Framework.Telegram
 
         public Task FetchBubbleGroup(Contact.ID[] contactIds, Action<BubbleGroup> result)
         {
+            // If we have a solo, party or super group based on a SINGLE Contact.ID 
+            // in our passed in collection return that, otherwise return
+            // null
             return Task.Factory.StartNew(() =>
             {
                 foreach (var group in BubbleGroupManager.FindAll(this))
@@ -253,7 +277,18 @@ namespace Disa.Framework.Telegram
                         {
                             if (BubbleGroupComparer(contactId.Id, group.Address))
                             {
-                                result(group);
+                                // Sanity check, make sure we DO NOT HAVE a Disa Channel
+                                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                                if (channel != null &&
+                                    channel.Broadcast != null)
+                                {
+                                    result(null);
+                                }
+                                else
+                                {
+                                    result(group);
+                                }
+
                                 return;
                             }
                         }
