@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Disa.Framework.Bubbles;
 using System;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Disa.Framework
 {
@@ -41,7 +42,9 @@ namespace Disa.Framework
 
         public abstract WakeLock AquireWakeLock(string name);
 
-        public abstract void OpenContact(string phoneNumber);
+		public abstract Stream GetConversationExportAssetsArchiveStream();
+
+		public abstract void OpenContact(string phoneNumber);
 
         public abstract void DialContact(string phoneNumber);
 
@@ -86,5 +89,7 @@ namespace Disa.Framework
         public abstract void DeleteBubbleGroup(BubbleGroup[] bubbleGroups);
 
         public abstract void ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
+
+		public abstract void ShareContent(string mimeType, string uri);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Disa.Framework
@@ -41,7 +42,12 @@ namespace Disa.Framework
             return PlatformImplementation.GetFilesPath();
         }
 
-        public static string GetPicturesPath()
+		public static Stream GetConversationExportAssetsArchiveStream()
+		{
+			return PlatformImplementation.GetConversationExportAssetsArchiveStream();
+		}
+
+		public static string GetPicturesPath()
         {
             return PlatformImplementation.GetPicturesPath();
         }
@@ -212,5 +218,10 @@ namespace Disa.Framework
         {
             PlatformImplementation.ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
         }
+
+		public static void ShareContent(string mimeType, string uri)
+		{
+			PlatformImplementation.ShareContent(mimeType, uri);
+		}
     }
 }
