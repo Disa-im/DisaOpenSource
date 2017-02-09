@@ -350,23 +350,23 @@ namespace Disa.Framework.Telegram
                         {
                             // Ok, we haven't left this group, so is this a new bubblegroup we have just been
                             // added to that we need to kick start with a partyinformation bubble?
-                            if (bubbleGroup == null &&
-                                channel.Creator == null)
-                            {
-                                var partyInformationBubble = new PartyInformationBubble(
-                                    time: Time.GetNowUnixTimestamp(),
-                                    direction: BubbleDirection.Incoming,
-                                    address: bubbleGroupAddress,
-                                    participantAddress: null,
-                                    party: true,
-                                    service: this,
-                                    idService: null,
-                                    type: PartyInformationBubble.InformationType.AddedToChannel,
-                                    influencer: null,
-                                    affected: null);
+                            //if (bubbleGroup == null &&
+                            //    channel.Creator == null)
+                            //{
+                            //    var partyInformationBubble = new PartyInformationBubble(
+                            //        time: Time.GetNowUnixTimestamp(),
+                            //        direction: BubbleDirection.Incoming,
+                            //        address: bubbleGroupAddress,
+                            //        participantAddress: null,
+                            //        party: true,
+                            //        service: this,
+                            //        idService: null,
+                            //        type: PartyInformationBubble.InformationType.AddedToChannel,
+                            //        influencer: null,
+                            //        affected: null);
 
-                                TelegramEventBubble(partyInformationBubble);
-                            }
+                            //    TelegramEventBubble(partyInformationBubble);
+                            //}
                         }
                     }
                 }
@@ -771,6 +771,10 @@ namespace Disa.Framework.Telegram
                 var bubble = PartyInformationBubble.CreateThumbnailChanged(
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                     this, messageService.Id.ToString(), null);
+                if (messageService.ToId is PeerChannel)
+                {
+                    bubble.ExtendedParty = true;
+                }
                 return new List<VisualBubble>
                 {
                     bubble
