@@ -35,6 +35,8 @@ namespace Disa.Framework.Telegram
     [AudioParameters(AudioParameters.RecordType.M4A, AudioParameters.NoDurationLimit, 25000000, ".mp3", ".aac", ".m4a", ".mp4", ".wav", ".3ga", ".3gp", ".3gpp", ".amr", ".ogg", ".webm", ".weba", ".opus")]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
+        public static uint MESSAGE_FLAG_REPLY = 0x00000001;
+
         private object _cachedThumbnailsLock = new object();
 
         private static TcpClientTransportConfig DefaultTransportConfig = 
@@ -300,17 +302,15 @@ namespace Disa.Framework.Telegram
 							BubbleGroupManager.SetUnread(this, false, fromId);
 							NotificationManager.Remove(this, fromId);
                         }
-                        if (textBubble.Direction == Bubble.BubbleDirection.Incoming)
-                        {
-                            if (shortMessage.ReplyToMsgId != 0)
-                            {
-                                var iReplyMessage = GetMessage(shortMessage.ReplyToMsgId, optionalClient);
-                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
-                                var replyMessage = iReplyMessage as Message;
-                                AddQuotedMessageToBubble(replyMessage, textBubble);
 
-                            }
+                        if (shortMessage.ReplyToMsgId != 0)
+                        {
+                            var iReplyMessage = GetMessage(shortMessage.ReplyToMsgId, optionalClient);
+                            DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+                            var replyMessage = iReplyMessage as Message;
+                            AddQuotedMessageToBubble(replyMessage, textBubble);
                         }
+
                         TelegramEventBubble(textBubble);
                     }
                     if (shortMessage.Id > maxMessageId)
@@ -543,16 +543,15 @@ namespace Disa.Framework.Telegram
 							BubbleGroupManager.SetUnread(this, false, address);
 							NotificationManager.Remove(this, address);
                         }
-                        if (textBubble.Direction == Bubble.BubbleDirection.Incoming)
+
+                        if (shortChatMessage.ReplyToMsgId != 0)
                         {
-                            if (shortChatMessage.ReplyToMsgId != 0)
-                            {
-                                var iReplyMessage = GetMessage(shortChatMessage.ReplyToMsgId, optionalClient);
-                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
-                                var replyMessage = iReplyMessage as Message;
-                                AddQuotedMessageToBubble(replyMessage, textBubble);
-                            }
+                            var iReplyMessage = GetMessage(shortChatMessage.ReplyToMsgId, optionalClient);
+                            DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+                            var replyMessage = iReplyMessage as Message;
+                            AddQuotedMessageToBubble(replyMessage, textBubble);
                         }
+
                         TelegramEventBubble(textBubble);
                     }
                     if (shortChatMessage.Id > maxMessageId)
@@ -577,19 +576,21 @@ namespace Disa.Framework.Telegram
 									DebugPrint(">>>>> User is null, fetching user from the server");
 									GetMessage(message.Id, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
 								}
-								if (message.ReplyToMsgId != 0 && i == 0)//we should only add quoted message to first bubble if multiple bubbles exist
-								{
-									var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-									DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
-									var replyMessage = iReplyMessage as Message;
-									AddQuotedMessageToBubble(replyMessage, bubble);
-								}
 							}
 							else if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
 							{
 								BubbleGroupManager.SetUnread(this, false, bubble.Address);
 								NotificationManager.Remove(this, bubble.Address);
 							}
+
+                            if (message.ReplyToMsgId != 0 && i == 0)//we should only add quoted message to first bubble if multiple bubbles exist
+                            {
+                                var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
+                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
+                                var replyMessage = iReplyMessage as Message;
+                                AddQuotedMessageToBubble(replyMessage, bubble);
+                            }
+
                             TelegramEventBubble(bubble);
                         }
                         i++;
@@ -2123,16 +2124,26 @@ namespace Disa.Framework.Telegram
             {
                 var peer = GetInputPeer(textBubble.Address, textBubble.Party, textBubble.ExtendedParty);
 
+                // Standard send message
+                var args = new MessagesSendMessageArgs
+                {
+                    Flags = 0,
+                    Peer = peer,
+                    Message = textBubble.Message,
+                    RandomId = ulong.Parse(textBubble.IdService2),
+                };
+
+                // Adjust for quote if necessary
+                if (!string.IsNullOrEmpty(textBubble.QuotedIdService))
+                {
+                    args.Flags |= MESSAGE_FLAG_REPLY;
+                    args.ReplyToMsgId = uint.Parse(textBubble.QuotedIdService);
+                }
+
                 using (var client = new FullClientDisposable(this))
                 {
                     var iUpdates = TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesSendMessageAsync(new MessagesSendMessageArgs
-                        {
-                            Flags = 0,
-                            Peer = peer,
-                            Message = textBubble.Message,
-                            RandomId = ulong.Parse(textBubble.IdService2)
-                        }));
+                        client.Client.Methods.MessagesSendMessageAsync(args));
                     DebugPrint(">>>> IUpdates message sent " + ObjectDumper.Dump(iUpdates));
                     var updateShortSentMessage = iUpdates as UpdateShortSentMessage;
                     if (updateShortSentMessage != null)
@@ -2295,22 +2306,31 @@ namespace Disa.Framework.Telegram
             var contactCard = Platform.GenerateContactCardFromBytes(contactBubble.VCardData);
             if (contactCard != null)
             {
+                // Standard send contact
+                var args = new MessagesSendMediaArgs
+                {
+                    Flags = 0,
+                    Peer = inputPeer,
+                    Media = new InputMediaContact
+                    {
+                        FirstName = contactCard.GivenName,
+                        LastName = contactCard.FamilyName,
+                        PhoneNumber = contactCard.Phones?.FirstOrDefault()?.Number
+                    },
+                    RandomId = GenerateRandomId(),
+                };
+
+                // Adjust for quote if necessary
+                if (!string.IsNullOrEmpty(contactBubble.QuotedIdService))
+                {
+                    args.Flags |= MESSAGE_FLAG_REPLY;
+                    args.ReplyToMsgId = uint.Parse(contactBubble.QuotedIdService);
+                }
+
                 using (var client = new FullClientDisposable(this))
                 {
                     var updates = TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
-                        {
-
-                            Flags = 0,
-                            Peer = inputPeer,
-                            Media = new InputMediaContact
-                            {
-                                FirstName = contactCard.GivenName,
-                                LastName = contactCard.FamilyName,
-                                PhoneNumber = contactCard.Phones?.FirstOrDefault()?.Number
-                            },
-                            RandomId = GenerateRandomId(),
-                        }));
+                        client.Client.Methods.MessagesSendMediaAsync(args));
                     var id = GetMessageId(updates);
                     contactBubble.IdService = id;
                     SendToResponseDispatcher(updates, client.Client);
@@ -2321,29 +2341,38 @@ namespace Disa.Framework.Telegram
         private void SendGeoLocation(LocationBubble locationBubble)
         {
             var inputPeer = GetInputPeer(locationBubble.Address, locationBubble.Party, locationBubble.ExtendedParty);
+
+            // Standard send location
+            var args = new MessagesSendMediaArgs
+            {
+                Flags = 0,
+                Peer = inputPeer,
+                Media = new InputMediaGeoPoint
+                {
+                    GeoPoint = new InputGeoPoint
+                    {
+                        Lat = locationBubble.Latitude,
+                        Long = locationBubble.Longitude
+                    }
+                },
+                RandomId = GenerateRandomId(),
+            };
+
+            // Adjust for quote if necessary
+            if (!string.IsNullOrEmpty(locationBubble.QuotedIdService))
+            {
+                args.Flags |= MESSAGE_FLAG_REPLY;
+                args.ReplyToMsgId = uint.Parse(locationBubble.QuotedIdService);
+            }
+
             using (var client = new FullClientDisposable(this))
             {
                 var updates = TelegramUtils.RunSynchronously(
-                    client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
-                    {
-
-                        Flags = 0,
-                        Peer = inputPeer,
-                        Media = new InputMediaGeoPoint
-                        {
-                            GeoPoint = new InputGeoPoint
-                            {
-                                Lat = locationBubble.Latitude,
-                                Long = locationBubble.Longitude
-                            }
-                        },
-                        RandomId = GenerateRandomId(),
-                    }));
+                    client.Client.Methods.MessagesSendMediaAsync(args));
                 var id = GetMessageId(updates);
                 locationBubble.IdService = id;
                 SendToResponseDispatcher(updates,client.Client);
             }
-
         }
 
         private IInputFile UploadBigFile(VisualBubble bubble, ulong fileId, long fileSize)
@@ -2574,20 +2603,28 @@ namespace Disa.Framework.Telegram
             {
                 if (imageBubble != null)
                 {
+                    // Standard send image
+                    var args = new MessagesSendMediaArgs
+                    {
+                        Flags = 0,
+                        Peer = inputPeer,
+                        Media = new InputMediaUploadedPhoto
+                        {
+                            Caption = "",
+                            File = inputFile,
+                        },
+                        RandomId = GenerateRandomId(),
+                    };
+
+                    // Adjust for quote if necessary
+                    if (!string.IsNullOrEmpty(imageBubble.QuotedIdService))
+                    {
+                        args.Flags |= MESSAGE_FLAG_REPLY;
+                        args.ReplyToMsgId = uint.Parse(imageBubble.QuotedIdService);
+                    }
 
                     var iUpdates = TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
-                        {
-
-                            Flags = 0,
-                            Peer = inputPeer,
-                            Media = new InputMediaUploadedPhoto
-                            {
-                                Caption = "",
-                                File = inputFile,
-                            },
-                            RandomId = GenerateRandomId(),
-                        }));
+                        client.Client.Methods.MessagesSendMediaAsync(args));
                     var messageId = GetMessageId(iUpdates);
                     imageBubble.IdService = messageId;
                     var updates = iUpdates as Updates;
@@ -2603,25 +2640,34 @@ namespace Disa.Framework.Telegram
                             FileName = fileBubble.FileName
                         }
                     };
-                    var iUpdates = TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesSendMediaAsync(new MessagesSendMediaArgs
-                        {
 
-                            Flags = 0,
-                            Peer = inputPeer,
-                            Media = new InputMediaUploadedDocument
-                            {
-                                Attributes = documentAttributes,
-                                Caption = "",
-                                File = inputFile,
-                                MimeType = fileBubble.MimeType,
-                            },
-                            RandomId = GenerateRandomId(),
-                        }));
+                    // Standard file sent
+                    var args = new MessagesSendMediaArgs
+                    {
+                        Flags = 0,
+                        Peer = inputPeer,
+                        Media = new InputMediaUploadedDocument
+                        {
+                            Attributes = documentAttributes,
+                            Caption = "",
+                            File = inputFile,
+                            MimeType = fileBubble.MimeType,
+                        },
+                        RandomId = GenerateRandomId(),
+                    };
+
+                    // Adjust for quote if necessary
+                    if (!string.IsNullOrEmpty(fileBubble.QuotedIdService))
+                    {
+                        args.Flags |= MESSAGE_FLAG_REPLY;
+                        args.ReplyToMsgId = uint.Parse(fileBubble.QuotedIdService);
+                    }
+
+                    var iUpdates = TelegramUtils.RunSynchronously(
+                        client.Client.Methods.MessagesSendMediaAsync(args));
                     var messageId = GetMessageId(iUpdates);
                     fileBubble.IdService = messageId;
                     SendToResponseDispatcher(iUpdates, client.Client);
-
                 }
                 else if (audioBubble != null)
                 {
@@ -2670,6 +2716,14 @@ namespace Disa.Framework.Telegram
                         Peer = inputPeer,
                         RandomId = GenerateRandomId(),
                     };
+
+                    // Adjust for quote if necessary
+                    if (!string.IsNullOrEmpty(audioBubble.QuotedIdService))
+                    {
+                        media.Flags |= MESSAGE_FLAG_REPLY;
+                        media.ReplyToMsgId = uint.Parse(audioBubble.QuotedIdService);
+                    }
+
                     var iUpdates = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMediaAsync(media));
                     var messageId = GetMessageId(iUpdates);
