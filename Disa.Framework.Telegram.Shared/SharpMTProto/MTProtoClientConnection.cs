@@ -354,7 +354,7 @@ namespace SharpMTProto
                     _connectionCancellationToken))
             {
                 Request<TResponse> request = CreateRequest<TResponse>(requestBody, flags, cts.Token);
-                Console.WriteLine("Sending request ({0}) '{1}'.", flags, requestBody);
+                //Console.WriteLine("Sending request ({0}) '{1}'.", flags, requestBody);
                 await request.SendAsync();
                 return await request.GetResponseAsync();
             }
@@ -520,7 +520,7 @@ namespace SharpMTProto
                     {
                         throw new InvalidMessageException(string.Format("Invalid session ID {0}. Expected {1}.", sessionId, _config.SessionId));
                     }
-                    Console.WriteLine(string.Format("Received encrypted message. Message ID = 0x{0:X16}.", message.MsgId));
+                    //Console.WriteLine(string.Format("Received encrypted message. Message ID = 0x{0:X16}.", message.MsgId));
                 }
                 ProcessIncomingMessage(message);
             }
@@ -536,7 +536,7 @@ namespace SharpMTProto
 
             try
             {
-                Console.WriteLine("Incoming message data of type = {0}.", message.Body.GetType());
+                //Console.WriteLine("Incoming message data of type = {0}.", message.Body.GetType());
 
                 await _responseDispatcher.DispatchAsync(message);
             }
@@ -580,7 +580,7 @@ namespace SharpMTProto
 
         private static void LogMessageInOut(byte[] messageBytes, string inOrOut)
         {
-            Console.WriteLine(string.Format("{0} ({1} bytes): {2}", inOrOut, messageBytes.Length, messageBytes.ToHexString()));
+            //Console.WriteLine(string.Format("{0} ({1} bytes): {2}", inOrOut, messageBytes.Length, messageBytes.ToHexString()));
         }
 
         private bool IsIncomingMessageIdValid(ulong messageId)

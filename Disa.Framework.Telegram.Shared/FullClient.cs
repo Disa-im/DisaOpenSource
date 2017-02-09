@@ -46,7 +46,8 @@ namespace Disa.Framework.Telegram
                     {
                         return _fullClientInternal;
                     }
-                    Console.WriteLine(System.Environment.StackTrace);
+                    // Uncomment below to monitor the full clients behavior when Disa is running in the background
+                    //Console.WriteLine(System.Environment.StackTrace);
                     DebugPrint("!!!!!! Full client is not connected. Starting it up!");
                     var transportConfig = 
                         new TcpClientTransportConfig(_settings.NearestDcIp, _settings.NearestDcPort);

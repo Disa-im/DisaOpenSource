@@ -675,7 +675,7 @@ namespace Disa.Framework.Telegram
                     }
                     else
                     {
-                        //Console.WriteLine("Unknown typing action: " + typing.Action.GetType().Name); //causes null pointer in some cases
+                        //TODO: handle unknown typing action
                     }
                 }
                 else if (user != null)
@@ -719,7 +719,7 @@ namespace Disa.Framework.Telegram
                 }
                 else
                 {
-                    Console.WriteLine("Unknown update: " + ObjectDumper.Dump(update));
+                    DebugPrint("Unknown update: " + ObjectDumper.Dump(update));
                 }
             }
 
@@ -882,7 +882,7 @@ namespace Disa.Framework.Telegram
             }
             else
             {
-                Console.WriteLine("Unknown message service: " + ObjectDumper.Dump(messageService));
+                DebugPrint("Unknown message service: " + ObjectDumper.Dump(messageService));
                 return new List<VisualBubble>();
             }
         }
