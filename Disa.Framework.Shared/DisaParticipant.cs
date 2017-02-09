@@ -27,6 +27,9 @@ namespace Disa.Framework
         [ProtoMember(4)]
         public bool Unknown { get; set; }
 
+        [ProtoMember(5)]
+        public string Username { get; set; }
+
         public DisaParticipant(string name, string address)
         {
             Name = name;
