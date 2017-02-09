@@ -24,8 +24,7 @@ namespace Disa.Framework
         [ProtoMember(3)]
         public DisaThumbnail Photo { get; set; }
 
-		[JsonIgnore]
-		//FIXME: Do we need to prevent other serialization types from serializing this?
+        [ProtoMember(4)]
         public bool Unknown { get; set; }
 
         public DisaParticipant(string name, string address)
