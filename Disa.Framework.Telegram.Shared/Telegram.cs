@@ -238,10 +238,6 @@ namespace Disa.Framework.Telegram
 		{ 
 			lock(_globalBubbleLock)
 			{
-				if (bubble.ParticipantAddress == "0")
-				{
-					bubble.ParticipantAddress = VisualBubble.NonSignedChannel;
-				}
 				EventBubble(bubble);
 			}
 		}
@@ -989,10 +985,11 @@ namespace Disa.Framework.Telegram
                 ? Bubble.BubbleDirection.Outgoing
                 : Bubble.BubbleDirection.Incoming;
 
+            var bubblesReturn = new List<VisualBubble>();
+
             if (!string.IsNullOrWhiteSpace(message.MessageProperty))
             {
                 TextBubble tb = null;
-
                 if (peerUser != null)
                 {
                     var address = direction == Bubble.BubbleDirection.Incoming
@@ -1029,10 +1026,7 @@ namespace Disa.Framework.Telegram
                 {
                     tb.Status = Bubble.BubbleStatus.Sent;
                 }
-                return new List<VisualBubble> 
-                { 
-                    tb
-                };
+                bubblesReturn.Add(tb);
             }
             else
             {
@@ -1043,14 +1037,14 @@ namespace Disa.Framework.Telegram
                         : peerUser.UserId;
                     var addressStr = address.ToString(CultureInfo.InvariantCulture);
                     var bubble = MakeMediaBubble(message, useCurrentTime, true, addressStr);
-                    return bubble;
+                    bubblesReturn.AddRange(bubble);
                 }
                 else if (peerChat != null)
                 {
                     var address = peerChat.ChatId.ToString(CultureInfo.InvariantCulture);
                     var participantAddress = message.FromId.ToString(CultureInfo.InvariantCulture);
                     var bubble = MakeMediaBubble(message, useCurrentTime, false, address, participantAddress);
-                    return bubble;
+                    bubblesReturn.AddRange(bubble);
                 }
                 else if (peerChannel != null)
                 {
@@ -1061,11 +1055,18 @@ namespace Disa.Framework.Telegram
                     {
                         bubble.ExtendedParty = true;   
                     }
-                    return bubbles;
+                    bubblesReturn.AddRange(bubbles);
                 }
-
             }
-            return null;
+
+            foreach (var bubble in bubblesReturn)
+            {
+                if (bubble.ParticipantAddress == "0")
+                {
+                    bubble.ParticipantAddress = VisualBubble.NonSignedChannel;
+                }
+            }
+            return !bubblesReturn.Any() ? null : bubblesReturn;
         }
 
         private IMessagesMessages FetchMessage(uint id, TelegramClient client, uint toId, bool superGroup)
