@@ -65,7 +65,6 @@ namespace Disa.Framework.Telegram
 				{
 					_dialogs.AddChats(messages.Chats);
 					_dialogs.AddUsers(messages.Users);
-					//DebugPrint("Messages are as follows " + ObjectDumper.Dump(messages.Messages));
 					messages.Messages.Reverse();
 					return ConvertMessageToBubbles(messages.Messages);
 
@@ -74,7 +73,6 @@ namespace Disa.Framework.Telegram
 				{
 					_dialogs.AddChats(messagesSlice.Chats);
 					_dialogs.AddUsers(messagesSlice.Users);
-					//DebugPrint("Messages are as follows " + ObjectDumper.Dump(messagesSlice.Messages));
 					messagesSlice.Messages.Reverse();
 					return ConvertMessageToBubbles(messagesSlice.Messages);
 				}
@@ -483,7 +481,6 @@ namespace Disa.Framework.Telegram
                             if (message.ReplyToMsgId != 0 && i == 0)//add quoted message only to the first bubble
                             {
                                 var iReplyMessage = GetMessage(message.ReplyToMsgId, null, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
                                 var replyMessage = iReplyMessage as Message;
                                 AddQuotedMessageToBubble(replyMessage, bubble);
                             }

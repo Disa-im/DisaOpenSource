@@ -29,7 +29,6 @@ namespace Disa.Framework.Telegram
             {
                 string linkUsefulPart;
                 var linkType = GetLinkType(link, out linkUsefulPart);
-                DebugPrint("Link useful part " + ObjectDumper.Dump(linkType));
                 switch (linkType)
                 {
                     case LinkType.Invalid:
@@ -46,7 +45,6 @@ namespace Disa.Framework.Telegram
                                 return;
                             }
                             var updates = JoinChat(linkUsefulPart);
-                            DebugPrint("Updates " + ObjectDumper.Dump(updates));
                             var updatesObj = updates as Updates;
                             if (updatesObj != null)
                             {

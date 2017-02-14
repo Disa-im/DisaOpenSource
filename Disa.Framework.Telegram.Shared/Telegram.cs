@@ -146,7 +146,6 @@ namespace Disa.Framework.Telegram
         {
             lock (_mutableSettingsLock)
             {
-				DebugPrint("Saving new state date " + date + " pts " + pts + " qts " + qts + " seq " + seq);;
                 if (date != 0)
                 {
                     _mutableSettings.Date = date;
@@ -225,12 +224,10 @@ namespace Disa.Framework.Telegram
                 var userId = bubble.QuotedAddress;
                 if (userId != null)
                 {
-                    DebugPrint("#### got user id for quoted title " + userId);
                     uint userIdInt = uint.Parse(userId);
                     string username = TelegramUtils.GetUserName(_dialogs.GetUser(userIdInt));
                     result(username);
                 }
-
             });
         }
 
@@ -273,8 +270,6 @@ namespace Disa.Framework.Telegram
                 var user = update as IUser;
                 var chat = update as IChat;
 
-                DebugPrint(">>>>>> The type of object in process incoming payload is " + ObjectDumper.Dump(update));
-
                 if (shortMessage != null)
                 {
                     if (!string.IsNullOrWhiteSpace(shortMessage.Message))
@@ -306,7 +301,6 @@ namespace Disa.Framework.Telegram
                         if (shortMessage.ReplyToMsgId != 0)
                         {
                             var iReplyMessage = GetMessage(shortMessage.ReplyToMsgId, optionalClient);
-                            DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
                             var replyMessage = iReplyMessage as Message;
                             AddQuotedMessageToBubble(replyMessage, textBubble);
                         }
@@ -447,7 +441,6 @@ namespace Disa.Framework.Telegram
                 }
                 else if (updateReadHistoryInbox != null)
                 {
-                    DebugPrint(">>> In update read history inbox");
                     var iPeer = updateReadHistoryInbox.Peer;
                     var peerChat = iPeer as PeerChat;
                     var peerUser = iPeer as PeerUser;
@@ -463,7 +456,6 @@ namespace Disa.Framework.Telegram
                         }
 
                         string idString = bubbleGroup.LastBubbleSafe().IdService;
-                        DebugPrint("idstring" + idString);
 						if (idString != null)
 						{
 							if (uint.Parse(idString) <= updateReadHistoryInbox.MaxId)
@@ -505,7 +497,6 @@ namespace Disa.Framework.Telegram
                     }
 
                     string idString = bubbleGroup.LastBubbleSafe().IdService;
-                    DebugPrint("idstring" + idString);
                     if (idString != null)
                     {
                         if (uint.Parse(idString) <= updateReadChannelInbox.MaxId)
@@ -547,7 +538,6 @@ namespace Disa.Framework.Telegram
                         if (shortChatMessage.ReplyToMsgId != 0)
                         {
                             var iReplyMessage = GetMessage(shortChatMessage.ReplyToMsgId, optionalClient);
-                            DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
                             var replyMessage = iReplyMessage as Message;
                             AddQuotedMessageToBubble(replyMessage, textBubble);
                         }
@@ -586,7 +576,6 @@ namespace Disa.Framework.Telegram
                             if (message.ReplyToMsgId != 0 && i == 0)//we should only add quoted message to first bubble if multiple bubbles exist
                             {
                                 var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-                                DebugPrint(">>> got message " + ObjectDumper.Dump(iReplyMessage));
                                 var replyMessage = iReplyMessage as Message;
                                 AddQuotedMessageToBubble(replyMessage, bubble);
                             }
@@ -1141,7 +1130,6 @@ namespace Disa.Framework.Telegram
 
         private List<VisualBubble> MakeMediaBubble(Message message, bool useCurrentTime, bool isUser, string addressStr, string participantAddress = null)
         {
-            DebugPrint(">>>>>>> Making media bubble");
             var messageMedia = message.Media;
             var messageMediaPhoto = messageMedia as MessageMediaPhoto;
             var messageMediaDocument = messageMedia as MessageMediaDocument;
@@ -1216,8 +1204,6 @@ namespace Disa.Framework.Telegram
             }
             else if (messageMediaDocument != null)
             {
-                DebugPrint(">>>> Media document " + ObjectDumper.Dump(messageMediaDocument));
-                //DebugPrint(">>>>> Media attributes " +  (messageMediaDocument.Document as Document).Attributes);
                 var document = messageMediaDocument.Document as Document;
                 if (document != null)
                 {
@@ -1620,7 +1606,6 @@ namespace Disa.Framework.Telegram
                     {
                             MaxId = maxId,
                     }));
-                    DebugPrint("items " + ObjectDumper.Dump(items));
                 }
             }); 
         }
@@ -1830,8 +1815,6 @@ namespace Disa.Framework.Telegram
 
             DebugPrint("Difference Page: " + counter);
 
-            Utils.DebugPrint(">>> Current State PTS: " + _mutableSettings.Pts + " QTS: " + _mutableSettings.Qts + " Date: " + _mutableSettings.Date);
-
             var difference = TelegramUtils.RunSynchronously(
                 client.Methods.UpdatesGetDifferenceAsync(new UpdatesGetDifferenceArgs
             {
@@ -1858,7 +1841,6 @@ namespace Disa.Framework.Telegram
                     updates.AddRange(slice.NewMessages);
                     updates.AddRange(slice.OtherUpdates);
                 }
-                DebugPrint(ObjectDumper.Dump(updates));
                 ProcessIncomingPayload(updates, false, client);
             };
 
@@ -1899,7 +1881,7 @@ namespace Disa.Framework.Telegram
                     var channelObj = channel as Channel;
                     if (channelObj != null)
                     {
-                        Utils.DebugPrint("Channel name " + (channelObj.Title));
+                        // do-nothing
                     }
                     else
                     {
@@ -1912,7 +1894,6 @@ namespace Disa.Framework.Telegram
                         uint pts = GetLastPtsForChannel(client, channelAddress.ToString());
                         SaveChannelState(channelAddress, pts);
                     }
-                    Utils.DebugPrint("Channel Pts " + channelPts);
                     var result = TelegramUtils.RunSynchronously(
                         client.Methods.UpdatesGetChannelDifferenceAsync(new UpdatesGetChannelDifferenceArgs
                         {
@@ -2156,7 +2137,6 @@ namespace Disa.Framework.Telegram
                 {
                     var iUpdates = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMessageAsync(args));
-                    DebugPrint(">>>> IUpdates message sent " + ObjectDumper.Dump(iUpdates));
                     var updateShortSentMessage = iUpdates as UpdateShortSentMessage;
                     if (updateShortSentMessage != null)
                     {
@@ -2307,9 +2287,6 @@ namespace Disa.Framework.Telegram
             {
                 SendContact(contactBubble);
             }
-
-            DebugPrint(">>>> Sending visual bubble " + ObjectDumper.Dump(b));
-
         }
 
         private void SendContact(ContactBubble contactBubble)
@@ -2414,7 +2391,6 @@ namespace Disa.Framework.Telegram
                                     FilePart = chunkNumber,
                                     FileTotalParts = fileTotalParts,
                                 }));
-                        DebugPrint("Uploading File part " + chunkNumber + " of " + fileTotalParts);
                         if (!uploaded)
                         {
                             throw new Exception("The file chunk failed to be uploaded");
@@ -2580,7 +2556,6 @@ namespace Disa.Framework.Telegram
 
         private string GetMessageId(IUpdates iUpdates)
         {
-            DebugPrint(">>>> Get message id updates " + ObjectDumper.Dump(iUpdates));
             var updates = iUpdates as Updates;
             if (updates != null)
             {
@@ -2853,7 +2828,6 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupName(BubbleGroup group, Action<string> result)
         {
-            DebugPrint("GetBubbleGroupName");
             return Task.Factory.StartNew(() =>
             {
                 result(GetTitle(group.Address, group.IsParty));
@@ -2862,7 +2836,6 @@ namespace Disa.Framework.Telegram
 
         public override Task GetBubbleGroupPhoto(BubbleGroup group, Action<DisaThumbnail> result)
         {
-            DebugPrint("GetBubbleGroupPhoto");
             return Task.Factory.StartNew(() =>
             {
                 result(GetThumbnail(group.Address, group.IsParty, true));
@@ -3094,14 +3067,12 @@ namespace Disa.Framework.Telegram
                         inputUser.UserId = uint.Parse(id);
                         var inputList = new List<IInputUser>();
                         inputList.Add(inputUser);
-                        DebugPrint(">>>> inputlist " + ObjectDumper.Dump(inputList));
                         var users =
                             TelegramUtils.RunSynchronously(
                                 client.Client.Methods.UsersGetUsersAsync(new UsersGetUsersArgs
                                 {
                                     Id = inputList,
                                 }));
-                        DebugPrint(">>>> get users response " + ObjectDumper.Dump(users));
                         var user = users.FirstOrDefault();
                         return user;
                     }
@@ -3205,13 +3176,11 @@ namespace Disa.Framework.Telegram
                         var dbThumbnail = database.Store.Where(x => x.Id == key).FirstOrDefault();
                         if (dbThumbnail != null)
                         {
-                            DebugPrint(">>>>>> Saving cached thumbnail after deletion ");
                             database.Store.Delete(x => x.Id == key);
                             database.Add(cachedThumbnail);
                         }
                         else
                         {
-                            DebugPrint(">>>>>> Saving cached thumbnail ");
                             database.Add(cachedThumbnail);
                         }
                     }
@@ -3254,7 +3223,6 @@ namespace Disa.Framework.Telegram
             if (group)
             {
                 var chat = _dialogs.GetChat(uint.Parse(id));
-                DebugPrint(">>>> Getting Thumbail for " + TelegramUtils.GetChatTitle(chat));
                 if (chat == null)
                 {
                     return null;
@@ -3275,7 +3243,6 @@ namespace Disa.Framework.Telegram
                         _thumbnailDownloadingDictionary.TryAdd(key, true);
                     }
                     var bytes = FetchFileBytes(fileLocation);
-                    DebugPrint(">>>> Got Thumbnail for " + TelegramUtils.GetChatTitle(chat));
                     bool outValue;
                     if (bytes == null)
                     {
@@ -3293,7 +3260,6 @@ namespace Disa.Framework.Telegram
             {
                 Func<IUser, DisaThumbnail> getThumbnail = user =>
                 {
-                    DebugPrint(">>>> Getting Thumbail for " + TelegramUtils.GetUserName(user));
                     var fileLocation = TelegramUtils.GetUserPhotoLocation(user, small);
                     if (fileLocation == null)
                     {
@@ -3310,7 +3276,6 @@ namespace Disa.Framework.Telegram
                             _thumbnailDownloadingDictionary.TryAdd(id, true);
                         }
                         var bytes = FetchFileBytes(fileLocation);
-                        DebugPrint(">>>> Got Thumbail for " + TelegramUtils.GetUserName(user));
                         bool outValue;
                         if (bytes == null)
                         {
@@ -3429,7 +3394,6 @@ namespace Disa.Framework.Telegram
                 {
                 }));
             _config = config;
-			DebugPrint (ObjectDumper.Dump(_config));
         }
  
 
@@ -3488,16 +3452,11 @@ namespace Disa.Framework.Telegram
 
                     var lastDialog = messagesDialogsSlice.Dialogs.LastOrDefault() as Dialog;
 
-                    DebugPrint("%%%%%%% Last Dialog " + ObjectDumper.Dump(lastDialog));
-
                     if (lastDialog != null)
                     {
                         var lastPeer = GetInputPeerFromIPeer(lastDialog.Peer);
-                        DebugPrint("%%%%%%% Last Peer " + ObjectDumper.Dump(lastPeer));
                         var offsetId = Math.Max(lastDialog.ReadInboxMaxId, lastDialog.TopMessage);
-                        DebugPrint("%%%%%%% message offset " + ObjectDumper.Dump(offsetId));
                         var offsetDate = FindDateForMessageId(offsetId, messagesDialogsSlice);
-                        DebugPrint("%%%%%%% offset date " + ObjectDumper.Dump(offsetDate));
                         var nextDialogs = TelegramUtils.RunSynchronously(client.Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
                         {
                             Limit = 100,
@@ -3512,10 +3471,6 @@ namespace Disa.Framework.Telegram
                             DebugPrint("%%%%%%% Next messages dialogs null ");
                             break;
                         }
-
-                        DebugPrint("%%%%%%% users " + ObjectDumper.Dump(messagesDialogsSlice.Users));
-
-                        DebugPrint("%%%%%%% chats " + ObjectDumper.Dump(messagesDialogsSlice.Chats));
 
                         _dialogs.AddUsers(messagesDialogsSlice.Users);
                         _dialogs.AddChats(messagesDialogsSlice.Chats);
@@ -3561,7 +3516,6 @@ namespace Disa.Framework.Telegram
                     var messageService = iMessage as MessageService;
                     if (message != null)
                     {
-                        DebugPrint(">>>>> Message " + ObjectDumper.Dump(message));
                         var bubbles = ProcessFullMessage(message, false);
                         foreach (var bubble in bubbles)
                         {

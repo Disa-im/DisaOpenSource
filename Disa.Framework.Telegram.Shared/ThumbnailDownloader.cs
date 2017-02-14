@@ -43,7 +43,6 @@ namespace Disa.Framework.Telegram
                         {
                             //try to get bytes from the server
                             var fileLocation = GetCachedPhotoFileLocation(messageMediaPhoto.Photo);
-                            DebugPrint(">>>> Filelocation " + ObjectDumper.Dump(fileLocation));
                             var bytesSecond = FetchFileBytes(fileLocation);
                             if (bytesSecond != null)
                             {

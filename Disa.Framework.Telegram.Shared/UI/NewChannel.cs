@@ -57,7 +57,7 @@ namespace Disa.Framework.Telegram
                             }
                             catch (Exception ex)
                             {
-                                Utils.DebugPrint("Failed Telegram ChannelsInviteToChannelAsync: " + ex.Message);
+                                Utils.DebugPrint("Failed Telegram ChannelsInviteToChannelAsync: " + ex);
 
                                 if (ex.Message.Contains("PEER_FLOOD"))
                                 {

@@ -108,7 +108,6 @@ namespace Disa.Framework.Telegram
                 using (var database = new SqlDatabase<CachedUser>(GetDatabasePath(true)))
                 {
                     var userIdString = TelegramUtils.GetUserId(user);
-                    Utils.DebugPrint("got user id " + userIdString);
                     if (userIdString == null)
                     {
                         return;
@@ -191,7 +190,6 @@ namespace Disa.Framework.Telegram
                     cachedChat.Pts = pts;
                     database.Store.Delete(x => x.Id == channelId);
                     database.Add(cachedChat);
-                    Utils.DebugPrint("$$$$ saved pts for chat as " + cachedChat.Pts);
                 }
             }
         }
@@ -209,7 +207,6 @@ namespace Disa.Framework.Telegram
                         return 0;
                     }
                     var pts = cachedChat.Pts;
-                    Utils.DebugPrint("$$$$ cached chat retrning pts" + pts);
                     return pts;
                 }
             }
