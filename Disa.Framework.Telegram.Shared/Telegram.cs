@@ -2826,10 +2826,15 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var name = GetTitle(unknownPartyParticipant, false);
-                if (!string.IsNullOrWhiteSpace(name))
+                var name = GetUserNameAndHandle(unknownPartyParticipant);
+                if (name != null)
                 {
-                    result(new DisaParticipant(name, unknownPartyParticipant));
+                    result(new DisaParticipant
+                    {
+                        Name = name.Item1,
+                        Username = name.Item2,
+                        Address = unknownPartyParticipant
+                    });
                 }
                 else
                 {
@@ -2979,6 +2984,21 @@ namespace Disa.Framework.Telegram
                 return TelegramUtils.GetLastSeenTime(user);
             }
             return 0;
+        }
+
+        private Tuple<string, string> GetUserNameAndHandle(string id)
+        {
+            if (id == null)
+            {
+                return null;
+            }
+            var user = _dialogs.GetUser(uint.Parse(id));
+            if (user == null)
+            {
+                return null;
+            }
+            return Tuple.Create(TelegramUtils.GetUserName(user), 
+                TelegramUtils.GetUserHandle(user));
         }
 
         private string GetTitle(string id, bool group)
