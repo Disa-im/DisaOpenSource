@@ -15,10 +15,14 @@ namespace Disa.Framework
             get { return _sendingGroup; }
             set
             {
-                _sendingGroup = value;
-                BubbleGroupIndex.SetUnifiedSendingBubbleGroup(ID, value.ID);
+                if (!SendingGroupDisabled)
+                {
+                    _sendingGroup = value;
+                    BubbleGroupIndex.SetUnifiedSendingBubbleGroup(ID, value.ID);
+                }
             }
         }
+        public bool SendingGroupDisabled { get; set; }
         internal bool UnifiedGroupLoaded { get; set; }
 
         private readonly Service _unifiedService;
