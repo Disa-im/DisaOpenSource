@@ -207,11 +207,16 @@ namespace Disa.Framework
                         }
                     }
                     // move all unknown participants over
-                    foreach (var unknownParticipant in bubbleGroup.Participants.Where(x => x.Unknown))
+                    // if there are more than 100 unknown participants, we'll ignore and force unknown participants to be rebuilt
+                    // to prevent an exceedingly large cache
+                    if (bubbleGroup.Participants.Count(x => x.Unknown) < 100)
                     {
-                        if (newParticipants.FirstOrDefault(x => service.BubbleGroupComparer(x.Address, unknownParticipant.Address)) == null)
+                        foreach (var unknownParticipant in bubbleGroup.Participants.Where(x => x.Unknown))
                         {
-                            newParticipants.Add(unknownParticipant);
+                            if (newParticipants.FirstOrDefault(x => service.BubbleGroupComparer(x.Address, unknownParticipant.Address)) == null)
+                            {
+                                newParticipants.Add(unknownParticipant);
+                            }
                         }
                     }
                     bubbleGroup.Participants = new ThreadSafeList<DisaParticipant>(newParticipants);

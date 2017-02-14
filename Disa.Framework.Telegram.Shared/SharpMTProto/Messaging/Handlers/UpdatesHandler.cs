@@ -63,7 +63,7 @@ namespace SharpMTProto.Messaging.Handlers
         {
             var body = responseMessage.Body;
 
-            Console.WriteLine("handle Internal async " + ObjectDumper.Dump(responseMessage));
+            //Console.WriteLine("handle Internal async " + ObjectDumper.Dump(responseMessage));
 
             var updatesTooLong = body as UpdatesTooLong;
             var updateShortMessage = body as UpdateShortMessage;

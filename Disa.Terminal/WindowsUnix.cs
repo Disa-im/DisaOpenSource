@@ -278,6 +278,18 @@ namespace Disa.Terminal
         {
             throw new NotImplementedException();
         }
-    }
+
+		public override Stream GetConversationExportAssetsArchiveStream()
+		{
+			var currentdir = Environment.CurrentDirectory;
+			//We are in the bin folder, we need to go 3 levels up to DisaOpenSource Root
+			var currentDirInfo = new DirectoryInfo(currentdir);
+			currentDirInfo = currentDirInfo.Parent; //going once
+			currentDirInfo = currentDirInfo.Parent; //going twice
+			currentDirInfo = currentDirInfo.Parent; //going thrice
+			var stream = File.OpenRead(Path.Combine(currentDirInfo.FullName, "ConversationExport", "archive.zip"));
+			return stream;
+		}
+	}
 }
 

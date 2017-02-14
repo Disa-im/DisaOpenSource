@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using ProtoBuf;
 
 namespace Disa.Framework.Bubbles
@@ -56,6 +57,14 @@ namespace Disa.Framework.Bubbles
             }
         }
 
+		public static string NonSignedChannel
+		{
+			get
+			{
+				return "&^%$#@?!nonSignedChannel!?@#$%^&";
+			}
+		}
+
         [ProtoMember(251)]
         public bool Deleted { get; set; }
         [ProtoMember(252)]
@@ -103,20 +112,30 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(265)]
         public double QuotedLocationLongitude { get; set; }
 
+		[JsonIgnore]
         [NonSerialized]
         public string ID;
+		[JsonIgnore]
         [NonSerialized]
         public bool ContractInfo;
+		[JsonIgnore]
         [NonSerialized]
         public bool NeedsPhoto = true;
+		[JsonIgnore]
         [NonSerialized]
         internal BubbleGroup BubbleGroupReference;
+		[JsonIgnore]
         [NonSerialized]
         public object Tag;
+		[JsonIgnore]
         [NonSerialized]
         public ThumbnailTransfer QuotedThumbnailTransfer;
+		[JsonIgnore]
         [NonSerialized]
         public bool QuotedThumbnailDownloadFailed;
+        [JsonIgnore]
+        [NonSerialized]
+		public bool InvalidatedCache;
 
         protected VisualBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string id = null, string idService = null)

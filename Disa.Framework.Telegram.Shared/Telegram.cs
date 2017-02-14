@@ -238,6 +238,10 @@ namespace Disa.Framework.Telegram
 		{ 
 			lock(_globalBubbleLock)
 			{
+				if (bubble.ParticipantAddress == "0")
+				{
+					bubble.ParticipantAddress = VisualBubble.NonSignedChannel;
+				}
 				EventBubble(bubble);
 			}
 		}
@@ -346,23 +350,23 @@ namespace Disa.Framework.Telegram
                         {
                             // Ok, we haven't left this group, so is this a new bubblegroup we have just been
                             // added to that we need to kick start with a partyinformation bubble?
-                            if (bubbleGroup == null &&
-                                channel.Creator == null)
-                            {
-                                var partyInformationBubble = new PartyInformationBubble(
-                                    time: Time.GetNowUnixTimestamp(),
-                                    direction: BubbleDirection.Incoming,
-                                    address: bubbleGroupAddress,
-                                    participantAddress: null,
-                                    party: true,
-                                    service: this,
-                                    idService: null,
-                                    type: PartyInformationBubble.InformationType.AddedToChannel,
-                                    influencer: null,
-                                    affected: null);
+                            //if (bubbleGroup == null &&
+                            //    channel.Creator == null)
+                            //{
+                            //    var partyInformationBubble = new PartyInformationBubble(
+                            //        time: Time.GetNowUnixTimestamp(),
+                            //        direction: BubbleDirection.Incoming,
+                            //        address: bubbleGroupAddress,
+                            //        participantAddress: null,
+                            //        party: true,
+                            //        service: this,
+                            //        idService: null,
+                            //        type: PartyInformationBubble.InformationType.AddedToChannel,
+                            //        influencer: null,
+                            //        affected: null);
 
-                                TelegramEventBubble(partyInformationBubble);
-                            }
+                            //    TelegramEventBubble(partyInformationBubble);
+                            //}
                         }
                     }
                 }
@@ -672,7 +676,7 @@ namespace Disa.Framework.Telegram
                     }
                     else
                     {
-                        //Console.WriteLine("Unknown typing action: " + typing.Action.GetType().Name); //causes null pointer in some cases
+                        //TODO: handle unknown typing action
                     }
                 }
                 else if (user != null)
@@ -716,7 +720,7 @@ namespace Disa.Framework.Telegram
                 }
                 else
                 {
-                    Console.WriteLine("Unknown update: " + ObjectDumper.Dump(update));
+                    DebugPrint("Unknown update: " + ObjectDumper.Dump(update));
                 }
             }
 
@@ -768,6 +772,10 @@ namespace Disa.Framework.Telegram
                 var bubble = PartyInformationBubble.CreateThumbnailChanged(
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                     this, messageService.Id.ToString(), null);
+                if (messageService.ToId is PeerChannel)
+                {
+                    bubble.ExtendedParty = true;
+                }
                 return new List<VisualBubble>
                 {
                     bubble
@@ -861,7 +869,10 @@ namespace Disa.Framework.Telegram
                     var bubbleGroupToDelete = BubbleGroupManager.FindWithAddress(this, address);
                     if (bubbleGroupToSwitch != null)
                     {
-                        Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
+						if (Platform.GetCurrentBubbleGroupOnUI() == bubbleGroupToDelete)
+						{
+							Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
+						}
                     }
                     if (bubbleGroupToDelete != null)
                     {
@@ -872,7 +883,7 @@ namespace Disa.Framework.Telegram
             }
             else
             {
-                Console.WriteLine("Unknown message service: " + ObjectDumper.Dump(messageService));
+                DebugPrint("Unknown message service: " + ObjectDumper.Dump(messageService));
                 return new List<VisualBubble>();
             }
         }
@@ -2869,10 +2880,15 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var name = GetTitle(unknownPartyParticipant, false);
-                if (!string.IsNullOrWhiteSpace(name))
+                var name = GetUserNameAndHandle(unknownPartyParticipant);
+                if (name != null)
                 {
-                    result(new DisaParticipant(name, unknownPartyParticipant));
+                    result(new DisaParticipant
+                    {
+                        Name = name.Item1,
+                        Username = name.Item2,
+                        Address = unknownPartyParticipant
+                    });
                 }
                 else
                 {
@@ -2889,63 +2905,35 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                result(GetUpdatedLastOnline(group.Address));
-            });
-        }
+		public override Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result)
+		{
+			return Task.Factory.StartNew(() =>
+			{
+				result(GetUpdatedLastOnline(group.Address));
+			});
+		}
 
         public override Task GetBubbleGroupInputDisabled(BubbleGroup group, Action<bool> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                // Are we a Disa Channel?
-                if (group.IsChannel)
-                { 
-                    var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
-                    if (channel == null)
-                    {
-                        // Should never happen
-                        result(false);
-                    }
-                    else
-                    {
-                        // Input is disabled if:
-                        var inputDisabled = channel.Creator == null &&         // We ARE NOT the creator
-                                            channel.Editor == null;            // AND we ARE NOT an editor
+				// Are we a Telegram Channel?
+				var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+				if (channel == null)
+				{
+					// Ok, we are either a Disa Solo or Disa Party group
+					// so we ARE NOT a Disa Channel
+					result(false);
+				}
+				else
+				{
+					// Input is disabled if:
+					var inputDisabled = channel.Creator == null &&         // We ARE NOT the creator
+										channel.Editor == null;            // AND we ARE NOT an editor
 
-                        result(inputDisabled);
-                    }
-                }
-                else
-                {
-                    // OK, we ARE NOT a Disa Channel so input
-                    // IS NOT disabled
-                    result(false);
-                }
+					result(inputDisabled);
+				}
             });
-        }
-
-        public override bool GetBubbleGroupIsChannel(BubbleGroup group)
-        {
-            // Are we a Telegram Channel?
-            var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
-            if (channel == null)
-            {
-                // Ok, we are either a Disa Solo or Disa Party group
-                // so we ARE NOT a Disa Channel
-                return false;
-            }
-            else
-            {
-                // Ok, we are either a Disa Super or Disa Channel group at this point,
-                // so:
-                var isDisaChannel = channel.Broadcast != null;       // Are we are a Disa Channel?
-
-                 return isDisaChannel;
-            }
         }
 
         public void AddVisualBubbleIdServices(VisualBubble bubble)
@@ -3050,6 +3038,21 @@ namespace Disa.Framework.Telegram
                 return TelegramUtils.GetLastSeenTime(user);
             }
             return 0;
+        }
+
+        private Tuple<string, string> GetUserNameAndHandle(string id)
+        {
+            if (id == null)
+            {
+                return null;
+            }
+            var user = _dialogs.GetUser(uint.Parse(id));
+            if (user == null)
+            {
+                return null;
+            }
+            return Tuple.Create(TelegramUtils.GetUserName(user), 
+                TelegramUtils.GetUserHandle(user));
         }
 
         private string GetTitle(string id, bool group)

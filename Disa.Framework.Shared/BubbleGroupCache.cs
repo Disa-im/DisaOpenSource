@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using SQLite;
 using ProtoBuf;
+using System;
 
 namespace Disa.Framework
 {
+	[Serializable]
     [ProtoContract]
-    internal class BubbleGroupCache
+    public class BubbleGroupCache
     {
         [ProtoMember(1)]
         public string Name { get; set; }
