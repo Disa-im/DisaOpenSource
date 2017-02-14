@@ -28,7 +28,31 @@ namespace Disa.Framework.Bubbles
         {
             get
             {
+                return QuotedAddressMyself;
+            }
+        }
+
+        public static string QuotedNameThemselves
+        {
+            get
+            {
+                return QuotedAddressThemselves;
+            }
+        }
+
+        public static string QuotedAddressMyself
+        {
+            get
+            {
                 return "&^%$#@?!myself!?@#$%^&";
+            }
+        }
+
+        public static string QuotedAddressThemselves
+        {
+            get
+            {
+                return "&^%$#@?!themselves!?@#$%^&";
             }
         }
 
