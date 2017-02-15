@@ -2901,10 +2901,17 @@ namespace Disa.Framework.Telegram
 				}
 				else
 				{
-					// Input is disabled if:
-					var inputDisabled = channel.Creator == null &&         // We ARE NOT the creator
-										channel.Editor == null;            // AND we ARE NOT an editor
-
+                    bool inputDisabled;
+                    if (channel.Megagroup == null)
+                    {
+                        // Input is disabled if:
+                        inputDisabled = channel.Creator == null &&         // We ARE NOT the creator
+                                        channel.Editor == null;            // AND we ARE NOT an editor
+                    }
+                    else
+                    {
+                        inputDisabled = false;
+                    }
 					result(inputDisabled);
 				}
             });
@@ -3315,7 +3322,7 @@ namespace Disa.Framework.Telegram
             }
             catch (Exception ex)
             {
-                Utils.DebugPrint("Exception while fetching file bytes");
+                Utils.DebugPrint("Exception while fetching file bytes: " + ex);
                 return null;
             }
 
