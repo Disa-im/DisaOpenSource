@@ -155,6 +155,10 @@ namespace Disa.Framework
 									{
 										goto End;
 									}
+                                    if (!SupportsBubble(bubble, options))
+                                    {
+                                        continue;
+                                    }
 									CopyBubbleFilesToTargetIfNeeded(bubble, outputLocation, options);
 									var jobject = JObject.FromObject(bubble);
 									jobject.Add("ID", bubble.ID);
@@ -228,6 +232,31 @@ namespace Disa.Framework
 				Case = Result.State.Failure
 			};
 		}
+
+        private static bool SupportsBubble(VisualBubble bubble, Options options)
+        {
+            if (bubble is TextBubble)
+            {
+                return true;
+            }
+            if (bubble is ImageBubble && options.ExportImages)
+            {
+                return true;
+            }
+            if (bubble is VideoBubble && options.ExportVideos)
+            {
+                return true;
+            }
+            if (bubble is AudioBubble && options.ExportAudio)
+            {
+                return true;
+            }
+            if (bubble is FileBubble && options.ExportFiles)
+            {
+                return true;
+            }
+            return false;
+        }
 
 		// http://stackoverflow.com/questions/703281/getting-path-relative-to-the-current-working-directory
 		private static string GetRelativePath(string filespec, string folder)
