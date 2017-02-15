@@ -28,7 +28,7 @@ using static Disa.Framework.Bubbles.Bubble;
 
 namespace Disa.Framework.Telegram
 {
-    [ServiceInfo("Telegram", true, true, true, false, true, typeof(TelegramSettings),
+    [ServiceInfo("Telegram", true, true, true, false, true, true, typeof(TelegramSettings),
         ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(ReadBubble),
                  typeof(TypingBubble), typeof(PresenceBubble), typeof(ImageBubble), typeof(FileBubble), typeof(AudioBubble), typeof(LocationBubble), typeof(ContactBubble))]
     [FileParameters(1000000000)] //1GB
