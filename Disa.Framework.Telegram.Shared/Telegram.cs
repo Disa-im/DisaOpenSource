@@ -338,6 +338,7 @@ namespace Disa.Framework.Telegram
                         }
                         else
                         {
+                            BubbleGroupEvents.RaiseInputUpdated(bubbleGroup);
                             // Ok, we haven't left this group, so is this a new bubblegroup we have just been
                             // added to that we need to kick start with a partyinformation bubble?
                             //if (bubbleGroup == null &&
