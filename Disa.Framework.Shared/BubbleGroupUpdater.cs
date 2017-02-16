@@ -105,23 +105,11 @@ namespace Disa.Framework
                         return;
                     }
 
-                    Action<DisaThumbnail> callbackFinished = thePhoto =>
+                    bubbleGroup.Photo = photo;
+                    bubbleGroup.IsPhotoSetFromService = true;
+                    if (finished != null)
                     {
-                        bubbleGroup.Photo = thePhoto;
-                        bubbleGroup.IsPhotoSetFromService = true;
-                        if (finished != null)
-                        {
-                            finished(bubbleGroup.Photo);
-                        }
-                    };
-
-                    if (photo == null && bubbleGroup.IsParty)
-                    {
-                        BubbleGroupUtils.StitchPartyPhoto(bubbleGroup, callbackFinished);
-                    }
-                    else
-                    {
-                        callbackFinished(photo);
+                        finished(bubbleGroup.Photo);
                     }
                 });
             }
