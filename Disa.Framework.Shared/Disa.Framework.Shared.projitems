@@ -9,6 +9,20 @@
     <Import_RootNamespace>Disa.Framework.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageMediaContact.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageMediaVenue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageMediaGeo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageText.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageMediaAuto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMediaResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineResultBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotResults.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bot\InlineBotSwitchPM.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Hashtag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IMentions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INewChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPartyParticipantRequests.cs" />
