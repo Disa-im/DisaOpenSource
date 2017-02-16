@@ -26,7 +26,7 @@ namespace Disa.Framework
         /// </summary>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/>.</returns>
-        Task GetMentionsToken(Action<string> result);
+        Task GetUsernameMentionsToken(Action<string> result);
 
         //
         // Begin interface extensions below. For these you must use the following test methodology

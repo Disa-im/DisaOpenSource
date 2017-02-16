@@ -9,7 +9,7 @@ namespace Disa.Framework.Telegram
 {
     public partial class Telegram : IMentions
     {
-        public Task GetMentionsToken(Action<string> result)
+        public Task GetUsernameMentionsToken(Action<string> result)
         {
             return Task.Factory.StartNew(() =>
             {
