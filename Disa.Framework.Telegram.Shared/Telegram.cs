@@ -2006,7 +2006,7 @@ namespace Disa.Framework.Telegram
 				catch (Exception ex)
 				{
 					Utils.DebugPrint("Exception while connecting telegram! " + ex);
-					if (ex.Message.Contains("USER_DEACTIVATED"))
+					if (ex.Message != null && ex.Message.Contains("401"))
 					{
 						ResetTelegram();
 					}
