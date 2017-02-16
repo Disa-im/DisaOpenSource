@@ -61,6 +61,20 @@ namespace Disa.Framework.Telegram
                 }
             }
 
+            public static void Delete(int dc)
+            {
+                lock (_lock)
+                {
+                    using (var db = new SqlDatabase<TelegramDc>(Location))
+                    {
+                        foreach (var entry in db.Store.Where(x => x.Dc == dc))
+                        {
+                            db.Remove(entry);
+                        }
+                    }
+                }
+            }
+
             public static TelegramDc Get(int dc)
             {
                 lock (_lock)
@@ -127,6 +141,8 @@ namespace Disa.Framework.Telegram
                 var client = GetClientInternal(dc);
                 if (client != null)
                     return client;
+
+                Retry:
 
                 if (_config == null)
                 {
@@ -214,7 +230,22 @@ namespace Disa.Framework.Telegram
                         }));
                 }
 
-                PingDelay(client, 60);
+                try
+                {
+                    TelegramUtils.RunSynchronously(newClient.Methods.AccountGetAccountTTLAsync(new AccountGetAccountTTLArgs()));
+                }
+                catch (Exception x)
+                {
+                    if (x.Message != null && x.Message.Contains("401"))
+                    {
+                        DebugPrint("Yikes! DC went down. Let's reinstate it...");
+                        newClient.Dispose();
+                        DcDatabase.Delete(dc);
+                        goto Retry;
+                    }
+                }
+
+                PingDelay(newClient, 60);
 
                 lock (_activeClients)
                 {

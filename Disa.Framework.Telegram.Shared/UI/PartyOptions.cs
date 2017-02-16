@@ -69,7 +69,6 @@ namespace Disa.Framework.Telegram
                 var partyParticipants = GetPartyParticipants(fullChat);
                 if (!IsPartOfParty(partyParticipants))
                 {
-                    DebugPrint("#######  not a part of part, returning false");
                     result(false);
                     return;
                 }
@@ -77,7 +76,6 @@ namespace Disa.Framework.Telegram
                 {
                     if (!IsAdmin(group.Address, group.IsExtendedParty))
                     {
-                        DebugPrint("####### Not admin returning false");
                         result(false);
                         return;
                     }
@@ -133,7 +131,6 @@ namespace Disa.Framework.Telegram
                     var chatParticipants = chatFull.Participants as ChatParticipants;
                     if (chatParticipants != null)
                     {
-                        DebugPrint("###### Party participants " + ObjectDumper.Dump(chatParticipants));
                         _participants = new Participants
                         {
                             Type = ParticipantsType.Chat,
@@ -156,7 +153,6 @@ namespace Disa.Framework.Telegram
                     var channelParticipants = GetChannelParticipants(channelFull, new ChannelParticipantsRecent());
                     var channelAdmins = GetChannelParticipants(channelFull, new ChannelParticipantsAdmins());
                     var mergedList = channelAdmins.Union(channelParticipants, new ChannelParticipantComparer()).ToList();
-                    DebugPrint("###### Party participants " + ObjectDumper.Dump(channelAdmins));
                     _participants = new Participants
                     {
                         Type = ParticipantsType.Channel,
@@ -987,7 +983,6 @@ namespace Disa.Framework.Telegram
                             DebugPrint(">>>> get full channel exception " + e);
                         }
                     }
-                    //DebugPrint("#### fullchat " + ObjectDumper.Dump(_fullChat));
                     _dialogs.AddUsers(_fullChat.Users);
                     _dialogs.AddChats(_fullChat.Chats);
                     return _fullChat;

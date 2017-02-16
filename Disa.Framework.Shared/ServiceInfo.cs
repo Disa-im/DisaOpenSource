@@ -16,6 +16,7 @@ namespace Disa.Framework
         public bool EventDrivenBubbles { get; private set; }
         public bool UsesInternet { get; private set; }
         public bool UsesMediaProgress { get; private set; }
+        public bool SendingQuotes { get; private set; }
         public bool SupportsBatterySavingsMode { get; private set; }
         public ProcedureType Procedure { get; private set; }
         public bool DelayedNotifications { get; private set; }
@@ -31,6 +32,22 @@ namespace Disa.Framework
             UsesInternet = usesInternet;
             UsesMediaProgress = usesMediaProgress;
             Procedure = procedureType;
+            SupportsBatterySavingsMode = supportsBatterySavingsMode;
+            DelayedNotifications = delayedNotifications;
+        }
+
+        public ServiceInfo(string serviceName, bool eventDrivenBubbles, bool usesMediaProgress,
+            bool usesInternet, bool supportsBatterySavingsMode, bool delayedNotifications, bool sendingQuotes,
+            Type settings, ProcedureType procedureType, params Type[] supportedBubbles)
+        {
+            ServiceName = serviceName;
+            EventDrivenBubbles = eventDrivenBubbles;
+            SupportedBubbles = supportedBubbles;
+            Settings = settings;
+            UsesInternet = usesInternet;
+            UsesMediaProgress = usesMediaProgress;
+            Procedure = procedureType;
+            SendingQuotes = sendingQuotes;
             SupportsBatterySavingsMode = supportsBatterySavingsMode;
             DelayedNotifications = delayedNotifications;
         }

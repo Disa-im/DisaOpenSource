@@ -1332,15 +1332,38 @@ namespace Disa.Framework.Telegram.Mobile
 		private static void CleanUp(Service service)
 		{
 			var bubbleGroups = BubbleGroupManager.FindAll(service);
-			foreach(var groups in bubbleGroups)
-			{
-				BubbleGroupFactory.Delete(groups);
-			}
+			//foreach(var groups in bubbleGroups)
+			//{
+			//	BubbleGroupFactory.Delete(groups);
+			//}
 			try
 			{
 				var databasePath = Platform.GetDatabasePath();
-				File.Delete(Path.Combine(databasePath, "userscache.db"));
-				File.Delete(Path.Combine(databasePath, "chatscache.db"));
+                var settingsPath = Platform.GetSettingsPath();
+                try
+                {
+                    File.Delete(Path.Combine(databasePath, "userscache.db"));
+                }
+                catch
+                {
+                    // do-nothing
+                }
+                try
+                {
+                    File.Delete(Path.Combine(databasePath, "chatscache.db"));
+                }
+                catch
+                {
+                    // do-nothing
+                }
+                try
+                {
+                    File.Delete(Path.Combine(settingsPath, "TelegramDcs.db"));
+                }   
+                catch
+                {
+                    // do-nothing
+                }
 				MutableSettingsManager.Delete<TelegramMutableSettings>();
 			}
 			catch (Exception ex)

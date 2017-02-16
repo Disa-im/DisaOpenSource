@@ -27,6 +27,7 @@ namespace Disa.Framework.Telegram
                 //initialize the dc we want to download from
                 if (_document.DcId != _telegram.Settings.NearestDcId)
                 {
+                    Retry:
                     // if its not the nearest dc, it could be unintialized. so lets check and init it.
                     var dc = DcDatabase.Get(dcId);
                     if (dc == null)
@@ -35,6 +36,11 @@ namespace Disa.Framework.Telegram
                         //after this our dc configuration is ready, the connection should die out in a 60 secs.
                     }
                     var dcCached = DcDatabase.Get(dcId);
+                    if (dcCached == null)
+                    {
+                        
+                        return;
+                    }
                     var dcOption = _telegram.Config.DcOptions.Cast<DcOption>().FirstOrDefault(x => x.Id == dcId);
                     var tcpConfig = new TcpClientTransportConfig(dcOption.IpAddress, (int)dcOption.Port);
                     var authInfo = new SharpMTProto.Authentication.AuthInfo(dcCached.Key,
@@ -42,6 +48,20 @@ namespace Disa.Framework.Telegram
                     _client = new TelegramClient(tcpConfig,
                         new ConnectionConfig(authInfo.AuthKey, authInfo.Salt), AppInfo);
                     TelegramUtils.RunSynchronously(_client.Connect());
+                    try
+                    {
+                        TelegramUtils.RunSynchronously(_client.Methods.AccountGetAccountTTLAsync(new AccountGetAccountTTLArgs()));
+                    }
+                    catch (Exception x)
+                    {
+                        if (x.Message != null && x.Message.Contains("401"))
+                        {
+                            telegram.DebugPrint("Yikes! DC went down. Let's reinstate it...");
+                            _client.Dispose();
+                            DcDatabase.Delete(dcId);
+                            goto Retry;
+                        }
+                    }
                 }
                 else
                 {

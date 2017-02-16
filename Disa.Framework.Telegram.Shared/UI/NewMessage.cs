@@ -138,7 +138,6 @@ namespace Disa.Framework.Telegram
         {
             var globalContacts = new List<Contact>();
             _dialogs.AddChats(contactsFound.Chats);
-            Utils.DebugPrint("Chats found " + ObjectDumper.Dump(contactsFound.Chats));
             foreach (var chat in contactsFound.Chats)
             {
                 var name = TelegramUtils.GetChatTitle(chat);

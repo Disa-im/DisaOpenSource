@@ -29,7 +29,31 @@ namespace Disa.Framework.Bubbles
         {
             get
             {
+                return QuotedAddressMyself;
+            }
+        }
+
+        public static string QuotedNameThemselves
+        {
+            get
+            {
+                return QuotedAddressThemselves;
+            }
+        }
+
+        public static string QuotedAddressMyself
+        {
+            get
+            {
                 return "&^%$#@?!myself!?@#$%^&";
+            }
+        }
+
+        public static string QuotedAddressThemselves
+        {
+            get
+            {
+                return "&^%$#@?!themselves!?@#$%^&";
             }
         }
 
@@ -109,7 +133,8 @@ namespace Disa.Framework.Bubbles
 		[JsonIgnore]
         [NonSerialized]
         public bool QuotedThumbnailDownloadFailed;
-		[NonSerialized]
+        [JsonIgnore]
+        [NonSerialized]
 		public bool InvalidatedCache;
 
         protected VisualBubble(long time, BubbleDirection direction, string address,
