@@ -1332,10 +1332,10 @@ namespace Disa.Framework.Telegram.Mobile
 		private static void CleanUp(Service service)
 		{
 			var bubbleGroups = BubbleGroupManager.FindAll(service);
-			foreach(var groups in bubbleGroups)
-			{
-				BubbleGroupFactory.Delete(groups);
-			}
+			//foreach(var groups in bubbleGroups)
+			//{
+			//	BubbleGroupFactory.Delete(groups);
+			//}
 			try
 			{
 				var databasePath = Platform.GetDatabasePath();
