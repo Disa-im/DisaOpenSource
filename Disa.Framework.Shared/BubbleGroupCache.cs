@@ -20,6 +20,6 @@ namespace Disa.Framework
 		[ProtoMember(5)]
 		public bool InputDisabled { get; set; }
         [ProtoMember(6)]
-        public List<Mentions> Mentions { get; set; }
+        public List<Mention> Mentions { get; set; }
     }
 }

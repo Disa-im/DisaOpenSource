@@ -4,6 +4,13 @@ using System.Threading.Tasks;
 
 namespace Disa.Framework
 {
+    public enum MentionType
+    {
+        Username,
+        Hashtag,
+        BotCommand
+    }
+
     [DisaFramework]
     public interface IMentions
     {
@@ -21,12 +28,12 @@ namespace Disa.Framework
         //
 
         /// <summary>
-        /// Set the result of the <see cref="Action"/> as a <see cref="List{string}"/> of tokens to recognize
-        /// for Usernames, Hashtags and BotCommands.
+        /// Based on the passed in <see cref="MentionType"/>, set the result of the <see cref="Action"/> as
+        /// the string to recognize for a mention category (e.g., Usernames, Hashtags BotCommands).
         /// </summary>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/>.</returns>
-        Task GetTokens(Action<List<string>> result);
+        Task GetToken(MentionType mentionType, Action<string> result);
 
         /// <summary>
         /// Given a string representing a mentions category (usernames, hashtags, bot commands), 
@@ -37,7 +44,7 @@ namespace Disa.Framework
         /// <param name="group">For usernames and bot commands, the group the set of mentions is for.</param>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/>.</returns>
-        Task GetMentions(string token, BubbleGroup group, Action<List<Mentions>> result);
+        Task GetMentions(string token, BubbleGroup group, Action<List<Mention>> result);
 
         //
         // Begin interface extensions below. For these you must use the following test methodology

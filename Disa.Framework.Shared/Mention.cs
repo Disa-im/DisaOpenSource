@@ -5,10 +5,10 @@ namespace Disa.Framework
 {
     [Serializable]
     [ProtoContract]
-    [ProtoInclude(101, typeof(BotCommand))]
-    [ProtoInclude(102, typeof(Hashtag))]
-    [ProtoInclude(103, typeof(Username))]
-    public class Mentions
+    [ProtoInclude(101, typeof(BotCommandMention))]
+    [ProtoInclude(102, typeof(HashtagMention))]
+    [ProtoInclude(103, typeof(UsernameMention))]
+    public class Mention
     {
         /// <summary>
         /// Holds the token value used for usernames, hashtags or bot commands.
@@ -33,5 +33,24 @@ namespace Disa.Framework
         /// </summary>
         [ProtoMember(3)]
         public string Value { get; set; }
+
+        /// <summary>
+        /// For a <see cref="UsernameMention"/> mention, holds the <see cref="DisaParticipant.Name"/> for this username. 
+        /// </summary>
+        [ProtoMember(4)]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// For a <see cref="UsernameMention"/> mention, holds the <see cref="DisaParticipant.Address"/> for this username. 
+        /// </summary>
+        [ProtoMember(5)]
+        public string Address { get; set; }
+
+        /// <summary>
+        /// For a <see cref="BotCommandMention"/> mention, holds the Bot username.
+        /// </summary>
+        [ProtoMember(6)]
+        public string BotUsername { get; set; }
+
     }
 }

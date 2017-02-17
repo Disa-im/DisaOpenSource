@@ -96,7 +96,7 @@ namespace Disa.Framework
             }
             if (item.Mentions != null)
             {
-                associatedGroup.Mentions = new ThreadSafeList<Mentions>(item.Mentions);
+                associatedGroup.Mentions = new ThreadSafeList<Mention>(item.Mentions);
             }
 
         }

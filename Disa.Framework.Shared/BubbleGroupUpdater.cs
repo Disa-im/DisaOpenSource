@@ -461,7 +461,7 @@ namespace Disa.Framework
             }
         }
 
-        public static void GetMentions(string token, BubbleGroup group, Action<List<Mentions>> result)
+        public static void GetMentions(string token, BubbleGroup group, Action<List<Mention>> result)
         {
             if (ServiceManager.IsRunning(group.Service))
             {
@@ -488,7 +488,7 @@ namespace Disa.Framework
                     }
                     else
                     {
-                        result(new List<Mentions>());
+                        result(new List<Mention>());
                     } 
                 });
             }
@@ -503,7 +503,7 @@ namespace Disa.Framework
                 }
                 else
                 {
-                    result(new List<Mentions>());
+                    result(new List<Mention>());
                 }
             }
         }
