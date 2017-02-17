@@ -21,13 +21,14 @@ namespace Disa.Framework
 
         private static BubbleGroupCache Generate(BubbleGroup group, string guid)
         {
-			var bubbleGroupCache = new BubbleGroupCache
-			{
-				Name = group.Title,
-				Photo = group.Photo,
-				Participants = group.Participants.ToList(),
-				Guid = guid,
-				InputDisabled = group.InputDisabled,
+            var bubbleGroupCache = new BubbleGroupCache
+            {
+                Name = group.Title,
+                Photo = group.Photo,
+                Participants = group.Participants.ToList(),
+                Guid = guid,
+                InputDisabled = group.InputDisabled,
+                Mentions = group.Mentions.ToList()
             };
             return bubbleGroupCache;
         }
@@ -93,9 +94,14 @@ namespace Disa.Framework
                     participant.IsPhotoSetInitiallyFromCache = true;
                 }
             }
+            if (item.Mentions != null)
+            {
+                associatedGroup.Mentions = new ThreadSafeList<Mentions>(item.Mentions);
+            }
+
         }
 
-		internal static BubbleGroupCache Load(BubbleGroup group)
+        internal static BubbleGroupCache Load(BubbleGroup group)
 		{
 			return LoadInternal(group);
 		}
