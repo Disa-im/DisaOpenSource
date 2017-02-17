@@ -2113,62 +2113,6 @@ namespace Disa.Framework.Telegram
                 }
             }
 
-            var textBubble = b as TextBubble;
-            if (textBubble != null)
-            {
-                var peer = GetInputPeer(textBubble.Address, textBubble.Party, textBubble.ExtendedParty);
-
-                // Standard send message
-                var args = new MessagesSendMessageArgs
-                {
-                    Flags = 0,
-                    Peer = peer,
-                    Message = textBubble.Message,
-                    RandomId = ulong.Parse(textBubble.IdService2),
-                };
-
-                // Adjust for quote if necessary
-                if (!string.IsNullOrEmpty(textBubble.QuotedIdService))
-                {
-                    args.Flags |= MESSAGE_FLAG_REPLY;
-                    args.ReplyToMsgId = uint.Parse(textBubble.QuotedIdService);
-                }
-
-                using (var client = new FullClientDisposable(this))
-                {
-                    var iUpdates = TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesSendMessageAsync(args));
-                    var updateShortSentMessage = iUpdates as UpdateShortSentMessage;
-                    if (updateShortSentMessage != null)
-                    {
-                        textBubble.IdService = updateShortSentMessage.Id.ToString(CultureInfo.InvariantCulture);
-                    }
-                    var updates = iUpdates as Updates;
-                    if (updates != null)
-                    {
-                        foreach (var update in updates.UpdatesProperty)
-                        {
-							var updateMessageId = update as UpdateMessageID;
-							if (updateMessageId != null)
-							{
-								textBubble.IdService = updateMessageId.Id.ToString(CultureInfo.InvariantCulture);
-								break;
-							}
-                            var updateNewChannelMessage = update as UpdateNewChannelMessage;
-                            if (updateNewChannelMessage == null) 
-								continue;
-                            var message = updateNewChannelMessage.Message as Message;
-                            if (message != null)
-                            {
-                                textBubble.IdService = message.Id.ToString(CultureInfo.InvariantCulture);
-								break;
-                            }
-                        }
-                    }
-                    SendToResponseDispatcher(iUpdates, client.Client);
-                }
-            }
-
             var readBubble = b as ReadBubble;
             if (readBubble != null)
             {
@@ -2205,29 +2149,76 @@ namespace Disa.Framework.Telegram
                 }
             }
 
-            var imageBubble = b as ImageBubble;
-            if (imageBubble != null)
+            try
             {
-                var fileId = GenerateRandomId();
-                try
+                var textBubble = b as TextBubble;
+                if (textBubble != null)
                 {
+                    var peer = GetInputPeer(textBubble.Address, textBubble.Party, textBubble.ExtendedParty);
+
+                    // Standard send message
+                    var args = new MessagesSendMessageArgs
+                    {
+                        Flags = 0,
+                        Peer = peer,
+                        Message = textBubble.Message,
+                        RandomId = ulong.Parse(textBubble.IdService2),
+                    };
+
+                    // Adjust for quote if necessary
+                    if (!string.IsNullOrEmpty(textBubble.QuotedIdService))
+                    {
+                        args.Flags |= MESSAGE_FLAG_REPLY;
+                        args.ReplyToMsgId = uint.Parse(textBubble.QuotedIdService);
+                    }
+
+                    using (var client = new FullClientDisposable(this))
+                    {
+                        var iUpdates = TelegramUtils.RunSynchronously(
+                            client.Client.Methods.MessagesSendMessageAsync(args));
+                        var updateShortSentMessage = iUpdates as UpdateShortSentMessage;
+                        if (updateShortSentMessage != null)
+                        {
+                            textBubble.IdService = updateShortSentMessage.Id.ToString(CultureInfo.InvariantCulture);
+                        }
+                        var updates = iUpdates as Updates;
+                        if (updates != null)
+                        {
+                            foreach (var update in updates.UpdatesProperty)
+                            {
+                                var updateMessageId = update as UpdateMessageID;
+                                if (updateMessageId != null)
+                                {
+                                    textBubble.IdService = updateMessageId.Id.ToString(CultureInfo.InvariantCulture);
+                                    break;
+                                }
+                                var updateNewChannelMessage = update as UpdateNewChannelMessage;
+                                if (updateNewChannelMessage == null)
+                                    continue;
+                                var message = updateNewChannelMessage.Message as Message;
+                                if (message != null)
+                                {
+                                    textBubble.IdService = message.Id.ToString(CultureInfo.InvariantCulture);
+                                    break;
+                                }
+                            }
+                        }
+                        SendToResponseDispatcher(iUpdates, client.Client);
+                    }
+                }
+
+                var imageBubble = b as ImageBubble;
+                if (imageBubble != null)
+                {
+                    var fileId = GenerateRandomId();
                     var inputFile = UploadFile(imageBubble, fileId, 0);
                     SendFile(imageBubble, inputFile);
                 }
-                catch (Exception e)
-                {
-                    DebugPrint("File upload error " + e);
-                    throw;
-                }
-            }
 
-            var fileBubble = b as FileBubble;
-
-            if (fileBubble != null)
-            {
-                var fileId = GenerateRandomId();
-                try
+                var fileBubble = b as FileBubble;
+                if (fileBubble != null)
                 {
+                    var fileId = GenerateRandomId();
                     var fileInfo = new FileInfo(fileBubble.Path);
                     DebugPrint(">>>>>>> the size of the file is " + fileInfo.Length);
                     if (fileInfo.Length <= 10485760)
@@ -2241,20 +2232,11 @@ namespace Disa.Framework.Telegram
                         SendFile(fileBubble, inputFile);
                     }
                 }
-                catch (Exception e)
-                {
-                    DebugPrint("File upload error " + e);
-                    throw;
-                }
-            }
 
-            var audioBubble = b as AudioBubble;
-
-            if (audioBubble != null)
-            {
-                var fileId = GenerateRandomId();
-                try
+                var audioBubble = b as AudioBubble;
+                if (audioBubble != null)
                 {
+                    var fileId = GenerateRandomId();
                     var fileInfo = new FileInfo(audioBubble.AudioPath);
                     DebugPrint(">>>>>>> the size of the file is " + fileInfo.Length);
                     if (fileInfo.Length <= 10485760)
@@ -2268,25 +2250,22 @@ namespace Disa.Framework.Telegram
                         SendFile(audioBubble, inputFile);
                     }
                 }
-                catch (Exception e)
+
+                var locationBubble = b as LocationBubble;
+                if (locationBubble != null)
                 {
-                    DebugPrint("File upload error " + e);
-                    throw;
+                    SendGeoLocation(locationBubble);
+                }
+
+                var contactBubble = b as ContactBubble;
+                if (contactBubble != null)
+                {
+                    SendContact(contactBubble);
                 }
             }
-
-            var locationBubble = b as LocationBubble;
-
-            if (locationBubble != null)
+            catch (Exception ex)
             {
-                SendGeoLocation(locationBubble);
-            }
-
-            var contactBubble = b as ContactBubble;
-
-            if (contactBubble != null)
-            {
-                SendContact(contactBubble);
+                throw new ServiceQueueBubbleException("Failed to send message: " + ex);
             }
         }
 
