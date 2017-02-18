@@ -47,11 +47,8 @@ namespace Disa.Framework.Telegram
                     result(new List<Mention>());
                 }
 
-                var fullChat = FetchFullChat(group.Address, group.IsExtendedParty);
-
-                // Get fresh list of participants, not the cache
-                DisposeFullChat();
-                var partyParticipants = GetPartyParticipants(fullChat);
+                var fullChat = MentionsFetchFullChat(group.Address, group.IsExtendedParty);
+                var partyParticipants = MentionsGetPartyParticipants(fullChat);
 
                 var resultList = new List<Mention>();
                 if (!group.IsExtendedParty)
@@ -98,10 +95,101 @@ namespace Disa.Framework.Telegram
                             resultList.Add(mention);
                         }
                     }
-
                 }
+
                 result(resultList);
             });
+        }
+
+        // Separate implementation for Mentions - PartyOptions has its own as well
+        private MessagesChatFull MentionsFetchFullChat(string address, bool superGroup)
+        {
+            MessagesChatFull fullChat = null;
+            using (var client = new FullClientDisposable(this))
+            {
+                if (!superGroup)
+                {
+                    fullChat =
+                        (MessagesChatFull)
+                            TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesGetFullChatAsync(new MessagesGetFullChatArgs
+                                {
+                                    ChatId = uint.Parse(address)
+                                }));
+                }
+                else
+                {
+                    try
+                    {
+                        fullChat =
+                            (MessagesChatFull)
+                                TelegramUtils.RunSynchronously(
+                                client.Client.Methods.ChannelsGetFullChannelAsync(new ChannelsGetFullChannelArgs
+                                {
+                                    Channel = new InputChannel
+                                    {
+                                        ChannelId = uint.Parse(address),
+                                        AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(address)))
+                                    }
+                                }));
+                    }
+                    catch (Exception e)
+                    {
+                        DebugPrint(">>>> get full channel exception " + e);
+                    }
+                }
+
+                _dialogs.AddUsers(fullChat.Users);
+                _dialogs.AddChats(fullChat.Chats);
+
+                return fullChat;
+            }
+        }
+
+        // Separate implementation for Mentions - PartyOptions has its own as well
+        private Participants MentionsGetPartyParticipants(MessagesChatFull fullChat)
+        {
+            Participants participants = null;
+
+            var iChatFull = fullChat.FullChat;
+            var chatFull = iChatFull as ChatFull;
+            var channelFull = iChatFull as ChannelFull;
+            if (chatFull != null)
+            {
+                var chatParticipants = chatFull.Participants as ChatParticipants;
+                if (chatParticipants != null)
+                {
+                    participants = new Participants
+                    {
+                        Type = ParticipantsType.Chat,
+                        ChatParticipants = chatParticipants.Participants
+                    };
+                    return participants;
+                }
+            }
+            if (channelFull != null)
+            {
+                if (channelFull.CanViewParticipants == null)
+                {
+                    return new Participants
+                    {
+                        Type = ParticipantsType.Channel,
+                        ChannelParticipants = new List<IChannelParticipant>()
+                    };
+                }
+
+                var channelParticipants = GetChannelParticipants(channelFull, new ChannelParticipantsRecent());
+                var channelAdmins = GetChannelParticipants(channelFull, new ChannelParticipantsAdmins());
+                var mergedList = channelAdmins.Union(channelParticipants, new ChannelParticipantComparer()).ToList();
+                participants = new Participants
+                {
+                    Type = ParticipantsType.Channel,
+                    ChannelParticipants = mergedList
+                };
+                return participants;
+            }
+
+            return null;    
         }
     }
 }

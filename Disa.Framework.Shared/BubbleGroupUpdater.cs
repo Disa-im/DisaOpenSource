@@ -473,10 +473,8 @@ namespace Disa.Framework
                     {
                         uiMentions.GetMentions(token, group, (mentions) =>
                         {
-                            // TODO: Should we filter on group for Usernames and Bot commands (hashtags go across all groups)?
-
                             // No RemoveAll for ThreadSafeList
-                            var itemsToRemove = group.Mentions.Where(m => m.Token == token);
+                            var itemsToRemove = group.Mentions.Where(m => m.Token == token).ToList();
                             foreach(var itemToRemove in itemsToRemove)
                             {
                                 group.Mentions.Remove(itemToRemove);
