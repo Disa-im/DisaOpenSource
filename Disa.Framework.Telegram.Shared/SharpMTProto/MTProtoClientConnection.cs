@@ -136,6 +136,11 @@ namespace SharpMTProto
             get { return _methods; }
         }
 
+		public IMessageIdGenerator MessageIdGenerator
+		{
+			get { return _messageIdGenerator; }
+		}
+
         public MTProtoConnectionState State
         {
             get { return _state; }

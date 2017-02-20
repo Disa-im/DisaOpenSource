@@ -37,6 +37,7 @@ namespace SharpMTProto.Messaging
         bool CanSetResponse(object response);
         Task SendAsync();
         void SetException(Exception ex);
+		void UpdateMessage(IMessage message);
     }
 
     public class Request<TResponse> : IRequest
@@ -122,5 +123,10 @@ namespace SharpMTProto.Messaging
         {
             return _taskCompletionSource.Task;
         }
-    }
+
+		public void UpdateMessage(IMessage message)
+		{
+			this.Message = message;
+		}
+	}
 }

@@ -34,4 +34,3 @@ namespace SharpMTProto.Messaging.Handlers
         }
     }
 }
-

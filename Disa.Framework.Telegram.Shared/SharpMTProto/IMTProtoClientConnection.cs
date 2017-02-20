@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using SharpMTProto.Messaging;
 using SharpMTProto.Schema;
 using System.Collections.Generic;
+using SharpMTProto.Services;
 
 namespace SharpMTProto
 {
@@ -22,6 +23,12 @@ namespace SharpMTProto
         ///     A state.
         /// </summary>
         MTProtoConnectionState State { get; }
+
+		/// <summary>
+		/// Gets the message identifier generator.
+		/// </summary>
+		/// <value>The message identifier generator.</value>
+		IMessageIdGenerator MessageIdGenerator { get; }
 
         /// <summary>
         ///     Is connected.
