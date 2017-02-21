@@ -91,5 +91,9 @@ namespace Disa.Framework
         public abstract void ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
 
 		public abstract void ShareContent(string mimeType, string uri);
+
+        public abstract void OpenApp(string appName);
+
+        public abstract void OpenAppSettings(string appName);
     }
 }

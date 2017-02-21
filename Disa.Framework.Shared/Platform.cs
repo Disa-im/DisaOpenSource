@@ -223,5 +223,15 @@ namespace Disa.Framework
 		{
 			PlatformImplementation.ShareContent(mimeType, uri);
 		}
+
+        public static void OpenApp(string appName)
+        {
+            PlatformImplementation.OpenApp(appName);
+        }
+
+        public static void OpenAppSettings(string appName)
+        {
+            PlatformImplementation.OpenAppSettings(appName);
+        }
     }
 }
