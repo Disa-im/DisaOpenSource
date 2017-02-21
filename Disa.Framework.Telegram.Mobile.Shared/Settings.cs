@@ -31,8 +31,8 @@ namespace Disa.Framework.Telegram.Mobile
 				help.Order = ToolbarItemOrder.Primary;
 				help.Clicked += (sender, e) => 
 				{
-					Platform.LaunchViewIntent("http://www.disa.im/telegram.html");
-				};
+                    Platform.LaunchViewIntent("http://www.disa.im/faq.html?s=telegram");
+                };
 				main.ToolbarItems.Add(help);
                 navigationPage = new NavigationPage(main);
             }

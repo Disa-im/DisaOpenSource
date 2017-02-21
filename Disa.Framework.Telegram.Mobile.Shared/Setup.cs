@@ -18,6 +18,8 @@ namespace Disa.Framework.Telegram.Mobile
 {
     public static class Setup 
     {
+        private static readonly string TelegramPackage = "org.telegram.messenger";
+
         private static Page _cachedPage;
         private static TelegramSetupSettings _settings;
 
@@ -206,13 +208,13 @@ namespace Disa.Framework.Telegram.Mobile
                 Utils.DebugPrint("Starting the service...!");
 				Insights.Report(new SetupException("Telegram Setup Ended"));
                 ServiceManager.Start(service, true);
+
+                _cachedPage = null;
             }
             catch (Exception ex)
             {
                 Utils.DebugPrint("Failed to save the Telegram service: " + ex);
             }
-
-            MutableSettingsManager.Delete<TelegramSetupSettings>();
         }
 
         private class ActivationResult
@@ -299,8 +301,8 @@ namespace Disa.Framework.Telegram.Mobile
 			help.Order = ToolbarItemOrder.Primary;
 			help.Clicked += (sender, e) =>
 			{
-				Platform.LaunchViewIntent("http://www.disa.im/telegram.html");
-			};
+                Platform.LaunchViewIntent("http://www.disa.im/faq.html?s=telegram");
+            };
 			tabs.ToolbarItems.Add(help);
             tabs.PropertyChanged += (sender, e) =>
                 {
@@ -401,7 +403,15 @@ namespace Disa.Framework.Telegram.Mobile
                     {
 						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
-                        DependencyService.Get<IPluginPageControls>().Finish();
+                        if (Platform.DeviceHasApp(TelegramPackage))
+                        {
+                            await Navigation.PushAsync(new MuteNotifications());
+                        }
+                        else
+                        {
+                            await Navigation.PopToRootAsync();
+                            DependencyService.Get<IPluginPageControls>().Finish();
+                        }
                     }
                     else
                     {
@@ -514,7 +524,15 @@ namespace Disa.Framework.Telegram.Mobile
                     {
 						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
-                        DependencyService.Get<IPluginPageControls>().Finish();
+                        if (Platform.DeviceHasApp(TelegramPackage))
+                        {
+                            await Navigation.PushAsync(new MuteNotifications());
+                        }
+                        else
+                        {
+                            await Navigation.PopToRootAsync();
+                            DependencyService.Get<IPluginPageControls>().Finish();
+                        }
                     }
                     else
                     {
@@ -632,6 +650,146 @@ namespace Disa.Framework.Telegram.Mobile
             }
         }
 
+        private class MuteNotifications : ContentPage
+        {
+            private static Tuple<int, int> FirstIndexOf(string str, string[] tokens)
+            {
+                int smallest = int.MaxValue;
+                int currentI = -1;
+                for (int i = 0; i < tokens.Length; i++)
+                {
+                    var index = str.IndexOf(tokens[i], StringComparison.InvariantCulture);
+                    if (index > -1 && index < smallest)
+                    {
+                        smallest = index;
+                        currentI = i;
+                    }
+                }
+                if (currentI == -1)
+                {
+                    smallest = -1;
+                }
+                return Tuple.Create(currentI, smallest);
+            }
+
+            private static FormattedString GenerateString(string str, double fontSize)
+            {
+                var spans = new List<Span>();
+                var newStr = string.Copy(str);
+
+                var openTokens = new[] { "<i>", "<b>", "<u>" };
+                var closedTokens = new[] { "</i>", "</b>", "</u>" };
+
+                while (true)
+                {
+                    var openTokenIndex = FirstIndexOf(newStr, openTokens);
+                    if (openTokenIndex.Item2 > -1)
+                    {
+                        var leftPart = newStr.Remove(openTokenIndex.Item2);
+                        var rightPart = newStr.Remove(0, openTokenIndex.Item2);
+                        spans.Add(new Span { Text = leftPart, FontSize = fontSize });
+                        var closedTokenIndex = rightPart.IndexOf(closedTokens[openTokenIndex.Item1], StringComparison.InvariantCulture);
+                        if (closedTokenIndex > -1)
+                        {
+                            var item = rightPart.Remove(closedTokenIndex);
+                            item = item.Replace(openTokens[openTokenIndex.Item1], "");
+                            var attribute = FontAttributes.None;
+                            if (openTokenIndex.Item1 == 0)
+                            {
+                                attribute = FontAttributes.Italic;
+                            }
+                            else
+                            {
+                                attribute = FontAttributes.Bold;
+                            }
+                            spans.Add(new Span { Text = item, FontSize = fontSize, FontAttributes = attribute });
+                            var rightPartAdjusted = rightPart.Remove(0, closedTokenIndex + 4);
+                            newStr = rightPartAdjusted;
+                        }
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrWhiteSpace(newStr))
+                        {
+                            spans.Add(new Span { Text = newStr, FontSize = fontSize });
+                        }
+                        break;
+                    }
+                }
+
+                var formattedString = new FormattedString();
+                foreach (var span in spans)
+                {
+                    formattedString.Spans.Add(span);
+                }
+                return formattedString;
+            }
+
+            private ScrollView BuildNotificationTutorial(Action launchVideo, Action launchTelegram)
+            {
+                var fontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
+
+                var scrollView = new ScrollView();
+
+                var mainLayout = new StackLayout { Orientation = StackOrientation.Vertical };
+                mainLayout.Padding = new Thickness(20, 20);
+
+                var headerLayout = new StackLayout { Orientation = StackOrientation.Horizontal };
+                var headerLabel = new Label();
+                headerLabel.FormattedText = GenerateString(Localize.GetString("TelegramMuteNotificationsHeader"), fontSize);
+                headerLabel.Margin = new Thickness(0, 0, 0, 15);
+                headerLayout.Children.Add(headerLabel);
+                mainLayout.Children.Add(headerLayout);
+
+                var stepOne = new StackLayout { Orientation = StackOrientation.Vertical };
+                var stepOneTitle = new Label();
+                stepOneTitle.Text = Localize.GetString("TelegramMuteNotificationsStep1Title");
+                stepOneTitle.FontSize = fontSize;
+                stepOneTitle.FontAttributes = FontAttributes.Bold;
+                stepOne.Children.Add(stepOneTitle);
+                var stepOneDescription = new Label();
+                stepOneDescription.FormattedText = GenerateString(Localize.GetString("TelegramMuteNotificationsStep1Text"), fontSize);
+                stepOneDescription.FontSize = fontSize;
+                stepOneDescription.Margin = new Thickness(5, 0, 5, 0);
+                stepOne.Children.Add(stepOneDescription);
+                var stepOneButtonContainer = new StackLayout { Orientation = StackOrientation.Horizontal };
+                stepOneButtonContainer.Margin = new Thickness(5, 0, 5, 0);
+                var stepOneWatchVideo = new Button();
+                stepOneWatchVideo.Text = Localize.GetString("TelegramMuteNotificationsWatchVideo");
+                stepOneWatchVideo.Clicked += (sender, e) =>
+                {
+                    launchVideo();
+                };
+                stepOneButtonContainer.Children.Add(stepOneWatchVideo);
+                stepOne.Children.Add(stepOneButtonContainer);
+                mainLayout.Children.Add(stepOne);
+
+                scrollView.Content = mainLayout;
+                return scrollView;
+            }
+
+            private void OpenTelegram()
+            {
+                Platform.OpenApp(TelegramPackage);
+            }
+
+            private void DisableNotificationsVideo()
+            {
+                Platform.LaunchViewIntent("https://www.youtube.com/watch?v=HJVJG7onFb0");
+            }
+
+            public MuteNotifications()
+            {
+                Content = BuildNotificationTutorial(DisableNotificationsVideo, OpenTelegram);
+                Title = Localize.GetString("TelegramMuteNotificationsTitle");
+                ToolbarItems.Add(new ToolbarItem(Localize.GetString("TelegramFinish"), null, async () =>
+                {
+                    await Navigation.PopToRootAsync();
+                    DependencyService.Get<IPluginPageControls>().Finish();
+                }));
+            }
+        }
+
         private class Password : ContentPage
         {
             private Label _passwordLabel;
@@ -699,7 +857,15 @@ namespace Disa.Framework.Telegram.Mobile
                     {
 						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
-                        DependencyService.Get<IPluginPageControls>().Finish();
+                        if (Platform.DeviceHasApp(TelegramPackage))
+                        {
+                            await Navigation.PushAsync(new MuteNotifications());
+                        }
+                        else
+                        {
+                            await Navigation.PopToRootAsync();
+                            DependencyService.Get<IPluginPageControls>().Finish();
+                        }
                     }
                     else
                     {
@@ -846,7 +1012,6 @@ namespace Disa.Framework.Telegram.Mobile
             private StackLayout _loadConversationsLayout;
             private Label _loadConversationsTitle;
             private Switch _loadConversationsSwitch;
-			private Label _telegramAlphaWarning;
             private Button _next;
             private Image _image;
             private ActivityIndicator _progressBar;
@@ -878,12 +1043,6 @@ namespace Disa.Framework.Telegram.Mobile
                 _loadConversationsSwitch.IsToggled = true;
                 _loadConversationsLayout.Children.Add(_loadConversationsTitle);
                 _loadConversationsLayout.Children.Add(_loadConversationsSwitch);
-
-				_telegramAlphaWarning = new Label();
-				_telegramAlphaWarning.HorizontalOptions = LayoutOptions.CenterAndExpand;
-				_telegramAlphaWarning.TextColor = Color.Red;
-				_telegramAlphaWarning.FontAttributes = FontAttributes.Bold;
-				_telegramAlphaWarning.Text = Localize.GetString("TelegramAlpha");
 
                 _next = new Button();
                 _next.HorizontalOptions = LayoutOptions.FillAndExpand;
@@ -988,7 +1147,6 @@ namespace Disa.Framework.Telegram.Mobile
                 stackLayout.VerticalOptions = LayoutOptions.Start;
                 var children = stackLayout.Children;
                 children.Add(_image);
-				children.Add(_telegramAlphaWarning);
                 children.Add(_phoneNumberContainer);
                 children.Add(_loadConversationsLayout);
                 var nextLayout = new StackLayout();
@@ -1202,7 +1360,15 @@ namespace Disa.Framework.Telegram.Mobile
                         }
 						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
-                        DependencyService.Get<IPluginPageControls>().Finish();
+                        if (Platform.DeviceHasApp(TelegramPackage))
+                        {
+                            await Navigation.PushAsync(new MuteNotifications());
+                        }
+                        else
+                        {
+                            await Navigation.PopToRootAsync();
+                            DependencyService.Get<IPluginPageControls>().Finish();
+                        }
                     };
 
 
