@@ -492,17 +492,10 @@ namespace Disa.Framework
             }
             else
             {
-                // Pull mention values from cache
-                if (group.Mentions != null)
-                {
-                    // TODO: For hashtags we pull across all groups.
-                    var mentions = group.Mentions.Where(m => m.Token == token &&
-                                                             m.BubbleGroupId == group.ID);
-                }
-                else
-                {
-                    result(new List<Mention>());
-                }
+                // TODO: For hashtags we pull across all groups.
+                var mentions = group.Mentions.Where(m => m.Token == token &&
+                                                    m.BubbleGroupId == group.ID);
+                
             }
         }
     }
