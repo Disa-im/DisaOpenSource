@@ -426,7 +426,19 @@
   <data name="TelegramNameFirstNameEmpty" xml:space="preserve">
     <value>Your first name cannot be empty.</value>
   </data>
-  <data name="TelegramAlpha" xml:space="preserve">
-    <value>This is an alpha build</value>
-  </data>	
+  <data name="TelegramMuteNotificationsTitle" xml:space="preserve">
+    <value>Mute Notifications</value>
+  </data>
+  <data name="TelegramMuteNotificationsHeader" xml:space="preserve">
+    <value>You currently have Telegram installed! Both Telegram and Disa can be used at the same time. &lt;b&gt;To prevent getting duplicate notifications, please disable Telegram's notificaions:&lt;/b&gt;</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Title" xml:space="preserve">
+    <value>How?</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Text" xml:space="preserve">
+    <value>Press the hamburger button on the main Telegram app screen to open up its menu. Then press '&lt;i&gt;Settings&lt;/i&gt;,' followed by '&lt;i&gt;Notifications and Sounds&lt;/i&gt;.' Disable the two '&lt;i&gt;Alert&lt;/i&gt;' toggles under '&lt;i&gt;Message notifications&lt;/i&gt;' and '&lt;i&gt;Group notifications&lt;/i&gt;.'</value>
+  </data>
+  <data name="TelegramMuteNotificationsWatchVideo" xml:space="preserve">
+    <value>Watch Video</value>
+  </data>
 </root>

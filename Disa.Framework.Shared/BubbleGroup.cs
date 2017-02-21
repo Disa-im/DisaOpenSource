@@ -33,6 +33,8 @@ namespace Disa.Framework
         public readonly ThreadSafeList<SendBubbleAction> SendBubbleActions = new ThreadSafeList<SendBubbleAction>();
         public long LastSeen { get; internal set; }
 
+        public ThreadSafeList<Mention> Mentions = new ThreadSafeList<Mention>();
+
         public PresenceBubble.PresenceType PresenceType { get; internal set; }
         public PresenceBubble.PlatformType PresencePlatformType { get; internal set; }
         public bool Presence  

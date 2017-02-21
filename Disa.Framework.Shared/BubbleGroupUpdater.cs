@@ -460,5 +460,43 @@ namespace Disa.Framework
                 return false;
             }
         }
+
+        public static void GetMentions(string token, BubbleGroup group, Action<List<Mention>> result)
+        {
+            if (ServiceManager.IsRunning(group.Service))
+            {
+                // Pull latest mention values
+                Task.Factory.StartNew(() =>
+                {
+                    var uiMentions = group.Service as IMentions;
+                    if (uiMentions != null)
+                    {
+                        uiMentions.GetMentions(token, group, (mentions) =>
+                        {
+                            // No RemoveAll for ThreadSafeList
+                            var itemsToRemove = group.Mentions.Where(m => m.Token == token).ToList();
+                            foreach(var itemToRemove in itemsToRemove)
+                            {
+                                group.Mentions.Remove(itemToRemove);
+                            }
+                            group.Mentions.AddRange(mentions);
+
+                            result(mentions);
+                        });
+                    }
+                    else
+                    {
+                        result(new List<Mention>());
+                    } 
+                });
+            }
+            else
+            {
+                // TODO: For hashtags we pull across all groups.
+                var mentions = group.Mentions.Where(m => m.Token == token &&
+                                                    m.BubbleGroupId == group.ID);
+                
+            }
+        }
     }
 }
