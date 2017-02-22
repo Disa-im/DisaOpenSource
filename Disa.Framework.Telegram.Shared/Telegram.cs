@@ -543,6 +543,33 @@ namespace Disa.Framework.Telegram
                             AddQuotedMessageToBubble(replyMessage, textBubble);
                         }
 
+                        if (shortChatMessage.Entities != null)
+                        {
+                            textBubble.BubbleMarkup = new List<BubbleMarkup>();
+                            foreach(var entity in shortChatMessage.Entities)
+                            {
+                                if (entity is MessageEntityMention)
+                                {
+                                    var messageEntityMention = entity as MessageEntityMention;
+                                    textBubble.BubbleMarkup.Add(new BubbleMarkupMention
+                                    {
+                                        Offset = (int)messageEntityMention.Offset,
+                                        Length = (int)messageEntityMention.Length
+                                    });
+                                }
+                                else if (entity is MessageEntityMentionName)
+                                {
+                                    var messageEntityMentionName = entity as MessageEntityMentionName;
+                                    textBubble.BubbleMarkup.Add(new BubbleMarkupMentionName
+                                    {
+                                        Offset = (int)messageEntityMentionName.Offset,
+                                        Length = (int)messageEntityMentionName.Length,
+                                        Address = messageEntityMentionName.UserId.ToString()
+                                    });
+                                }
+                            }
+                        }
+                            
                         TelegramEventBubble(textBubble);
                     }
                     if (shortChatMessage.Id > maxMessageId)
@@ -2164,6 +2191,35 @@ namespace Disa.Framework.Telegram
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService2),
                     };
+
+                    // Adjust for markup if necessary
+                    if (textBubble.BubbleMarkup != null &&
+                        textBubble.BubbleMarkup.Count > 0)
+                    {
+                        foreach (var bubbleMarkup in textBubble.BubbleMarkup)
+                        {
+                            if (bubbleMarkup is InputBubbleMarkupMentionName)
+                            {
+                                if (args.Entities == null)
+                                {
+                                    args.Entities = new List<IMessageEntity>();
+                                }
+
+                                var inputUser = new InputUser
+                                {
+                                    UserId = uint.Parse(bubbleMarkup.Address),
+                                    AccessHash = GetUserAccessHashIfForeign(bubbleMarkup.Address)
+                                };
+
+                                args.Entities.Add(new InputMessageEntityMentionName
+                                {
+                                    Offset = (uint)bubbleMarkup.Offset,
+                                    Length = (uint)bubbleMarkup.Length,
+                                    UserId = inputUser
+                                });
+                            }
+                        }
+                    }
 
                     // Adjust for quote if necessary
                     if (!string.IsNullOrEmpty(textBubble.QuotedIdService))

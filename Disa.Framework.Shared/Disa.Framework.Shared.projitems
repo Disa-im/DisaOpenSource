@@ -9,6 +9,7 @@
     <Import_RootNamespace>Disa.Framework.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\BubbleMarkup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HashtagMention.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UsernameMention.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IMentions.cs" />
@@ -132,8 +133,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)INewMessageExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IAnnouncement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupExport.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Bubbles\" />
   </ItemGroup>
 </Project>
