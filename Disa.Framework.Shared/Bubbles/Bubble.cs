@@ -50,7 +50,7 @@ namespace Disa.Framework.Bubbles
 		public bool ExtendedParty { get; set; }
 
         [ProtoMember(158)]
-        public List<BubbleMarkup> BubbleMarkup { get; set; }
+        public List<BubbleMarkup> BubbleMarkups { get; set; }
 
         [JsonIgnore]
         [NonSerialized]
