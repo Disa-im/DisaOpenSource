@@ -23,6 +23,10 @@ namespace SharpMTProto.Messaging
 
         public void Add(IRequest request)
         {
+            if (_requests.ContainsKey(request.Message.MsgId))
+            {
+                Disa.Framework.Utils.DebugPrint("Dictionary already contains key: " + request.Message.MsgId);
+            }
             _requests.Add(request.Message.MsgId, request);
         }
 
