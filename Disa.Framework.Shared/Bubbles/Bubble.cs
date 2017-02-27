@@ -1,6 +1,7 @@
 using System;
 using ProtoBuf;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Disa.Framework.Bubbles
 {
@@ -48,7 +49,10 @@ namespace Disa.Framework.Bubbles
 		[ProtoMember(157)]
 		public bool ExtendedParty { get; set; }
 
-		[JsonIgnore]
+        [ProtoMember(158)]
+        public List<BubbleMarkup> BubbleMarkups { get; set; }
+
+        [JsonIgnore]
         [NonSerialized]
         public Service Service;
 

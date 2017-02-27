@@ -36,6 +36,7 @@ namespace Disa.Framework.Telegram
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
         public static uint MESSAGE_FLAG_REPLY = 0x00000001;
+        public static uint MESSAGE_FLAG_ENTITIES = 0x00000008;
 
         private object _cachedThumbnailsLock = new object();
 
@@ -543,6 +544,89 @@ namespace Disa.Framework.Telegram
                             AddQuotedMessageToBubble(replyMessage, textBubble);
                         }
 
+                        // Do we have any mentions to process?
+                        if (shortChatMessage.Entities != null)
+                        {
+                            // Ok, transfer the Telegram specific Entity info over to
+                            // Disa Framework BubbleMarkup representations.
+                            textBubble.BubbleMarkups = new List<BubbleMarkup>();
+                            foreach(var entity in shortChatMessage.Entities)
+                            {
+                                if (entity is MessageEntityMention)
+                                {
+                                    // We need to do a little work to get the DisaParticipant.Address to
+                                    // populate the BubbleMarkup with. The DisaParticipant.Address allows
+                                    // us to launch a UserInformation dialgo when tapping on the mention.
+                                    var messageEntityMention = entity as MessageEntityMention;
+                                    var offset = (int)messageEntityMention.Offset;
+                                    var length = (int)messageEntityMention.Length;
+                                    var username = shortChatMessage.Message.Substring(offset, length);
+                                    var mentionParticipantAddress = string.Empty;
+                                    var bubbleGroup = BubbleGroupManager.FindWithAddress(this, address);
+
+                                    // First try to get cached address
+                                    if (bubbleGroup != null)
+                                    {
+                                        var mention = bubbleGroup.Mentions
+                                            .Where(x => x.Value == username)
+                                            .FirstOrDefault();
+                                        if (mention != null)
+                                        {
+                                            mentionParticipantAddress = mention.Address;
+                                        }
+                                    }
+
+                                    // Did we get a cached result?
+                                    if (!string.IsNullOrEmpty(mentionParticipantAddress))
+                                    {
+                                        textBubble.BubbleMarkups.Add(new BubbleMarkupMentionUsername
+                                        {
+                                            Offset = offset,
+                                            Length = length,
+                                            Address = mentionParticipantAddress
+                                        });
+                                    }
+                                    else
+                                    {
+                                        // Ok, see if we can get non-cached address 
+                                        BubbleGroupUpdater.GetMentions("@", bubbleGroup, result =>
+                                        {
+                                            if (result != null &&
+                                                result.Count > 0)
+                                            {
+                                                var mention = result
+                                                    .Where(x => x.Value == username)
+                                                    .FirstOrDefault();
+                                                if (mention != null)
+                                                {
+                                                    mentionParticipantAddress = mention.Address;
+                                                }
+                                            }
+
+                                            textBubble.BubbleMarkups.Add(new BubbleMarkupMentionUsername
+                                            {
+                                                Offset = offset,
+                                                Length = length,
+                                                Address = mentionParticipantAddress
+                                            });
+                                        });
+                                    }
+                                }
+                                else if (entity is MessageEntityMentionName)
+                                {
+                                    // A mention with just a user's name (not username) is simpler in that
+                                    // the server will give us the DisaParticipant.Address.
+                                    var messageEntityMentionName = entity as MessageEntityMentionName;
+                                    textBubble.BubbleMarkups.Add(new BubbleMarkupMentionName
+                                    {
+                                        Offset = (int)messageEntityMentionName.Offset,
+                                        Length = (int)messageEntityMentionName.Length,
+                                        Address = messageEntityMentionName.UserId.ToString()
+                                    });
+                                }
+                            }
+                        }
+                            
                         TelegramEventBubble(textBubble);
                     }
                     if (shortChatMessage.Id > maxMessageId)
@@ -2164,6 +2248,39 @@ namespace Disa.Framework.Telegram
                         Message = textBubble.Message,
                         RandomId = ulong.Parse(textBubble.IdService2),
                     };
+
+                    // Adjust for markup if necessary
+                    if (textBubble.BubbleMarkups != null &&
+                        textBubble.BubbleMarkups.Count > 0)
+                    {
+                        foreach (var bubbleMarkup in textBubble.BubbleMarkups)
+                        {
+                            // Currently we only need to grab mention of name (e.g., Bill not @Bill),
+                            // as we need to add in addtional info so Telegram will know which user
+                            // was mentioned.
+                            if (bubbleMarkup is InputBubbleMarkupMentionName)
+                            {
+                                if (args.Entities == null)
+                                {
+                                    args.Entities = new List<IMessageEntity>();
+                                }
+
+                                args.Flags |= MESSAGE_FLAG_ENTITIES;
+                                var inputUser = new InputUser
+                                {
+                                    UserId = uint.Parse(bubbleMarkup.Address),
+                                    AccessHash = GetUserAccessHashIfForeign(bubbleMarkup.Address)
+                                };
+
+                                args.Entities.Add(new InputMessageEntityMentionName
+                                {
+                                    Offset = (uint)bubbleMarkup.Offset,
+                                    Length = (uint)bubbleMarkup.Length,
+                                    UserId = inputUser
+                                });
+                            }
+                        }
+                    }
 
                     // Adjust for quote if necessary
                     if (!string.IsNullOrEmpty(textBubble.QuotedIdService))
