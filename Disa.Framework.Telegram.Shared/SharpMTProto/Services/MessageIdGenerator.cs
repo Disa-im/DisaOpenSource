@@ -24,30 +24,17 @@ namespace SharpMTProto.Services
     /// </summary>
     public class MessageIdGenerator : IMessageIdGenerator
     {
-        private const ulong X4Mask = ~3UL;
+        public ulong TimeDifference { get; set; }
+
         private ulong _lastMessageId;
-
-		private ulong _timeDiffernece = 0;
-
-		public ulong TimeDifference
-		{
-			get
-			{
-				return _timeDiffernece;
-			}
-			set
-			{
-				_timeDiffernece = value;
-			}
-		}
 
 		public ulong GetNextMessageId()
         {
-			// Documentation says that message id should be unixtime * 2^32.
-			// But the real world calculations in other client software looking very weird.
-			// Have no idea how it is actually calculated.
-			//ulong messageId = UnixTimeUtils.GetCurrentUnixTimestampMilliseconds();
-			ulong messageId = (UnixTimeUtils.GetCurrentUnixTimestampMilliseconds() + (TimeDifference) * 1000) * (ulong)(4294967296 / 1000f);
+            ulong messageId = (ulong)((((double)UnixTimeUtils.GetCurrentUnixTimestampMilliseconds() + ((double)TimeDifference) * 1000) * 4294967296.0) / 1000.0);
+            if (messageId <= _lastMessageId)
+            {
+                messageId = _lastMessageId + 1;
+            }
             while (messageId % 4 != 0)
 			{
 				messageId++;
