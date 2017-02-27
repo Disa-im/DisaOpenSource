@@ -126,7 +126,6 @@ namespace SharpMTProto.Messaging.Handlers
 					case ErrorCode.MsgIdDuplicate:
 					case ErrorCode.MsgTooOld:	
 					case ErrorCode.MsgIdBadTwoLowBytes:
-                        Disa.Framework.Utils.DebugPrint("BAD NOTIFICATOIN!");
 						ulong time = (ulong)(responseMessage.MsgId / 4294967296.0 * 1000);
 						ulong currentTime = UnixTimeUtils.GetCurrentUnixTimestampMilliseconds();
 						_connection.MessageIdGenerator.TimeDifference = (ulong)((time - currentTime) / 1000f);
