@@ -790,6 +790,19 @@ namespace Disa.Framework.Telegram
                     }
                     else
                     {
+                        // Disa super groups will be moderators and Disa channels will be editors
+                        IChannelParticipantRole role = null;
+                        var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                        if (channel != null &&
+                            channel.Megagroup == null)
+                        {
+                            role = new ChannelRoleEditor();
+                        }
+                        else
+                        {
+                            role = new ChannelRoleModerator();
+                        }
+
                         TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsEditAdminAsync(new ChannelsEditAdminArgs
                         {
                             Channel = new InputChannel
@@ -797,7 +810,7 @@ namespace Disa.Framework.Telegram
                                 ChannelId = uint.Parse(group.Address),
                                 AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(group.Address)))
                             },
-                            Role = new ChannelRoleModerator(),
+                            Role = role,
                             UserId = inputUser
                         }));
 
