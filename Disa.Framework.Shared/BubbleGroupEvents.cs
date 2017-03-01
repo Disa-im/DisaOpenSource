@@ -9,6 +9,7 @@ namespace Disa.Framework
         public static event BubbleFailed OnBubbleFailed;
         public static event BubbleInserted OnBubbleInserted;
         public static event NewAbstractBubble OnNewAbstractBubble;
+        public static event EventHandler OnParticipantRequestToJoinParty;
 
         public delegate void BubbleFailed(VisualBubble bubble, BubbleGroup bubbleGroup);
         public delegate void BubbleInserted(VisualBubble bubble, BubbleGroup bubbleGroup);
@@ -20,6 +21,14 @@ namespace Disa.Framework
         private static Action<BubbleGroup> _inputUpdated; // bubble group input enabled or disabled
         private static Action<UnifiedBubbleGroup> _sendingServiceChanged;
         private static Action<BubbleGroup> _syncReset;
+
+        public static void RaiseParticipantRequestToJoinParty()
+        {
+            if (OnParticipantRequestToJoinParty == null)
+                return;
+
+            OnParticipantRequestToJoinParty(null, null);
+        }
 
         public static void RegisterSyncReset(Action<BubbleGroup> syncReset)
         {
