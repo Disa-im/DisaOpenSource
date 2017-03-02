@@ -125,11 +125,12 @@ namespace SharpMTProto.Messaging.Handlers
                     case ErrorCode.MsgIdIsTooBig:
 					case ErrorCode.MsgIdDuplicate:
 					case ErrorCode.MsgTooOld:	
-					case ErrorCode.MsgIdBadTwoLowBytes:	
+					case ErrorCode.MsgIdBadTwoLowBytes:
 						ulong time = (ulong)(responseMessage.MsgId / 4294967296.0 * 1000);
 						ulong currentTime = UnixTimeUtils.GetCurrentUnixTimestampMilliseconds();
 						_connection.MessageIdGenerator.TimeDifference = (ulong)((time - currentTime) / 1000f);
-						var message = new Message(_connection.MessageIdGenerator.GetNextMessageId(), request.Message.Seqno, request.Message.Body);
+                        Disa.Framework.Utils.DebugPrint("Time drift set to: " + _connection.MessageIdGenerator.TimeDifference);
+                        var message = new Message(_connection.MessageIdGenerator.GetNextMessageId(), request.Message.Seqno, request.Message.Body);
 						request.UpdateMessage(message);
 						await request.SendAsync();
 						break;

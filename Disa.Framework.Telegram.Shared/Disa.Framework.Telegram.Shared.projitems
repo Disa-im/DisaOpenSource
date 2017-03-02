@@ -1283,7 +1283,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\NewChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\NewMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\UserInformationExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\UserInformation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Authentication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachedDialogs.cs" />
@@ -1299,11 +1298,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)TelegramUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThumbnailDownloader.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptionsExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyBlockedParticipants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptionsSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachedThumbnail.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\NewMessageExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DownloadManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\Announcement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageIntent.cs" />
