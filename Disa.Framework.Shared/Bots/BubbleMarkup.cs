@@ -1,0 +1,143 @@
+﻿using System;
+using ProtoBuf;
+
+namespace Disa.Framework.Bots
+{
+    /// <summary>
+    /// BubbleMarkup derived classes allow you to specify various markup attributes for a <see cref="Bubble"/>.
+    /// </summary>
+    [Serializable]
+    [ProtoContract]
+    [ProtoInclude(101, typeof(BubbleMarkupUnknown))]
+    [ProtoInclude(102, typeof(BubbleMarkupMentionUsername))]
+    [ProtoInclude(103, typeof(BubbleMarkupHashtag))]
+    [ProtoInclude(104, typeof(BubbleMarkupBotCommand))]
+    [ProtoInclude(105, typeof(BubbleMarkupUrl))]
+    [ProtoInclude(106, typeof(BubbleMarkupEmail))]
+    [ProtoInclude(107, typeof(BubbleMarkupBold))]
+    [ProtoInclude(108, typeof(BubbleMarkupItalic))]
+    [ProtoInclude(109, typeof(BubbleMarkupCode))]
+    [ProtoInclude(110, typeof(BubbleMarkupPre))]
+    [ProtoInclude(111, typeof(BubbleMarkupTextUrl))]
+    [ProtoInclude(112, typeof(BubbleMarkupMentionName))]
+    [ProtoInclude(113, typeof(InputBubbleMarkupMentionName))]
+    public abstract class BubbleMarkup
+    {
+        /// <summary>
+        /// The offset that the markup will start at.
+        /// </summary>
+        [ProtoMember(1)]
+        public int Offset { get; set; }
+
+        /// <summary>
+        /// The length of the markup.
+        /// </summary>
+        [ProtoMember(2)]
+        public int Length { get; set; }
+
+        /// <summary>
+        /// For <see cref="BubbleMarkupMentionName"/> and <see cref="InputBubbleMarkupMentionName"/>, holds the 
+        /// <see cref="DisaParticipant.Address"/>.
+        /// </summary>
+        [ProtoMember(3)]
+        public string Address { get; set; }
+        
+        /// <summary>
+        /// For <see cref="BubbleMarkupPre"/>
+        /// </summary>
+        [ProtoMember(4)]
+        public string Language { get; set; }
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupUnknown : BubbleMarkup
+    {
+    }
+
+    /// <summary>
+    /// Holds markup attributes for the mention of a username in a <see cref="Bubble"/>.
+    /// 
+    /// Example: @Bill
+    /// </summary>
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupMentionUsername : BubbleMarkup
+    {
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupHashtag : BubbleMarkup
+    {
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupBotCommand : BubbleMarkup
+    {
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupUrl : BubbleMarkup
+    {
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupEmail : BubbleMarkup
+    {
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupBold : BubbleMarkup
+    {
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupItalic : BubbleMarkup
+    {
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupCode : BubbleMarkup
+    {
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupPre : BubbleMarkup
+    {
+    }
+
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupTextUrl : BubbleMarkup
+    {
+    }
+
+    /// <summary>
+    /// Holds markup attributes for the mention of a name in a <see cref="Bubble"/>.
+    /// 
+    /// Example: Bill
+    /// </summary>
+    [Serializable]
+    [ProtoContract]
+    public class BubbleMarkupMentionName : BubbleMarkup
+    {
+    }
+
+    /// <summary>
+    /// Holds markup attributes for the mention of a name when constructing a message
+    /// to send out.
+    /// </summary>
+    [Serializable]
+    [ProtoContract]
+    public class InputBubbleMarkupMentionName : BubbleMarkup
+    {
+    }
+}

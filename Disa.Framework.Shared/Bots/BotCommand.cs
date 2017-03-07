@@ -1,4 +1,4 @@
-﻿namespace Disa.Framework.Bot
+﻿namespace Disa.Framework.Bots
 {
     public class BotCommand
     {

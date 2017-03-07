@@ -9,20 +9,22 @@
     <Import_RootNamespace>Disa.Framework.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMediaResult.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessage.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageMediaAuto.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageMediaContact.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageMediaGeo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageMediaVenue.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineMessageText.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineResult.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotInlineResultBase.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\BotResults.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bot\InlineBotSwitchPM.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bubbles\BubbleMarkup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotInlineMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotInlineResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotResults.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BubbleMarkup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\InlineBotSwitchPM.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\InputBotInlineMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\InputBotInlineMessageID.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\InputBotInlineResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\KeyboardButton.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\KeyboardButtonRow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\KeyboardMarkup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\MessagesBotCallbackAnswer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\MessagesBotResults.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\Update.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Hashtag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HashtagMention.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UsernameMention.cs" />

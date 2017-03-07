@@ -2,6 +2,7 @@ using System;
 using ProtoBuf;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using Disa.Framework.Bots;
 
 namespace Disa.Framework.Bubbles
 {

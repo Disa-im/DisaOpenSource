@@ -1,4 +1,4 @@
-﻿using Disa.Framework.Bot;
+﻿using Disa.Framework.Bots;
 using SharpMTProto;
 using SharpTelegram.Schema;
 using System;

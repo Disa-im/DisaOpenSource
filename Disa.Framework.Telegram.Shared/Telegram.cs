@@ -22,6 +22,7 @@ using ProtoBuf;
 using IMessage = SharpTelegram.Schema.IMessage;
 using Message = SharpTelegram.Schema.Message;
 using static Disa.Framework.Bubbles.Bubble;
+using Disa.Framework.Bots;
 
 //TODO:
 //1) After authorization, there's an expiry time. Ensure that the login expires by then (also, in DC manager)

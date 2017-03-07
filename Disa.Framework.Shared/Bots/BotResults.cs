@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Disa.Framework.Bot
+namespace Disa.Framework.Bots
 {
     public class BotResults
     {

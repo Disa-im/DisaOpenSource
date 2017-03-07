@@ -1,4 +1,4 @@
-﻿using Disa.Framework.Bot;
+﻿using Disa.Framework.Bots;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
