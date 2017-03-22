@@ -1302,7 +1302,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptionsSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachedThumbnail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DownloadManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\Announcement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageIntent.cs" />
   </ItemGroup>
   <ItemGroup>

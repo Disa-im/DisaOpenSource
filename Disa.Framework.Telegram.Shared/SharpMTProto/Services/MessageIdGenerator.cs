@@ -14,7 +14,7 @@ namespace SharpMTProto.Services
     /// </summary>
     public interface IMessageIdGenerator
     {
-		ulong TimeDifference { get; set; }
+		long TimeDifference { get; set; }
 
         ulong GetNextMessageId();
     }
@@ -24,13 +24,33 @@ namespace SharpMTProto.Services
     /// </summary>
     public class MessageIdGenerator : IMessageIdGenerator
     {
-        public ulong TimeDifference { get; set; }
-
+        private long _timeDifference;
         private ulong _lastMessageId;
 
-		public ulong GetNextMessageId()
+        public long TimeDifference
         {
-            ulong messageId = (ulong)((((double)UnixTimeUtils.GetCurrentUnixTimestampMilliseconds() + ((double)TimeDifference) * 1000) * 4294967296.0) / 1000.0);
+            get
+            {
+                return _timeDifference;
+            }
+            set
+            {
+                _lastMessageId = 0;
+                _timeDifference = value;
+            }
+        }
+
+        private ulong GetCurrentUnixTimestampMilliseconds()
+        {
+            var time = UnixTimeUtils.GetCurrentUnixTimestampMilliseconds();
+            var newTime = (ulong)((long)time + TimeDifference);
+            return newTime;
+        }
+
+        public ulong GetNextMessageId()
+        {
+            var currentTime = GetCurrentUnixTimestampMilliseconds();
+            ulong messageId = (ulong)(((double)currentTime * 4294967296.0) / 1000.0);
             if (messageId <= _lastMessageId)
             {
                 messageId = _lastMessageId + 1;

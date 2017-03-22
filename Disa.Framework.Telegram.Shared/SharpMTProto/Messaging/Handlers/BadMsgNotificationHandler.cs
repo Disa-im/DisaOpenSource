@@ -128,10 +128,14 @@ namespace SharpMTProto.Messaging.Handlers
 					case ErrorCode.MsgIdBadTwoLowBytes:
 						ulong time = (ulong)(responseMessage.MsgId / 4294967296.0 * 1000);
 						ulong currentTime = UnixTimeUtils.GetCurrentUnixTimestampMilliseconds();
-						_connection.MessageIdGenerator.TimeDifference = (ulong)((time - currentTime) / 1000f);
+                        var timeDelta = ((long)time - (long)currentTime);
+                        _connection.MessageIdGenerator.TimeDifference = timeDelta;
                         Disa.Framework.Utils.DebugPrint("Time drift set to: " + _connection.MessageIdGenerator.TimeDifference);
-                        var message = new Message(_connection.MessageIdGenerator.GetNextMessageId(), request.Message.Seqno, request.Message.Body);
+                        var newMessageId = _connection.MessageIdGenerator.GetNextMessageId();
+                        var oldMessageId = request.Message.MsgId;
+                        var message = new Message(newMessageId, request.Message.Seqno, request.Message.Body);
 						request.UpdateMessage(message);
+                        _requestsManager.Change(newMessageId, oldMessageId);
 						await request.SendAsync();
 						break;
                     case ErrorCode.MsgSeqnoIsTooLow:
