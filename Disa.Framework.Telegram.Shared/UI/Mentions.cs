@@ -3,6 +3,8 @@ using SharpMTProto;
 using SharpTelegram.Schema;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+// using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,44 +12,28 @@ namespace Disa.Framework.Telegram
 {
     public partial class Telegram : IMentions
     {
-        public Task GetToken(MentionType mentionType, Action<string> result)
+        public Task GetTokens(Action<Dictionary<MentionType, char>> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                switch (mentionType)
-                {
-                    case MentionType.Username:
-                        {
-                            result("@");
-                            break;
-                        }
-                    case MentionType.Hashtag:
-                        {
-                            result("#");
-                            break;
-                        }
-                    case MentionType.BotCommand:
-                        {
-                            result(@"/");
-                            break;
-                        }
-                }
+                var tokens = new Dictionary<MentionType, char>();
+                tokens.Add(MentionType.Username, '@');
+                tokens.Add(MentionType.ContextBot, '@');
+                tokens.Add(MentionType.BotCommand, '/');
+                tokens.Add(MentionType.Hashtag, '#');
+
+                result(tokens);
             });
         }
 
         // Usernames - we need to return usernames and names for a particular group
-        // Hasthags - we need to return most recent hashtags across ALL groups
-        // BotCommand - we need to return a bot usernames and commands for a particular group
-        public Task GetMentions(string token, BubbleGroup group, Action<List<Mention>> result)
+        // ContextBot - not supported yet
+        // Hasthags - not supported yet
+        // BotCommand - we need to return username, name and BotInfo for bots for a particular group
+        public Task GetMentions(BubbleGroup group, Action<List<Mention>> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                // Only handling usernames now
-                if (token != "@")
-                {
-                    result(new List<Mention>());
-                }
-
                 var fullChat = MentionsFetchFullChat(group.Address, group.IsExtendedParty);
                 var partyParticipants = MentionsGetPartyParticipants(fullChat);
 
@@ -62,15 +48,15 @@ namespace Disa.Framework.Telegram
                             var user = _dialogs.GetUser(uint.Parse(id));
                             var username = TelegramUtils.GetUserHandle(user);
                             var name = TelegramUtils.GetUserName(user);
-                            var mention  = new UsernameMention
+                            var groupUsernameMention  = new Mention
                             {
-                                Token = "@",
+                                Type = MentionType.Username,
                                 BubbleGroupId = group.ID,
                                 Value = username,
                                 Name = name,
                                 Address = id
                             };
-                            resultList.Add(mention);
+                            resultList.Add(groupUsernameMention);
                         }
                     }
                 }
@@ -84,17 +70,64 @@ namespace Disa.Framework.Telegram
                             var user = _dialogs.GetUser(uint.Parse(id));
                             var username = TelegramUtils.GetUserHandle(user);
                             var name = TelegramUtils.GetUserName(user);
-                            var mention = new UsernameMention
+                            var channelUsernameMention = new Mention
                             {
-                                Token = "@",
+                                Type = MentionType.Username,
                                 BubbleGroupId = group.ID,
                                 Value = username,
                                 Name = name,
                                 Address = id
                             };
 
-                            resultList.Add(mention);
+                            resultList.Add(channelUsernameMention);
                         }
+                    }
+                }
+
+                var chatFull = fullChat.FullChat as ChatFull;
+                if (chatFull != null)
+                {
+                    foreach(var chatFullBotInfo in chatFull.BotInfo)
+                    {
+                        var telegramBotInfo = chatFullBotInfo as SharpTelegram.Schema.BotInfo;
+                        if (telegramBotInfo != null)
+                        {
+                            var user = _dialogs.GetUser(telegramBotInfo.UserId);
+                            var username = TelegramUtils.GetUserHandle(user);
+                            var name = TelegramUtils.GetUserName(user);
+
+                            var botCommandMention = new Mention
+                            {
+                                Type = MentionType.BotCommand,
+                                BubbleGroupId = group.ID,
+                                Value = username,
+                                Name = name,
+                                Address = telegramBotInfo.UserId.ToString(CultureInfo.InvariantCulture)
+                            };
+
+                            var disaBotInfo = new Disa.Framework.Bots.BotInfo
+                            {
+                                Address = telegramBotInfo.UserId.ToString(CultureInfo.InvariantCulture),
+                                Description = telegramBotInfo.Description,
+                                Commands = new List<Disa.Framework.Bots.BotCommand>()
+                            };
+
+                            foreach(var c in telegramBotInfo.Commands)
+                            {
+                                var telegramBotCommand = c as SharpTelegram.Schema.BotCommand;
+                                if (telegramBotCommand != null)
+                                {
+                                    disaBotInfo.Commands.Add(new Disa.Framework.Bots.BotCommand
+                                    {
+                                        Command = telegramBotCommand.Command,
+                                        Description = telegramBotCommand.Description
+                                    });
+                                }
+                            }
+
+                            resultList.Add(botCommandMention);
+                        }
+
                     }
                 }
 

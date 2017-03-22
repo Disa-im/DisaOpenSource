@@ -195,7 +195,7 @@ namespace Disa.Framework.Telegram
                 globalContact = new TelegramBotContact
                 {
                     User = user,
-                    IsBotInlinePlaceholder = user.BotInlinePlaceholder
+                    BotInlinePlaceholder = user.BotInlinePlaceholder
                 };
             }
             else

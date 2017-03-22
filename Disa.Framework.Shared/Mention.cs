@@ -1,27 +1,22 @@
 ﻿using System;
 using ProtoBuf;
+using Disa.Framework.Bots;
 
 namespace Disa.Framework
 {
     [Serializable]
     [ProtoContract]
-    [ProtoInclude(101, typeof(BotCommandMention))]
-    [ProtoInclude(102, typeof(HashtagMention))]
-    [ProtoInclude(103, typeof(UsernameMention))]
     public class Mention
     {
         /// <summary>
         /// Holds the token value used for usernames, hashtags or bot commands.
         /// </summary>
         [ProtoMember(1)]
-        public string Token { get; set; }
+        public MentionType Type { get; set; }
 
         /// <summary>
-        /// For usernames and bot commands, this will be the group id the
-        /// username or bot command belongs to.
-        /// 
-        /// For hashtags, this will be <see cref="string.Empty"/> as hashtags
-        /// apply across all groups.
+        /// For a <see cref="Mention"/> that applies to a particular <see cref="BubbleGroup"/>, thiw
+        /// will hold the <see cref="BubbleGroup.ID"/>.
         /// </summary>
         [ProtoMember(2)]
         public string BubbleGroupId { get; set; }
@@ -35,22 +30,24 @@ namespace Disa.Framework
         public string Value { get; set; }
 
         /// <summary>
-        /// For a <see cref="UsernameMention"/> mention, holds the <see cref="DisaParticipant.Name"/> for this username. 
+        /// For a <see cref="MentionType.Username"/> or <see cref="MentionType.BotCommand"/> mention, holds 
+        /// the <see cref="DisaParticipant.Name"/>.
         /// </summary>
         [ProtoMember(4)]
         public string Name { get; set; }
 
         /// <summary>
-        /// For a <see cref="UsernameMention"/> mention, holds the <see cref="DisaParticipant.Address"/> for this username. 
+        /// For a <see cref="UsernameMention"/> or <see cref="MentionType.BotCommand"/>mention, holds 
+        /// the <see cref="DisaParticipant.Address"/>.
         /// </summary>
         [ProtoMember(5)]
         public string Address { get; set; }
 
         /// <summary>
-        /// For a <see cref="BotCommandMention"/> mention, holds the Bot username.
+        /// For a <see cref="MentionType.BotCommand"/> mention, holds the <see cref="BotInfo"/> information 
+        /// for the Bot such as commands.
         /// </summary>
         [ProtoMember(6)]
-        public string BotUsername { get; set; }
-
+        public BotInfo BotInfo { get; set; }
     }
 }

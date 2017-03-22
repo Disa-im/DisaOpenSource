@@ -8,6 +8,7 @@ namespace Disa.Framework
     public enum MentionType
     {
         Username,
+        ContextBot,
         Hashtag,
         BotCommand
     }
@@ -29,23 +30,21 @@ namespace Disa.Framework
         //
 
         /// <summary>
-        /// Based on the passed in <see cref="MentionType"/>, set the result of the <see cref="Action"/> as
-        /// the string to recognize for a mention category (e.g., Usernames, Hashtags BotCommands).
+        /// Set the result of the <see cref="Action"/> as a <see cref="Dictionary{MentionType, char}"/>
+        /// representing the tokens recognized by this service for different <see cref="MentionType"/>s.
         /// </summary>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/>.</returns>
-        Task GetToken(MentionType mentionType, Action<string> result);
+        Task GetTokens(Action<Dictionary<MentionType, char>> result);
 
         /// <summary>
-        /// Given a string representing a mentions category (usernames, hashtags, bot commands), 
-        /// and and optional <see cref="BubbleGroup"/>, determine the <see cref="List{Mentions}"/>
-        /// to return.
+        /// Set the result of the <see cref="Action"/> as a <see cref="List{Mention}"/> of the
+        /// possible <see cref="Mention"/>s for the passed in <see cref="BubbleGroup"/>.
         /// </summary>
-        /// <param name="token">The token representing the mentions category you are interested in.</param>
-        /// <param name="group">For usernames and bot commands, the group the set of mentions is for.</param>
+        /// <param name="group">The group the set of mentions is for.</param>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action"/>.</returns>
-        Task GetMentions(string token, BubbleGroup group, Action<List<Mention>> result);
+        Task GetMentions(BubbleGroup group, Action<List<Mention>> result);
 
         /// <summary>
         /// Set the result of the <see cref="Action"/> as a <see cref="List{Hashtag}"/> of the most recent hashtags.

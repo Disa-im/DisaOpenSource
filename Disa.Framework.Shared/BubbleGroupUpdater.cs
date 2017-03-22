@@ -461,7 +461,7 @@ namespace Disa.Framework
             }
         }
 
-        public static void GetMentions(string token, BubbleGroup group, Action<List<Mention>> result)
+        public static void GetMentions(BubbleGroup group, Action<List<Mention>> result)
         {
             if (ServiceManager.IsRunning(group.Service))
             {
@@ -471,10 +471,10 @@ namespace Disa.Framework
                     var uiMentions = group.Service as IMentions;
                     if (uiMentions != null)
                     {
-                        uiMentions.GetMentions(token, group, (mentions) =>
+                        uiMentions.GetMentions(group, (mentions) =>
                         {
                             // No RemoveAll for ThreadSafeList
-                            var itemsToRemove = group.Mentions.Where(m => m.Token == token).ToList();
+                            var itemsToRemove = group.Mentions.ToList();
                             foreach(var itemToRemove in itemsToRemove)
                             {
                                 group.Mentions.Remove(itemToRemove);

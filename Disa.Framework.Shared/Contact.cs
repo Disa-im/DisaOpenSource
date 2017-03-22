@@ -58,6 +58,6 @@ namespace Disa.Framework
 
     public class BotContact : Contact
     {
-        public string IsBotInlinePlaceholder { get; set; }
+        public string BotInlinePlaceholder { get; set; }
     }
 }
