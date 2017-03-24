@@ -31,6 +31,9 @@ namespace Disa.Framework.Bubbles
         /// </summary>
         [ProtoMember(3)]
         public string Address { get; set; }
+
+        [ProtoMember(4)]
+        public bool IsMyself { get; set; }
     }
 
     /// <summary>

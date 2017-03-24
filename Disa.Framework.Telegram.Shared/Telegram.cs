@@ -313,7 +313,7 @@ namespace Disa.Framework.Telegram
                                 message: shortMessage.Message,
                                 entities: shortMessage.Entities,
                                 bubbleGroupAddress: fromId,
-                                textBubble: textBubble);
+                                textBubble: textBubble, optionalClient: optionalClient);
                         }
 
                         TelegramEventBubble(textBubble);
@@ -561,7 +561,7 @@ namespace Disa.Framework.Telegram
                                 message: shortChatMessage.Message, 
                                 entities: shortChatMessage.Entities, 
                                 bubbleGroupAddress: address, 
-                                textBubble: textBubble);
+                                textBubble: textBubble, optionalClient: optionalClient);
                         }
                             
                         TelegramEventBubble(textBubble);
@@ -573,7 +573,7 @@ namespace Disa.Framework.Telegram
                 }
                 else if (message != null)
                 {
-                    var bubbles = ProcessFullMessage(message, useCurrentTime);
+                    var bubbles = ProcessFullMessage(message, useCurrentTime, optionalClient);
                     var i = 0;
                     foreach (var bubble in bubbles)
                     {
@@ -737,8 +737,11 @@ namespace Disa.Framework.Telegram
             //}
         }
 
-        private void HandleEntities(string message, List<IMessageEntity> entities, string bubbleGroupAddress, TextBubble textBubble)
+        private void HandleEntities(string message, List<IMessageEntity> entities, string bubbleGroupAddress, 
+            TextBubble textBubble, TelegramClient optionalClient = null)
         {
+            var myAddress = _settings.AccountId.ToString(CultureInfo.InvariantCulture);
+            List<Mention> mentions = null;
             // Ok, transfer the Telegram specific Entity info over to
             // Disa Framework BubbleMarkup representations.
             textBubble.BubbleMarkups = new List<BubbleMarkup>();
@@ -775,33 +778,36 @@ namespace Disa.Framework.Telegram
                         {
                             Offset = offset,
                             Length = length,
-                            Address = mentionParticipantAddress
+                            Address = mentionParticipantAddress,
+                            IsMyself = myAddress == mentionParticipantAddress
                         });
                     }
                     else
                     {
-                        // Ok, see if we can get non-cached address 
-                        BubbleGroupUpdater.GetMentions("@", bubbleGroup, result =>
+                        if (mentions == null)
                         {
-                            if (result != null &&
-                                result.Count > 0)
+                            mentions = MentionsGetMentions("@", textBubble.Address, textBubble.ExtendedParty, optionalClient);
+                        }
+                        if (mentions != null)
+                        {
+                            var mention = mentions
+                                .Where(x => x.Value == username)
+                                .FirstOrDefault();
+                            if (mention != null)
                             {
-                                var mention = result
-                                    .Where(x => x.Value == username)
-                                    .FirstOrDefault();
-                                if (mention != null)
-                                {
-                                    mentionParticipantAddress = mention.Address;
-                                }
+                                mentionParticipantAddress = mention.Address;
                             }
-
-                            textBubble.BubbleMarkups.Add(new BubbleMarkupMentionUsername
+                            if (!string.IsNullOrEmpty(mentionParticipantAddress))
                             {
-                                Offset = offset,
-                                Length = length,
-                                Address = mentionParticipantAddress
-                            });
-                        });
+                                textBubble.BubbleMarkups.Add(new BubbleMarkupMentionUsername
+                                {
+                                    Offset = offset,
+                                    Length = length,
+                                    Address = mentionParticipantAddress,
+                                    IsMyself = myAddress == mentionParticipantAddress
+                                });
+                            }
+                        }
                     }
                 }
                 else if (entity is MessageEntityMentionName)
@@ -809,11 +815,13 @@ namespace Disa.Framework.Telegram
                     // A mention with just a user's name (not username) is simpler in that
                     // the server will give us the DisaParticipant.Address.
                     var messageEntityMentionName = entity as MessageEntityMentionName;
+                    var messageEntityParticipantAddress = messageEntityMentionName.UserId.ToString();
                     textBubble.BubbleMarkups.Add(new BubbleMarkupMentionName
                     {
                         Offset = (int)messageEntityMentionName.Offset,
                         Length = (int)messageEntityMentionName.Length,
-                        Address = messageEntityMentionName.UserId.ToString()
+                        Address = messageEntityParticipantAddress,
+                        IsMyself = myAddress == messageEntityParticipantAddress,
                     });
                 }
             }
@@ -1068,7 +1076,7 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private List<VisualBubble> ProcessFullMessage(Message message,bool useCurrentTime)
+        private List<VisualBubble> ProcessFullMessage(Message message, bool useCurrentTime, TelegramClient optionalClient = null)
         {
             var peerUser = message.ToId as PeerUser;
             var peerChat = message.ToId as PeerChat;
@@ -1128,7 +1136,7 @@ namespace Disa.Framework.Telegram
                         message: message.MessageProperty,
                         entities: message.Entities,
                         bubbleGroupAddress: address,
-                        textBubble: tb);
+                        textBubble: tb, optionalClient: optionalClient);
                 }
 
                 bubblesReturn.Add(tb);

@@ -1,4 +1,5 @@
 ﻿using SharpMTProto;
+using SharpTelegram;
 using SharpTelegram.Schema;
 using System;
 using System.Collections.Generic;
@@ -41,72 +42,76 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                // Only handling usernames now
-                if (token != "@")
-                {
-                    result(new List<Mention>());
-                }
-
-                var fullChat = MentionsFetchFullChat(group.Address, group.IsExtendedParty);
-                var partyParticipants = MentionsGetPartyParticipants(fullChat);
-
-                var resultList = new List<Mention>();
-                if (!group.IsExtendedParty)
-                {
-                    foreach (var partyParticipant in partyParticipants.ChatParticipants)
-                    {
-                        var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                        if (id != null)
-                        {
-                            var user = _dialogs.GetUser(uint.Parse(id));
-                            var username = TelegramUtils.GetUserHandle(user);
-                            var name = TelegramUtils.GetUserName(user);
-                            var mention  = new UsernameMention
-                            {
-                                Token = "@",
-                                BubbleGroupId = group.ID,
-                                Value = username,
-                                Name = name,
-                                Address = id
-                            };
-                            resultList.Add(mention);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var partyParticipant in partyParticipants.ChannelParticipants)
-                    {
-                        var id = TelegramUtils.GetUserIdFromChannelParticipant(partyParticipant);
-                        if (id != null)
-                        {
-                            var user = _dialogs.GetUser(uint.Parse(id));
-                            var username = TelegramUtils.GetUserHandle(user);
-                            var name = TelegramUtils.GetUserName(user);
-                            var mention = new UsernameMention
-                            {
-                                Token = "@",
-                                BubbleGroupId = group.ID,
-                                Value = username,
-                                Name = name,
-                                Address = id
-                            };
-
-                            resultList.Add(mention);
-                        }
-                    }
-                }
-
-                result(resultList);
+                result(MentionsGetMentions(token, group.Address, group.IsExtendedParty));
             });
         }
 
-        // Separate implementation for Mentions - PartyOptions has its own as well
-        private MessagesChatFull MentionsFetchFullChat(string address, bool superGroup)
+        private List<Mention> MentionsGetMentions(string token, string address, bool isChannel, TelegramClient optionalClient = null)
         {
-            MessagesChatFull fullChat = null;
-            using (var client = new FullClientDisposable(this))
+            // Only handling usernames now
+            if (token != "@")
             {
+                return new List<Mention>();
+            }
+
+            var fullChat = MentionsFetchFullChat(address, isChannel, optionalClient);
+            var partyParticipants = MentionsGetPartyParticipants(fullChat);
+
+            var resultList = new List<Mention>();
+            if (!isChannel)
+            {
+                foreach (var partyParticipant in partyParticipants.ChatParticipants)
+                {
+                    var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
+                    if (id != null)
+                    {
+                        var user = _dialogs.GetUser(uint.Parse(id));
+                        var username = TelegramUtils.GetUserHandle(user);
+                        var name = TelegramUtils.GetUserName(user);
+                        var mention = new UsernameMention
+                        {
+                            Token = "@",
+                            Value = username,
+                            Name = name,
+                            Address = id
+                        };
+                        resultList.Add(mention);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var partyParticipant in partyParticipants.ChannelParticipants)
+                {
+                    var id = TelegramUtils.GetUserIdFromChannelParticipant(partyParticipant);
+                    if (id != null)
+                    {
+                        var user = _dialogs.GetUser(uint.Parse(id));
+                        var username = TelegramUtils.GetUserHandle(user);
+                        var name = TelegramUtils.GetUserName(user);
+                        var mention = new UsernameMention
+                        {
+                            Token = "@",
+                            Value = username,
+                            Name = name,
+                            Address = id
+                        };
+
+                        resultList.Add(mention);
+                    }
+                }
+            }
+
+            return resultList;
+        }
+
+        // Separate implementation for Mentions - PartyOptions has its own as well
+        private MessagesChatFull MentionsFetchFullChat(string address, bool superGroup, TelegramClient optionalClient = null)
+        {
+            using (var client = new OptionalClientDisposable(this, optionalClient))
+            {
+                MessagesChatFull fullChat = null;
+
                 if (!superGroup)
                 {
                     fullChat =
@@ -119,24 +124,17 @@ namespace Disa.Framework.Telegram
                 }
                 else
                 {
-                    try
-                    {
-                        fullChat =
-                            (MessagesChatFull)
-                                TelegramUtils.RunSynchronously(
-                                client.Client.Methods.ChannelsGetFullChannelAsync(new ChannelsGetFullChannelArgs
+                    fullChat =
+                        (MessagesChatFull)
+                            TelegramUtils.RunSynchronously(
+                            client.Client.Methods.ChannelsGetFullChannelAsync(new ChannelsGetFullChannelArgs
+                            {
+                                Channel = new InputChannel
                                 {
-                                    Channel = new InputChannel
-                                    {
-                                        ChannelId = uint.Parse(address),
-                                        AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(address)))
-                                    }
-                                }));
-                    }
-                    catch (Exception e)
-                    {
-                        DebugPrint(">>>> get full channel exception " + e);
-                    }
+                                    ChannelId = uint.Parse(address),
+                                    AccessHash = TelegramUtils.GetChannelAccessHash(_dialogs.GetChat(uint.Parse(address)))
+                                }
+                            }));
                 }
 
                 _dialogs.AddUsers(fullChat.Users);
