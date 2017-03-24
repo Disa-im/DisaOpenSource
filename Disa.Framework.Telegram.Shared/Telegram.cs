@@ -737,42 +737,78 @@ namespace Disa.Framework.Telegram
             //}
         }
 
+        private readonly Dictionary<string, List<Mention>> _cachedMentions = new Dictionary<string, List<Mention>>();
+
         private void HandleEntities(string message, List<IMessageEntity> entities, string bubbleGroupAddress, 
             TextBubble textBubble, TelegramClient optionalClient = null)
         {
-            var myAddress = _settings.AccountId.ToString(CultureInfo.InvariantCulture);
-            List<Mention> mentions = null;
-            // Ok, transfer the Telegram specific Entity info over to
-            // Disa Framework BubbleMarkup representations.
             textBubble.BubbleMarkups = new List<BubbleMarkup>();
+            var myAddress = _settings.AccountId.ToString(CultureInfo.InvariantCulture);
+
             foreach (var entity in entities)
             {
                 if (entity is MessageEntityMention)
                 {
-                    // We need to do a little work to get the DisaParticipant.Address to
-                    // populate the BubbleMarkup with. The DisaParticipant.Address allows
-                    // us to launch a UserInformation dialgo when tapping on the mention.
+                    string mentionParticipantAddress = null;
+
                     var messageEntityMention = entity as MessageEntityMention;
                     var offset = (int)messageEntityMention.Offset;
                     var length = (int)messageEntityMention.Length;
                     var username = message.Substring(offset, length);
-                    var mentionParticipantAddress = string.Empty;
-                    var bubbleGroup = BubbleGroupManager.FindWithAddress(this, bubbleGroupAddress);
 
-                    // First try to get cached address
+                    var bubbleGroup = BubbleGroupManager.FindWithAddress(this, bubbleGroupAddress);
                     if (bubbleGroup != null)
                     {
-                        var mention = bubbleGroup.Mentions
-                            .Where(x => x.Value == username)
-                            .FirstOrDefault();
-                        if (mention != null)
+                        var mentions = bubbleGroup.Mentions.ToList();
+                        if (mentions != null)
                         {
-                            mentionParticipantAddress = mention.Address;
+                            var mention = mentions.FirstOrDefault(x => x.Value == username);
+                            if (mention != null)
+                            {
+                                mentionParticipantAddress = mention.Address;
+                            }
                         }
                     }
 
-                    // Did we get a cached result?
-                    if (!string.IsNullOrEmpty(mentionParticipantAddress))
+                    if (mentionParticipantAddress == null)
+                    {
+                        lock (_cachedMentions)
+                        {
+                            if (_cachedMentions.ContainsKey(bubbleGroupAddress))
+                            {
+                                var mentions = _cachedMentions[bubbleGroupAddress];
+                                var mention = mentions.FirstOrDefault(x => x.Value == username);
+                                if (mention != null)
+                                {
+                                    mentionParticipantAddress = mention.Address;
+                                }
+                            }
+                        }
+                    }
+
+                    if (mentionParticipantAddress == null)
+                    {
+                        try
+                        {
+                            var mentions = MentionsGetMentions("@", bubbleGroupAddress, textBubble.ExtendedParty, optionalClient);
+                            lock (_cachedMentions)
+                            {
+                                _cachedMentions[bubbleGroupAddress] = mentions;
+                            }
+                            var mention = mentions.FirstOrDefault(x => x.Value == username);
+                            if (mention != null)
+                            {
+                                mentionParticipantAddress = mention.Address;
+                            }
+                        }
+                        catch
+                        {
+                            //FIXME: this usually happens because we have some backoff on an API call. Should rarely happen, but
+                            //       if it does, then we'll ignore markups.
+                        }
+                    }
+
+                    if (mentionParticipantAddress!= null)
                     {
                         textBubble.BubbleMarkups.Add(new BubbleMarkupMentionUsername
                         {
@@ -781,33 +817,6 @@ namespace Disa.Framework.Telegram
                             Address = mentionParticipantAddress,
                             IsMyself = myAddress == mentionParticipantAddress
                         });
-                    }
-                    else
-                    {
-                        if (mentions == null)
-                        {
-                            mentions = MentionsGetMentions("@", textBubble.Address, textBubble.ExtendedParty, optionalClient);
-                        }
-                        if (mentions != null)
-                        {
-                            var mention = mentions
-                                .Where(x => x.Value == username)
-                                .FirstOrDefault();
-                            if (mention != null)
-                            {
-                                mentionParticipantAddress = mention.Address;
-                            }
-                            if (!string.IsNullOrEmpty(mentionParticipantAddress))
-                            {
-                                textBubble.BubbleMarkups.Add(new BubbleMarkupMentionUsername
-                                {
-                                    Offset = offset,
-                                    Length = length,
-                                    Address = mentionParticipantAddress,
-                                    IsMyself = myAddress == mentionParticipantAddress
-                                });
-                            }
-                        }
                     }
                 }
                 else if (entity is MessageEntityMentionName)
