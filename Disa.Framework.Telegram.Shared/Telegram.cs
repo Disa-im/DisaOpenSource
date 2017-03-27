@@ -782,7 +782,7 @@ namespace Disa.Framework.Telegram
                     else
                     {
                         // Ok, see if we can get non-cached address 
-                        BubbleGroupUpdater.GetMentions("@", bubbleGroup, result =>
+                        BubbleGroupUpdater.GetMentions(bubbleGroup, result =>
                         {
                             if (result != null &&
                                 result.Count > 0)

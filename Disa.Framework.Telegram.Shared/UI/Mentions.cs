@@ -34,162 +34,189 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                var fullChat = MentionsFetchFullChat(group.Address, group.IsExtendedParty);
-                var partyParticipants = MentionsGetPartyParticipants(fullChat);
-
-                var resultList = new List<Mention>();
-                if (!group.IsExtendedParty)
+                if (group.IsParty)
                 {
-                    foreach (var partyParticipant in partyParticipants.ChatParticipants)
-                    {
-                        var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
-                        if (id != null)
-                        {
-                            var user = _dialogs.GetUser(uint.Parse(id));
-                            var username = TelegramUtils.GetUserHandle(user);
-                            var name = TelegramUtils.GetUserName(user);
-                            var groupUsernameMention  = new Mention
-                            {
-                                Type = MentionType.Username,
-                                BubbleGroupId = group.ID,
-                                Value = username,
-                                Name = name,
-                                Address = id
-                            };
-                            resultList.Add(groupUsernameMention);
-                        }
-                    }
+                    GetPartyMentions(group, result);
                 }
                 else
                 {
-                    foreach (var partyParticipant in partyParticipants.ChannelParticipants)
-                    {
-                        var id = TelegramUtils.GetUserIdFromChannelParticipant(partyParticipant);
-                        if (id != null)
-                        {
-                            var user = _dialogs.GetUser(uint.Parse(id));
-                            var username = TelegramUtils.GetUserHandle(user);
-                            var name = TelegramUtils.GetUserName(user);
-                            var channelUsernameMention = new Mention
-                            {
-                                Type = MentionType.Username,
-                                BubbleGroupId = group.ID,
-                                Value = username,
-                                Name = name,
-                                Address = id
-                            };
+                    GetSoloMentions(group, result);
+                }
+            });
+        }
 
-                            resultList.Add(channelUsernameMention);
-                        }
-                    }
+        private void GetSoloMentions(BubbleGroup group, Action<List<Mention>> result)
+        {
+            using (var client = new FullClientDisposable(this))
+            {
+                var resultList = new List<Mention>();
+
+                var user = _dialogs.GetUser(uint.Parse(group.Address));
+                var inputUser = TelegramUtils.CastUserToInputUser(user);
+
+                UserFull userFull =
+                    (UserFull)
+                        TelegramUtils.RunSynchronously(
+                            client.Client.Methods.UsersGetFullUserAsync(new UsersGetFullUserArgs
+                            {
+                                Id = inputUser
+                            }));
+
+                if (userFull == null)
+                {
+                    result(resultList);
                 }
 
-                var chatFull = fullChat.FullChat as ChatFull;
-                if (chatFull != null)
+                var telegramBotInfo = userFull.BotInfo as SharpTelegram.Schema.BotInfo;
+                if (telegramBotInfo != null)
                 {
-                    foreach(var chatFullBotInfo in chatFull.BotInfo)
+                    var username = TelegramUtils.GetUserHandle(user);
+                    var name = TelegramUtils.GetUserName(user);
+
+                    var botCommandMention = new Mention
                     {
-                        var telegramBotInfo = chatFullBotInfo as SharpTelegram.Schema.BotInfo;
-                        if (telegramBotInfo != null)
+                        Type = MentionType.BotCommand,
+                        BubbleGroupId = group.ID,
+                        Value = username,
+                        Name = name,
+                        Address = telegramBotInfo.UserId.ToString(CultureInfo.InvariantCulture)
+                    };
+
+                    var disaBotInfo = new Disa.Framework.Bots.BotInfo
+                    {
+                        Address = telegramBotInfo.UserId.ToString(CultureInfo.InvariantCulture),
+                        Description = telegramBotInfo.Description,
+                        Commands = new List<Disa.Framework.Bots.BotCommand>()
+                    };
+
+                    foreach (var c in telegramBotInfo.Commands)
+                    {
+                        var telegramBotCommand = c as SharpTelegram.Schema.BotCommand;
+                        if (telegramBotCommand != null)
                         {
-                            var user = _dialogs.GetUser(telegramBotInfo.UserId);
-                            var username = TelegramUtils.GetUserHandle(user);
-                            var name = TelegramUtils.GetUserName(user);
-
-                            var botCommandMention = new Mention
+                            disaBotInfo.Commands.Add(new Disa.Framework.Bots.BotCommand
                             {
-                                Type = MentionType.BotCommand,
-                                BubbleGroupId = group.ID,
-                                Value = username,
-                                Name = name,
-                                Address = telegramBotInfo.UserId.ToString(CultureInfo.InvariantCulture)
-                            };
-
-                            var disaBotInfo = new Disa.Framework.Bots.BotInfo
-                            {
-                                Address = telegramBotInfo.UserId.ToString(CultureInfo.InvariantCulture),
-                                Description = telegramBotInfo.Description,
-                                Commands = new List<Disa.Framework.Bots.BotCommand>()
-                            };
-
-                            foreach(var c in telegramBotInfo.Commands)
-                            {
-                                var telegramBotCommand = c as SharpTelegram.Schema.BotCommand;
-                                if (telegramBotCommand != null)
-                                {
-                                    disaBotInfo.Commands.Add(new Disa.Framework.Bots.BotCommand
-                                    {
-                                        Command = telegramBotCommand.Command,
-                                        Description = telegramBotCommand.Description
-                                    });
-                                }
-                            }
-
-                            resultList.Add(botCommandMention);
+                                Command = telegramBotCommand.Command,
+                                Description = telegramBotCommand.Description
+                            });
                         }
-
                     }
+
+                    botCommandMention.BotInfo = disaBotInfo;
+
+                    resultList.Add(botCommandMention);
                 }
 
                 result(resultList);
-            });
+            }
         }
 
-        // TODO
-        public Task GetRecentHashtags(Action<List<Hashtag>> result)
+        private void GetPartyMentions(BubbleGroup group, Action<List<Mention>> result)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                result(new List<Hashtag>());
-            });
-        }
+            var fullChat = MentionsFetchFullChat(group.Address, group.IsExtendedParty);
+            var partyParticipants = MentionsGetPartyParticipants(fullChat);
 
-        // TODO
-        public Task SetRecentHashtags(List<Hashtag> hashtags, Action<bool> result)
-        {
-            return Task.Factory.StartNew(() =>
+            var resultList = new List<Mention>();
+            if (!group.IsExtendedParty)
             {
-                result(true);
-            });
-        }
-
-        // TODO
-        public Task ClearRecentHashtags(Action<bool> result)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                result(true);
-            });
-        }
-
-        // TODO
-        public Task GetContactsByUsername(string username, Action<List<Contact>> result)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                var peer = ResolvePeer(username);
-
-                var contacts = new List<Contact>();
-                foreach (var peerUser in peer.Users)
+                foreach (var partyParticipant in partyParticipants.ChatParticipants)
                 {
-                    var user = peerUser as User;
-                    if (user != null)
+                    var id = TelegramUtils.GetUserIdFromParticipant(partyParticipant);
+                    if (id != null)
                     {
-                        var contact = CreateTelegramContact(user);
-                        contacts.Add(contact);
+                        var user = _dialogs.GetUser(uint.Parse(id));
+                        var username = TelegramUtils.GetUserHandle(user);
+                        var name = TelegramUtils.GetUserName(user);
+                        var groupUsernameMention = new Mention
+                        {
+                            Type = MentionType.Username,
+                            BubbleGroupId = group.ID,
+                            Value = username,
+                            Name = name,
+                            Address = id
+                        };
+                        resultList.Add(groupUsernameMention);
                     }
                 }
+            }
+            else
+            {
+                foreach (var partyParticipant in partyParticipants.ChannelParticipants)
+                {
+                    var id = TelegramUtils.GetUserIdFromChannelParticipant(partyParticipant);
+                    if (id != null)
+                    {
+                        var user = _dialogs.GetUser(uint.Parse(id));
+                        var username = TelegramUtils.GetUserHandle(user);
+                        var name = TelegramUtils.GetUserName(user);
+                        var channelUsernameMention = new Mention
+                        {
+                            Type = MentionType.Username,
+                            BubbleGroupId = group.ID,
+                            Value = username,
+                            Name = name,
+                            Address = id
+                        };
 
-                result(contacts);
-            });
+                        resultList.Add(channelUsernameMention);
+                    }
+                }
+            }
+
+            var chatFull = fullChat.FullChat as ChatFull;
+            if (chatFull != null)
+            {
+                foreach (var chatFullBotInfo in chatFull.BotInfo)
+                {
+                    var telegramBotInfo = chatFullBotInfo as SharpTelegram.Schema.BotInfo;
+                    if (telegramBotInfo != null)
+                    {
+                        var user = _dialogs.GetUser(telegramBotInfo.UserId);
+                        var username = TelegramUtils.GetUserHandle(user);
+                        var name = TelegramUtils.GetUserName(user);
+
+                        var botCommandMention = new Mention
+                        {
+                            Type = MentionType.BotCommand,
+                            BubbleGroupId = group.ID,
+                            Value = username,
+                            Name = name,
+                            Address = telegramBotInfo.UserId.ToString(CultureInfo.InvariantCulture)
+                        };
+
+                        var disaBotInfo = new Disa.Framework.Bots.BotInfo
+                        {
+                            Address = telegramBotInfo.UserId.ToString(CultureInfo.InvariantCulture),
+                            Description = telegramBotInfo.Description,
+                            Commands = new List<Disa.Framework.Bots.BotCommand>()
+                        };
+
+                        foreach (var c in telegramBotInfo.Commands)
+                        {
+                            var telegramBotCommand = c as SharpTelegram.Schema.BotCommand;
+                            if (telegramBotCommand != null)
+                            {
+                                disaBotInfo.Commands.Add(new Disa.Framework.Bots.BotCommand
+                                {
+                                    Command = telegramBotCommand.Command,
+                                    Description = telegramBotCommand.Description
+                                });
+                            }
+                        }
+
+                        botCommandMention.BotInfo = disaBotInfo;
+
+                        resultList.Add(botCommandMention);
+                    }
+                }
+            }
+
+            result(resultList);
         }
 
-        // TODO
-        public Task GetInlineBotResults(BotContact bot, string query, string offset, Action<BotResults> botResults)
-        {
-            throw new NotImplementedException();
-        }
 
+
+        // TODO: Move to TelegramUtils for both
         // Separate implementation for Mentions - PartyOptions has its own as well
         private MessagesChatFull MentionsFetchFullChat(string address, bool superGroup)
         {
@@ -235,6 +262,7 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        // TODO: Move to TelegramUtils for both
         // Separate implementation for Mentions - PartyOptions has its own as well
         private Participants MentionsGetPartyParticipants(MessagesChatFull fullChat)
         {
