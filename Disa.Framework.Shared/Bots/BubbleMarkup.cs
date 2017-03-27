@@ -41,11 +41,14 @@ namespace Disa.Framework.Bots
         /// </summary>
         [ProtoMember(3)]
         public string Address { get; set; }
-        
+
+        [ProtoMember(4)]
+        public bool IsMyself { get; set; }
+
         /// <summary>
         /// For <see cref="BubbleMarkupPre"/>
         /// </summary>
-        [ProtoMember(4)]
+        [ProtoMember(5)]
         public string Language { get; set; }
     }
 
