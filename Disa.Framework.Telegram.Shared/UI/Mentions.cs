@@ -104,6 +104,8 @@ namespace Disa.Framework.Telegram
 
                     resultList.Add(botCommandMention);
                 }
+
+                result(resultList);
             }
         }
 

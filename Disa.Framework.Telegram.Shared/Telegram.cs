@@ -834,6 +834,15 @@ namespace Disa.Framework.Telegram
                         IsMyself = myAddress == messageEntityParticipantAddress,
                     });
                 }
+                else if (entity is MessageEntityBotCommand)
+                {
+                    var messageEntityMentionBotCommand = entity as MessageEntityBotCommand;
+                    textBubble.BubbleMarkups.Add(new BubbleMarkupBotCommand
+                    {
+                        Offset = (int)messageEntityMentionBotCommand.Offset,
+                        Length = (int)messageEntityMentionBotCommand.Length
+                    });
+                }
             }
         }
 
@@ -2326,6 +2335,21 @@ namespace Disa.Framework.Telegram
                                     Offset = (uint)bubbleMarkup.Offset,
                                     Length = (uint)bubbleMarkup.Length,
                                     UserId = inputUser
+                                });
+                            }
+                            else if (bubbleMarkup is BubbleMarkupBotCommand)
+                            {
+                                if (args.Entities == null)
+                                {
+                                    args.Entities = new List<IMessageEntity>();
+                                }
+
+                                args.Flags |= MESSAGE_FLAG_ENTITIES;
+
+                                args.Entities.Add(new MessageEntityBotCommand
+                                {
+                                    Offset = (uint)bubbleMarkup.Offset,
+                                    Length = (uint)bubbleMarkup.Length,
                                 });
                             }
                         }
