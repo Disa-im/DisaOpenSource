@@ -476,16 +476,13 @@ namespace Disa.Framework.Telegram
                     var i = 0;
                     foreach (var bubble in messageBubbles)
                     {
-                        if (bubble != null)
+                        if (message.ReplyToMsgId != 0 && i == 0)//add quoted message only to the first bubble
                         {
-                            if (message.ReplyToMsgId != 0 && i == 0)//add quoted message only to the first bubble
-                            {
-                                var iReplyMessage = GetMessage(message.ReplyToMsgId, null, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-                                var replyMessage = iReplyMessage as Message;
-                                AddQuotedMessageToBubble(replyMessage, bubble);
-                            }
-                            bubbles.Add(bubble);
+                            var iReplyMessage = GetMessage(message.ReplyToMsgId, null, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
+                            var replyMessage = iReplyMessage as Message;
+                            AddQuotedMessageToBubble(replyMessage, bubble);
                         }
+                        bubbles.Add(bubble);
                         i++;
                     }
                 }
