@@ -268,6 +268,7 @@ namespace Disa.Framework.Telegram
                 var updateEditChannelMessage = update as UpdateEditChannelMessage;
                 var updateChatAdmins = update as UpdateChatAdmins;
                 var updateChannel = update as UpdateChannel;
+                var updateEditMessage = update as UpdateEditMessage;
                 var message = update as SharpTelegram.Schema.Message;
                 var user = update as IUser;
                 var chat = update as IChat;
@@ -322,6 +323,40 @@ namespace Disa.Framework.Telegram
                     if (shortMessage.Id > maxMessageId)
                     {
                         maxMessageId = shortMessage.Id;
+                    }
+                }
+                else if (updateEditMessage != null)
+                {
+                    var updatedMessage = updateEditMessage.Message as Message;
+                    if (updatedMessage != null)
+                    {
+                        // First, let's get a representation of the Bubble that's been updated
+                        var updatedBubbles = ProcessFullMessage(updatedMessage, useCurrentTime, optionalClient);
+                        var updatedBubble = updatedBubbles.Count >= 1 ? updatedBubbles[0] : null;
+                        
+                        if (updatedBubble != null)
+                        {
+                            // Now, let's find the original Bubble on-device we want to update
+                            var originalBubble = BubbleManager.FindAll(this, updatedBubble.Address)
+                                .Where(b => b.IdService == updatedBubble.IdService)
+                                .FirstOrDefault();
+                            if (originalBubble != null)
+                            {
+                                // Ok, for the updated Bubble representation, update it's identity
+                                updatedBubble.ID = originalBubble.ID;
+
+                                // Now, go for the local store update
+                                var originalGroup = BubbleGroupManager.FindWithAddress(this, updatedBubble.Address);
+                                if (originalGroup != null)
+                                {
+                                    BubbleManager.Update(originalGroup, updatedBubble);
+
+                                    // AND, publish an event in case anyone (e.g., Inline Keyboard) wants
+                                    // to update their UI for the updated Bubble
+                                    BubbleGroupEvents.RaiseBubbleUpdated(updatedBubble, originalGroup);
+                                }
+                            }
+                        }
                     }
                 }
                 else if (updateUserPhoto != null)
@@ -846,6 +881,136 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        private void HandleReplyMarkup(IReplyMarkup replyMarkup, TextBubble textBubble)
+        {
+            if (replyMarkup is ReplyKeyboardHide)
+            {
+                var replyKeyboardHide = replyMarkup as ReplyKeyboardHide;
+                textBubble.KeyboardMarkup = new KeyboardMarkupHide
+                {
+                    Selective = replyKeyboardHide.Selective != null ? true : false
+                };
+            }
+            else if (replyMarkup is ReplyKeyboardForceReply)
+            {
+                var replyKeyboardForceReply = replyMarkup as ReplyKeyboardForceReply;
+                textBubble.KeyboardMarkup = new KeyboardMarkupForceReply
+                {
+                    SingleUse = replyKeyboardForceReply.SingleUse != null ? true : false,
+                    Selective = replyKeyboardForceReply.Selective != null ? true : false
+                };
+            }
+            else if (replyMarkup is ReplyKeyboardMarkup)
+            {
+                var replyKeyboardMarkup = replyMarkup as ReplyKeyboardMarkup;
+                var keyboardCustomMarkup = new KeyboardCustomMarkup
+                {
+                    Resize = replyKeyboardMarkup.Resize != null ? true : false,
+                    SingleUse = replyKeyboardMarkup.SingleUse != null ? true : false,
+                    Selective = replyKeyboardMarkup.Selective != null ? true : false
+                };
+
+                keyboardCustomMarkup.Rows = HandleInlineKeyboardButtonRows(replyKeyboardMarkup.Rows);
+
+                textBubble.KeyboardMarkup = keyboardCustomMarkup;
+            }
+            else if (replyMarkup is ReplyInlineMarkup)
+            {
+                var replyInlineMarkup = replyMarkup as ReplyInlineMarkup;
+                var keyboardInlineMarkup = new KeyboardInlineMarkup();
+
+                keyboardInlineMarkup.Rows = HandleInlineKeyboardButtonRows(replyInlineMarkup.Rows);
+
+                textBubble.KeyboardMarkup = keyboardInlineMarkup;
+            }
+        }
+
+        private List<Bots.KeyboardButtonRow> HandleInlineKeyboardButtonRows(List<SharpTelegram.Schema.IKeyboardButtonRow> rows)
+        {
+            var disaKeyboardMarkupRows = new List<Bots.KeyboardButtonRow>();
+
+            if (rows == null)
+            {
+                return disaKeyboardMarkupRows;
+            }
+
+            foreach (var row in rows)
+            {
+                var telegramKeyboardButtonRow = row as SharpTelegram.Schema.KeyboardButtonRow;
+
+                var disaKeyboardButtonRow = new Bots.KeyboardButtonRow();
+                disaKeyboardMarkupRows.Add(disaKeyboardButtonRow);
+
+
+                disaKeyboardButtonRow.Buttons = new List<Bots.KeyboardButton>();
+                if (telegramKeyboardButtonRow != null)
+                {
+                    foreach (var button in telegramKeyboardButtonRow.Buttons)
+                    {
+                        if (button is SharpTelegram.Schema.KeyboardButton)
+                        {
+                            var telegramKeyboardButton = button as SharpTelegram.Schema.KeyboardButton;
+                            var disaKeyboardButton = new Bots.KeyboardButtonCustom
+                            {
+                                Text = telegramKeyboardButton.Text
+                            };
+                            disaKeyboardButtonRow.Buttons.Add(disaKeyboardButton);
+                        }
+                        else if (button is SharpTelegram.Schema.KeyboardButtonUrl)
+                        {
+                            var telegramKeyboardButtonUrl = button as SharpTelegram.Schema.KeyboardButtonUrl;
+                            var disaKeyboardButtonUrl = new Bots.KeyboardButtonUrl
+                            {
+                                Text = telegramKeyboardButtonUrl.Text,
+                                Url = telegramKeyboardButtonUrl.Url
+                            };
+                            disaKeyboardButtonRow.Buttons.Add(disaKeyboardButtonUrl);
+                        }
+                        else if (button is SharpTelegram.Schema.KeyboardButtonCallback)
+                        {
+                            var telegramKeyboardButtonCallback = button as SharpTelegram.Schema.KeyboardButtonCallback;
+                            var disaKeyboardButtonCallback = new Bots.KeyboardButtonCallback
+                            {
+                                Text = telegramKeyboardButtonCallback.Text,
+                                Data = telegramKeyboardButtonCallback.Data
+                            };
+                            disaKeyboardButtonRow.Buttons.Add(disaKeyboardButtonCallback);
+                        }
+                        else if (button is SharpTelegram.Schema.KeyboardButtonRequestPhone)
+                        {
+                            var telegramKeyboardButtonRequestPhone = button as SharpTelegram.Schema.KeyboardButtonRequestPhone;
+                            var disaKeyboardButtonRequestPhone = new Bots.KeyboardButtonRequestPhone
+                            {
+                                Text = telegramKeyboardButtonRequestPhone.Text
+                            };
+                            disaKeyboardButtonRow.Buttons.Add(disaKeyboardButtonRequestPhone);
+                        }
+                        else if (button is SharpTelegram.Schema.KeyboardButtonRequestGeoLocation)
+                        {
+                            var telegramKeyboardButtonRequestGeoLocation = button as SharpTelegram.Schema.KeyboardButtonRequestGeoLocation;
+                            var disaKeyboardButtonRequestGeoLocation = new Bots.KeyboardButtonRequestGeoLocation
+                            {
+                                Text = telegramKeyboardButtonRequestGeoLocation.Text
+                            };
+                            disaKeyboardButtonRow.Buttons.Add(disaKeyboardButtonRequestGeoLocation);
+                        }
+                        else if (button is SharpTelegram.Schema.KeyboardButtonSwitchInline)
+                        {
+                            var telegramKeyboardButtonSwitchInline = button as SharpTelegram.Schema.KeyboardButtonSwitchInline;
+                            var disaKeyboardButtonSwitchInline = new Bots.KeyboardButtonSwitchInline
+                            {
+                                Text = telegramKeyboardButtonSwitchInline.Text,
+                                Query = telegramKeyboardButtonSwitchInline.Query
+                            };
+                            disaKeyboardButtonRow.Buttons.Add(disaKeyboardButtonSwitchInline);
+                        }
+                    }
+                }
+            }
+
+            return disaKeyboardMarkupRows;
+        }
+
         private List<VisualBubble> MakePartyInformationBubble(MessageService messageService, bool useCurrentTime, TelegramClient optionalClient)
 	    {
             var editTitle = messageService.Action as MessageActionChatEditTitle;
@@ -1156,6 +1321,12 @@ namespace Disa.Framework.Telegram
                         entities: message.Entities,
                         bubbleGroupAddress: address,
                         textBubble: tb, optionalClient: optionalClient);
+                }
+
+                // Do we have any inline keyboard to process?
+                if (message.ReplyMarkup != null)
+                {
+                    HandleReplyMarkup(message.ReplyMarkup, tb);
                 }
 
                 bubblesReturn.Add(tb);

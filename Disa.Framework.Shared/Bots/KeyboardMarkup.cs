@@ -14,6 +14,8 @@ namespace Disa.Framework.Bots
     {
     }
 
+    [Serializable]
+    [ProtoContract]
     public class KeyboardMarkupHide : KeyboardMarkup
     {
         [ProtoMember(1)]
@@ -21,6 +23,8 @@ namespace Disa.Framework.Bots
 
     }
 
+    [Serializable]
+    [ProtoContract]
     public class KeyboardMarkupForceReply : KeyboardMarkup
     {
         [ProtoMember(1)]
@@ -30,6 +34,8 @@ namespace Disa.Framework.Bots
         public bool Selective { get; set; }
     }
 
+    [Serializable]
+    [ProtoContract]
     public class KeyboardCustomMarkup : KeyboardMarkup
     {
         [ProtoMember(1)]
@@ -45,6 +51,8 @@ namespace Disa.Framework.Bots
         public List<KeyboardButtonRow> Rows { get; set; }
     }
 
+    [Serializable]
+    [ProtoContract]
     public class KeyboardInlineMarkup : KeyboardMarkup
     {
         [ProtoMember(1)]

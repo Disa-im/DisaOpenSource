@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bots\MessagesBotResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bots\Update.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Hashtag.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IBots.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IMentions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INewChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPartyParticipantRequests.cs" />

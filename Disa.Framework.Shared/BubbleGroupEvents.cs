@@ -10,10 +10,12 @@ namespace Disa.Framework
         public static event BubbleInserted OnBubbleInserted;
         public static event NewAbstractBubble OnNewAbstractBubble;
         public static event EventHandler OnParticipantRequestToJoinParty;
+        public static event BubbleUpdated OnBubbleUpdated;
 
         public delegate void BubbleFailed(VisualBubble bubble, BubbleGroup bubbleGroup);
         public delegate void BubbleInserted(VisualBubble bubble, BubbleGroup bubbleGroup);
         public delegate void NewAbstractBubble(AbstractBubble bubble, BubbleGroup bubbleGroup);
+        public delegate void BubbleUpdated(VisualBubble bubble, BubbleGroup bubbleGroup);
 
         private static Action<IEnumerable<BubbleGroup>> _refreshed; // bubble group updated, conversation list needs refresh
         private static Action<IEnumerable<BubbleGroup>> _bubblesUpdated; // bubble group bubbles updated, conversation bubbldes need to be updated
@@ -66,7 +68,7 @@ namespace Disa.Framework
                 _bubblesUpdated(@group);
         }
 
-        internal static void RaiseBubblesUpdated(BubbleGroup group)
+        public static void RaiseBubblesUpdated(BubbleGroup group)
         {
             if (_bubblesUpdated != null)
                 _bubblesUpdated(new [] { @group });
@@ -123,6 +125,14 @@ namespace Disa.Framework
             if (OnBubbleInserted != null)
             {
                 OnBubbleInserted(bubble, bubbleGroup);
+            }
+        }
+
+        public static void RaiseBubbleUpdated(VisualBubble bubble, BubbleGroup bubbleGroup)
+        {
+            if (OnBubbleUpdated != null)
+            {
+                OnBubbleUpdated(bubble, bubbleGroup);
             }
         }
 

@@ -53,6 +53,9 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(158)]
         public List<BubbleMarkup> BubbleMarkups { get; set; }
 
+        [ProtoMember(159)]
+        public KeyboardMarkup KeyboardMarkup { get; set; }
+
         [JsonIgnore]
         [NonSerialized]
         public Service Service;
