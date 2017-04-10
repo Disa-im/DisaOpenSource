@@ -202,7 +202,7 @@ namespace Disa.Framework.Telegram
         {
             if (updates == null)
             {
-                return null;
+                return new List<object>();
             }
             var precedents = new List<object>();
             var successors = updates.ToList();
@@ -378,33 +378,35 @@ namespace Disa.Framework.Telegram
                     {
                         var bubbleGroupAddress = updateChannel.ChannelId.ToString();
                         var bubbleGroup = BubbleGroupManager.FindWithAddress(this, bubbleGroupAddress);
-
-                        if (channel.Left != null)
-                        { 
-                            Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroup });
-                        }
-                        else
+                        if (bubbleGroup != null)
                         {
-                            BubbleGroupEvents.RaiseInputUpdated(bubbleGroup);
-                            // Ok, we haven't left this group, so is this a new bubblegroup we have just been
-                            // added to that we need to kick start with a partyinformation bubble?
-                            //if (bubbleGroup == null &&
-                            //    channel.Creator == null)
-                            //{
-                            //    var partyInformationBubble = new PartyInformationBubble(
-                            //        time: Time.GetNowUnixTimestamp(),
-                            //        direction: BubbleDirection.Incoming,
-                            //        address: bubbleGroupAddress,
-                            //        participantAddress: null,
-                            //        party: true,
-                            //        service: this,
-                            //        idService: null,
-                            //        type: PartyInformationBubble.InformationType.AddedToChannel,
-                            //        influencer: null,
-                            //        affected: null);
+                            if (channel.Left != null)
+                            {
+                                Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroup });
+                            }
+                            else
+                            {
+                                BubbleGroupEvents.RaiseInputUpdated(bubbleGroup);
+                                // Ok, we haven't left this group, so is this a new bubblegroup we have just been
+                                // added to that we need to kick start with a partyinformation bubble?
+                                //if (bubbleGroup == null &&
+                                //    channel.Creator == null)
+                                //{
+                                //    var partyInformationBubble = new PartyInformationBubble(
+                                //        time: Time.GetNowUnixTimestamp(),
+                                //        direction: BubbleDirection.Incoming,
+                                //        address: bubbleGroupAddress,
+                                //        participantAddress: null,
+                                //        party: true,
+                                //        service: this,
+                                //        idService: null,
+                                //        type: PartyInformationBubble.InformationType.AddedToChannel,
+                                //        influencer: null,
+                                //        affected: null);
 
-                            //    TelegramEventBubble(partyInformationBubble);
-                            //}
+                                //    TelegramEventBubble(partyInformationBubble);
+                                //}
+                            }
                         }
                     }
                 }
@@ -613,33 +615,30 @@ namespace Disa.Framework.Telegram
                     var i = 0;
                     foreach (var bubble in bubbles)
                     {
-                        if (bubble != null)
+                        if (bubble.Direction == Bubble.BubbleDirection.Incoming)
                         {
-							if (bubble.Direction == Bubble.BubbleDirection.Incoming)
-							{
-								var fromId = message.FromId.ToString(CultureInfo.InvariantCulture);
-								var messageUser = _dialogs.GetUser(message.FromId);
-								if (messageUser == null)
-								{
-									DebugPrint(">>>>> User is null, fetching user from the server");
-									GetMessage(message.Id, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-								}
-							}
-							else if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
-							{
-								BubbleGroupManager.SetUnread(this, false, bubble.Address);
-								NotificationManager.Remove(this, bubble.Address);
-							}
-
-                            if (message.ReplyToMsgId != 0 && i == 0)//we should only add quoted message to first bubble if multiple bubbles exist
+                            var fromId = message.FromId.ToString(CultureInfo.InvariantCulture);
+                            var messageUser = _dialogs.GetUser(message.FromId);
+                            if (messageUser == null)
                             {
-                                var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
-                                var replyMessage = iReplyMessage as Message;
-                                AddQuotedMessageToBubble(replyMessage, bubble);
+                                DebugPrint(">>>>> User is null, fetching user from the server");
+                                GetMessage(message.Id, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
                             }
-
-                            TelegramEventBubble(bubble);
                         }
+                        else if (bubble.Direction == Bubble.BubbleDirection.Outgoing)
+                        {
+                            BubbleGroupManager.SetUnread(this, false, bubble.Address);
+                            NotificationManager.Remove(this, bubble.Address);
+                        }
+
+                        if (message.ReplyToMsgId != 0 && i == 0)//we should only add quoted message to first bubble if multiple bubbles exist
+                        {
+                            var iReplyMessage = GetMessage(message.ReplyToMsgId, optionalClient, uint.Parse(TelegramUtils.GetPeerId(message.ToId)), message.ToId is PeerChannel);
+                            var replyMessage = iReplyMessage as Message;
+                            AddQuotedMessageToBubble(replyMessage, bubble);
+                        }
+
+                        TelegramEventBubble(bubble);
                         i++;
                     }
                     if (message.Id > maxMessageId)
@@ -1307,29 +1306,31 @@ namespace Disa.Framework.Telegram
                         message.Id.ToString(CultureInfo.InvariantCulture));
                     tb.ExtendedParty = true;
                 }
-                if (tb == null) return null;
-                if (direction == Bubble.BubbleDirection.Outgoing)
+                if (tb != null)
                 {
-                    tb.Status = Bubble.BubbleStatus.Sent;
-                }
+                    if (direction == Bubble.BubbleDirection.Outgoing)
+                    {
+                        tb.Status = Bubble.BubbleStatus.Sent;
+                    }
 
-                // Do we have any mentions to process?
-                if (message.Entities != null)
-                {
-                    HandleEntities(
-                        message: message.MessageProperty,
-                        entities: message.Entities,
-                        bubbleGroupAddress: address,
-                        textBubble: tb, optionalClient: optionalClient);
-                }
+                    // Do we have any mentions to process?
+                    if (message.Entities != null)
+                    {
+                        HandleEntities(
+                            message: message.MessageProperty,
+                            entities: message.Entities,
+                            bubbleGroupAddress: address,
+                            textBubble: tb, optionalClient: optionalClient);
+                    }
 
-                // Do we have any inline keyboard to process?
-                if (message.ReplyMarkup != null)
-                {
-                    HandleReplyMarkup(message.ReplyMarkup, tb);
-                }
+                    // Do we have any inline keyboard to process?
+                    if (message.ReplyMarkup != null)
+                    {
+                        HandleReplyMarkup(message.ReplyMarkup, tb);
+                    }
 
-                bubblesReturn.Add(tb);
+                    bubblesReturn.Add(tb);
+                }
             }
             else
             {
@@ -1369,16 +1370,16 @@ namespace Disa.Framework.Telegram
                     bubble.ParticipantAddress = VisualBubble.NonSignedChannel;
                 }
             }
-            return !bubblesReturn.Any() ? null : bubblesReturn;
+            return bubblesReturn;
         }
 
         private IMessagesMessages FetchMessage(uint id, TelegramClient client, uint toId, bool superGroup)
         {
-            if (superGroup)
+            try
             {
-                try
+                if (superGroup)
                 {
-                    var result = TelegramUtils.RunSynchronously(client.Methods.ChannelsGetMessagesAsync(new ChannelsGetMessagesArgs
+                    return TelegramUtils.RunSynchronously(client.Methods.ChannelsGetMessagesAsync(new ChannelsGetMessagesArgs
                     {
                         Channel = new InputChannel
                         {
@@ -1390,23 +1391,22 @@ namespace Disa.Framework.Telegram
                             id
                         }
                     }));
-                    return result;
                 }
-                catch (Exception e)
+                else
                 {
-                    DebugPrint("Exeption while getting channel message" +  e);
-                    return MakeMessagesMessages(new List<IChat>(), new List<IUser>(), new List<IMessage>());
+                    return TelegramUtils.RunSynchronously(client.Methods.MessagesGetMessagesAsync(new MessagesGetMessagesArgs
+                    {
+                        Id = new List<uint>
+                        {
+                            id
+                        }
+                    }));
                 }
             }
-            else
+            catch (Exception e)
             {
-                return TelegramUtils.RunSynchronously(client.Methods.MessagesGetMessagesAsync(new MessagesGetMessagesArgs
-                {
-                    Id = new List<uint>
-                    {
-                        id
-                    }
-                }));
+                DebugPrint("Exeption while fetching message: " + e);
+                return MakeMessagesMessages(new List<IChat>(), new List<IUser>(), new List<IMessage>());
             }
         }
 
@@ -1467,7 +1467,7 @@ namespace Disa.Framework.Telegram
                 using (var memoryStream = new MemoryStream())
                 {
                     Serializer.Serialize<FileInformation>(memoryStream, fileInfo);
-                    ImageBubble imageBubble = null;
+                    ImageBubble imageBubble;
                     if (isUser)
                     {
                         imageBubble = new ImageBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
@@ -1495,7 +1495,7 @@ namespace Disa.Framework.Telegram
                     };
                     if (!string.IsNullOrEmpty(messageMediaPhoto.Caption))
                     {
-                        TextBubble captionBubble = null;
+                        TextBubble captionBubble;
                         if (isUser)
                         {
                             captionBubble = new TextBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
@@ -1529,7 +1529,7 @@ namespace Disa.Framework.Telegram
                     using (var memoryStream = new MemoryStream())
                     {
                         Serializer.Serialize<FileInformation>(memoryStream, fileInfo);
-                        VisualBubble bubble = null;
+                        VisualBubble bubble;
                         if (document.MimeType.Contains("audio"))
                         {
                             var audioTime = (int) GetAudioTime(document);
