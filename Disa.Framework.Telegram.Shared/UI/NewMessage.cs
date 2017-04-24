@@ -236,7 +236,7 @@ namespace Disa.Framework.Telegram
                         users.Add(user);
                     }
                     count++;
-                    if (count > 6)
+                    if (count > 8)
                         break;
                 }
 
@@ -504,6 +504,16 @@ namespace Disa.Framework.Telegram
             get
             {
                 return true;
+            }
+        }
+
+        // Our implementation for INewMessage.SearchHint. We will return null
+        // to signal we want the default language specific "Search" text.
+        public string SearchHint
+        {
+            get
+            {
+                return null;
             }
         }
 
