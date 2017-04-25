@@ -445,6 +445,16 @@ namespace Disa.Framework
             }
         }
 
+        /// <summary>
+        /// Given a <see cref="BubbleGroup"/> determine the designated 
+        /// Primary Group for the group.
+        /// 
+        /// A <see cref="UnifiedBubbleGroup"/> is created with a designated
+        /// <see cref="UnifiedBubbleGroup.PrimaryGroup"/>. A regular <see cref="BubbleGroup"/>'s
+        /// primary group is the <see cref="BubbleGroup"/> itself.
+        /// </summary>
+        /// <param name="group">The group to be evaluated to determine the Primary Group.</param>
+        /// <returns>The <see cref="BubbleGroup"/> representing the Primary Group.</returns>
         public static BubbleGroup GetPrimary(BubbleGroup group)
         {
             var unifiedGroup = @group as UnifiedBubbleGroup;
@@ -454,6 +464,19 @@ namespace Disa.Framework
             return unifiedGroup.PrimaryGroup;
         }
 
+        /// <summary>
+        /// Given a <see cref="BubbleGroup"/> determine the designated
+        /// Sending Group for the group.
+        /// 
+        /// A <see cref="UnifiedBubbleGroup"/> is first created with designated
+        /// <see cref="UnifiedBubbleGroup.PrimaryGroup"/> which will also be the 
+        /// designated <see cref="UnifiedBubbleGroup.SendingGroup"/>. For a regular <see cref="BubbleGroup"/>'s
+        /// sending group is the <see cref="BubbleGroup"/> itself.
+        /// 
+        /// A <see cref="UnifiedBubbleGroup.SendingGroup"/> can be changed.
+        /// </summary>
+        /// <param name="group">The <see cref="BubbleGroup"/> representing the Sending Group.</param>
+        /// <returns></returns>
         public static BubbleGroup GetSending(BubbleGroup group)
         {
             var unifiedGroup = @group as UnifiedBubbleGroup;
