@@ -130,6 +130,7 @@ namespace Disa.Framework
         // INewMessage
         public static readonly string INewMessageFetchBubbleGroupAddressFromLink = "FetchBubbleGroupAddressFromLink";
         public static readonly string INewMessageSupportsShareLinks = "get_SupportsShareLinks";
+        public static readonly string INewMessageSearchHint = "get_SearchHint";
 
         // IPartyOptions - Links
         public static readonly string IPartyOptionsHasPartyShareLink = "HasPartyShareLink";
