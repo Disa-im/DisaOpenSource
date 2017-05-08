@@ -21,6 +21,18 @@ namespace Disa.Framework
             return GetUnixTimestamp(DateTime.UtcNow);
         }
 
+        public static long GetNowUnixTimestamp(long currentTime)
+        {
+            if (currentTime != 0L)
+            {
+                return currentTime;
+            }
+            else
+            {
+                return GetUnixTimestamp(DateTime.UtcNow);
+            }
+        }
+
         public static long GetUnixTimestampMilliseconds(DateTime value)
         {
             var span = (value - Epoch);

@@ -241,7 +241,7 @@ namespace Disa.Framework.Telegram
 			}
 		}
 
-        private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime, TelegramClient optionalClient = null)
+        private void ProcessIncomingPayload(List<object> payloads, bool useCurrentTime, TelegramClient optionalClient = null, long currentTime=0L)
         {
             uint maxMessageId = 0;
 
@@ -611,7 +611,7 @@ namespace Disa.Framework.Telegram
                 }
                 else if (message != null)
                 {
-                    var bubbles = ProcessFullMessage(message, useCurrentTime, optionalClient);
+                    var bubbles = ProcessFullMessage(message, useCurrentTime, optionalClient, currentTime);
                     var i = 0;
                     foreach (var bubble in bubbles)
                     {
@@ -1259,7 +1259,7 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private List<VisualBubble> ProcessFullMessage(Message message, bool useCurrentTime, TelegramClient optionalClient = null)
+        private List<VisualBubble> ProcessFullMessage(Message message, bool useCurrentTime, TelegramClient optionalClient = null, long currentTime=0L)
         {
             var peerUser = message.ToId as PeerUser;
             var peerChat = message.ToId as PeerChat;
@@ -1282,7 +1282,7 @@ namespace Disa.Framework.Telegram
                         : peerUser.UserId;
                     address = addressId.ToString(CultureInfo.InvariantCulture);
                     tb = new TextBubble(
-                        useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                        useCurrentTime ? Time.GetNowUnixTimestamp(currentTime) : (long)message.Date,
                         direction, address, null, false, this, message.MessageProperty,
                         message.Id.ToString(CultureInfo.InvariantCulture));
 
