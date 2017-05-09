@@ -114,15 +114,11 @@ namespace Disa.Framework.Telegram
 
         private void OnFullClientUpdate(object sender, List<object> updates)
         {
-            var currentTime = Time.GetNowUnixTimestamp();
-
             Task.Factory.StartNew(() =>
             {
-                ProcessIncomingPayload(
-                    payloads: updates, 
-                    useCurrentTime: true,
-                    optionalClient: null,
-                    currentTime: currentTime);
+            ProcessIncomingPayload(
+                payloads: updates,
+                useCurrentTime: true);
             });
         }
 
