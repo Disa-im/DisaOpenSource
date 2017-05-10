@@ -116,7 +116,9 @@ namespace Disa.Framework.Telegram
         {
             Task.Factory.StartNew(() =>
             {
-                ProcessIncomingPayload(updates, true);
+            ProcessIncomingPayload(
+                payloads: updates,
+                useCurrentTime: true);
             });
         }
 

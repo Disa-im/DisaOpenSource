@@ -112,7 +112,21 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(265)]
         public double QuotedLocationLongitude { get; set; }
 
-		[JsonIgnore]
+        /// <summary>
+        /// A flag to specify if the <see cref="VisualBubble.IdService"/> field can be used to determine message ordering
+        /// in the event that two <see cref="VideoBubble"/>s have the same <see cref="Bubble.Time"/> value.
+        /// 
+        /// Defaults to false. 
+        /// 
+        /// Discussion:
+        /// The <see cref="Bubble.Time"/> field has a granularity in seconds. If two <see cref="VisualBubble"/>s arrive
+        /// at the same second, a <see cref="Service"/> may wish to specify that the <see cref="VisualBubble.IdService"/>
+        /// may be used to specify the sequence of the <see cref="VisualBubble"/>s.
+        /// </summary>
+        [ProtoMember(266)]
+        public bool IsServiceIdSequence { get; set; }
+
+        [JsonIgnore]
         [NonSerialized]
         public string ID;
 		[JsonIgnore]

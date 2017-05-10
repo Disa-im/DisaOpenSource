@@ -293,6 +293,7 @@ namespace Disa.Framework.Telegram
                                             shortMessage.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
                                             fromId, null, false, this, shortMessage.Message,
                                             shortMessage.Id.ToString(CultureInfo.InvariantCulture));
+                        textBubble.IsServiceIdSequence = true;
 
                         if (shortMessage.Out != null)
                         {
@@ -578,6 +579,7 @@ namespace Disa.Framework.Telegram
                                 : Bubble.BubbleDirection.Incoming,
                             address, participantAddress, true, this, shortChatMessage.Message,
                             shortChatMessage.Id.ToString(CultureInfo.InvariantCulture));
+                        textBubble.IsServiceIdSequence = true;
                         if (shortChatMessage.Out != null)
                         {
                             textBubble.Status = Bubble.BubbleStatus.Sent;
@@ -1035,6 +1037,7 @@ namespace Disa.Framework.Telegram
                 var bubble = PartyInformationBubble.CreateTitleChanged(
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                     this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, newTitle);
+                bubble.IsServiceIdSequence = true;
                 if (messageService.ToId is PeerChannel)
                 {
                     bubble.ExtendedParty = true;
@@ -1052,6 +1055,7 @@ namespace Disa.Framework.Telegram
                 var bubble = PartyInformationBubble.CreateThumbnailChanged(
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                     this, messageService.Id.ToString(), null);
+                bubble.IsServiceIdSequence = true;
                 if (messageService.ToId is PeerChannel)
                 {
                     bubble.ExtendedParty = true;
@@ -1067,6 +1071,7 @@ namespace Disa.Framework.Telegram
                 var bubble = PartyInformationBubble.CreateParticipantRemoved(
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                     this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userDeleted);
+                bubble.IsServiceIdSequence = true;
                 if (messageService.ToId is PeerChannel)
                 {
                     bubble.ExtendedParty = true;
@@ -1085,6 +1090,7 @@ namespace Disa.Framework.Telegram
                     var bubble = PartyInformationBubble.CreateParticipantAdded(
                         useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                         this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId, userAdded);
+                    bubble.IsServiceIdSequence = true;
                     if (messageService.ToId is PeerChannel)
                     {
                         bubble.ExtendedParty = true;
@@ -1099,6 +1105,7 @@ namespace Disa.Framework.Telegram
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                     this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
                     _settings.AccountId.ToString(CultureInfo.InvariantCulture));
+                bubble.IsServiceIdSequence = true;
 				
                 if (messageService.ToId is PeerChannel)
                 {
@@ -1121,6 +1128,7 @@ namespace Disa.Framework.Telegram
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address,
                     this, messageService.Id.ToString(CultureInfo.InvariantCulture), fromId,
                     _settings.AccountId.ToString(CultureInfo.InvariantCulture));
+                bubble.IsServiceIdSequence = true;
                 if (messageService.ToId is PeerChannel)
                 {
                     bubble.ExtendedParty = true;
@@ -1136,6 +1144,7 @@ namespace Disa.Framework.Telegram
                     useCurrentTime ? Time.GetNowUnixTimestamp() : (long)messageService.Date, address, this,
                     messageService.Id.ToString(CultureInfo.InvariantCulture));
                 bubble.ExtendedParty = true;
+                bubble.IsServiceIdSequence = true;
                 return new List<VisualBubble>
                 {
                     bubble
@@ -1285,7 +1294,6 @@ namespace Disa.Framework.Telegram
                         useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
                         direction, address, null, false, this, message.MessageProperty,
                         message.Id.ToString(CultureInfo.InvariantCulture));
-
                 }
                 else if (peerChat != null)
                 {
@@ -1369,6 +1377,8 @@ namespace Disa.Framework.Telegram
                 {
                     bubble.ParticipantAddress = VisualBubble.NonSignedChannel;
                 }
+
+                bubble.IsServiceIdSequence = true;
             }
             return bubblesReturn;
         }
