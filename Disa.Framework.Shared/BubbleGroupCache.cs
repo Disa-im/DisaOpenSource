@@ -21,5 +21,8 @@ namespace Disa.Framework
 		public bool InputDisabled { get; set; }
         [ProtoMember(6)]
         public List<Mention> Mentions { get; set; }
+        [ProtoMember(6)]
+        public bool HideServiceSwitcherBadge { get; set; }
+
     }
 }
