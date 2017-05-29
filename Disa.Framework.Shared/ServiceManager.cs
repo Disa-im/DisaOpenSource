@@ -48,6 +48,33 @@ namespace Disa.Framework
             AllInternal = allServices;
             RegisteredServicesDatabase.RegisterAllRegistered();
             Register(GetUnified());
+
+            SendAnalyticsTotalCounts();
+        }
+
+        /// <summary>
+        /// Helper function to consolidating sending analytic count events for
+        /// plugin total count and plugin active count.
+        /// </summary>
+        public static void SendAnalyticsTotalCounts()
+        {
+            // The total number of services that are registered excluding unified
+            var pluginTotalCount = RegisteredNoUnified.Count();
+            Analytics.RaiseCountEvent(
+                Analytics.EventAction.PluginTotalCount,
+                Analytics.EventCategory.Plugins,
+                Analytics.CustomDimensionIndex.PluginTotalCount,
+                pluginTotalCount);
+
+            // The total number of services that are registered excluding unified, 
+            // minus the number of services that are paused
+            var pluginActiveCount = pluginTotalCount - 
+                RegisteredNoUnified.Where(x => GetFlags(x).Aborted == true).Count();
+            Analytics.RaiseCountEvent(
+                Analytics.EventAction.PluginActiveCount,
+                Analytics.EventCategory.Plugins,
+                Analytics.CustomDimensionIndex.PluginActiveCount,
+                pluginActiveCount);
         }
 
         static ServiceManager()
@@ -613,6 +640,8 @@ namespace Disa.Framework
             lock (ServicesBindings) ServicesBindings.Remove(ServicesBindings.FirstOrDefault(s => s.Service == service));
             ServiceEvents.RaiseServiceUnRegistered(service);
             SettingsChangedManager.SetNeedsContactSync(service, true);
+
+            Analytics.RaiseServiceEvent(Analytics.EventAction.PluginUnregistered, Analytics.EventCategory.Plugins, service);
         }
 
         public static void StartUnified(UnifiedService unifiedService, WakeLock wakeLock)
@@ -1164,6 +1193,7 @@ namespace Disa.Framework
                         try
                         {
                             StopInternal(service);
+                            Analytics.RaiseServiceEvent(Analytics.EventAction.PluginPaused, Analytics.EventCategory.Plugins, service);
                         }
                         catch (Exception ex)
                         {

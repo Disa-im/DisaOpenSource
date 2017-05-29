@@ -270,6 +270,11 @@ namespace Disa.Framework
 
             Utils.DebugPrint("Sending " + b.GetType().Name + " on service " + b.Service.Information.ServiceName);
             b.Service.SendBubble(b);
+
+            Analytics.RaiseServiceEvent(
+                Analytics.EventAction.MessageSent, 
+                Analytics.EventCategory.Messaging, 
+                b.Service);
         }
 
         public static void SendSubscribe(Service service, bool subscribe)
