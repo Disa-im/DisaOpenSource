@@ -601,6 +601,8 @@ namespace Disa.Framework
             }
 
             lock (ServicesBindings) ServicesBindings.Add(new ServiceBinding(service, new ServiceFlags()));
+
+            Analytics.RaiseServiceEvent(Analytics.EventAction.PluginRegistered, Analytics.EventCategory.Plugins, service);
         }
 
         public static void Unregister(Service service)
@@ -613,6 +615,8 @@ namespace Disa.Framework
             lock (ServicesBindings) ServicesBindings.Remove(ServicesBindings.FirstOrDefault(s => s.Service == service));
             ServiceEvents.RaiseServiceUnRegistered(service);
             SettingsChangedManager.SetNeedsContactSync(service, true);
+
+            Analytics.RaiseServiceEvent(Analytics.EventAction.PluginUnregistered, Analytics.EventCategory.Plugins, service);
         }
 
         public static void StartUnified(UnifiedService unifiedService, WakeLock wakeLock)
@@ -1164,6 +1168,7 @@ namespace Disa.Framework
                         try
                         {
                             StopInternal(service);
+                            Analytics.RaiseServiceEvent(Analytics.EventAction.PluginPaused, Analytics.EventCategory.Plugins, service);
                         }
                         catch (Exception ex)
                         {

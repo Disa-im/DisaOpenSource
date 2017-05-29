@@ -40,6 +40,8 @@ namespace Disa.Framework
                 {
                     File.WriteAllBytes(path, sw2.ToArray());
                 }
+
+                Analytics.RaiseServiceEvent(Analytics.EventAction.PluginSetup, Analytics.EventCategory.Plugins, service);
             }
         }
 
