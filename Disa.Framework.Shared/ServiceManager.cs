@@ -628,6 +628,8 @@ namespace Disa.Framework
             }
 
             lock (ServicesBindings) ServicesBindings.Add(new ServiceBinding(service, new ServiceFlags()));
+
+            Analytics.RaiseServiceEvent(Analytics.EventAction.PluginRegistered, Analytics.EventCategory.Plugins, service);
         }
 
         public static void Unregister(Service service)
