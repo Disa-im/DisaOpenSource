@@ -60,11 +60,6 @@
             /// when calling <see cref="Analytics.SendScreenName(ScreenName, Service)"/>.
             /// </summary>
             SettingsServicesPersonalize,
-            /// <summary>
-            /// IMPORTANT: Requires associating a <see cref="Service"/> with this Screen Name
-            /// when calling <see cref="Analytics.SendScreenName(ScreenName, Service)"/>.
-            /// </summary>
-            SettingsServicesPersonalizeColor,
             SettingsNotifications,
             SettingsGeneral,
             SettingsConversations,
@@ -91,15 +86,15 @@
         {
             PluginInstalled,
             PluginUninstalled,
-            PluginRegistered,
-            PluginUnregistered,
-            PluginSetup,
-            PluginUnsetup,
-            PluginPaused,
-            PluginReactivated,
-            PluginPersonalized,
-            PluginTotalCount,
-            PluginActiveCount,
+            ServiceRegistered,
+            ServiceUnregistered,
+            ServiceSetup,
+            ServiceUnsetup,
+            ServicePaused,
+            ServiceReactivated,
+            ServicePersonalized,
+            ConvoPersonalized,
+            ServiceActiveCount,
             MessageSent,
             MessageReceived
         }
@@ -110,6 +105,7 @@
         public enum EventCategory
         {
             Plugins,
+            Services,
             Messaging
         }
 
@@ -119,13 +115,14 @@
         public enum CustomDimensionIndex
         {
             PluginName,
-            PluginTotalCount,
-            PluginActiveCount
+            ServiceName,
+            ServiceActiveCount
         }
 
         public delegate void ScreenNameHandler(ScreenName screenName);
         public delegate void ScreenNameWithBubbleGroupHandler(ScreenName screenName, BubbleGroup bubbleGroup);
         public delegate void ScreenNameWithServiceHandler(ScreenName screenName, Service service);
+        public delegate void PluginEventHandler(EventAction eventAction, EventCategory eventCategory, string pluginName);
         public delegate void ServiceEventHandler(EventAction eventAction, EventCategory eventCategory, Service service);
         public delegate void CountEventHandler(EventAction eventAction, EventCategory eventCategory, CustomDimensionIndex customDimensionIndex, int count);
 
@@ -198,7 +195,6 @@
                 case ScreenName.SettingsPluginManager: { return "screen_settings_plugin_manager"; };
                 case ScreenName.SettingsServicesService: { return "screen_settings_services_service"; }
                 case ScreenName.SettingsServicesPersonalize: { return "screen_settings_services_personalize"; }
-                case ScreenName.SettingsServicesPersonalizeColor: { return "screen_settings_services_personlize_color"; }
                 case ScreenName.SettingsNotifications: { return "screen_settings_notifications"; }
                 case ScreenName.SettingsGeneral: { return "screen_settings_general"; }
                 case ScreenName.SettingsConversations: { return "screen_settings_conversation"; }
@@ -225,15 +221,15 @@
                 // Plugins
                 case EventAction.PluginInstalled: { return "plugin_installed"; }
                 case EventAction.PluginUninstalled: { return "plugin_uninstalled"; }
-                case EventAction.PluginRegistered: { return "plugin_registered"; }
-                case EventAction.PluginUnregistered: { return "plugin_unregistered"; }
-                case EventAction.PluginSetup: { return "plugin_setup"; }
-                case EventAction.PluginUnsetup: { return "plugin_unsetup"; }
-                case EventAction.PluginPaused: { return "plugin_paused"; }
-                case EventAction.PluginReactivated: { return "plugin_reactivated"; }
-                case EventAction.PluginPersonalized: { return "plugin_personalized"; }
-                case EventAction.PluginTotalCount: { return "plugin_total_count"; }
-                case EventAction.PluginActiveCount: { return "plugin_active_count"; }
+                case EventAction.ServiceRegistered: { return "service_registered"; }
+                case EventAction.ServiceUnregistered: { return "service_unregistered"; }
+                case EventAction.ServiceSetup: { return "service_setup"; }
+                case EventAction.ServiceUnsetup: { return "service_unsetup"; }
+                case EventAction.ServicePaused: { return "service_paused"; }
+                case EventAction.ServiceReactivated: { return "service_reactivated"; }
+                case EventAction.ServicePersonalized: { return "service_personalized"; }
+                case EventAction.ConvoPersonalized: { return "convo_personalized"; }
+                case EventAction.ServiceActiveCount: { return "service_active_count"; }
 
                 // Messaging
                 case EventAction.MessageSent: { return "message_sent"; }
@@ -253,6 +249,7 @@
             switch (eventCategory)
             {
                 case EventCategory.Plugins: { return "plugins"; }
+                case EventCategory.Services: { return "services"; }
                 case EventCategory.Messaging: { return "messaging"; }
             }
 
@@ -273,8 +270,8 @@
             switch (customDimensionIndex)
             {
                 case CustomDimensionIndex.PluginName: { return 1; }
-                case CustomDimensionIndex.PluginTotalCount: { return 2; }
-                case CustomDimensionIndex.PluginActiveCount: { return 3; }
+                case CustomDimensionIndex.ServiceName: { return 4; }
+                case CustomDimensionIndex.ServiceActiveCount: { return 3; }
             }
 
             return -1;

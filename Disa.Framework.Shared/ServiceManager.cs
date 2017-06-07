@@ -49,32 +49,11 @@ namespace Disa.Framework
             RegisteredServicesDatabase.RegisterAllRegistered();
             Register(GetUnified());
 
-            SendAnalyticsTotalCounts();
-        }
-
-        /// <summary>
-        /// Helper function to consolidating sending analytic count events for
-        /// plugin total count and plugin active count.
-        /// </summary>
-        public static void SendAnalyticsTotalCounts()
-        {
-            // The total number of services that are registered excluding unified
-            var pluginTotalCount = RegisteredNoUnified.Count();
             Analytics.RaiseCountEvent(
-                Analytics.EventAction.PluginTotalCount,
-                Analytics.EventCategory.Plugins,
-                Analytics.CustomDimensionIndex.PluginTotalCount,
-                pluginTotalCount);
-
-            // The total number of services that are registered excluding unified, 
-            // minus the number of services that are paused
-            var pluginActiveCount = pluginTotalCount - 
-                RegisteredNoUnified.Where(x => GetFlags(x).Aborted == true).Count();
-            Analytics.RaiseCountEvent(
-                Analytics.EventAction.PluginActiveCount,
-                Analytics.EventCategory.Plugins,
-                Analytics.CustomDimensionIndex.PluginActiveCount,
-                pluginActiveCount);
+                Analytics.EventAction.ServiceActiveCount,
+                Analytics.EventCategory.Services,
+                Analytics.CustomDimensionIndex.ServiceActiveCount,
+                RegisteredNoUnified.Count());
         }
 
         static ServiceManager()
@@ -408,6 +387,11 @@ namespace Disa.Framework
                 try
                 {
                     BubbleManager.Group(visualBubble);
+
+                    Analytics.RaiseServiceEvent(
+                        Analytics.EventAction.MessageReceived,
+                        Analytics.EventCategory.Messaging,
+                        visualBubble.Service);
                 }
                 catch (Exception ex)
                 {
@@ -641,7 +625,10 @@ namespace Disa.Framework
             ServiceEvents.RaiseServiceUnRegistered(service);
             SettingsChangedManager.SetNeedsContactSync(service, true);
 
-            Analytics.RaiseServiceEvent(Analytics.EventAction.PluginUnregistered, Analytics.EventCategory.Plugins, service);
+            Analytics.RaiseServiceEvent(
+                Analytics.EventAction.ServiceUnregistered, 
+                Analytics.EventCategory.Services, 
+                service);
         }
 
         public static void StartUnified(UnifiedService unifiedService, WakeLock wakeLock)
@@ -1193,7 +1180,10 @@ namespace Disa.Framework
                         try
                         {
                             StopInternal(service);
-                            Analytics.RaiseServiceEvent(Analytics.EventAction.PluginPaused, Analytics.EventCategory.Plugins, service);
+                            Analytics.RaiseServiceEvent(
+                                Analytics.EventAction.ServicePaused, 
+                                Analytics.EventCategory.Services, 
+                                service);
                         }
                         catch (Exception ex)
                         {

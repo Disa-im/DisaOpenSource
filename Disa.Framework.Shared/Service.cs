@@ -90,11 +90,6 @@ namespace Disa.Framework
             if (b != null)
             {
                 ServiceManager.OnBubbleReceived(b);
-
-                Analytics.RaiseServiceEvent(
-                    Analytics.EventAction.MessageReceived,
-                    Analytics.EventCategory.Messaging,
-                    b.Service);
             }
             else 
             {
