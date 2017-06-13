@@ -29,7 +29,6 @@ namespace Disa.Framework
                 Guid = guid,
                 InputDisabled = group.InputDisabled,
                 Mentions = group.Mentions.ToList(),
-                HideServiceSwitcherBadge = group.HideServiceSwitcherBadge
             };
             return bubbleGroupCache;
         }

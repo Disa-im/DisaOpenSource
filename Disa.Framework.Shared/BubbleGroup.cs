@@ -57,15 +57,6 @@ namespace Disa.Framework
             }
         }
 
-        /// <summary>
-        /// A flag for <see cref="UnifiedBubbleGroup"/>s to control the visibility lifetime
-        /// of a badge that is shown over the Service Switcher button when displaying a <see cref="UnifiedBubbleGroup"/>.
-        /// 
-        /// We use a badge to make the purpose of the Service Switcher obvious to the user. Once the Service Switcher
-        /// is tapped, we flip this badge to true to hide the badge for a particular <see cref="UnifiedBubbleGroup"/>.
-        /// </summary>
-        public bool HideServiceSwitcherBadge { get; set; }
-
         public DisaReadTime[] ReadTimes 
         {
             get
