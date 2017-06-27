@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using ProtoBuf;
 
 namespace Disa.Framework.Bots
@@ -86,6 +86,19 @@ namespace Disa.Framework.Bots
     [ProtoInclude(200, typeof(BubbleMarkupTextUrl))]
     public class BubbleMarkupUrl : BubbleMarkup
     {
+        [ProtoMember(251)]
+        public string Url { get; set; }
+        [ProtoMember(252)]
+        public string Title { get; set; }
+        [ProtoMember(253)]
+        public string Description { get; set; }
+        [ProtoMember(254)]
+        public string ImageUrl { get; set; }
+        [ProtoMember(255)]
+        public bool HasFetched { get; set; }
+
+        public bool IsFetching { get; set; }
+        public int CrawlAttempts { get; set; }
     }
 
     [Serializable]

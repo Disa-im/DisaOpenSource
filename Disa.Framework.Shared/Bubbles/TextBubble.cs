@@ -9,7 +9,10 @@ namespace Disa.Framework.Bubbles
     public class TextBubble : VisualBubble
     {
         [ProtoMember(1)]
-        public string Message {get; set;}
+        public string Message {get; set; }
+
+        [ProtoMember(2)]
+        public bool HasParsedMessageForUrls { get; set; }
 
         public TextBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string message, string idService = null) :
