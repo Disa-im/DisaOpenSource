@@ -18,7 +18,7 @@ namespace Disa.Framework.Bots
     [ProtoInclude(108, typeof(BubbleMarkupItalic))]
     [ProtoInclude(109, typeof(BubbleMarkupCode))]
     [ProtoInclude(110, typeof(BubbleMarkupPre))]
-    [ProtoInclude(111, typeof(BubbleMarkupTextUrl))]
+    // 111 is removed because BubbleMarkupTextUrl now inherits BubbleMarkupUrl
     [ProtoInclude(112, typeof(BubbleMarkupMentionName))]
     [ProtoInclude(113, typeof(InputBubbleMarkupMentionName))]
     public abstract class BubbleMarkup
@@ -83,6 +83,7 @@ namespace Disa.Framework.Bots
 
     [Serializable]
     [ProtoContract]
+    [ProtoInclude(200, typeof(BubbleMarkupTextUrl))]
     public class BubbleMarkupUrl : BubbleMarkup
     {
     }
@@ -119,7 +120,7 @@ namespace Disa.Framework.Bots
 
     [Serializable]
     [ProtoContract]
-    public class BubbleMarkupTextUrl : BubbleMarkup
+    public class BubbleMarkupTextUrl : BubbleMarkupUrl
     {
     }
 
