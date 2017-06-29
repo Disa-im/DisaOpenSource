@@ -583,6 +583,26 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        public Task GetContactsByUsername(string query, Action<List<Contact>> result)
+        {
+            Contract.Ensures(Contract.Result<Task>() != null);
+            return Task.Factory.StartNew(() =>
+            {
+                var resolvedPeer = ResolvePeer(query);
+                var contacts = new List<Contact>();
+                foreach (var iUser in resolvedPeer.Users)
+                {
+                    var user = iUser as User;
+                    if (user != null)
+                    {
+                        var contact = CreateTelegramContact(user);
+                        contacts.Add(contact);
+                    }
+                }
+                result(contacts);
+            });
+        }
+
         private void SetResultAsChat(IChat chat, string id, Action<Tuple<Contact, Contact.ID>> result)
         {
             var contact = new TelegramContact

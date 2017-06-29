@@ -882,12 +882,30 @@ namespace Disa.Framework.Telegram
             }
         }
 
+        // Helper method to parse out Telegram's IReplyMarkup to build a
+        // Disa KeyboardMarkup from it and assign to a Disa TextBubble.KeyboardMarkup
         private void HandleReplyMarkup(IReplyMarkup replyMarkup, TextBubble textBubble)
         {
+            textBubble.KeyboardMarkup = HandleReplyMarkup(replyMarkup);
+        }
+
+        // Helper method to parse out Telegram's IReplyMarkup to build a
+        // Disa KeyboardMarkup from it and assign to a Disa Inline Mode query's SendMessage field
+        private void HandleReplyMarkup(IReplyMarkup replyMarkup, BotInlineMessage sendMessage)
+        {
+            sendMessage.KeyboardInlineMarkup = HandleReplyMarkup(replyMarkup) as KeyboardInlineMarkup;
+        }
+
+        // Core helper method used by other helper methods for parsing out a Telegram
+        // IReplyMarkup and creating a Disa KeyboardMarkup from it.
+        private KeyboardMarkup HandleReplyMarkup(IReplyMarkup replyMarkup)
+        {
+            KeyboardMarkup keyboardMarkup = null;
+
             if (replyMarkup is ReplyKeyboardHide)
             {
                 var replyKeyboardHide = replyMarkup as ReplyKeyboardHide;
-                textBubble.KeyboardMarkup = new KeyboardMarkupHide
+                keyboardMarkup = new KeyboardMarkupHide
                 {
                     Selective = replyKeyboardHide.Selective != null ? true : false
                 };
@@ -895,7 +913,7 @@ namespace Disa.Framework.Telegram
             else if (replyMarkup is ReplyKeyboardForceReply)
             {
                 var replyKeyboardForceReply = replyMarkup as ReplyKeyboardForceReply;
-                textBubble.KeyboardMarkup = new KeyboardMarkupForceReply
+                keyboardMarkup = new KeyboardMarkupForceReply
                 {
                     SingleUse = replyKeyboardForceReply.SingleUse != null ? true : false,
                     Selective = replyKeyboardForceReply.Selective != null ? true : false
@@ -913,7 +931,7 @@ namespace Disa.Framework.Telegram
 
                 keyboardCustomMarkup.Rows = HandleInlineKeyboardButtonRows(replyKeyboardMarkup.Rows);
 
-                textBubble.KeyboardMarkup = keyboardCustomMarkup;
+                keyboardMarkup = keyboardCustomMarkup;
             }
             else if (replyMarkup is ReplyInlineMarkup)
             {
@@ -922,8 +940,10 @@ namespace Disa.Framework.Telegram
 
                 keyboardInlineMarkup.Rows = HandleInlineKeyboardButtonRows(replyInlineMarkup.Rows);
 
-                textBubble.KeyboardMarkup = keyboardInlineMarkup;
+                keyboardMarkup = keyboardInlineMarkup;
             }
+
+            return keyboardMarkup;
         }
 
         private List<Bots.KeyboardButtonRow> HandleInlineKeyboardButtonRows(List<SharpTelegram.Schema.IKeyboardButtonRow> rows)
@@ -1207,7 +1227,7 @@ namespace Disa.Framework.Telegram
                 }
                 if(messageMediaDocument != null)
                 {
-                    var document = messageMediaDocument.Document as Document;
+                    var document = messageMediaDocument.Document as SharpTelegram.Schema.Document;
                     if(document!=null)
                     {
                         if (document.MimeType.Contains("audio"))
@@ -1230,7 +1250,7 @@ namespace Disa.Framework.Telegram
                 }
                 if(messageMediaGeo != null)
                 {
-                    var geoPoint = messageMediaGeo.Geo as GeoPoint;
+                    var geoPoint = messageMediaGeo.Geo as SharpTelegram.Schema.GeoPoint;
 
                     if (geoPoint != null)
                     {
@@ -1244,7 +1264,7 @@ namespace Disa.Framework.Telegram
                 }
                 if(messageMediaVenue != null)
                 {
-                    var geoPoint = messageMediaVenue.Geo as GeoPoint;
+                    var geoPoint = messageMediaVenue.Geo as SharpTelegram.Schema.GeoPoint;
 
                     if (geoPoint != null)
                     {
@@ -1472,7 +1492,7 @@ namespace Disa.Framework.Telegram
                     FileLocation = fileLocation,
                     Size = fileSize,
                     FileType = "image",
-                    Document = new Document()
+                    Document = new SharpTelegram.Schema.Document()
                 };
                 using (var memoryStream = new MemoryStream())
                 {
@@ -1528,7 +1548,7 @@ namespace Disa.Framework.Telegram
             }
             else if (messageMediaDocument != null)
             {
-                var document = messageMediaDocument.Document as Document;
+                var document = messageMediaDocument.Document as SharpTelegram.Schema.Document;
                 if (document != null)
                 {
                     FileInformation fileInfo = new FileInformation
@@ -1633,7 +1653,7 @@ namespace Disa.Framework.Telegram
             else if (messageMediaGeo != null)
             {
 
-                var geoPoint = messageMediaGeo.Geo as GeoPoint;
+                var geoPoint = messageMediaGeo.Geo as SharpTelegram.Schema.GeoPoint;
 
                 if (geoPoint != null)
                 {
@@ -1648,7 +1668,7 @@ namespace Disa.Framework.Telegram
             }
             else if (messageMediaVenue != null)
             {
-                var geoPoint = messageMediaVenue.Geo as GeoPoint;
+                var geoPoint = messageMediaVenue.Geo as SharpTelegram.Schema.GeoPoint;
 
                 if (geoPoint != null)
                 {
@@ -1709,7 +1729,7 @@ namespace Disa.Framework.Telegram
             return bubble;
         }
 
-        private VisualBubble MakeGeoBubble(GeoPoint geoPoint,Message message,bool isUser,bool useCurrentTime,string addressStr,string participantAddress,string name)
+        private VisualBubble MakeGeoBubble(SharpTelegram.Schema.GeoPoint geoPoint,Message message,bool isUser,bool useCurrentTime,string addressStr,string participantAddress,string name)
         {
             LocationBubble bubble;
             if (isUser)
@@ -1735,11 +1755,11 @@ namespace Disa.Framework.Telegram
             return bubble;
         }
 
-        private string GetDocumentFileName(Document document)
+        private string GetDocumentFileName(SharpTelegram.Schema.Document document)
         {
             foreach (var attribute in document.Attributes)
             {
-                var attributeFilename = attribute as DocumentAttributeFilename;
+                var attributeFilename = attribute as SharpTelegram.Schema.DocumentAttributeFilename;
                 if (attributeFilename != null)
                 {
                     return attributeFilename.FileName;
@@ -1748,11 +1768,11 @@ namespace Disa.Framework.Telegram
             return null;
         }
 
-        private uint GetAudioTime(Document document)
+        private uint GetAudioTime(SharpTelegram.Schema.Document document)
         {
             foreach (var attribute in document.Attributes)
             {
-                var attributeAudio = attribute as DocumentAttributeAudio;
+                var attributeAudio = attribute as SharpTelegram.Schema.DocumentAttributeAudio;
                 if (attributeAudio != null)
                 {
                     return attributeAudio.Duration;
@@ -1769,7 +1789,7 @@ namespace Disa.Framework.Telegram
             {
                 foreach (var photoSize in photo.Sizes)
                 {
-                    var photoSizeNormal = photoSize as PhotoSize;
+                    var photoSizeNormal = photoSize as SharpTelegram.Schema.PhotoSize;
                     if (photoSizeNormal != null)
                     {
                         if (photoSizeNormal.Type == "x")
@@ -1792,7 +1812,7 @@ namespace Disa.Framework.Telegram
                 // Try and fetch the cached size.
                 foreach (var photoSize in photo.Sizes)
                 {
-                    var photoSizeCached = photoSize as PhotoCachedSize;
+                    var photoSizeCached = photoSize as SharpTelegram.Schema.PhotoCachedSize;
                     if (photoSizeCached != null)
                     {
                         return new Size((int)photoSizeCached.W, (int)photoSizeCached.H);
@@ -1802,7 +1822,7 @@ namespace Disa.Framework.Telegram
                 // Can't find the cached size? Use the downloaded size.
                 foreach (var photoSize in photo.Sizes)
                 {
-                    var photoSizeNormal = photoSize as PhotoSize;
+                    var photoSizeNormal = photoSize as SharpTelegram.Schema.PhotoSize;
                     if (photoSizeNormal != null)
                     {
                         if (photoSizeNormal.Type == "x")
@@ -1816,7 +1836,7 @@ namespace Disa.Framework.Telegram
             return new Size(0, 0);
         }
 
-        private FileLocation GetPhotoFileLocation(IPhoto iPhoto)
+        private SharpTelegram.Schema.FileLocation GetPhotoFileLocation(IPhoto iPhoto)
         {
             var photo = iPhoto as Photo;
 
@@ -1824,12 +1844,12 @@ namespace Disa.Framework.Telegram
             {
                 foreach (var photoSize in photo.Sizes)
                 {
-                    var photoSizeNormal = photoSize as PhotoSize;
+                    var photoSizeNormal = photoSize as SharpTelegram.Schema.PhotoSize;
                     if (photoSizeNormal != null)
                     {
                         if (photoSizeNormal.Type == "x")
                         {
-                            return photoSizeNormal.Location as FileLocation;
+                            return photoSizeNormal.Location as SharpTelegram.Schema.FileLocation;
                         }
                     }
 
@@ -1839,7 +1859,7 @@ namespace Disa.Framework.Telegram
         }
 
 
-        private FileLocation GetCachedPhotoFileLocation(IPhoto iPhoto)
+        private SharpTelegram.Schema.FileLocation GetCachedPhotoFileLocation(IPhoto iPhoto)
         {
             var photo = iPhoto as Photo;
 
@@ -1847,12 +1867,12 @@ namespace Disa.Framework.Telegram
             {
                 foreach (var photoSize in photo.Sizes)
                 {
-                    var photoSizeSmall = photoSize as PhotoSize;
+                    var photoSizeSmall = photoSize as SharpTelegram.Schema.PhotoSize;
                     if (photoSizeSmall != null)
                     {
                         if (photoSizeSmall.Type == "s")
                         {
-                            return photoSizeSmall.Location as FileLocation;
+                            return photoSizeSmall.Location as SharpTelegram.Schema.FileLocation;
                         }
                     }
 
@@ -1869,7 +1889,7 @@ namespace Disa.Framework.Telegram
             {
                 foreach (var photoSize in photo.Sizes)
                 {
-                    var photoSizeCached = photoSize as PhotoCachedSize;
+                    var photoSizeCached = photoSize as SharpTelegram.Schema.PhotoCachedSize;
                     if (photoSizeCached != null)
                     {
                         return photoSizeCached.Bytes;
@@ -2973,7 +2993,7 @@ namespace Disa.Framework.Telegram
                 {
                     var documentAttributes = new List<IDocumentAttribute>
                     {
-                        new DocumentAttributeFilename
+                        new SharpTelegram.Schema.DocumentAttributeFilename
                         {
                             FileName = fileBubble.FileName
                         }
@@ -3013,7 +3033,7 @@ namespace Disa.Framework.Telegram
 
                     if (audioBubble.Recording)
                     {
-                        documentAttributes.Add(new DocumentAttributeAudio
+                        documentAttributes.Add(new SharpTelegram.Schema.DocumentAttributeAudio
                         {
                             Flags = 1024,
                             Duration = (uint)audioBubble.Seconds,
@@ -3022,7 +3042,7 @@ namespace Disa.Framework.Telegram
                     }
                     else if (audioBubble.FileName != null)
                     {
-                        documentAttributes.Add(new DocumentAttributeAudio
+                        documentAttributes.Add(new SharpTelegram.Schema.DocumentAttributeAudio
                         {
                             Flags = 1,
                             Duration = (uint)audioBubble.Seconds,
@@ -3031,7 +3051,7 @@ namespace Disa.Framework.Telegram
                     }
                     else 
                     {
-                        documentAttributes.Add(new DocumentAttributeAudio
+                        documentAttributes.Add(new SharpTelegram.Schema.DocumentAttributeAudio
                         {
                             Flags = 0,
                             Duration = (uint)audioBubble.Seconds
@@ -3653,7 +3673,7 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private static byte[] FetchFileBytes(TelegramClient client, FileLocation fileLocation)
+        private static byte[] FetchFileBytes(TelegramClient client, SharpTelegram.Schema.FileLocation fileLocation)
         {
             try
             {
@@ -3679,7 +3699,7 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private static byte[] FetchFileBytes(TelegramClient client, FileLocation fileLocation, uint offset, uint limit)
+        private static byte[] FetchFileBytes(TelegramClient client, SharpTelegram.Schema.FileLocation fileLocation, uint offset, uint limit)
         {
             var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
                 new UploadGetFileArgs
@@ -3696,7 +3716,7 @@ namespace Disa.Framework.Telegram
             return response.Bytes;
         }
 
-        private byte[] FetchFileBytes(FileLocation fileLocation)
+        private byte[] FetchFileBytes(SharpTelegram.Schema.FileLocation fileLocation)
         {
             if (fileLocation.DcId == _settings.NearestDcId)
             {
@@ -3721,7 +3741,7 @@ namespace Disa.Framework.Telegram
         }
 
 
-        private byte[] FetchFileBytes(FileLocation fileLocation,uint offset,uint limit)
+        private byte[] FetchFileBytes(SharpTelegram.Schema.FileLocation fileLocation,uint offset,uint limit)
         {
             if (fileLocation.DcId == _settings.NearestDcId)
             {
@@ -4033,7 +4053,7 @@ namespace Disa.Framework.Telegram
             return date;
         }
 
-        private byte[] FetchDocumentBytes(Document document, uint offset, uint limit)
+        private byte[] FetchDocumentBytes(SharpTelegram.Schema.Document document, uint offset, uint limit)
         {
             if (document.DcId == _settings.NearestDcId)
             {
@@ -4060,7 +4080,7 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private byte[] FetchDocumentBytes(TelegramClient client, Document document, uint offset, uint limit)
+        private byte[] FetchDocumentBytes(TelegramClient client, SharpTelegram.Schema.Document document, uint offset, uint limit)
         {
             var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
                 new UploadGetFileArgs

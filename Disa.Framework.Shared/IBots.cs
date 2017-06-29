@@ -33,6 +33,25 @@ namespace Disa.Framework
         /// <returns></returns>
         Task GetBotCallbackAnswer(BubbleGroup group, VisualBubble bubble, KeyboardButton button, Action<MessagesBotCallbackAnswer> answer);
 
+        /// <summary>
+        /// Set the result of the <see cref="Action{bool, MessagesBotResults}"/> as a bool indicating
+        /// success and a <see cref="MessagesBotResults"/> as the result of the query.
+        /// </summary>
+        /// <param name="query">A <see cref="UpdateBotInlineQuery"/> defining the Inline Mode query to the bot.</param>
+        /// <param name="results">The <see cref="Action{bool, MessagesBotResults}"/> on which success of the request and the
+        /// <see cref="MessagesBotResults"/> result of the query.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{bool, MessagesBotResults}"/>.</returns>
+        Task SendBotInlineModeQuery(BubbleGroup group, UpdateBotInlineQuery query, Action<MessagesBotResults> results);
+
+        /// <summary>
+        ///  Set the result of the <see cref="Action{bool}"/> as the result of sending a <see cref="UpdateBotInlineSend"/> representing
+        ///  a selection from an Inline Mode query.
+        /// </summary>
+        /// <param name="selection">The <see cref="UpdateBotInlineSend"/> representing the selection from an Inline Mode query.</param>
+        /// <param name="success">True if sending the selection succeeded, False if not.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{bool}"/></returns>
+        Task SendBotInlineModeSelection(UpdateBotInlineSend selection, Action<bool> success);
+
         //
         // Begin interface extensions below. For these you must use the following test methodology
         // or something similar:
