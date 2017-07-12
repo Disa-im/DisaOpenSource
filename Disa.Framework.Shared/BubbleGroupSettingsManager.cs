@@ -203,6 +203,45 @@ namespace Disa.Framework
             Update(group.Settings);
         }
 
+		public static void SetBackgroundChosen(BubbleGroup group, bool backgroundChosen)
+		{
+			InsertDefaultIfNull(group);
+            group.Settings.BackgroundChosen = backgroundChosen;
+			Update(group.Settings);
+		}
+
+		public static void SetBackgroundColor(BubbleGroup group, int backgroundColor)
+		{
+			InsertDefaultIfNull(group);
+            group.Settings.BackgroundColor = backgroundColor;
+			Update(group.Settings);
+		}
+
+		public static void SetBackgroundImagePath(BubbleGroup group, string backgroundImagePath)
+		{
+			InsertDefaultIfNull(group);
+            group.Settings.BackgroundImagePath = backgroundImagePath;
+			Update(group.Settings);
+		}
+
+		public static bool GetBackgroundChosen(BubbleGroup group)
+		{
+			InsertDefaultIfNull(group);
+            return group.Settings.BackgroundChosen;
+		}
+
+		public static int GetBackgroundColor(BubbleGroup group)
+		{
+			InsertDefaultIfNull(group);
+            return group.Settings.BackgroundColor;
+		}
+
+        public static string GetBackgroundImagePath(BubbleGroup group)
+		{
+			InsertDefaultIfNull(group);
+            return group.Settings.BackgroundImagePath;
+		}
+
         public static bool GetMute(BubbleGroup group)
         {
             InsertDefaultIfNull(group);

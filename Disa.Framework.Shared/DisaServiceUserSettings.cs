@@ -11,9 +11,12 @@ namespace Disa.Framework
         public int ServiceColor { get; set; }
         public string VibrateOption { get; set; }
         public string VibrateOptionCustomPattern { get; set; }
+		public int BackgroundColor { get; set; }
+		public string BackgroundImagePath { get; set; }
+        public bool BackgroundChosen { get; set; }
 
         public DisaServiceUserSettings(int notificationLed, string ringtone, bool blockNotifications, int serviceColor, 
-            string vibratePattern, string vibrateOptionsCustomPattern)
+               string vibratePattern, string vibrateOptionsCustomPattern, int backgroundColor, string backgroundImagePath, bool backgroundChosen)
         {
             NotificationLed = notificationLed;
             Ringtone = ringtone;
@@ -21,6 +24,9 @@ namespace Disa.Framework
             ServiceColor = serviceColor;
             VibrateOption = vibratePattern;
             VibrateOptionCustomPattern = vibrateOptionsCustomPattern;
+            BackgroundColor = backgroundColor;
+            BackgroundImagePath = backgroundImagePath;
+            BackgroundChosen = backgroundChosen;
         }
 
         public DisaServiceUserSettings()
@@ -31,7 +37,7 @@ namespace Disa.Framework
         {
             get
             {
-                return new DisaServiceUserSettings(DefaultNotificationLedColor, null, false, DefaultServiceColor, null, null);
+                return new DisaServiceUserSettings(DefaultNotificationLedColor, null, false, DefaultServiceColor, null, null, 0, null, false);
             }
         }
 

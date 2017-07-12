@@ -34,6 +34,12 @@ namespace Disa.Framework
 
         public bool VibrateOptionDisabled { get; set; }
 
+		public bool BackgroundChosen { get; set; }
+
+		public int BackgroundColor { get; set; }
+
+		public string BackgroundImagePath { get; set; }
+
         [Ignore]
         public DisaParticipantNickname[] ParticipantNicknamesCached { get; set; }
         [Ignore]
