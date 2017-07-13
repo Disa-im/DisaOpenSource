@@ -88,7 +88,7 @@ namespace Disa.Framework
                             Unread = true,
                             UnreadOffline = true,
                             Guid = group.ID,
-							UnreadIndicatorGuid = null,
+                            UnreadIndicatorGuid = null,
                             LastUnreadSetTime = 0,
                             ReadTimes = null,
                             ParticipantNicknames = null,
@@ -105,7 +105,7 @@ namespace Disa.Framework
                     }
                 }
             }
-        }        
+        }
 
         public static int DefaultNotificationLedColor
         {
@@ -124,12 +124,12 @@ namespace Disa.Framework
 
         public static void SetUnread(BubbleGroup group, bool unread)
         {
-			InsertDefaultIfNull(group);
-			if (group.Settings.Unread != unread)
-			{
-				group.Settings.Unread = unread;
+            InsertDefaultIfNull(group);
+            if (group.Settings.Unread != unread)
+            {
+                group.Settings.Unread = unread;
                 Update(group.Settings);
-			}
+            }
             SetUnreadOffline(group, unread);
         }
 
@@ -140,7 +140,7 @@ namespace Disa.Framework
             {
                 group.Settings.UnreadOffline = unread;
                 Update(group.Settings);
-            } 
+            }
         }
 
         public static void SetUnreadIndicatorGuid(BubbleGroup group, string guid, bool isNew)
@@ -203,44 +203,44 @@ namespace Disa.Framework
             Update(group.Settings);
         }
 
-		public static void SetBackgroundChosen(BubbleGroup group, bool backgroundChosen)
-		{
-			InsertDefaultIfNull(group);
+        public static void SetBackgroundChosen(BubbleGroup group, bool backgroundChosen)
+        {
+            InsertDefaultIfNull(group);
             group.Settings.BackgroundChosen = backgroundChosen;
-			Update(group.Settings);
-		}
+            Update(group.Settings);
+        }
 
-		public static void SetBackgroundColor(BubbleGroup group, int backgroundColor)
-		{
-			InsertDefaultIfNull(group);
+        public static void SetBackgroundColor(BubbleGroup group, int backgroundColor)
+        {
+            InsertDefaultIfNull(group);
             group.Settings.BackgroundColor = backgroundColor;
-			Update(group.Settings);
-		}
+            Update(group.Settings);
+        }
 
-		public static void SetBackgroundImagePath(BubbleGroup group, string backgroundImagePath)
-		{
-			InsertDefaultIfNull(group);
+        public static void SetBackgroundImagePath(BubbleGroup group, string backgroundImagePath)
+        {
+            InsertDefaultIfNull(group);
             group.Settings.BackgroundImagePath = backgroundImagePath;
-			Update(group.Settings);
-		}
+            Update(group.Settings);
+        }
 
-		public static bool GetBackgroundChosen(BubbleGroup group)
-		{
-			InsertDefaultIfNull(group);
+        public static bool GetBackgroundChosen(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
             return group.Settings.BackgroundChosen;
-		}
+        }
 
-		public static int GetBackgroundColor(BubbleGroup group)
-		{
-			InsertDefaultIfNull(group);
+        public static int GetBackgroundColor(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
             return group.Settings.BackgroundColor;
-		}
+        }
 
         public static string GetBackgroundImagePath(BubbleGroup group)
-		{
-			InsertDefaultIfNull(group);
+        {
+            InsertDefaultIfNull(group);
             return group.Settings.BackgroundImagePath;
-		}
+        }
 
         public static bool GetMute(BubbleGroup group)
         {
