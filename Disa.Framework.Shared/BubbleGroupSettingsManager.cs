@@ -88,7 +88,7 @@ namespace Disa.Framework
                             Unread = true,
                             UnreadOffline = true,
                             Guid = group.ID,
-							UnreadIndicatorGuid = null,
+                            UnreadIndicatorGuid = null,
                             LastUnreadSetTime = 0,
                             ReadTimes = null,
                             ParticipantNicknames = null,
@@ -105,7 +105,7 @@ namespace Disa.Framework
                     }
                 }
             }
-        }        
+        }
 
         public static int DefaultNotificationLedColor
         {
@@ -124,12 +124,12 @@ namespace Disa.Framework
 
         public static void SetUnread(BubbleGroup group, bool unread)
         {
-			InsertDefaultIfNull(group);
-			if (group.Settings.Unread != unread)
-			{
-				group.Settings.Unread = unread;
+            InsertDefaultIfNull(group);
+            if (group.Settings.Unread != unread)
+            {
+                group.Settings.Unread = unread;
                 Update(group.Settings);
-			}
+            }
             SetUnreadOffline(group, unread);
         }
 
@@ -140,7 +140,7 @@ namespace Disa.Framework
             {
                 group.Settings.UnreadOffline = unread;
                 Update(group.Settings);
-            } 
+            }
         }
 
         public static void SetUnreadIndicatorGuid(BubbleGroup group, string guid, bool isNew)
@@ -203,70 +203,70 @@ namespace Disa.Framework
             Update(group.Settings);
         }
 
-		public static void SetSentBubbleColor(BubbleGroup group, int sentBubbleColor)
-		{
-			InsertDefaultIfNull(group);
+        public static void SetSentBubbleColor(BubbleGroup group, int sentBubbleColor)
+        {
+            InsertDefaultIfNull(group);
             group.Settings.SentBubbleColor = sentBubbleColor;
-			Update(group.Settings);
-		}
+            Update(group.Settings);
+        }
 
-		public static void SetReceivedBubbleColor(BubbleGroup group, int receivedBubbleColor)
-		{
-			InsertDefaultIfNull(group);
+        public static void SetReceivedBubbleColor(BubbleGroup group, int receivedBubbleColor)
+        {
+            InsertDefaultIfNull(group);
             group.Settings.ReceivedBubbleColor = receivedBubbleColor;
-			Update(group.Settings);
-		}
+            Update(group.Settings);
+        }
 
-		public static void SetSentFontColor(BubbleGroup group, int sentFontColor)
-		{
-			InsertDefaultIfNull(group);
-			group.Settings.SentFontColor = sentFontColor;
-			Update(group.Settings);
-		}
+        public static void SetSentFontColor(BubbleGroup group, int sentFontColor)
+        {
+            InsertDefaultIfNull(group);
+            group.Settings.SentFontColor = sentFontColor;
+            Update(group.Settings);
+        }
 
-		public static void SetReceivedFontColor(BubbleGroup group, int receivedFontColor)
-		{
-			InsertDefaultIfNull(group);
+        public static void SetReceivedFontColor(BubbleGroup group, int receivedFontColor)
+        {
+            InsertDefaultIfNull(group);
             group.Settings.ReceivedFontColor = receivedFontColor;
-			Update(group.Settings);
-		}
+            Update(group.Settings);
+        }
 
-		public static void SetBubbleColorsChosen(BubbleGroup group, bool bubbleColorsChosen)
-		{
-			InsertDefaultIfNull(group);
+        public static void SetBubbleColorsChosen(BubbleGroup group, bool bubbleColorsChosen)
+        {
+            InsertDefaultIfNull(group);
             group.Settings.BubbleColorsChosen = bubbleColorsChosen;
-			Update(group.Settings);
-		}
+            Update(group.Settings);
+        }
 
-		public static int GetSentBubbleColor(BubbleGroup group)
-		{
-			InsertDefaultIfNull(group);
+        public static int GetSentBubbleColor(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
             return group.Settings.SentBubbleColor;
-		}
+        }
 
-		public static int GetReceivedBubbleColor(BubbleGroup group)
-		{
-			InsertDefaultIfNull(group);
+        public static int GetReceivedBubbleColor(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
             return group.Settings.ReceivedBubbleColor;
-		}
+        }
 
-		public static int GetSentFontColor(BubbleGroup group)
-		{
-			InsertDefaultIfNull(group);
+        public static int GetSentFontColor(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
             return group.Settings.SentFontColor;
-		}
+        }
 
-		public static int GetReceivedFontColor(BubbleGroup group)
-		{
-			InsertDefaultIfNull(group);
+        public static int GetReceivedFontColor(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
             return group.Settings.ReceivedFontColor;
-		}
+        }
 
-		public static bool GetBubbleColorsChosen(BubbleGroup group)
-		{
-			InsertDefaultIfNull(group);
+        public static bool GetBubbleColorsChosen(BubbleGroup group)
+        {
+            InsertDefaultIfNull(group);
             return group.Settings.BubbleColorsChosen;
-		}
+        }
 
         public static bool GetMute(BubbleGroup group)
         {
