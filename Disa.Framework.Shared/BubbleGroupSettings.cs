@@ -34,6 +34,16 @@ namespace Disa.Framework
 
         public bool VibrateOptionDisabled { get; set; }
 
+        public int SentBubbleColor { get; set; }
+
+        public int ReceivedBubbleColor { get; set; }
+
+        public int SentFontColor { get; set; }
+
+        public int ReceivedFontColor { get; set; }
+
+        public bool BubbleColorsChosen { get; set; }
+
         [Ignore]
         public DisaParticipantNickname[] ParticipantNicknamesCached { get; set; }
         [Ignore]

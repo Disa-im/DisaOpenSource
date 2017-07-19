@@ -11,9 +11,15 @@ namespace Disa.Framework
         public int ServiceColor { get; set; }
         public string VibrateOption { get; set; }
         public string VibrateOptionCustomPattern { get; set; }
+        public int SentBubbleColor { get; set; }
+        public int ReceivedBubbleColor { get; set; }
+        public int SentFontColor { get; set; }
+        public int ReceivedFontColor { get; set; }
+        public bool BubbleColorsChosen { get; set; }
 
-        public DisaServiceUserSettings(int notificationLed, string ringtone, bool blockNotifications, int serviceColor, 
-            string vibratePattern, string vibrateOptionsCustomPattern)
+
+        public DisaServiceUserSettings(int notificationLed, string ringtone, bool blockNotifications, int serviceColor,
+                                       string vibratePattern, string vibrateOptionsCustomPattern, int sentBubbleColor, int receivedBubbleColor, int sentFontColor, int receivedFontColor, bool bubbleColorsChosen)
         {
             NotificationLed = notificationLed;
             Ringtone = ringtone;
@@ -21,6 +27,11 @@ namespace Disa.Framework
             ServiceColor = serviceColor;
             VibrateOption = vibratePattern;
             VibrateOptionCustomPattern = vibrateOptionsCustomPattern;
+            SentBubbleColor = sentBubbleColor;
+            ReceivedBubbleColor = receivedBubbleColor;
+            SentFontColor = sentFontColor;
+            ReceivedFontColor = receivedFontColor;
+            BubbleColorsChosen = bubbleColorsChosen;
         }
 
         public DisaServiceUserSettings()
@@ -31,7 +42,7 @@ namespace Disa.Framework
         {
             get
             {
-                return new DisaServiceUserSettings(DefaultNotificationLedColor, null, false, DefaultServiceColor, null, null);
+                return new DisaServiceUserSettings(DefaultNotificationLedColor, null, false, DefaultServiceColor, null, null, 0, 0, 0, 0, false);
             }
         }
 
@@ -43,13 +54,12 @@ namespace Disa.Framework
             }
         }
 
-        public static int DefaultNotificationLedColor
-        {
-            get
-            {
-                return 0xffffff;
-            }
-        }
+		public static int DefaultNotificationLedColor
+		{
+			get
+			{
+				return 0xffffff;
+			}
+		}
     }
 }
-
