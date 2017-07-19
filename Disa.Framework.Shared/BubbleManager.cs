@@ -633,6 +633,26 @@ namespace Disa.Framework
             }
         }
 
+        internal static void AddUrlMarkupIfNeeded(VisualBubble[] bubbles)
+        {
+            if (bubbles == null)
+                return;
+            foreach (var bubble in bubbles)
+            {
+                AddUrlMarkupIfNeeded(bubble);
+            }
+        }
+
+        internal static void AddUrlMarkupIfNeeded(List<VisualBubble> bubbles)
+		{
+			if (bubbles == null)
+				return;
+			foreach (var bubble in bubbles)
+			{
+				AddUrlMarkupIfNeeded(bubble);
+			}
+		}
+
         internal static BubbleGroup Group(VisualBubble vb, bool resend = false, bool insertAtBottom = false)
         {
             lock (BubbleGroupDatabase.OperationLock)

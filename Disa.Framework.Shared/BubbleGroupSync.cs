@@ -42,6 +42,8 @@ namespace Disa.Framework
                 Updates = updates;
                 Inserts = inserts;
                 ResultType = resultType;
+                BubbleManager.AddUrlMarkupIfNeeded(updates);
+                BubbleManager.AddUrlMarkupIfNeeded(inserts);
             }
 
             public Result(bool justRefresh = false)
@@ -383,6 +385,7 @@ namespace Disa.Framework
                 }
                 else
                 {
+                    BubbleManager.AddUrlMarkupIfNeeded(loadedBubbles);
                     return loadedBubbles;
                 }
 
