@@ -16,10 +16,14 @@ namespace Disa.Framework
         public int SentFontColor { get; set; }
         public int ReceivedFontColor { get; set; }
         public bool BubbleColorsChosen { get; set; }
+		public int BackgroundColor { get; set; }
+		public string BackgroundImagePath { get; set; }
+        public bool BackgroundChosen { get; set; }
 
-
-        public DisaServiceUserSettings(int notificationLed, string ringtone, bool blockNotifications, int serviceColor,
-                                       string vibratePattern, string vibrateOptionsCustomPattern, int sentBubbleColor, int receivedBubbleColor, int sentFontColor, int receivedFontColor, bool bubbleColorsChosen)
+        public DisaServiceUserSettings(int notificationLed, string ringtone, bool blockNotifications, int serviceColor, 
+                                       string vibratePattern, string vibrateOptionsCustomPattern, int sentBubbleColor, 
+                                       int receivedBubbleColor, int sentFontColor, int receivedFontColor, bool bubbleColorsChosen, 
+                                       int backgroundColor, string backgroundImagePath, bool backgroundChosen)
         {
             NotificationLed = notificationLed;
             Ringtone = ringtone;
@@ -32,6 +36,9 @@ namespace Disa.Framework
             SentFontColor = sentFontColor;
             ReceivedFontColor = receivedFontColor;
             BubbleColorsChosen = bubbleColorsChosen;
+            BackgroundColor = backgroundColor;
+            BackgroundImagePath = backgroundImagePath;
+            BackgroundChosen = backgroundChosen;
         }
 
         public DisaServiceUserSettings()
@@ -42,7 +49,7 @@ namespace Disa.Framework
         {
             get
             {
-                return new DisaServiceUserSettings(DefaultNotificationLedColor, null, false, DefaultServiceColor, null, null, 0, 0, 0, 0, false);
+                return new DisaServiceUserSettings(DefaultNotificationLedColor, null, false, DefaultServiceColor, null, null, 0, 0, 0, 0, false, 0, null, false);
             }
         }
 
