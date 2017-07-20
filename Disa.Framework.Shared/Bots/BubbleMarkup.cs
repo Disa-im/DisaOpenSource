@@ -96,6 +96,8 @@ namespace Disa.Framework.Bots
         public string ImageUrl { get; set; }
         [ProtoMember(255)]
         public bool HasFetched { get; set; }
+		[ProtoMember(256)]
+		public string CannonicalUrl { get; set; }
 
         public bool IsFetching { get; set; }
         public int CrawlAttempts { get; set; }
