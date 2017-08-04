@@ -23,9 +23,9 @@ namespace Disa.Framework.Bots
 
         public UInt32 Size { get; set; }
 
-        public PhotoSizeBase Thumb { get; set; }
+        public PhotoSize Thumb { get; set; }
 
-        public UInt32 DcId { get; set; }
+        public byte[] AdditionalData { get; set; }
 
         public List<DocumentAttributeBase> Attributes { get; set; }
     }

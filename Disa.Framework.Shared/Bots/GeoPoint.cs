@@ -4,15 +4,16 @@ using System.Text;
 
 namespace Disa.Framework.Bots
 {
-    public abstract class GeoPointBase
-    {
-    }
-
     /// <summary>
     /// This object represents a point on the map.
     /// </summary>
-    public class GeoPoint : GeoPointBase
+    public class GeoPoint
     {
+        /// <summary>
+        /// Is this an empty map point?
+        /// </summary>
+        public bool IsEmpty { get; set; }
+
         /// <summary>
         /// Longitude as defined by sender.
         /// </summary>
@@ -22,12 +23,5 @@ namespace Disa.Framework.Bots
         /// Latitude as defined by sender.
         /// </summary>
         public double Lat { get; set; }
-    }
-
-    /// <summary>
-    /// This object represents an empty point on the map.
-    /// </summary>
-    public class GeoPointEmpty : GeoPointBase
-    {
     }
 }

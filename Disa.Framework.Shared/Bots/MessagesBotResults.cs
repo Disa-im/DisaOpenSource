@@ -15,7 +15,7 @@ namespace Disa.Framework.Bots
         /// <summary>
         /// Unique identifier for the answered query.
         /// </summary>
-        public ulong QueryId { get; set; }
+        public string QueryId { get; set; }
 
         /// <summary>
         /// If passed, the offset that a client should send in the next query with the same text to receive more results. 

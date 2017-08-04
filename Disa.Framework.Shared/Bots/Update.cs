@@ -24,7 +24,7 @@ namespace Disa.Framework.Bots
         /// <summary>
         /// Optional. Sender location, only for bots that request user location
         /// </summary>
-        public GeoPointBase Geo { get; set; }
+        public GeoPoint Geo { get; set; }
 
         /// <summary>
         /// Offset of the results to be returned, can be controlled by the bot.
@@ -50,7 +50,7 @@ namespace Disa.Framework.Bots
         /// <summary>
         /// Optional. Sender location, only for bots that require user location.
         /// </summary>
-        public GeoPointBase Geo { get; set; }
+        public GeoPoint Geo { get; set; }
 
         /// <summary>
         /// The unique identifier for the result that was chosen.

@@ -38,6 +38,7 @@ namespace Disa.Framework.Telegram
     {
         public static uint MESSAGE_FLAG_REPLY = 0x00000001;
         public static uint MESSAGE_FLAG_ENTITIES = 0x00000008;
+        public static uint MESSAGE_FLAG_HAS_MARKUP = 0x00000040;
 
         private object _cachedThumbnailsLock = new object();
 
@@ -312,12 +313,16 @@ namespace Disa.Framework.Telegram
                         // Do we have any mentions to process?
                         if (shortMessage.Entities != null)
                         {
-                            HandleEntities(
+                            textBubble.BubbleMarkups = HandleEntities(
                                 message: shortMessage.Message,
                                 entities: shortMessage.Entities,
                                 bubbleGroupAddress: fromId,
-                                textBubble: textBubble, optionalClient: optionalClient);
+                                extendedParty: textBubble.ExtendedParty, 
+                                optionalClient: optionalClient);
                         }
+
+                        // Was this sent via a Bot?
+                        textBubble.ViaBotId = shortMessage.ViaBotId > 0 ? shortMessage.ViaBotId.ToString() : null;
 
                         TelegramEventBubble(textBubble);
                     }
@@ -597,13 +602,17 @@ namespace Disa.Framework.Telegram
                         // Do we have any mentions to process?
                         if (shortChatMessage.Entities != null)
                         {
-                            HandleEntities(
+                            textBubble.BubbleMarkups = HandleEntities(
                                 message: shortChatMessage.Message, 
                                 entities: shortChatMessage.Entities, 
                                 bubbleGroupAddress: address, 
-                                textBubble: textBubble, optionalClient: optionalClient);
+                                extendedParty: textBubble.ExtendedParty, 
+                                optionalClient: optionalClient);
                         }
-                            
+
+                        // Was this sent by a bot?
+                        textBubble.ViaBotId = shortChatMessage.ViaBotId > 0 ? shortChatMessage.ViaBotId.ToString() : null;
+
                         TelegramEventBubble(textBubble);
                     }
                     if (shortChatMessage.Id > maxMessageId)
@@ -776,14 +785,28 @@ namespace Disa.Framework.Telegram
 
         private readonly Dictionary<string, List<Mention>> _cachedMentions = new Dictionary<string, List<Mention>>();
 
-        private void HandleEntities(string message, List<IMessageEntity> entities, string bubbleGroupAddress, 
-            TextBubble textBubble, TelegramClient optionalClient = null)
+        // Helper method for parsing: 
+        // - Telegram collection of IMessageEntity 
+        // to
+        // - Disa collection of BubbleMarkup
+        private List<BubbleMarkup> HandleEntities(
+            string message, 
+            List<IMessageEntity> entities, 
+            string bubbleGroupAddress,
+            bool extendedParty,
+            TelegramClient optionalClient = null)
         {
-            textBubble.BubbleMarkups = new List<BubbleMarkup>();
+            var bubbleMarkups = new List<BubbleMarkup>();
+            if (entities == null)
+            {
+                return bubbleMarkups;
+            }
+
             var myAddress = _settings.AccountId.ToString(CultureInfo.InvariantCulture);
 
             foreach (var entity in entities)
             {
+                // @Bill where Bill is the username not the name (for comparison see MessageEntityMentionName below)
                 if (entity is MessageEntityMention)
                 {
                     string mentionParticipantAddress = null;
@@ -827,7 +850,7 @@ namespace Disa.Framework.Telegram
                     {
                         try
                         {
-                            var mentions = MentionsGetMentions("@", bubbleGroupAddress, textBubble.ExtendedParty, optionalClient);
+                            var mentions = MentionsGetMentions("@", bubbleGroupAddress, extendedParty, optionalClient);
                             lock (_cachedMentions)
                             {
                                 _cachedMentions[bubbleGroupAddress] = mentions;
@@ -847,7 +870,7 @@ namespace Disa.Framework.Telegram
 
                     if (mentionParticipantAddress!= null)
                     {
-                        textBubble.BubbleMarkups.Add(new BubbleMarkupMentionUsername
+                        bubbleMarkups.Add(new BubbleMarkupMentionUsername
                         {
                             Offset = offset,
                             Length = length,
@@ -856,13 +879,99 @@ namespace Disa.Framework.Telegram
                         });
                     }
                 }
+                else if (entity is MessageEntityHashtag)
+                {
+                    var messageEntityHashtag = entity as MessageEntityHashtag;
+                    bubbleMarkups.Add(new BubbleMarkupHashtag
+                    {
+                        Offset = (int)messageEntityHashtag.Offset,
+                        Length = (int)messageEntityHashtag.Length
+                    });
+                }
+                else if (entity is MessageEntityBotCommand)
+                {
+                    var messageEntityBotCommand = entity as MessageEntityBotCommand;
+                    bubbleMarkups.Add(new BubbleMarkupBotCommand
+                    {
+                        Offset = (int)messageEntityBotCommand.Offset,
+                        Length = (int)messageEntityBotCommand.Length
+                    });
+                }
+                else if (entity is MessageEntityUrl)
+                {
+                    var messageEntityUrl = entity as MessageEntityUrl;
+                    bubbleMarkups.Add(new BubbleMarkupUrl
+                    {
+                        Offset = (int)messageEntityUrl.Offset,
+                        Length = (int)messageEntityUrl.Length
+                    });
+                }
+                else if (entity is MessageEntityEmail)
+                {
+                    var messageEntityEmail = entity as MessageEntityEmail;
+                    bubbleMarkups.Add(new BubbleMarkupEmail
+                    {
+                        Offset = (int)messageEntityEmail.Offset,
+                        Length = (int)messageEntityEmail.Length
+                    });
+                }
+                else if (entity is MessageEntityBold)
+                {
+                    var messageEntityBold = entity as MessageEntityBold;
+                    bubbleMarkups.Add(new BubbleMarkupBold
+                    {
+                        Offset = (int)messageEntityBold.Offset,
+                        Length = (int)messageEntityBold.Length
+                    });
+                }
+                else if (entity is MessageEntityItalic)
+                {
+                    var messageEntityItalic = entity as MessageEntityItalic;
+                    bubbleMarkups.Add(new BubbleMarkupItalic
+                    {
+                        Offset = (int)messageEntityItalic.Offset,
+                        Length = (int)messageEntityItalic.Length
+                    });
+                }
+                else if (entity is MessageEntityCode)
+                {
+                    var messageEntityCode = entity as MessageEntityCode;
+                    bubbleMarkups.Add(new BubbleMarkupCode
+                    {
+                        Offset = (int)messageEntityCode.Offset,
+                        Length = (int)messageEntityCode.Length
+                    });
+                }
+                else if (entity is MessageEntityPre)
+                {
+                    var messageEntityPre = entity as MessageEntityPre;
+                    bubbleMarkups.Add(new BubbleMarkupPre
+                    {
+                        Offset = (int)messageEntityPre.Offset,
+                        Length = (int)messageEntityPre.Length,
+                        Language = messageEntityPre.Language
+                    });
+
+                }
+                else if (entity is MessageEntityTextUrl)
+                {
+                    // This represents a url with an alternative text representation
+                    // For example: "Google" with this backing Url field set to http://google.com.
+                    var messageEntityTextUrl = entity as MessageEntityTextUrl;
+                    bubbleMarkups.Add(new BubbleMarkupTextUrl
+                    {
+                        Offset = (int)messageEntityTextUrl.Offset,
+                        Length = (int)messageEntityTextUrl.Length,
+                        Url = messageEntityTextUrl.Url
+                    });
+                }
                 else if (entity is MessageEntityMentionName)
                 {
                     // A mention with just a user's name (not username) is simpler in that
                     // the server will give us the DisaParticipant.Address.
                     var messageEntityMentionName = entity as MessageEntityMentionName;
                     var messageEntityParticipantAddress = messageEntityMentionName.UserId.ToString();
-                    textBubble.BubbleMarkups.Add(new BubbleMarkupMentionName
+                    bubbleMarkups.Add(new BubbleMarkupMentionName
                     {
                         Offset = (int)messageEntityMentionName.Offset,
                         Length = (int)messageEntityMentionName.Length,
@@ -870,34 +979,127 @@ namespace Disa.Framework.Telegram
                         IsMyself = myAddress == messageEntityParticipantAddress,
                     });
                 }
-                else if (entity is MessageEntityBotCommand)
+            }
+
+            return bubbleMarkups;
+        }
+
+        // Helper method for parsing: 
+        // - Disa collection of BubbleMarkup
+        // to
+        // - Telegram collection of IMessageEntity 
+        private List<IMessageEntity> HandleBubbleMarkup(List<BubbleMarkup> bubbleMarkups)
+        {
+            var entities = new List<IMessageEntity>();
+
+            foreach (var bubbleMarkup in bubbleMarkups)
+            {
+                if (bubbleMarkup is BubbleMarkupHashtag)
                 {
-                    var messageEntityMentionBotCommand = entity as MessageEntityBotCommand;
-                    textBubble.BubbleMarkups.Add(new BubbleMarkupBotCommand
+                    entities.Add(new MessageEntityHashtag
                     {
-                        Offset = (int)messageEntityMentionBotCommand.Offset,
-                        Length = (int)messageEntityMentionBotCommand.Length
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                    });
+                }
+                else if (bubbleMarkup is BubbleMarkupBotCommand)
+                {
+                    entities.Add(new MessageEntityBotCommand
+                    {
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                    });
+                }
+                else if (bubbleMarkup is BubbleMarkupUrl)
+                {
+                    entities.Add(new MessageEntityUrl
+                    {
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                    });
+                }
+                else if (bubbleMarkup is BubbleMarkupEmail)
+                {
+                    entities.Add(new MessageEntityEmail
+                    {
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                    });
+                }
+                else if (bubbleMarkup is BubbleMarkupBold)
+                {
+                    entities.Add(new MessageEntityBold
+                    {
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                    });
+                }
+                else if (bubbleMarkup is BubbleMarkupItalic)
+                {
+                    entities.Add(new MessageEntityItalic
+                    {
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                    });
+                }
+                else if (bubbleMarkup is BubbleMarkupCode)
+                {
+                    entities.Add(new MessageEntityCode
+                    {
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                    });
+                }
+                else if (bubbleMarkup is BubbleMarkupPre)
+                {
+                    entities.Add(new MessageEntityPre
+                    {
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                        Language = bubbleMarkup.Language
+                    });
+                }
+                else if (bubbleMarkup is BubbleMarkupTextUrl)
+                {
+                    entities.Add(new MessageEntityTextUrl
+                    {
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                        Url = bubbleMarkup.Url
+                    });
+                }
+                // Currently we only need to grab mention of name (e.g., Bill not @Bill),
+                // as we need to add in addtional info so Telegram will know which user
+                // was mentioned.
+                else if (bubbleMarkup is InputBubbleMarkupMentionName)
+                {
+                    var inputUser = new InputUser
+                    {
+                        UserId = uint.Parse(bubbleMarkup.Address),
+                        AccessHash = GetUserAccessHashIfForeign(bubbleMarkup.Address)
+                    };
+
+                    entities.Add(new InputMessageEntityMentionName
+                    {
+                        Offset = (uint)bubbleMarkup.Offset,
+                        Length = (uint)bubbleMarkup.Length,
+                        UserId = inputUser
                     });
                 }
             }
+
+            if (entities.Count() > 0)
+            {
+                return entities;
+            }
+
+            return null;
         }
 
-        // Helper method to parse out Telegram's IReplyMarkup to build a
-        // Disa KeyboardMarkup from it and assign to a Disa TextBubble.KeyboardMarkup
-        private void HandleReplyMarkup(IReplyMarkup replyMarkup, TextBubble textBubble)
-        {
-            textBubble.KeyboardMarkup = HandleReplyMarkup(replyMarkup);
-        }
-
-        // Helper method to parse out Telegram's IReplyMarkup to build a
-        // Disa KeyboardMarkup from it and assign to a Disa Inline Mode query's SendMessage field
-        private void HandleReplyMarkup(IReplyMarkup replyMarkup, BotInlineMessage sendMessage)
-        {
-            sendMessage.KeyboardInlineMarkup = HandleReplyMarkup(replyMarkup) as KeyboardInlineMarkup;
-        }
-
-        // Core helper method used by other helper methods for parsing out a Telegram
-        // IReplyMarkup and creating a Disa KeyboardMarkup from it.
+        // Helper method for parsing:
+        // - Telegram IReplyMarkup
+        // to
+        // - Disa KeyboardMarkup
         private KeyboardMarkup HandleReplyMarkup(IReplyMarkup replyMarkup)
         {
             KeyboardMarkup keyboardMarkup = null;
@@ -946,6 +1148,10 @@ namespace Disa.Framework.Telegram
             return keyboardMarkup;
         }
 
+        // Helper method for parsing:
+        // - Telegram collection of IKeyboadButtonRow
+        // to
+        // - Disa collection of KeyboardButtonRow
         private List<Bots.KeyboardButtonRow> HandleInlineKeyboardButtonRows(List<SharpTelegram.Schema.IKeyboardButtonRow> rows)
         {
             var disaKeyboardMarkupRows = new List<Bots.KeyboardButtonRow>();
@@ -1030,6 +1236,106 @@ namespace Disa.Framework.Telegram
             }
 
             return disaKeyboardMarkupRows;
+        }
+
+        // Helper method for parsing:
+        // - Disa KeyboardInlineMarkup 
+        // to
+        // - Telegram ReplyInlineMarkup
+        private ReplyInlineMarkup HandleKeyboardInlineMarkup(Bots.KeyboardInlineMarkup keyboardInlineMarkup)
+        {
+            var replyMarkup = new ReplyInlineMarkup();
+
+            replyMarkup.Rows = HandleKeyboardButtonRows(keyboardInlineMarkup.Rows);
+            
+            return replyMarkup;
+        }
+
+        // Helper method for parsing:
+        // - Disa collection of KeyboardButtonRow
+        // to 
+        // - Telegram collection of IKeyboardButtonRow
+        private List<SharpTelegram.Schema.IKeyboardButtonRow> HandleKeyboardButtonRows(List<Bots.KeyboardButtonRow> rows)
+        {
+            List<SharpTelegram.Schema.IKeyboardButtonRow> telegramKeyboardButtonRows = new List<SharpTelegram.Schema.IKeyboardButtonRow>();
+
+            if (rows == null)
+            {
+                return telegramKeyboardButtonRows;
+            }
+
+            foreach (var disaKeyboardButtonRow in rows)
+            {
+                var telegramKeyboardButtonRow = new SharpTelegram.Schema.KeyboardButtonRow();
+                telegramKeyboardButtonRows.Add(telegramKeyboardButtonRow);
+
+                telegramKeyboardButtonRow.Buttons = new List<IKeyboardButton>();
+                if (disaKeyboardButtonRow != null)
+                {
+                    foreach (var button in disaKeyboardButtonRow.Buttons)
+                    {
+                        if (button is Bots.KeyboardButtonCustom)
+                        {
+                            var disaKeyboardButtonCustom = button as Bots.KeyboardButtonCustom;
+                            var telegramKeyboardButton = new SharpTelegram.Schema.KeyboardButton
+                            {
+                                Text = disaKeyboardButtonCustom.Text
+                            };
+                            telegramKeyboardButtonRow.Buttons.Add(telegramKeyboardButton);
+                        }
+                        else if (button is Bots.KeyboardButtonUrl)
+                        {
+                            var disaKeyboardButtonUrl = button as Bots.KeyboardButtonUrl;
+                            var telegramKeyboardButtonUrl = new SharpTelegram.Schema.KeyboardButtonUrl
+                            {
+                                Text = disaKeyboardButtonUrl.Text,
+                                Url = disaKeyboardButtonUrl.Url
+                            };
+                            telegramKeyboardButtonRow.Buttons.Add(telegramKeyboardButtonUrl);
+                        }
+                        else if (button is Bots.KeyboardButtonCallback)
+                        {
+                            var disaKeyboardButtonCallback = button as Bots.KeyboardButtonCallback;
+                            var telegramKeyboardButtonCallback = new SharpTelegram.Schema.KeyboardButtonCallback
+                            {
+                                Text = disaKeyboardButtonCallback.Text,
+                                Data = disaKeyboardButtonCallback.Data
+                            };
+                            telegramKeyboardButtonRow.Buttons.Add(telegramKeyboardButtonCallback);
+                        }
+                        else if (button is Bots.KeyboardButtonRequestPhone)
+                        {
+                            var disaKeyboardButtonRequestPhone = button as Bots.KeyboardButtonRequestPhone;
+                            var telegramKeyboardButtonRequestPhone = new SharpTelegram.Schema.KeyboardButtonRequestPhone
+                            {
+                                Text = disaKeyboardButtonRequestPhone.Text
+                            };
+                            telegramKeyboardButtonRow.Buttons.Add(telegramKeyboardButtonRequestPhone);
+                        }
+                        else if (button is Bots.KeyboardButtonRequestGeoLocation)
+                        {
+                            var disaKeyboardButtonRequestGeoLocation = button as Bots.KeyboardButtonRequestGeoLocation;
+                            var telegramKeyboardButtonRequestGeoLocation = new SharpTelegram.Schema.KeyboardButtonRequestGeoLocation
+                            {
+                                Text = disaKeyboardButtonRequestGeoLocation.Text
+                            };
+                            telegramKeyboardButtonRow.Buttons.Add(telegramKeyboardButtonRequestGeoLocation);
+                        }
+                        else if (button is Bots.KeyboardButtonSwitchInline)
+                        {
+                            var disaKeyboardButtonSwitchInline = button as Bots.KeyboardButtonSwitchInline;
+                            var telegramKeyboardButtonSwitchInline = new SharpTelegram.Schema.KeyboardButtonSwitchInline
+                            {
+                                Text = disaKeyboardButtonSwitchInline.Text,
+                                Query = disaKeyboardButtonSwitchInline.Query
+                            };
+                            telegramKeyboardButtonRow.Buttons.Add(telegramKeyboardButtonSwitchInline);
+                        }
+                    }
+                }
+            }
+
+            return telegramKeyboardButtonRows;
         }
 
         private List<VisualBubble> MakePartyInformationBubble(MessageService messageService, bool useCurrentTime, TelegramClient optionalClient)
@@ -1344,18 +1650,22 @@ namespace Disa.Framework.Telegram
                     // Do we have any mentions to process?
                     if (message.Entities != null)
                     {
-                        HandleEntities(
+                        tb.BubbleMarkups = HandleEntities(
                             message: message.MessageProperty,
                             entities: message.Entities,
                             bubbleGroupAddress: address,
-                            textBubble: tb, optionalClient: optionalClient);
+                            extendedParty: tb.ExtendedParty, 
+                            optionalClient: optionalClient);
                     }
 
                     // Do we have any inline keyboard to process?
                     if (message.ReplyMarkup != null)
                     {
-                        HandleReplyMarkup(message.ReplyMarkup, tb);
+                        tb.KeyboardMarkup = HandleReplyMarkup(message.ReplyMarkup);
                     }
+
+                    // Was this sent by a bot (id will be greater than 0)?
+                    tb.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
 
                     bubblesReturn.Add(tb);
                 }
@@ -1519,6 +1829,7 @@ namespace Disa.Framework.Telegram
                     imageBubble.AdditionalData = memoryStream.ToArray();
                     imageBubble.Width = dimensions.Width;
                     imageBubble.Height = dimensions.Height;
+                    imageBubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
                     var returnList = new List<VisualBubble>
                     {
                         imageBubble  
@@ -1540,6 +1851,7 @@ namespace Disa.Framework.Telegram
                                 addressStr, participantAddress, true, this, messageMediaPhoto.Caption,
                                 message.Id.ToString(CultureInfo.InvariantCulture));
                         }
+                        captionBubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
                         returnList.Add(captionBubble);
                     }
                     return returnList;
@@ -1620,6 +1932,7 @@ namespace Disa.Framework.Telegram
                             bubble.Status = Bubble.BubbleStatus.Sent;
                         }
                         bubble.AdditionalData = memoryStream.ToArray();
+                        bubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
 
                         var returnList = new List<VisualBubble>
                         {
@@ -1642,6 +1955,7 @@ namespace Disa.Framework.Telegram
                                     addressStr, participantAddress, true, this, messageMediaDocument.Caption,
                                     message.Id.ToString(CultureInfo.InvariantCulture));
                             }
+                            captionBubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
                             returnList.Add(captionBubble);
                         }
                         return returnList;
@@ -1658,6 +1972,7 @@ namespace Disa.Framework.Telegram
                 if (geoPoint != null)
                 {
                     var geoBubble = MakeGeoBubble(geoPoint, message, isUser, useCurrentTime, addressStr, participantAddress, null);
+                    geoBubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
                     return new List<VisualBubble>
                     {
                         geoBubble
@@ -1673,6 +1988,7 @@ namespace Disa.Framework.Telegram
                 if (geoPoint != null)
                 {
                     var geoBubble = MakeGeoBubble(geoPoint,message,isUser,useCurrentTime,addressStr,participantAddress,messageMediaVenue.Title);
+                    geoBubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
                     return new List<VisualBubble>
                     {
                         geoBubble
@@ -1693,6 +2009,7 @@ namespace Disa.Framework.Telegram
                 });
                 var vCardData = Platform.GenerateBytesFromContactCard(contactCard);
                 var contactBubble = MakeContactBubble(message, isUser, useCurrentTime, addressStr, participantAddress, vCardData, messageMediaContact.FirstName);
+                contactBubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
 
                 return new List<VisualBubble>
                 { 
@@ -1783,7 +2100,7 @@ namespace Disa.Framework.Telegram
 
         private uint GetPhotoFileSize(IPhoto iPhoto)
         {
-            var photo = iPhoto as Photo;
+            var photo = iPhoto as SharpTelegram.Schema.Photo;
 
             if (photo != null)
             {
@@ -1805,7 +2122,7 @@ namespace Disa.Framework.Telegram
 
         private Size GetPhotoDimensions(IPhoto iPhoto)
         {
-            var photo = iPhoto as Photo;
+            var photo = iPhoto as SharpTelegram.Schema.Photo;
 
             if (photo != null)
             {
@@ -1838,7 +2155,7 @@ namespace Disa.Framework.Telegram
 
         private SharpTelegram.Schema.FileLocation GetPhotoFileLocation(IPhoto iPhoto)
         {
-            var photo = iPhoto as Photo;
+            var photo = iPhoto as SharpTelegram.Schema.Photo;
 
             if (photo != null)
             {
@@ -1861,7 +2178,7 @@ namespace Disa.Framework.Telegram
 
         private SharpTelegram.Schema.FileLocation GetCachedPhotoFileLocation(IPhoto iPhoto)
         {
-            var photo = iPhoto as Photo;
+            var photo = iPhoto as SharpTelegram.Schema.Photo;
 
             if (photo != null)
             {
@@ -1883,7 +2200,7 @@ namespace Disa.Framework.Telegram
 
         private byte[] GetCachedPhotoBytes(IPhoto iPhoto)
         {
-            var photo = iPhoto as Photo;
+            var photo = iPhoto as SharpTelegram.Schema.Photo;
 
             if (photo != null)
             {
@@ -2499,74 +2816,84 @@ namespace Disa.Framework.Telegram
                 {
                     var peer = GetInputPeer(textBubble.Address, textBubble.Party, textBubble.ExtendedParty);
 
-                    // Standard send message
-                    var args = new MessagesSendMessageArgs
-                    {
-                        Flags = 0,
-                        Peer = peer,
-                        Message = textBubble.Message,
-                        RandomId = ulong.Parse(textBubble.IdService2),
-                    };
+                    MessagesSendMessageArgs sendMessageArgs = null;
+                    MessagesSendInlineBotResultArgs sendInlineBotResultArgs = null;
+                    var isSendInlineBotResult = textBubble.BotInlineResult != null;
 
-                    // Adjust for markup if necessary
-                    if (textBubble.BubbleMarkups != null &&
-                        textBubble.BubbleMarkups.Count > 0)
+                    if (isSendInlineBotResult)
                     {
-                        foreach (var bubbleMarkup in textBubble.BubbleMarkups)
+                        // Bot Inline Mode is sending a message
+                        sendInlineBotResultArgs = new MessagesSendInlineBotResultArgs
                         {
-                            // Currently we only need to grab mention of name (e.g., Bill not @Bill),
-                            // as we need to add in addtional info so Telegram will know which user
-                            // was mentioned.
-                            if (bubbleMarkup is InputBubbleMarkupMentionName)
+                            Flags = 0,
+                            Peer = peer,
+                            RandomId = ulong.Parse(textBubble.IdService2),
+                            QueryId = ulong.Parse(textBubble.BotInlineResult.QueryId),
+                            Id = textBubble.BotInlineResult.Id
+                        };
+
+                        // Adjust for quote if necessary
+                        if (!string.IsNullOrEmpty(textBubble.QuotedIdService))
+                        {
+                            sendInlineBotResultArgs.Flags |= MESSAGE_FLAG_REPLY;
+                            sendInlineBotResultArgs.ReplyToMsgId = uint.Parse(textBubble.QuotedIdService);
+                        }
+                    }
+                    else
+                    {
+                        // Standard send message
+                        sendMessageArgs = new MessagesSendMessageArgs
+                        {
+                            Flags = 0,
+                            Peer = peer,
+                            Message = textBubble.Message,
+                            RandomId = ulong.Parse(textBubble.IdService2),
+                        };
+
+                        // Adjust for bubble markup if necessary
+                        if (textBubble.BubbleMarkups != null &&
+                            textBubble.BubbleMarkups.Count > 0)
+                        {
+                            sendMessageArgs.Entities = HandleBubbleMarkup(textBubble.BubbleMarkups);
+                            if (sendMessageArgs.Entities != null)
                             {
-                                if (args.Entities == null)
-                                {
-                                    args.Entities = new List<IMessageEntity>();
-                                }
-
-                                args.Flags |= MESSAGE_FLAG_ENTITIES;
-                                var inputUser = new InputUser
-                                {
-                                    UserId = uint.Parse(bubbleMarkup.Address),
-                                    AccessHash = GetUserAccessHashIfForeign(bubbleMarkup.Address)
-                                };
-
-                                args.Entities.Add(new InputMessageEntityMentionName
-                                {
-                                    Offset = (uint)bubbleMarkup.Offset,
-                                    Length = (uint)bubbleMarkup.Length,
-                                    UserId = inputUser
-                                });
+                                sendMessageArgs.Flags |= MESSAGE_FLAG_ENTITIES;
                             }
-                            else if (bubbleMarkup is BubbleMarkupBotCommand)
+                        }
+
+                        // Adjust for quote if necessary
+                        if (!string.IsNullOrEmpty(textBubble.QuotedIdService))
+                        {
+                            sendMessageArgs.Flags |= MESSAGE_FLAG_REPLY;
+                            sendMessageArgs.ReplyToMsgId = uint.Parse(textBubble.QuotedIdService);
+                        }
+
+                        // Adjust for keyboard if any (Bots Inline Mode)
+                        if (textBubble.KeyboardMarkup != null)
+                        {
+                            var keyboardInlineMarkup = textBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
+                            if (keyboardInlineMarkup != null)
                             {
-                                if (args.Entities == null)
-                                {
-                                    args.Entities = new List<IMessageEntity>();
-                                }
-
-                                args.Flags |= MESSAGE_FLAG_ENTITIES;
-
-                                args.Entities.Add(new MessageEntityBotCommand
-                                {
-                                    Offset = (uint)bubbleMarkup.Offset,
-                                    Length = (uint)bubbleMarkup.Length,
-                                });
+                                sendMessageArgs.Flags |= MESSAGE_FLAG_HAS_MARKUP;
+                                sendMessageArgs.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
                             }
                         }
                     }
 
-                    // Adjust for quote if necessary
-                    if (!string.IsNullOrEmpty(textBubble.QuotedIdService))
-                    {
-                        args.Flags |= MESSAGE_FLAG_REPLY;
-                        args.ReplyToMsgId = uint.Parse(textBubble.QuotedIdService);
-                    }
-
                     using (var client = new FullClientDisposable(this))
                     {
-                        var iUpdates = TelegramUtils.RunSynchronously(
-                            client.Client.Methods.MessagesSendMessageAsync(args));
+                        IUpdates iUpdates = null;
+                        if (isSendInlineBotResult)
+                        {
+                            iUpdates = TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesSendInlineBotResultAsync(sendInlineBotResultArgs));
+                        }
+                        else
+                        {
+                            iUpdates = TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesSendMessageAsync(sendMessageArgs));
+                        }
+
                         var updateShortSentMessage = iUpdates as UpdateShortSentMessage;
                         if (updateShortSentMessage != null)
                         {
@@ -2687,6 +3014,17 @@ namespace Disa.Framework.Telegram
                     args.ReplyToMsgId = uint.Parse(contactBubble.QuotedIdService);
                 }
 
+                // Adjust for keyboard if any (Bots Inline Mode)
+                if (contactBubble.KeyboardMarkup != null)
+                {
+                    var keyboardInlineMarkup = contactBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
+                    if (keyboardInlineMarkup != null)
+                    {
+                        args.Flags |= MESSAGE_FLAG_HAS_MARKUP;
+                        args.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
+                    }
+                }
+
                 using (var client = new FullClientDisposable(this))
                 {
                     var updates = TelegramUtils.RunSynchronously(
@@ -2723,6 +3061,17 @@ namespace Disa.Framework.Telegram
             {
                 args.Flags |= MESSAGE_FLAG_REPLY;
                 args.ReplyToMsgId = uint.Parse(locationBubble.QuotedIdService);
+            }
+
+            // Adjust for keyboard if any (Bots Inline Mode)
+            if (locationBubble.KeyboardMarkup != null)
+            {
+                var keyboardInlineMarkup = locationBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
+                if (keyboardInlineMarkup != null)
+                {
+                    args.Flags |= MESSAGE_FLAG_HAS_MARKUP;
+                    args.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
+                }
             }
 
             using (var client = new FullClientDisposable(this))
@@ -2981,6 +3330,17 @@ namespace Disa.Framework.Telegram
                         args.ReplyToMsgId = uint.Parse(imageBubble.QuotedIdService);
                     }
 
+                    // Adjust for keyboard if any (Bots Inline Mode)
+                    if (imageBubble.KeyboardMarkup != null)
+                    {
+                        var keyboardInlineMarkup = imageBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
+                        if (keyboardInlineMarkup != null)
+                        {
+                            args.Flags |= MESSAGE_FLAG_HAS_MARKUP;
+                            args.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
+                        }
+                    }
+
                     var iUpdates = TelegramUtils.RunSynchronously(
                         client.Client.Methods.MessagesSendMediaAsync(args));
                     var messageId = GetMessageId(iUpdates);
@@ -3019,6 +3379,17 @@ namespace Disa.Framework.Telegram
                     {
                         args.Flags |= MESSAGE_FLAG_REPLY;
                         args.ReplyToMsgId = uint.Parse(fileBubble.QuotedIdService);
+                    }
+
+                    // Adjust for keyboard if any (Bots Inline Mode)
+                    if (fileBubble.KeyboardMarkup != null)
+                    {
+                        var keyboardInlineMarkup = fileBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
+                        if (keyboardInlineMarkup != null)
+                        {
+                            args.Flags |= MESSAGE_FLAG_HAS_MARKUP;
+                            args.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
+                        }
                     }
 
                     var iUpdates = TelegramUtils.RunSynchronously(
@@ -3080,6 +3451,17 @@ namespace Disa.Framework.Telegram
                     {
                         media.Flags |= MESSAGE_FLAG_REPLY;
                         media.ReplyToMsgId = uint.Parse(audioBubble.QuotedIdService);
+                    }
+
+                    // Adjust for keyboard if any (Bots Inline Mode)
+                    if (audioBubble.KeyboardMarkup != null)
+                    {
+                        var keyboardInlineMarkup = audioBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
+                        if (keyboardInlineMarkup != null)
+                        {
+                            media.Flags |= MESSAGE_FLAG_HAS_MARKUP;
+                            media.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
+                        }
                     }
 
                     var iUpdates = TelegramUtils.RunSynchronously(

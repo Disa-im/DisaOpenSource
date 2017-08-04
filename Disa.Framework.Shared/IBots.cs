@@ -47,10 +47,12 @@ namespace Disa.Framework
         ///  Set the result of the <see cref="Action{bool}"/> as the result of sending a <see cref="UpdateBotInlineSend"/> representing
         ///  a selection from an Inline Mode query.
         /// </summary>
-        /// <param name="selection">The <see cref="UpdateBotInlineSend"/> representing the selection from an Inline Mode query.</param>
+        /// <param name="selection">The <see cref="BotInlineResultBase"/> representing the selection from an Inline Mode query.</param>
         /// <param name="success">True if sending the selection succeeded, False if not.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{bool}"/></returns>
-        Task SendBotInlineModeSelection(UpdateBotInlineSend selection, Action<bool> success);
+        Task SendBotInlineModeSelection(BotInlineResultBase selection, Action<bool> success);
+
+        Task GetFileLocationBytes(byte[] additionalData, Action<byte[]> bytes);
 
         //
         // Begin interface extensions below. For these you must use the following test methodology

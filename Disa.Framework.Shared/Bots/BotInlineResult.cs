@@ -12,7 +12,7 @@ namespace Disa.Framework.Bots
         /// <summary>
         /// The unique identifier for the original query that produced this result.
         /// </summary>
-        public ulong QueryId { get; set; }
+        public string QueryId { get; set; }
 
         public string Type { get; set; }
 
@@ -66,7 +66,7 @@ namespace Disa.Framework.Bots
 
     public class BotInlineMediaResult : BotInlineResultBase
     {
-        public DisaThumbnail Photo { get; set; }
+        public Photo Photo { get; set; }
 
         public Document Document { get; set; }
     }

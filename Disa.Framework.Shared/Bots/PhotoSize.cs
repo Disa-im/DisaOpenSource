@@ -4,28 +4,21 @@ using System.Text;
 
 namespace Disa.Framework.Bots
 {
-    public abstract class PhotoSizeBase
+    public class PhotoSize
     {
-        string Type { get; set; }
-    }
+        public string Type { get; set; }
 
-    public class PhotoSize : PhotoSizeBase
-    {
-        FileLocationBase Location { get; set; }
+        public FileLocation Location { get; set; }
 
-        UInt32 W { get; set; }
+        public UInt32 W { get; set; }
 
-        UInt32 H { get; set; }
+        public UInt32 H { get; set; }
 
-        UInt32 Size { get; set; }
-    }
-
-    public class PhotoSizeEmpty : PhotoSizeBase
-    {
+        public int Size { get; set; }
     }
 
     public class PhotoCachedSize : PhotoSize
     {
-        Byte[] Bytes { get; set; }
+        public Byte[] Bytes { get; set; }
     }
 }
