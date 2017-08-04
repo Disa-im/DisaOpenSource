@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
+using Disa.Framework.Bots;
 
 namespace Disa.Framework
 {
@@ -596,11 +598,68 @@ namespace Disa.Framework
             return null;
         }
 
+        private static Regex _linkExtraction;
+        private static void AddUrlMarkupIfNeeded(VisualBubble bubble)
+        {
+            try
+            {
+                var textBubble = bubble as TextBubble;
+                if (textBubble != null && !textBubble.HasParsedMessageForUrls) 
+                {
+                    var markups = new List<BubbleMarkup>();
+                    if (_linkExtraction == null) 
+                    {
+						_linkExtraction = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+					}
+                    var rawString = textBubble.Message;
+                    foreach (Match m in _linkExtraction.Matches(rawString))
+                    {
+                        markups.Add(new BubbleMarkupUrl
+                        {
+                            Url = m.Value,
+                        });
+                    }
+                    if (textBubble.BubbleMarkups == null)
+                    {
+                        textBubble.BubbleMarkups = new List<BubbleMarkup>();
+                    }
+                    textBubble.BubbleMarkups.AddRange(markups);
+                    textBubble.HasParsedMessageForUrls = true;
+                }
+            }
+            catch (Exception e)
+            {
+                Utils.DebugPrint("Failed to add UrlMarkup: " + e);
+            }
+        }
+
+        internal static void AddUrlMarkupIfNeeded(VisualBubble[] bubbles)
+        {
+            if (bubbles == null)
+                return;
+            foreach (var bubble in bubbles)
+            {
+                AddUrlMarkupIfNeeded(bubble);
+            }
+        }
+
+        internal static void AddUrlMarkupIfNeeded(List<VisualBubble> bubbles)
+		{
+			if (bubbles == null)
+				return;
+			foreach (var bubble in bubbles)
+			{
+				AddUrlMarkupIfNeeded(bubble);
+			}
+		}
+
         internal static BubbleGroup Group(VisualBubble vb, bool resend = false, bool insertAtBottom = false)
         {
             lock (BubbleGroupDatabase.OperationLock)
             {
                 Utils.DebugPrint("Grouping an " + vb.Direction + " bubble on service " + vb.Service.Information.ServiceName);
+
+                AddUrlMarkupIfNeeded(vb);
 
                 var theGroup =
                     BubbleGroupManager.FindWithAddress(vb.Service, vb.Address);

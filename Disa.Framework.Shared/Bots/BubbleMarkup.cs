@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using ProtoBuf;
 
 namespace Disa.Framework.Bots
@@ -17,7 +17,7 @@ namespace Disa.Framework.Bots
     [ProtoInclude(108, typeof(BubbleMarkupItalic))]
     [ProtoInclude(109, typeof(BubbleMarkupCode))]
     [ProtoInclude(110, typeof(BubbleMarkupPre))]
-    [ProtoInclude(111, typeof(BubbleMarkupTextUrl))]
+    // 111 is removed because BubbleMarkupTextUrl now inherits BubbleMarkupUrl
     [ProtoInclude(112, typeof(BubbleMarkupMentionName))]
     [ProtoInclude(113, typeof(InputBubbleMarkupMentionName))]
     public abstract class BubbleMarkup
@@ -85,8 +85,24 @@ namespace Disa.Framework.Bots
 
     [Serializable]
     [ProtoContract]
+    [ProtoInclude(200, typeof(BubbleMarkupTextUrl))]
     public class BubbleMarkupUrl : BubbleMarkup
     {
+        [ProtoMember(251)]
+        public string Url { get; set; }
+        [ProtoMember(252)]
+        public string Title { get; set; }
+        [ProtoMember(253)]
+        public string Description { get; set; }
+        [ProtoMember(254)]
+        public string ImageUrl { get; set; }
+        [ProtoMember(255)]
+        public bool HasFetched { get; set; }
+		[ProtoMember(256)]
+		public string CannonicalUrl { get; set; }
+
+        public bool IsFetching { get; set; }
+        public int CrawlAttempts { get; set; }
     }
 
     [Serializable]
@@ -121,7 +137,7 @@ namespace Disa.Framework.Bots
 
     [Serializable]
     [ProtoContract]
-    public class BubbleMarkupTextUrl : BubbleMarkup
+    public class BubbleMarkupTextUrl : BubbleMarkupUrl
     {
     }
 

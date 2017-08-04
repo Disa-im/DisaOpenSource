@@ -508,13 +508,22 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        // Our implementation for INewMessage.SearchHint. We will return null
-        // to signal we want the default language specific "Search" text.
         public string SearchHint
         {
             get
             {
-                return null;
+                var isoCode = Platform.GetCurrentLocale();
+                switch (isoCode)
+                {
+                    case "en-US":
+                        {
+                            return "Type contact name";
+                        }
+                    default:
+                        {
+                            return "Type contact name";
+                        }
+                }
             }
         }
 
