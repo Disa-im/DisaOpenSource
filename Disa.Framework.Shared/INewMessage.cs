@@ -68,7 +68,7 @@ namespace Disa.Framework
         // or something similar:
         // 
         // // Do we have the required method?
-        // if(DisaFrameworkMethods.Missing(service, DisaFrameWorkMethods.INewMessageXxx)
+        // if(DisaFrameworkMethods.Missing(service, DisaFrameworkMethods.INewMessageXxx)
         // {
         //     return;
         // }
@@ -95,6 +95,9 @@ namespace Disa.Framework
         {
             get;
         }
+
+        Task GetContactsByUsername(string query, Action<List<Contact>> result);
+        
     }
 }
 

@@ -8,7 +8,6 @@ namespace Disa.Framework.Bots
     /// </summary>
     [Serializable]
     [ProtoContract]
-    [ProtoInclude(101, typeof(BubbleMarkupUnknown))]
     [ProtoInclude(102, typeof(BubbleMarkupMentionUsername))]
     [ProtoInclude(103, typeof(BubbleMarkupHashtag))]
     [ProtoInclude(104, typeof(BubbleMarkupBotCommand))]
@@ -50,12 +49,15 @@ namespace Disa.Framework.Bots
         /// </summary>
         [ProtoMember(5)]
         public string Language { get; set; }
-    }
 
-    [Serializable]
-    [ProtoContract]
-    public class BubbleMarkupUnknown : BubbleMarkup
-    {
+        /// <summary>
+        /// For <see cref="BubbleMarkupTextUrl"/>
+        /// 
+        /// This represents a url with an alternative text representation
+        /// For example: "Google" with this backing Url field set to http://google.com.
+        /// </summary>
+        [ProtoMember(6)]
+        public string Url { get; set; }
     }
 
     /// <summary>
