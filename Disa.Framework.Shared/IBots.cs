@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Disa.Framework
 {
+    [DisaFramework]
     public interface IBots
     {
         //
