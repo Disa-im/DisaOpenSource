@@ -900,11 +900,19 @@ namespace Disa.Framework.Telegram
                 else if (entity is MessageEntityUrl)
                 {
                     var messageEntityUrl = entity as MessageEntityUrl;
-                    bubbleMarkups.Add(new BubbleMarkupUrl
+                    var offset = (int)messageEntityUrl.Offset;
+                    var length = (int)messageEntityUrl.Length;
+                    var bubbleMarkupUrl = new BubbleMarkupUrl
                     {
-                        Offset = (int)messageEntityUrl.Offset,
-                        Length = (int)messageEntityUrl.Length
-                    });
+                        Offset = offset,
+                        Length = length,
+                    };
+                    if (message != null &&
+                        message.Length >= offset + length)
+                    {
+                        bubbleMarkupUrl.Url = message.Substring(offset, length);
+                    }
+                    bubbleMarkups.Add(bubbleMarkupUrl);
                 }
                 else if (entity is MessageEntityEmail)
                 {

@@ -88,8 +88,6 @@ namespace Disa.Framework.Bots
     [ProtoInclude(200, typeof(BubbleMarkupTextUrl))]
     public class BubbleMarkupUrl : BubbleMarkup
     {
-        [ProtoMember(251)]
-        public string Url { get; set; }
         [ProtoMember(252)]
         public string Title { get; set; }
         [ProtoMember(253)]
