@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <plugin>
   <name>Telegram</name>
-  <version>15</version>
-  <minimumframeworkversion>41</minimumframeworkversion>
+  <version>16</version>
+  <minimumframeworkversion>42</minimumframeworkversion>
   <production>false</production>
   <changelog>http://disa-im.github.io/DisaOpenSource/telegram/changelog.html</changelog>
   <author>Disa Technologies Inc.</author>
