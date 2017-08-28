@@ -595,6 +595,12 @@ namespace Disa.Framework
                 return fileBubble.Path;
             }
 
+            var stickerBubble = bubble as StickerBubble;
+            if (stickerBubble != null)
+            {
+                return stickerBubble.StickerPath;
+            }
+
             return null;
         }
 
@@ -609,8 +615,8 @@ namespace Disa.Framework
                     var markups = new List<BubbleMarkup>();
                     if (_linkExtraction == null) 
                     {
-						_linkExtraction = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-					}
+                        _linkExtraction = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    }
                     var rawString = textBubble.Message;
                     foreach (Match m in _linkExtraction.Matches(rawString))
                     {
@@ -644,14 +650,14 @@ namespace Disa.Framework
         }
 
         internal static void AddUrlMarkupIfNeeded(List<VisualBubble> bubbles)
-		{
-			if (bubbles == null)
-				return;
-			foreach (var bubble in bubbles)
-			{
-				AddUrlMarkupIfNeeded(bubble);
-			}
-		}
+        {
+            if (bubbles == null)
+                return;
+            foreach (var bubble in bubbles)
+            {
+                AddUrlMarkupIfNeeded(bubble);
+            }
+        }
 
         internal static BubbleGroup Group(VisualBubble vb, bool resend = false, bool insertAtBottom = false)
         {

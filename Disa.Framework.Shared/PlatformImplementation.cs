@@ -16,6 +16,8 @@ namespace Disa.Framework
 
         public abstract string GetCurrentLocale();
 
+        public abstract string GetStickersPath();
+
         public abstract string GetFilesPath();
 
         public abstract string GetPicturesPath();

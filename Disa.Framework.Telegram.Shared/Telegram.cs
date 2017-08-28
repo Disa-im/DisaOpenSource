@@ -1544,14 +1544,22 @@ namespace Disa.Framework.Telegram
                     var document = messageMediaDocument.Document as SharpTelegram.Schema.Document;
                     if(document!=null)
                     {
-                        if (document.MimeType.Contains("audio"))
+                        var stickerAlt = document.Attributes
+                                                 .OfType<SharpTelegram.Schema.DocumentAttributeSticker>()
+                                                 .FirstOrDefault()?.Alt;
+                        if (stickerAlt != null)
+                        {
+                            bubble.QuotedType = VisualBubble.MediaType.Sticker;
+                            bubble.QuotedContext = stickerAlt;
+                        }
+                        else if (document.MimeType.Contains("audio"))
                         {
                             bubble.QuotedType = VisualBubble.MediaType.Audio;
                             bubble.QuotedSeconds = GetAudioTime(document);
                         }
                         else if (document.MimeType.Contains("video"))
                         {
-                            bubble.QuotedType = VisualBubble.MediaType.File;
+                            bubble.QuotedType = VisualBubble.MediaType.Video;
                             bubble.QuotedContext = "Video";
                         }
                         else
@@ -1910,17 +1918,45 @@ namespace Disa.Framework.Telegram
                             //TODO: localize
                             var filename = document.MimeType.Contains("video")
                                 ? ""
-                                : GetDocumentFileName(document);GetDocumentFileName(document);
+                                : GetDocumentFileName(document);
 
+                            var isSticker = document.Attributes.FirstOrDefault(x => x is 
+                                                   SharpTelegram.Schema.DocumentAttributeSticker) != null;
+							uint width = 0;
+							uint height = 0;
+							var photoSize = document.Thumb as SharpTelegram.Schema.PhotoSize;
+                            if (photoSize != null)
+                            {
+                                width = photoSize.W;
+                                height = photoSize.H;
+                            }
                             if (isUser)
                             {
-                                bubble =
-                                    new FileBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
-                                        message.Out != null
-                                            ? Bubble.BubbleDirection.Outgoing
-                                            : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, "",
-                                        FileBubble.Type.Url, filename, document.MimeType,
-                                        message.Id.ToString(CultureInfo.InvariantCulture));
+                                if (isSticker)
+                                {
+                                    var stickerAlt = document.Attributes
+                                                             .OfType<SharpTelegram.Schema.DocumentAttributeSticker>()
+                                                             .FirstOrDefault()?.Alt;
+                                    var stickerBubble =
+                                        new StickerBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                            message.Out != null
+                                                ? Bubble.BubbleDirection.Outgoing
+                                                : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, null,
+                                                      StickerBubble.Type.File, (int)width, (int)height, null, null,
+                                                          message.Id.ToString(CultureInfo.InvariantCulture));
+                                    stickerBubble.AlternativeEmoji = stickerAlt;
+                                    bubble = stickerBubble;
+                                }
+                                else
+                                {
+                                    bubble =
+                                        new FileBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                            message.Out != null
+                                                ? Bubble.BubbleDirection.Outgoing
+                                                : Bubble.BubbleDirection.Incoming, addressStr, null, false, this, "",
+                                            FileBubble.Type.Url, filename, document.MimeType,
+                                            message.Id.ToString(CultureInfo.InvariantCulture));
+                                }
                             }
                             else
                             {

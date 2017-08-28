@@ -23,7 +23,7 @@ namespace Disa.Framework.Bubbles
     {
         public enum MediaType
         {
-            None, Audio, Video, Text, Location, File, Contact,Image
+            None, Audio, Video, Text, Location, File, Contact, Image, Sticker
         }
 
         public static string QuotedNameMyself
