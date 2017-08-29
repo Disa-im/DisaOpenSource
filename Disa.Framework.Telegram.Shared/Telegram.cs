@@ -3352,95 +3352,107 @@ namespace Disa.Framework.Telegram
 
             using (var client = new FullClientDisposable(this))
             {
+                Action<VisualBubble, string, string> dispatchFile = 
+                    (visualBubble, fileName, mimeType) =>
+                {
+					var documentAttributes = new List<IDocumentAttribute>
+					{
+						new SharpTelegram.Schema.DocumentAttributeFilename
+						{
+							FileName = fileName
+						}
+					};
+
+					// Standard file sent
+					var args = new MessagesSendMediaArgs
+					{
+						Flags = 0,
+						Peer = inputPeer,
+						Media = new InputMediaUploadedDocument
+						{
+							Attributes = documentAttributes,
+							Caption = "",
+							File = inputFile,
+							MimeType = mimeType,
+						},
+						RandomId = GenerateRandomId(),
+					};
+
+					// Adjust for quote if necessary
+					if (!string.IsNullOrEmpty(visualBubble.QuotedIdService))
+					{
+						args.Flags |= MESSAGE_FLAG_REPLY;
+						args.ReplyToMsgId = uint.Parse(visualBubble.QuotedIdService);
+					}
+
+					// Adjust for keyboard if any (Bots Inline Mode)
+					if (visualBubble.KeyboardMarkup != null)
+					{
+						var keyboardInlineMarkup = visualBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
+						if (keyboardInlineMarkup != null)
+						{
+							args.Flags |= MESSAGE_FLAG_HAS_MARKUP;
+							args.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
+						}
+					}
+
+					var iUpdates = TelegramUtils.RunSynchronously(
+						client.Client.Methods.MessagesSendMediaAsync(args));
+					var messageId = GetMessageId(iUpdates);
+					visualBubble.IdService = messageId;
+					SendToResponseDispatcher(iUpdates, client.Client);
+                };
                 if (imageBubble != null)
                 {
-                    // Standard send image
-                    var args = new MessagesSendMediaArgs
+                    if (!imageBubble.IsAnimated)
                     {
-                        Flags = 0,
-                        Peer = inputPeer,
-                        Media = new InputMediaUploadedPhoto
-                        {
-                            Caption = "",
-                            File = inputFile,
-                        },
-                        RandomId = GenerateRandomId(),
-                    };
+						// Standard send image
+						var args = new MessagesSendMediaArgs
+						{
+							Flags = 0,
+							Peer = inputPeer,
+							Media = new InputMediaUploadedPhoto
+							{
+								Caption = "",
+								File = inputFile,
+							},
+							RandomId = GenerateRandomId(),
+						};
 
-                    // Adjust for quote if necessary
-                    if (!string.IsNullOrEmpty(imageBubble.QuotedIdService))
-                    {
-                        args.Flags |= MESSAGE_FLAG_REPLY;
-                        args.ReplyToMsgId = uint.Parse(imageBubble.QuotedIdService);
+						// Adjust for quote if necessary
+						if (!string.IsNullOrEmpty(imageBubble.QuotedIdService))
+						{
+							args.Flags |= MESSAGE_FLAG_REPLY;
+							args.ReplyToMsgId = uint.Parse(imageBubble.QuotedIdService);
+						}
+
+						// Adjust for keyboard if any (Bots Inline Mode)
+						if (imageBubble.KeyboardMarkup != null)
+						{
+							var keyboardInlineMarkup = imageBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
+							if (keyboardInlineMarkup != null)
+							{
+								args.Flags |= MESSAGE_FLAG_HAS_MARKUP;
+								args.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
+							}
+						}
+
+						var iUpdates = TelegramUtils.RunSynchronously(
+							client.Client.Methods.MessagesSendMediaAsync(args));
+						var messageId = GetMessageId(iUpdates);
+						imageBubble.IdService = messageId;
+						var updates = iUpdates as Updates;
+
+						SendToResponseDispatcher(iUpdates, client.Client);
                     }
-
-                    // Adjust for keyboard if any (Bots Inline Mode)
-                    if (imageBubble.KeyboardMarkup != null)
+                    else
                     {
-                        var keyboardInlineMarkup = imageBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
-                        if (keyboardInlineMarkup != null)
-                        {
-                            args.Flags |= MESSAGE_FLAG_HAS_MARKUP;
-                            args.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
-                        }
+                        dispatchFile(imageBubble, Path.GetFileName(imageBubble.ImagePath), "image/gif");
                     }
-
-                    var iUpdates = TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesSendMediaAsync(args));
-                    var messageId = GetMessageId(iUpdates);
-                    imageBubble.IdService = messageId;
-                    var updates = iUpdates as Updates;
-
-                    SendToResponseDispatcher(iUpdates, client.Client);
                 }
                 else if (fileBubble != null)
                 {
-                    var documentAttributes = new List<IDocumentAttribute>
-                    {
-                        new SharpTelegram.Schema.DocumentAttributeFilename
-                        {
-                            FileName = fileBubble.FileName
-                        }
-                    };
-
-                    // Standard file sent
-                    var args = new MessagesSendMediaArgs
-                    {
-                        Flags = 0,
-                        Peer = inputPeer,
-                        Media = new InputMediaUploadedDocument
-                        {
-                            Attributes = documentAttributes,
-                            Caption = "",
-                            File = inputFile,
-                            MimeType = fileBubble.MimeType,
-                        },
-                        RandomId = GenerateRandomId(),
-                    };
-
-                    // Adjust for quote if necessary
-                    if (!string.IsNullOrEmpty(fileBubble.QuotedIdService))
-                    {
-                        args.Flags |= MESSAGE_FLAG_REPLY;
-                        args.ReplyToMsgId = uint.Parse(fileBubble.QuotedIdService);
-                    }
-
-                    // Adjust for keyboard if any (Bots Inline Mode)
-                    if (fileBubble.KeyboardMarkup != null)
-                    {
-                        var keyboardInlineMarkup = fileBubble.KeyboardMarkup as Bots.KeyboardInlineMarkup;
-                        if (keyboardInlineMarkup != null)
-                        {
-                            args.Flags |= MESSAGE_FLAG_HAS_MARKUP;
-                            args.ReplyMarkup = HandleKeyboardInlineMarkup(keyboardInlineMarkup);
-                        }
-                    }
-
-                    var iUpdates = TelegramUtils.RunSynchronously(
-                        client.Client.Methods.MessagesSendMediaAsync(args));
-                    var messageId = GetMessageId(iUpdates);
-                    fileBubble.IdService = messageId;
-                    SendToResponseDispatcher(iUpdates, client.Client);
+                    dispatchFile(fileBubble, fileBubble.FileName, fileBubble.MimeType);
                 }
                 else if (audioBubble != null)
                 {
@@ -3722,6 +3734,11 @@ namespace Disa.Framework.Telegram
         public bool DisctinctIncomingVisualBubbleIdServices()
         {
             return true;
+        }
+
+        public bool CheckType()
+        {
+            return false;
         }
 
         public override void RefreshPhoneBookContacts()

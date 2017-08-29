@@ -179,17 +179,20 @@ namespace Disa.Framework
         public static readonly string IUserInformationEnableuserBot = "EnableUserBot";
         public static readonly string IUserInformationIsUserBot = "IsUserBot";
 
-        /// <summary>
-        /// Is the plugin missing a valid method implementation for the method specified?
-        /// 
-        /// IMPORTANT: If a method is overloaded, it will test the validity of all overloaded methods
-        ///            and if any are missing it will return True.
-        /// </summary>
-        /// <param name="plugin">The plugin we want to inspect for a valid method implementation.</param>
-        /// <param name="method">The name of the method.</param>
-        /// <returns>True if the method is defined as missing (no implementation or marked with <see cref="DisaFrameworkNOP"/>),
-        /// False otherwise.</returns>
-        public static bool Missing(object plugin, string method)
+        // IVisualBubbleServiceId
+        public static readonly string IVisualBubbleServiceIdCheckType = "CheckType";
+
+		/// <summary>
+		/// Is the plugin missing a valid method implementation for the method specified?
+		/// 
+		/// IMPORTANT: If a method is overloaded, it will test the validity of all overloaded methods
+		///            and if any are missing it will return True.
+		/// </summary>
+		/// <param name="plugin">The plugin we want to inspect for a valid method implementation.</param>
+		/// <param name="method">The name of the method.</param>
+		/// <returns>True if the method is defined as missing (no implementation or marked with <see cref="DisaFrameworkNOP"/>),
+		/// False otherwise.</returns>
+		public static bool Missing(object plugin, string method)
         {
             try
             {

@@ -711,13 +711,20 @@ namespace Disa.Framework
                     if (visualBubbleServiceId != null && 
                         visualBubbleServiceId.DisctinctIncomingVisualBubbleIdServices())
                     {
+                        var checkType = true;
+                        if (!DisaFrameworkMethods.Missing(vb.Service, DisaFrameworkMethods.IVisualBubbleServiceIdCheckType))
+                        {
+                            checkType = visualBubbleServiceId.CheckType();
+                        }
                         if (vb.IdService != null)
                         {
-                            duplicate = theGroup.Bubbles.FirstOrDefault(x => x.GetType() == vb.GetType() && x.IdService == vb.IdService) != null;
+                            duplicate = theGroup.Bubbles.FirstOrDefault(x => 
+                                                (!checkType || x.GetType() == vb.GetType()) && x.IdService == vb.IdService) != null;
                         }
                         if (!duplicate && vb.IdService2 != null)
                         {
-                            duplicate = theGroup.Bubbles.FirstOrDefault(x => x.GetType() == vb.GetType() && x.IdService2 == vb.IdService2) != null;
+                            duplicate = theGroup.Bubbles.FirstOrDefault(x => 
+                                                (!checkType || x.GetType() == vb.GetType()) && x.IdService2 == vb.IdService2) != null;
                         }
                     }
 
