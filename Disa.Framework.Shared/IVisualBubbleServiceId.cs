@@ -8,5 +8,7 @@ namespace Disa.Framework
         void AddVisualBubbleIdServices(VisualBubble bubble);
 
         bool DisctinctIncomingVisualBubbleIdServices();
+
+        bool CheckType();
     }
 }
