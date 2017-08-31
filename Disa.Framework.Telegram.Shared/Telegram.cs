@@ -4067,6 +4067,13 @@ namespace Disa.Framework.Telegram
         {
             try
             {
+                // IMPORTANT: You now need to fetch files from Telegram in a chunked fashion. Before we set the Limit to int.Max,
+                //            but with latest layer upgrade (66), this will return an error 400 invalid limit size.
+
+                uint chunkSize = 32768;
+                uint currentOffset = 0;
+
+                // Try to get in one go
                 var response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
                     new UploadGetFileArgs
                     {
@@ -4076,10 +4083,42 @@ namespace Disa.Framework.Telegram
                             LocalId = fileLocation.LocalId,
                             Secret = fileLocation.Secret
                         },
-                        Offset = 0,
-                        Limit = uint.MaxValue,
+                        Offset = currentOffset,
+                        Limit = chunkSize,
                     }));
-                return response.Bytes;
+                if (response.Bytes.Count() < chunkSize)
+                {
+                    return response.Bytes;
+                }
+
+                // Ok, we have a file larger than our chunk size, loop for rest of file
+                currentOffset = chunkSize;
+                var responseBuffer = new List<byte>(response.Bytes);
+                while (response.Bytes != null &&
+                       response.Bytes.Count() > 0)
+                {
+                    response = (UploadFile)TelegramUtils.RunSynchronously(client.Methods.UploadGetFileAsync(
+                    new UploadGetFileArgs
+                    {
+                        Location = new InputFileLocation
+                        {
+                            VolumeId = fileLocation.VolumeId,
+                            LocalId = fileLocation.LocalId,
+                            Secret = fileLocation.Secret
+                        },
+                        Offset = currentOffset,
+                        Limit = chunkSize,
+                    }));
+
+                    if (response.Bytes != null &&
+                        response.Bytes.Count() > 0)
+                    {
+                        currentOffset += chunkSize;
+                        responseBuffer.AddRange(response.Bytes);
+                    }
+                }
+
+                return responseBuffer.ToArray();
             }
             catch (Exception ex)
             {

@@ -31,7 +31,23 @@ namespace SharpTL.Serializers
 			: base(constructorNumber)
 		{
 			_objectType = objectType;
-			_serializationAgents = CreateSerializationAgents(properties, serializersBucket);
+
+            // Disa
+            // IMPORTANT: We need to set this serializer into our TLSerializerBucket's dictionary of serializers
+            //            here in the constructor as opposed to where it was previously in CreateSerializationAgents.
+            //            This will protoct us from recursive situations that cause infinite loops.
+            //            Example:
+            //            public class BoldText : IRichText
+            //            {
+            //                public IRichText Text { get; set; }
+            //            }
+            if (_objectType != typeof(object) &&
+                !serializersBucket.Contains(_objectType))
+            {
+                serializersBucket.Add(this);
+            }
+
+            _serializationAgents = CreateSerializationAgents(properties, serializersBucket);
 			SerializationMode = serializationMode;
 		}
 

@@ -949,7 +949,6 @@ namespace Disa.Framework.Telegram.Mobile
                 await client.Methods.PhotosUpdateProfilePhotoAsync(new PhotosUpdateProfilePhotoArgs
                 {
                     Id = new InputPhotoEmpty(),
-                    Crop = new InputPhotoCropAuto()
                 });
             }
 
@@ -957,10 +956,7 @@ namespace Disa.Framework.Telegram.Mobile
             {
                 var iPhoto = await client.Methods.PhotosUploadProfilePhotoAsync(new PhotosUploadProfilePhotoArgs
                 {
-                    Caption = "",
-                    Crop = new InputPhotoCropAuto(),
                     File = inputFile,
-                    GeoPoint = new InputGeoPointEmpty()
                 });
 
                 var photo = iPhoto as PhotosPhoto;
@@ -982,7 +978,6 @@ namespace Disa.Framework.Telegram.Mobile
                     {
                         Id = photoObj.Id,
                     },
-                    Crop = new InputPhotoCropAuto()
                 });
             }
 

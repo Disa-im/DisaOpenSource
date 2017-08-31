@@ -240,7 +240,6 @@ namespace Disa.Framework.Telegram
                                 ChatId = uint.Parse(group.Address),
                                 Photo = new InputChatUploadedPhoto
                                 {
-                                    Crop = new InputPhotoCropAuto(),
                                     File = inputFile
                                 }
                             }));
@@ -259,7 +258,6 @@ namespace Disa.Framework.Telegram
                             },
                             Photo = new InputChatUploadedPhoto
                             {
-                                Crop = new InputPhotoCropAuto(),
                                 File = inputFile
                             }
                         }));

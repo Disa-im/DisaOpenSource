@@ -146,7 +146,7 @@ namespace SharpTelegram
                 await
                     _methods.InvokeWithLayerAsync(new InvokeWithLayerArgs
                     {
-						Layer = 53,
+						Layer = 66,
                         Query =
                             new InitConnectionArgs
                             {
