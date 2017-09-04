@@ -28,7 +28,7 @@ namespace Disa.Framework
                 Participants = group.Participants.ToList(),
                 Guid = guid,
                 InputDisabled = group.InputDisabled,
-                Mentions = group.Mentions.ToList()
+                Mentions = group.Mentions.ToList(),
             };
             return bubbleGroupCache;
         }

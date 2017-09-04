@@ -147,6 +147,20 @@ namespace Disa.Framework
             return disa;
         }
 
+        public static string GetDisaStickersPath(Service service)
+        {
+            var path = Platform.GetStickersPath();
+
+            var servicePath = Path.Combine(path, service.Information.ServiceName);
+
+            if (!Directory.Exists(servicePath))
+            {
+                Directory.CreateDirectory(servicePath);
+            }
+
+            return servicePath;
+        }
+
         private static IEnumerable<int> FindIndexesFromRear(string str, char chr)
         {
             for (var i = str.Length - 1; i >= 0; i--)
@@ -365,6 +379,18 @@ namespace Disa.Framework
             var picturesLocation = basePath();
             var fileName = GenerateFileName(extension);
             return Path.Combine(picturesLocation, fileName);
+        }
+
+        public static string GenerateStickerPath(Service service, string stickerId = null)
+        {
+            var path = GetDisaStickersPath(service);
+            if (string.IsNullOrWhiteSpace(stickerId))
+            {
+                stickerId = Guid.NewGuid().ToString();
+            }
+			stickerId += ".sticker";
+            var stickerPath = Path.Combine(path, stickerId);
+            return stickerPath;
         }
 
         public static async Task<string> IsFileInDisaDirectory(Func<string> disaDirectory, string path)

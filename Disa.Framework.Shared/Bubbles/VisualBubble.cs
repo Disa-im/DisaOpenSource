@@ -1,6 +1,7 @@
 using System;
 using Newtonsoft.Json;
 using ProtoBuf;
+using Disa.Framework.Bots;
 
 namespace Disa.Framework.Bubbles
 {
@@ -22,7 +23,7 @@ namespace Disa.Framework.Bubbles
     {
         public enum MediaType
         {
-            None, Audio, Video, Text, Location, File, Contact,Image
+            None, Audio, Video, Text, Location, File, Contact, Image, Sticker
         }
 
         public static string QuotedNameMyself
@@ -126,6 +127,12 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(266)]
         public bool IsServiceIdSequence { get; set; }
 
+        /// <summary>
+        /// If this message was sent by a Bot, this will contain the string value of the <see cref="BotContact"/>'s ID.
+        /// </summary>
+        [ProtoMember(267)]
+        public string ViaBotId { get; set; }
+
         [JsonIgnore]
         [NonSerialized]
         public string ID;
@@ -150,6 +157,9 @@ namespace Disa.Framework.Bubbles
         [JsonIgnore]
         [NonSerialized]
 		public bool InvalidatedCache;
+        [JsonIgnore]
+        [NonSerialized]
+        public BotInlineResultBase BotInlineResult;
 
         protected VisualBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string id = null, string idService = null)

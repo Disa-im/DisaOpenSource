@@ -488,7 +488,7 @@ namespace Disa.Framework.Telegram
         {
             get
             {
-                return true;
+                return false;
             }
         }
 
@@ -508,13 +508,22 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        // Our implementation for INewMessage.SearchHint. We will return null
-        // to signal we want the default language specific "Search" text.
         public string SearchHint
         {
             get
             {
-                return null;
+                var isoCode = Platform.GetCurrentLocale();
+                switch (isoCode)
+                {
+                    case "en-US":
+                        {
+                            return "Type contact name";
+                        }
+                    default:
+                        {
+                            return "Type contact name";
+                        }
+                }
             }
         }
 
@@ -580,6 +589,26 @@ namespace Disa.Framework.Telegram
                         result(new Tuple<Contact, Contact.ID>(null, null));
                         break;
                 }
+            });
+        }
+
+        public Task GetContactsByUsername(string query, Action<List<Contact>> result)
+        {
+            Contract.Ensures(Contract.Result<Task>() != null);
+            return Task.Factory.StartNew(() =>
+            {
+                var resolvedPeer = ResolvePeer(query);
+                var contacts = new List<Contact>();
+                foreach (var iUser in resolvedPeer.Users)
+                {
+                    var user = iUser as User;
+                    if (user != null)
+                    {
+                        var contact = CreateTelegramContact(user);
+                        contacts.Add(contact);
+                    }
+                }
+                result(contacts);
             });
         }
 
