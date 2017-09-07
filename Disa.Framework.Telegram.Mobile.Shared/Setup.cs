@@ -13,6 +13,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.IO;
 using Xamarin;
+using Disa.Framework;
 
 namespace Disa.Framework.Telegram.Mobile
 {

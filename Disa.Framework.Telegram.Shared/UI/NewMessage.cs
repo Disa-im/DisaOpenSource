@@ -512,18 +512,7 @@ namespace Disa.Framework.Telegram
         {
             get
             {
-                var isoCode = Platform.GetCurrentLocale();
-                switch (isoCode)
-                {
-                    case "en-US":
-                        {
-                            return "Type contact name";
-                        }
-                    default:
-                        {
-                            return "Type contact name";
-                        }
-                }
+                return Localize.GetString("TelegramSearchHint");
             }
         }
 

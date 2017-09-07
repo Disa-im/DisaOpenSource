@@ -42,24 +42,6 @@
       <HintPath>..\packages\Xamarin.Forms.2.3.3.175\lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20\Xamarin.Forms.Xaml.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ResX\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\Disa.Framework.Telegram.Mobile.Shared\ResX\AppResources.Designer.cs">
-      <Link>ResX\AppResources.Designer.cs</Link>
-	  <DependentUpon>AppResources.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="..\Disa.Framework.Telegram.Mobile.Shared\ResX\AppResources.resx">
-      <Link>ResX\AppResources.resx</Link>
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
   <Import Project="..\Disa.Framework.Telegram.Mobile.Shared\Disa.Framework.Telegram.Mobile.Shared.projitems" Label="Shared" Condition="Exists('..\Disa.Framework.Telegram.Mobile.Shared\Disa.Framework.Telegram.Mobile.Shared.projitems')" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
