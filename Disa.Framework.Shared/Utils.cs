@@ -95,15 +95,50 @@ namespace Disa.Framework
             return trimmed.StartsWith("https://") || trimmed.StartsWith("http://");
         }
 
-        public static void DebugPrint(string str)
+        /// <summary>
+        /// If logging has been turned on, submits a tagged log entry to both
+        /// Console and log file.
+        /// 
+        /// Typically this is done by setting a const string with a tag string for a section of code
+        /// you want to clearly identify in a log file.
+        /// 
+        /// Example: 
+        /// private const string TAG = "[Backup]"
+        /// .
+        /// DebugPrint(TAG, "Starting backup")
+        /// .
+        /// 
+        /// In log file this will produce:
+        /// [Backup] Starting backup
+        /// 
+        /// </summary>
+        /// <param name="tag">The tag you want to prefix the log entry with.</param>
+        /// <param name="logEntry">The log entry.</param>
+        public static void DebugPrint(string tag, string logEntry)
+        {
+            var taggedLogEntry = tag + " " + logEntry;
+
+            DebugPrint(logEntry);
+        }
+
+        /// <summary>
+        /// If logging has been turned on, submits the log entry to both
+        /// Console and log file.
+        /// </summary>
+        /// <param name="logEntry">The log entry.</param>
+        public static void DebugPrint(string logEntry)
         {
 			if (Logging)
             {
-                Console.WriteLine(str);
-                LogsManager.WriteLine(str);
+                Console.WriteLine(logEntry);
+                LogsManager.WriteLine(logEntry);
             }
         }
 
+        /// <summary>
+        /// If logging has been turned on, submits the log entry to just the Console.
+        /// </summary>
+        /// <param name="logEntry">The log entry.</param>
         public static void DebugPrintNoLog(string str)
         {
 			if (Logging)
