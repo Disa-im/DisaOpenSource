@@ -10,7 +10,30 @@ namespace Disa.Framework
 
         private static string GetPath(Service service)
         {
-            return Path.Combine(Platform.GetSettingsPath(), service.Information.ServiceName + ".xml");
+            return GetPath(service.Information.ServiceName);
+        }
+
+		private static string GetPath(string serviceName)
+		{
+			return Path.Combine(Platform.GetSettingsPath(), serviceName + ".xml");
+		}
+
+		public static bool Has(string serviceName)
+		{
+			lock (Lock)
+			{
+				var path = GetPath(serviceName);
+				return File.Exists(path);
+			}
+		}
+
+        public static bool Has(Service service)
+        {
+			lock (Lock)
+			{
+				var path = GetPath(service);
+                return File.Exists(path);
+			}
         }
 
         public static void Delete(Service service)
