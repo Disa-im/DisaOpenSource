@@ -39,6 +39,7 @@ namespace Disa.Framework
                 if (sw2 != null)
                 {
                     File.WriteAllBytes(path, sw2.ToArray());
+                    ServiceEvents.RaiseSettingsSaved(service);
                 }
             }
         }
