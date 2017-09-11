@@ -44,6 +44,11 @@ namespace Disa.Framework
                 if (File.Exists(path))
                 {
                     File.Delete(path);
+
+                    Analytics.RaiseServiceEvent(
+                        Analytics.EventAction.ServiceUnsetup,
+                        Analytics.EventCategory.Services,
+                        service);
                 }
             }
         }
@@ -53,6 +58,8 @@ namespace Disa.Framework
             lock (Lock)
             {
                 var path = GetPath(service);
+                bool settingsFileExists = File.Exists(path);
+
                 MemoryStream sw2;
                 using (var sw = new MemoryStream())
                 {
@@ -63,6 +70,14 @@ namespace Disa.Framework
                 {
                     File.WriteAllBytes(path, sw2.ToArray());
                     ServiceEvents.RaiseSettingsSaved(service);
+                }
+
+                if (!settingsFileExists)
+                {
+                    Analytics.RaiseServiceEvent(
+                        Analytics.EventAction.ServiceSetup,
+                        Analytics.EventCategory.Services,
+                        service);
                 }
             }
         }

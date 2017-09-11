@@ -48,6 +48,12 @@ namespace Disa.Framework
             AllInternal = allServices;
             RegisteredServicesDatabase.RegisterAllRegistered();
             Register(GetUnified());
+
+            Analytics.RaiseCountEvent(
+                Analytics.EventAction.ServiceActiveCount,
+                Analytics.EventCategory.Services,
+                Analytics.CustomDimensionIndex.ServiceActiveCount,
+                RegisteredNoUnified.Count());
         }
 
         static ServiceManager()
@@ -381,6 +387,11 @@ namespace Disa.Framework
                 try
                 {
                     BubbleManager.Group(visualBubble);
+
+                    Analytics.RaiseServiceEvent(
+                        Analytics.EventAction.MessageReceived,
+                        Analytics.EventCategory.Messaging,
+                        visualBubble.Service);
                 }
                 catch (Exception ex)
                 {
@@ -613,6 +624,11 @@ namespace Disa.Framework
             lock (ServicesBindings) ServicesBindings.Remove(ServicesBindings.FirstOrDefault(s => s.Service == service));
             ServiceEvents.RaiseServiceUnRegistered(service);
             SettingsChangedManager.SetNeedsContactSync(service, true);
+
+            Analytics.RaiseServiceEvent(
+                Analytics.EventAction.ServiceUnregistered, 
+                Analytics.EventCategory.Services, 
+                service);
         }
 
         public static void StartUnified(UnifiedService unifiedService, WakeLock wakeLock)
@@ -1164,6 +1180,10 @@ namespace Disa.Framework
                         try
                         {
                             StopInternal(service);
+                            Analytics.RaiseServiceEvent(
+                                Analytics.EventAction.ServicePaused, 
+                                Analytics.EventCategory.Services, 
+                                service);
                         }
                         catch (Exception ex)
                         {

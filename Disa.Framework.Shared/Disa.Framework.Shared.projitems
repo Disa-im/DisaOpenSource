@@ -9,6 +9,7 @@
     <Import_RootNamespace>Disa.Framework.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Analytics.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bots\BotCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bots\BotInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bots\BotInlineMessage.cs" />
