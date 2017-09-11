@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CachedChat.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachedUser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FileInformation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Localize.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MediaDownloader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Nito.AsyncEx\Base\AsyncAutoResetEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Nito.AsyncEx\Base\AsyncBarrier.cs" />
@@ -1310,6 +1311,7 @@
     <Folder Include="$(MSBuildThisFileDirectory)Nito.AsyncEx\" />
     <Folder Include="$(MSBuildThisFileDirectory)Properties\" />
     <Folder Include="$(MSBuildThisFileDirectory)Raksha\" />
+    <Folder Include="$(MSBuildThisFileDirectory)ResX\" />
     <Folder Include="$(MSBuildThisFileDirectory)SharpMTProto\" />
     <Folder Include="$(MSBuildThisFileDirectory)SharpTL\" />
   </ItemGroup>
