@@ -118,7 +118,7 @@ namespace Disa.Framework
         {
             var taggedLogEntry = tag + " " + logEntry;
 
-            DebugPrint(logEntry);
+            DebugPrint(taggedLogEntry);
         }
 
         /// <summary>
