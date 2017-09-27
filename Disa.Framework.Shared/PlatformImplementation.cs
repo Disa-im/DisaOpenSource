@@ -95,5 +95,7 @@ namespace Disa.Framework
         public abstract void OpenApp(string appName);
 
         public abstract void OpenAppSettings(string appName);
+
+        public abstract string GetDeviceRegistrationId();
     }
 }

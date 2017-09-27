@@ -29,6 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)IBots.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IMentions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INewChannel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)INewGcmMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPartyParticipantRequests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IUserInformationExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mention.cs" />
