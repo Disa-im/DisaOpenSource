@@ -5,7 +5,7 @@ Welcome to Disa's open source repository! Disa is a unified messenger currently 
 
 __Please note that the documention currently provided is in a very preliminary state. Over the next few months, significant efforts will be placed on maturing it. If you can't figure it out, raise an issue or check back a month later (in hope for your question(s) answered with newly provided documentation).__
 
-If you are looking for the latest APK to sideload to your device (for whatever reason you don't or can't use the Play Store), you're in the wrong place. Go here: https://github.com/Dynogic/DisaBuilds
+If you are looking for the latest APK to sideload to your device (for whatever reason you don't or can't use the Play Store), go to https://github.com/Dynogic/DisaBuilds.
 
 ## Understanding Disa
 
