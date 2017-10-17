@@ -43,17 +43,14 @@ namespace Disa.Framework
                 _enumerator = LoadBubblesInternal().GetEnumerator();
             }
 
-            public Task Refresh()
+            public void Refresh()
             {
-                return Task.Factory.StartNew(() =>
+                lock (_enumerator)
                 {
-                    lock (_enumerator)
-                    {
-                        _refreshState = true;
-                        _enumerator.MoveNext();
-                        _refreshState = false;
-                    }
-                });
+                    _refreshState = true;
+                    _enumerator.MoveNext();
+                    _refreshState = false;
+                }
             }
 
             public Task LoadBubbles()
@@ -70,77 +67,103 @@ namespace Disa.Framework
             private IEnumerable<bool> LoadBubblesInternal()
             {
                 var count = _pageSize;
-                var iteration = 0;
+                //var iteration = 0;
                 var servicesFinished = new Dictionary<Service, bool>();
                 while (true)
                 {
                     var bubbleGroups = BubbleGroupManager.DisplayImmutable;
+                    //FIXME: ConvoList in UI will call this method before BubbleGroupManager is ready.
+                    //       Fix this race condition.
+                    if (!bubbleGroups.Any())
+                    {
+                        yield return true;
+                        continue;
+                    }
                     //if (bubbleGroups.Count != 0 && count > bubbleGroups.Count)
                     //{
                     //    yield break;
                     //}
                     SortListByTime(bubbleGroups);
-                    _list.Clear();
                     if (!_refreshState)
                     {
                         count += _pageSize;
-                        iteration++;
+                        //iteration++;
                     }
                     var page = bubbleGroups.Take(count).ToList();
-                    var bubbleGroupsToQuery = new List<BubbleGroup>();
-                    for (int i = page.Count - 1; i >= 0; i--)
+                    if (!_refreshState)
                     {
-                        var group = page[i];
-                        var unifiedGroup = group as UnifiedBubbleGroup;
-                        if (unifiedGroup != null)
+                        var bubbleGroupsToQuery = new List<BubbleGroup>();
+                        for (int i = page.Count - 1; i >= 0; i--)
                         {
-                            group = unifiedGroup.LastBubbleSafe().BubbleGroupReference;
-                        }
-                        if (group != null)
-                        {
-                            var existing = bubbleGroupsToQuery.FirstOrDefault(x => x.Service == group.Service) != null;
-                            if (!existing)
+                            var group = page[i];
+                            var unifiedGroup = group as UnifiedBubbleGroup;
+                            if (unifiedGroup != null)
                             {
-                                bubbleGroupsToQuery.Add(group);
+                                group = unifiedGroup.LastBubbleSafe().BubbleGroupReference;
+                            }
+                            if (group != null)
+                            {
+                                var existing = bubbleGroupsToQuery.FirstOrDefault(x => x.Service == group.Service) !=
+                                               null;
+                                if (!existing)
+                                {
+                                    bubbleGroupsToQuery.Add(group);
+                                }
+                            }
+                            else
+                            {
+                                Utils.DebugPrint("BubbleGroupsSync", "Group is null (possible BubbleGroupReference)");
+                            }
+                        }
+                        var bubbleGroupsRunningAgentToQuery = bubbleGroupsToQuery
+                            .Where(x => ServiceManager.IsRunning(x.Service) && x.Service is Agent).ToList();
+                        if (bubbleGroupsRunningAgentToQuery.Any())
+                        {
+                            foreach (var bubbleGroup in bubbleGroupsRunningAgentToQuery)
+                            {
+                                if (!servicesFinished.ContainsKey(bubbleGroup.Service))
+                                {
+                                    var agent = bubbleGroup.Service as Agent;
+                                    try
+                                    {
+                                        var task = agent.LoadBubbleGroups(bubbleGroup, count, null);
+                                        task.Wait();
+                                        if (task.Result != null && task.Result.Any())
+                                        {
+                                            page.AddRange(task.Result);
+                                        }
+                                        else
+                                        {
+                                            servicesFinished[bubbleGroup.Service] = true;
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Utils.DebugPrint("BubbleGroupsSync",
+                                            "Sync agent failed to load bubble groups: " + ex);
+                                        servicesFinished[bubbleGroup.Service] = true;
+                                    }
+                                }
+                            }
+                            SortListByTime(page);
+                            page = page.Take(count).ToList();
+                            _list.Clear();
+                            _list.AddRange(page);
+                            if (servicesFinished.Count == bubbleGroupsRunningAgentToQuery.Count)
+                            {
+                                yield break;
                             }
                         }
                         else
                         {
-                            Utils.DebugPrint("BubbleGroupsSync", "Group is null (possible BubbleGroupReference)");
+                            _list.Clear();
+                            _list.AddRange(page);
                         }
                     }
-                    var bubbleGroupsRunningAgentToQuery = bubbleGroupsToQuery.Where(x => ServiceManager.IsRunning(x.Service) && x.Service is Agent).ToList();
-                    foreach (var bubbleGroup in bubbleGroupsRunningAgentToQuery)
+                    else
                     {
-                        if (!servicesFinished.ContainsKey(bubbleGroup.Service))
-                        {
-                            var agent = bubbleGroup.Service as Agent;
-                            try
-                            {
-                                var task = agent.LoadBubbleGroups(bubbleGroup, count, null);
-                                task.Wait();
-                                if (task.Result != null && task.Result.Any())
-                                {
-                                    page.AddRange(task.Result);
-                                }
-                                else
-                                {
-                                    servicesFinished[bubbleGroup.Service] = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Utils.DebugPrint("BubbleGroupsSync", "Sync agent failed to load bubble groups: " + ex);
-                                servicesFinished[bubbleGroup.Service] = true;
-                            }
-                        }
-                    }
-                    SortListByTime(page);
-                    page = page.Take(count).ToList();
-                    _list.AddRange(page);
-                    if (servicesFinished.Count == bubbleGroupsRunningAgentToQuery.Count)
-                    {
-                        yield break;
+                        _list.Clear();
+                        _list.AddRange(page);
                     }
                     yield return true;
                 }

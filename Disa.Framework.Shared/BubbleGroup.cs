@@ -15,7 +15,8 @@ namespace Disa.Framework
         public string ID { get; private set; }
         public string LegibleId { get; internal set; }
         public bool PartiallyLoaded { get; internal set; }
-
+        public bool Lazy { get; set; }
+        
         internal ThreadSafeList<VisualBubble> Bubbles { get; private set; }
 
         public bool IsTitleSetFromService { get; internal set; }
@@ -318,6 +319,14 @@ namespace Disa.Framework
         public BubbleGroup(List<VisualBubble> initialBubbles, string id = null)
         {
             PartiallyLoaded = false;
+            Bubbles = new ThreadSafeList<VisualBubble>(initialBubbles);
+            Setup(id);
+        }
+        
+        public BubbleGroup(List<VisualBubble> initialBubbles, bool lazy, string id = null)
+        {
+            Lazy = lazy;
+            PartiallyLoaded = lazy;
             Bubbles = new ThreadSafeList<VisualBubble>(initialBubbles);
             Setup(id);
         }
