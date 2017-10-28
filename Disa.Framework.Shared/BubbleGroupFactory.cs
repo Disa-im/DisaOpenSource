@@ -467,6 +467,18 @@ namespace Disa.Framework
             }
         }
 
+        public static bool AddNewIfNotExist(BubbleGroup bubbleGroup, bool updateBubbleGroup = false, 
+                                            bool updateUi = false)
+        {
+            var group =
+                BubbleGroupManager.FindWithAddress(bubbleGroup.Service, bubbleGroup.Address);
+            if (@group != null)
+                return false;
+            
+            AddNewInternal(bubbleGroup, updateUi, updateBubbleGroup);
+            return true;
+        }
+
         public static BubbleGroup AddNewIfNotExist(VisualBubble bubble, bool updateUi = false)
         {
             var group =
@@ -485,18 +497,27 @@ namespace Disa.Framework
         private static BubbleGroup AddNewInternal(VisualBubble newBubble, bool raiseBubbleInserted)
         {
             var group = new BubbleGroup(newBubble, null, false);
+            return AddNewInternal(group, raiseBubbleInserted, true);
+        }
+
+        private static BubbleGroup AddNewInternal(BubbleGroup group, bool raiseBubbleInserted, bool updateBubbleGroup)
+        {
+            var newBubble = group.LastBubbleSafe();
 
             BubbleGroupSettingsManager.SetUnreadIndicatorGuid(group, group.LastBubbleSafe().ID, true);
 
-            if (ServiceManager.IsRunning(@group.Service))
+            if (updateBubbleGroup)
             {
-                newBubble.Service.NewBubbleGroupCreated(@group).ContinueWith(x =>
+                if (ServiceManager.IsRunning(@group.Service))
                 {
+                    newBubble.Service.NewBubbleGroupCreated(@group).ContinueWith(x =>
+                    {
                     // force the UI to refetch the photo
                     @group.IsPhotoSetFromService = false;
-                    BubbleManager.SendSubscribe(@group, true);
-                    BubbleGroupUpdater.Update(@group);
-                });
+                        BubbleManager.SendSubscribe(@group, true);
+                        BubbleGroupUpdater.Update(@group);
+                    });
+                }
             }
 
             BubbleGroupManager.BubbleGroupsAdd(@group);
@@ -517,7 +538,10 @@ namespace Disa.Framework
                 }
             }
 
-            BubbleGroupUpdater.Update(@group);
+            if (updateBubbleGroup)
+            {
+                BubbleGroupUpdater.Update(@group);
+            }
 
             return @group;
         }

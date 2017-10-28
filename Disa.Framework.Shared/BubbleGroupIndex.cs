@@ -24,6 +24,7 @@ namespace Disa.Framework
             public string UnifiedPrimaryBubbleGroupGuid { get; set; }
             public string UnifiedSendingBubbleGroupGuid { get; set; }
             public long LastModifiedIndex { get; set; }
+            public bool Lazy { get; set; }
         }
 
         private const string FileName = "BubbleGroupIndex.db";
@@ -195,7 +196,8 @@ namespace Disa.Framework
                             Guid = group.ID,
                             Service = serviceName,
                             LastBubble = SerializeBubble(lastBubble),
-                            LastBubbleGuid = lastBubble.ID
+                            LastBubbleGuid = lastBubble.ID,
+                            Lazy = group.Lazy,
                         });
                     }
                 }
@@ -269,6 +271,7 @@ namespace Disa.Framework
                     mostRecentVisualBubble.ID = entry.LastBubbleGuid;
 
                     var bubbleGroup = new BubbleGroup(mostRecentVisualBubble, entry.Guid, true);
+                    bubbleGroup.Lazy = entry.Lazy;
 
                     BubbleGroupManager.BubbleGroupsAdd(bubbleGroup, true);
                 }
@@ -470,7 +473,7 @@ namespace Disa.Framework
                                 Guid = group.ID,
                                 Service = serviceName,
                                 LastBubble = SerializeBubble(lastBubble),
-                                LastBubbleGuid = lastBubble.ID
+                                LastBubbleGuid = lastBubble.ID,
                             });
                         }
                         else

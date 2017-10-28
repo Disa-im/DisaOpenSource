@@ -322,14 +322,6 @@ namespace Disa.Framework
             Bubbles = new ThreadSafeList<VisualBubble>(initialBubbles);
             Setup(id);
         }
-        
-        public BubbleGroup(List<VisualBubble> initialBubbles, bool lazy, string id = null)
-        {
-            Lazy = lazy;
-            PartiallyLoaded = lazy;
-            Bubbles = new ThreadSafeList<VisualBubble>(initialBubbles);
-            Setup(id);
-        }
 
         private void Setup(string id)
         {

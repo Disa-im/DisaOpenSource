@@ -2,9 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Disa.Framework.Bubbles;
 
 namespace Disa.Framework
 {
+    //FIXME: If BubbleGroupIndex gets re-generated, a lazy group will become a permanent group.
+    //FIXME: If a lazy bubble group gets merged into a unified bubble group, the lazy tag should be dropped.
+    //FIXME: Incoming bubble (event, process, and sync), drop lazy tag
+    //TODO: Ensure BubbleGroupUpdater does not update Lazy groups
     public class BubbleGroupsSync
     {
         //TODO: move out to own class when Category system is well defined
@@ -15,7 +20,9 @@ namespace Disa.Framework
 
         public interface Agent
         {
-            Task<List<BubbleGroup>> LoadBubbleGroups(BubbleGroup startGroup, int count = 10, Category category = null);
+            Task<List<VisualBubble>> LoadBubbleGroups(BubbleGroup startGroup, int count = 10, Category category = null);
+
+            Task<bool> OnLazyBubbleGroupsDeleted(List<BubbleGroup> groups);
         }
 
         private static void SortListByTime(List<BubbleGroup> list)
@@ -41,6 +48,7 @@ namespace Disa.Framework
             private bool _refreshState;
             private Action _postAction;
             private Action _action;
+            private bool _initiallyRemovedLazy;
 
             public Cursor(List<BubbleGroup> list, int pageSize)
             {
@@ -124,6 +132,22 @@ namespace Disa.Framework
                 });
             }
 
+            //private class RemoveDuplicatesComparer : IEqualityComparer<BubbleGroup>
+            //{
+            //    public bool Equals(BubbleGroup x, BubbleGroup y)
+            //    {
+            //        if (x.Service != y.Service)
+            //            return false;
+
+            //        return x.Service.BubbleGroupComparer(x.Address, y.Address);
+            //    }
+
+            //    public int GetHashCode(BubbleGroup obj)
+            //    {
+            //        return 0;
+            //    }
+            //}
+
             private IEnumerable<Result> LoadBubblesInternal()
             {
                 var doneQueryingAgents = false;
@@ -133,6 +157,7 @@ namespace Disa.Framework
                 {
                     var originalCardinality = _list.Count;
                     var bubbleGroups = BubbleGroupManager.DisplayImmutable;
+                    //Utils.DebugPrint("LOADING xx" + bubbleGroups.Count);
                     //FIXME: ConvoList in UI will call this method before BubbleGroupManager is ready.
                     //       Fix this race condition.
                     if (!bubbleGroups.Any())
@@ -140,19 +165,53 @@ namespace Disa.Framework
                         yield return Result.NoChange;
                         continue;
                     }
+                    if (!_initiallyRemovedLazy)
+                    {
+                        if (_refreshState)
+                        {
+                            bubbleGroups = bubbleGroups.Where(x => !x.Lazy).ToList();
+                        }
+                        else
+                        {
+                            //FIXME: ensure services are running of the deleted groups
+                            var lazys = bubbleGroups.Where(x => x.Lazy);
+                            foreach (var lazy in lazys)
+                            {
+                                BubbleGroupFactory.Delete(lazy);
+                            }
+                            //FIXME: call into service needs to be atomic.
+                            foreach (var lazyGroup in lazys.GroupBy(x => x.Service))
+                            {
+                                var key = lazyGroup.Key;
+                                var agent = key as Agent;
+                                agent.OnLazyBubbleGroupsDeleted(lazyGroup.ToList());
+                            }
+                            bubbleGroups = BubbleGroupManager.DisplayImmutable;
+                            _initiallyRemovedLazy = true;
+                        }   
+                    }
                     SortListByTime(bubbleGroups);
                     if (!_refreshState)
                     {
                         count += _pageSize;
                     }
                     var page = bubbleGroups.Take(count).ToList();
-                    var lazy = _list.Where(x => x.Lazy);
-                    page.AddRange(lazy);
                     SortListByTime(page);
                     if (!_refreshState && !doneQueryingAgents)
                     {
+                        //var startIndex = page.Count - 1;
+                        var startIndex = count - 1 - _pageSize;
+                        if (startIndex + 1 > bubbleGroups.Count)
+                        {
+                            startIndex = bubbleGroups.Count - 1;
+                        }
+                        Utils.DebugPrint("BubbleGroupsSync", "Increment size (constant): " + _pageSize);
+                        Utils.DebugPrint("BubbleGroupsSync", "New theoretical local size: " + count);
+                        Utils.DebugPrint("BubbleGroupsSync", "Current local size: " + page.Count);
+                        Utils.DebugPrint("BubbleGroupsSync", "Will expand local size by: " + (count - page.Count));
+                        Utils.DebugPrint("BubbleGroupsSync", "Local bubblegroup for cloud start index: " + startIndex);
                         var bubbleGroupsToQuery = new List<BubbleGroup>();
-                        for (int i = page.Count - 1; i >= 0; i--)
+                        for (int i = startIndex; i >= 0; i--)
                         {
                             var group = page[i];
                             var unifiedGroup = group as UnifiedBubbleGroup;
@@ -177,6 +236,7 @@ namespace Disa.Framework
                             .Where(x => ServiceManager.IsRunning(x.Service) && x.Service is Agent).ToList();
                         if (bubbleGroupsRunningAgentToQuery.Any())
                         {
+                            var allBubbles = new List<VisualBubble>();
                             foreach (var bubbleGroup in bubbleGroupsRunningAgentToQuery)
                             {
                                 if (!servicesFinished.ContainsKey(bubbleGroup.Service))
@@ -184,11 +244,12 @@ namespace Disa.Framework
                                     var agent = bubbleGroup.Service as Agent;
                                     try
                                     {
-                                        var task = agent.LoadBubbleGroups(bubbleGroup, count, null);
+                                        Utils.DebugPrint("BubbleGroupsSync", "Local bubblegroup for cloud start title: " + bubbleGroup.Title);
+                                        var task = agent.LoadBubbleGroups(bubbleGroup, _pageSize, null);
                                         task.Wait();
-                                        if (task.Result != null && task.Result.Any())
+                                        if (task.Result != null && task.Result.Count >= _pageSize)
                                         {
-                                            page.AddRange(task.Result);
+                                            allBubbles.AddRange(task.Result);
                                         }
                                         else
                                         {
@@ -203,8 +264,38 @@ namespace Disa.Framework
                                     }
                                 }
                             }
+                            Utils.DebugPrint("BubbleGroupsSync", "Cloud result size: " + allBubbles.Count);
+                            var cloudGroups = new List<BubbleGroup>();
+                            foreach (var bubble in allBubbles)
+                            {
+                                var group = new BubbleGroup(bubble, null, false);
+                                group.Lazy = true;
+                                page.Add(group);
+                                cloudGroups.Add(group);
+                            }
                             SortListByTime(page);
+                            Utils.DebugPrint("BubbleGroupsSync", "Local & cloud combined size: " + page.Count);
+                            var duplicates = new List<BubbleGroup>();
+                            foreach (var group in cloudGroups)
+                            {
+                                if (!BubbleGroupFactory.AddNewIfNotExist(group))
+                                {
+                                    Utils.DebugPrint("BubbleGroupsSync", 
+                                                     "Duplicate bubblegroup detected: " + group.Address);
+                                    duplicates.Add(group);
+                                }
+                            }
+                            foreach (var duplicate in duplicates)
+                            {
+                                page.Remove(duplicate);
+                            }
                             page = page.Take(count).ToList();
+                            Utils.DebugPrint("BubbleGroupsSync", "New local size: " +  page.Count);
+                            if (count != page.Count)
+                            {
+                                Utils.DebugPrint("BubbleGroupsSync", "Theoretical local size " + count + " != actual local size " + page.Count);
+                                count = page.Count;
+                            }
                             if (servicesFinished.Count == bubbleGroupsRunningAgentToQuery.Count)
                             {
                                 //TODO: doneQueryingAgents needs to be set to false when a service is started
@@ -212,6 +303,7 @@ namespace Disa.Framework
                             }
                         }
                     }
+                    Utils.DebugPrint("BubbleGroupsSync", "List size: " + page.Count);
                     _list.Clear();
                     _list.AddRange(page);
                     try
@@ -223,8 +315,7 @@ namespace Disa.Framework
                     }
                     catch (Exception ex)
                     {
-                        Utils.DebugPrint("BubbleGroupsSync",
-                                            "Failed to run post action: " + ex);
+                        Utils.DebugPrint("BubbleGroupsSync", "Failed to run post action: " + ex);
                     }
                     if (_refreshState)
                     {

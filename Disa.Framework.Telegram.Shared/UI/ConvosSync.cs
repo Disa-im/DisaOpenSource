@@ -9,32 +9,40 @@ namespace Disa.Framework.Telegram
 {
     public partial class Telegram : BubbleGroupsSync.Agent
     {
-        public Task<List<BubbleGroup>> LoadBubbleGroups(BubbleGroup startGroup, int count = 10, 
-                                                        BubbleGroupsSync.Category category = null)
+        public Task<bool> OnLazyBubbleGroupsDeleted(List<BubbleGroup> groups)
         {
-            return Task<List<BubbleGroup>>.Factory.StartNew(() =>
+            return Task<bool>.Factory.StartNew(() =>
+            {
+                return true;
+            });
+        }
+
+        Task<List<VisualBubble>> BubbleGroupsSync.Agent.LoadBubbleGroups(BubbleGroup startGroup, int count, BubbleGroupsSync.Category category)
+        {
+            return Task<List<VisualBubble>>.Factory.StartNew(() =>
             {
                 using (var client = new FullClientDisposable(this))
                 {
                     var iDialogs =
                         TelegramUtils.RunSynchronously(client.Client.
                                                        Methods.MessagesGetDialogsAsync(new MessagesGetDialogsArgs
-                        {
-                            Limit = 100,
-                            OffsetPeer = new InputPeerEmpty(),
-                        }));
-                    var bubbleGroups = new List<BubbleGroup>();
+                                                       {
+                                                           Limit = 100,
+                                                           OffsetPeer = new InputPeerEmpty(),
+                                                       }));
+                    var returnBubbles = new List<VisualBubble>();
                     var messagesDialogs = iDialogs as MessagesDialogs;
                     if (messagesDialogs != null)
                     {
                         var next = false;
+                        var counts = 0;
                         foreach (var idialog in messagesDialogs.Dialogs)
                         {
                             var dialog = idialog as Dialog;
                             if (dialog != null)
                             {
                                 var bubbles = new List<VisualBubble>();
-                                var iMessage = FindMessage(dialog.TopMessage, messagesDialogs.Messages);
+                                var iMessage = FindMessage(dialog.TopMessage, dialog.Peer, messagesDialogs.Messages);
                                 var message = iMessage as Message;
                                 var messageService = iMessage as MessageService;
                                 if (message != null)
@@ -44,18 +52,17 @@ namespace Disa.Framework.Telegram
                                 }
                                 if (messageService != null)
                                 {
-                                    var subBubbles = 
+                                    var subBubbles =
                                         MakePartyInformationBubble(messageService, false, client.Client);
-                                    bubbles.AddRange(subBubbles);                                   
+                                    bubbles.AddRange(subBubbles);
                                 }
                                 var firstBubble = bubbles.FirstOrDefault();
                                 if (firstBubble != null)
                                 {
                                     if (next)
                                     {
-                                        var bubbleGroup = new BubbleGroup(bubbles, true);
-                                        bubbleGroups.Add(bubbleGroup);
-                                        if (bubbleGroups.Count >= count)
+                                        returnBubbles.Add(firstBubble);
+                                        if (returnBubbles.Count >= count)
                                         {
                                             break;
                                         }
@@ -69,13 +76,14 @@ namespace Disa.Framework.Telegram
                                     }
                                 }
                             }
+                            counts++;
                         }
                     }
                     else
                     {
                         //TODO:
                     }
-                    return bubbleGroups;
+                    return returnBubbles;
                 }
             });
         }
