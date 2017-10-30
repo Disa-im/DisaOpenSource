@@ -1,4 +1,5 @@
-﻿using SharpMTProto;
+﻿using Disa.Framework.Bubbles;
+using SharpMTProto;
 using SharpTelegram.Schema;
 using System;
 using System.Collections.Generic;
@@ -77,38 +78,81 @@ namespace Disa.Framework.Telegram
 
         public Task FetchChannelBubbleGroup(Contact.ID[] contactIds, Action<BubbleGroup> result)
         {
-            // If we have a channel group based on a SINGLE Contact.ID 
-            // in our passed in collection return that, otherwise return
-            // null
             return Task.Factory.StartNew(() =>
             {
+                // Sanity check, we are currently only processing collections passed in with a cardinality of 1
+                if (contactIds.Length != 1)
+                {
+                    result(null);
+                    return;
+                }
+
+                // If we have an existing channel group based on a SINGLE Contact.ID 
+                // in our passed in collection return that
                 foreach (var group in BubbleGroupManager.FindAll(this))
                 {
-                    if (contactIds.Length <= 1)
+                    if (BubbleGroupComparer(contactIds[0].Id, group.Address))
                     {
-                        foreach (var contactId in contactIds)
+                        // Sanity check, make sure we HAVE a Disa Channel
+                        var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
+                        if (channel != null &&
+                            channel.Broadcast != null)
                         {
-                            if (BubbleGroupComparer(contactId.Id, group.Address))
-                            {
-                                // Sanity check, make sure we HAVE a Disa Channel
-                                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
-                                if (channel != null &&
-                                    channel.Broadcast != null)
-                                {
-                                    result(group);
-                                }
-                                else
-                                {
-                                    result(null);
-                                }
-
-                                return;
-                            }
+                            result(group);
+                            return;
                         }
                     }
                 }
 
-                result(null);
+                // OK, we didn't get a channel locally, we must be trying to join a public channel
+                using (var client = new FullClientDisposable(this))
+                {
+                    // A NewChannel flow will stuff away a Contact in the ContactId.Tag field
+                    var telegramPartyContact = contactIds[0].Tag as TelegramPartyContact;
+                    if (telegramPartyContact == null)
+                    {
+                        result(null);
+                        return;
+                    }
+
+                    // Go for the public channel join
+                    var response = TelegramUtils.RunSynchronously(client.Client.Methods.ChannelsJoinChannelAsync(new ChannelsJoinChannelArgs
+                    {
+                        Channel = new InputChannel
+                        {
+                            ChannelId = uint.Parse(contactIds[0].Id),
+                            AccessHash = telegramPartyContact.AccessHash
+                        }
+                    }));
+
+                    // Process the result and add in the new public channel to our local set of groups
+                    var updates = response as Updates;
+                    if (updates != null)
+                    {
+                        SendToResponseDispatcher(updates, client.Client);
+                        _dialogs.AddChats(updates.Chats);
+                        var chat = TelegramUtils.GetChatFromUpdate(updates);
+
+                        var channelAddress = TelegramUtils.GetChatId(chat);
+
+                        var newBubble = new NewBubble(
+                            time: Time.GetNowUnixTimestamp(),
+                            direction: Bubble.BubbleDirection.Outgoing, 
+                            address: channelAddress, 
+                            participantAddress: null,
+                            party: true, 
+                            service: this);
+                        newBubble.ExtendedParty = true;
+
+                        var newGroup = BubbleGroupFactory.AddNew(newBubble);
+
+                        result(newGroup);
+                    }
+                    else
+                    {
+                        result(null);
+                    }
+                }
             });
         }
 
