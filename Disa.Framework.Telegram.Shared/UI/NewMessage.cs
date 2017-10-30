@@ -153,6 +153,16 @@ namespace Disa.Framework.Telegram
                 {
                     continue;
                 }
+
+                // Public channels require us knowing the AccessHash for them in order
+                // to join them
+                ulong channelAccessHash = 0;
+                if (isChannel)
+                {
+                    var channel = chat as Channel;
+                    channelAccessHash = channel.AccessHash;
+                }
+
                 globalContacts.Add(new TelegramPartyContact
                 {
                     FirstName = name,
@@ -165,6 +175,7 @@ namespace Disa.Framework.Telegram
                                     ExtendedParty = isChannel
                                 }
                             },
+                    AccessHash = channelAccessHash
                 });
             }
             return globalContacts;
