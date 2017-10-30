@@ -1960,13 +1960,31 @@ namespace Disa.Framework.Telegram
                             }
                             else
                             {
-                                bubble =
-                                    new FileBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long) message.Date,
-                                        message.Out != null
-                                            ? Bubble.BubbleDirection.Outgoing
-                                            : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true,
-                                        this, "", FileBubble.Type.Url, filename, document.MimeType,
-                                        message.Id.ToString(CultureInfo.InvariantCulture));
+                                if (isSticker)
+                                {
+                                    var stickerAlt = document.Attributes
+                                         .OfType<SharpTelegram.Schema.DocumentAttributeSticker>()
+                                         .FirstOrDefault()?.Alt;
+                                    var stickerBubble =
+                                        new StickerBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                            message.Out != null
+                                                ? Bubble.BubbleDirection.Outgoing
+                                                : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true,
+                                            this, null, StickerBubble.Type.File, (int)width, (int)height, null, null,
+                                            message.Id.ToString(CultureInfo.InvariantCulture));
+                                    stickerBubble.AlternativeEmoji = stickerAlt;
+                                    bubble = stickerBubble;
+                                }
+                                else
+                                {
+                                    bubble =
+                                        new FileBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
+                                            message.Out != null
+                                                ? Bubble.BubbleDirection.Outgoing
+                                                : Bubble.BubbleDirection.Incoming, addressStr, participantAddress, true,
+                                            this, "", FileBubble.Type.Url, filename, document.MimeType,
+                                            message.Id.ToString(CultureInfo.InvariantCulture));
+                                }
                             }
 
                         }
