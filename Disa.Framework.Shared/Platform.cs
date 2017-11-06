@@ -238,5 +238,10 @@ namespace Disa.Framework
         {
             PlatformImplementation.OpenAppSettings(appName);
         }
+
+        public static string GetDeviceRegistrationId()
+        {
+            return PlatformImplementation.GetDeviceRegistrationId();
+        }
     }
 }

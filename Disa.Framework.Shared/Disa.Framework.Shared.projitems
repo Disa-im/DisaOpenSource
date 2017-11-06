@@ -156,5 +156,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)IAnnouncement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupsSync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)INewGcmMessage.cs" />
   </ItemGroup>
 </Project>
