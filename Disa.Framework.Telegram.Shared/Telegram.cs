@@ -4377,7 +4377,7 @@ namespace Disa.Framework.Telegram
                 var dialog = idialog as Dialog;
                 if (dialog != null)
                 {
-                    var iMessage  = FindMessage(dialog.TopMessage, messages);
+                    var iMessage = FindMessage(dialog.TopMessage, dialog.Peer, messages);
                     processMessage(iMessage);
                     if (dialog.UnreadCount == 0)
                     {
@@ -4439,14 +4439,50 @@ namespace Disa.Framework.Telegram
 
         }
 
-        private IMessage FindMessage(uint topMessage, List<IMessage> messages)
+        private IMessage FindMessage(uint topMessage, IPeer peer, List<IMessage> messages)
         {
-            foreach (var iMessage in messages)
+            var peerId = TelegramUtils.GetPeerId(peer);
+            if (peerId != null)
             {
-                var messageId = TelegramUtils.GetMessageId(iMessage);
-                if (messageId == topMessage)
+                foreach (var iMessage in messages)
                 {
-                    return iMessage;
+                    var message = iMessage as Message;
+                    var messageService = iMessage as MessageService;
+                    string currentPeerId = null;
+                    if (message != null)
+                    {
+                        var peerUser = peer as PeerUser;
+                        if (peerUser != null)
+                        {
+                            currentPeerId = message.Out is True ? TelegramUtils.GetPeerId(message.ToId) : 
+                                                               message.FromId.ToString(CultureInfo.InvariantCulture);
+                        }
+                        else
+                        {
+                            currentPeerId = TelegramUtils.GetPeerId(message.ToId);
+                        }
+                    }
+                    if (messageService != null)
+                    {
+                        var peerUser = peer as PeerUser;
+                        if (peerUser != null)
+                        {
+                            currentPeerId = messageService.Out is True ? TelegramUtils.GetPeerId(messageService.ToId) :
+                                                               messageService.FromId.ToString(CultureInfo.InvariantCulture);
+                        }
+                        else
+                        {
+                            currentPeerId = TelegramUtils.GetPeerId(messageService.ToId);
+                        }
+                    }
+                    if (peerId == currentPeerId)
+                    {
+                        var messageId = TelegramUtils.GetMessageId(iMessage);
+                        if (messageId == topMessage)
+                        {
+                            return iMessage;
+                        }
+                    }
                 }
             }
             return null;

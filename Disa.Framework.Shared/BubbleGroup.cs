@@ -15,7 +15,8 @@ namespace Disa.Framework
         public string ID { get; private set; }
         public string LegibleId { get; internal set; }
         public bool PartiallyLoaded { get; internal set; }
-
+        public bool Lazy { get; set; }
+        
         internal ThreadSafeList<VisualBubble> Bubbles { get; private set; }
 
         public bool IsTitleSetFromService { get; internal set; }

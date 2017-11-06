@@ -1305,6 +1305,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CachedThumbnail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DownloadManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageIntent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConvosSync.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)BigMath\" />

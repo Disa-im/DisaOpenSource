@@ -230,12 +230,11 @@ namespace Disa.Framework
             }
         }
 
-        public static void Update(Service service, bool optimized = true)
+        public static void Update(List<BubbleGroup> groups, bool optimized = true)
         {
             const int Interval = 5;
             var updateCounter = 0;
             var groupsDoneCounter = 0;
-            var groups = BubbleGroupManager.FindAll(service);
             var updateCounterThreshold = groups.Count / Interval;
 
             foreach (var group in groups)
@@ -258,7 +257,7 @@ namespace Disa.Framework
                             updateCounter++;
                             doUpdate(false);
                         }
-                            // do the remainder one by one ... 
+                        // do the remainder one by one ... 
                         else if (updateCounter >= updateCounterThreshold)
                         {
                             doUpdate(true);
@@ -267,7 +266,12 @@ namespace Disa.Framework
                 }
 
                 Update(@group, optimized, chainFinished);
-            }
+            }   
+        }
+
+        public static void Update(Service service, bool optimized = true)
+        {
+            Update(BubbleGroupManager.FindAll(service).Where(x => !x.Lazy).ToList(), optimized);
         }
 
         internal static void Update(BubbleGroup group, bool optimized = true, Action optimizedChainFinished = null)
