@@ -162,8 +162,16 @@ namespace Disa.Framework
                     //       Fix this race condition.
                     if (!bubbleGroups.Any())
                     {
-                        yield return Result.NoChange;
-                        continue;
+                        if (_list.Any())
+                        {
+                            _list.Clear();
+                            yield return Result.Change;
+                        }
+                        else
+                        {
+                            yield return Result.NoChange;
+                        }
+                        continue; 
                     }
                     if (!_initiallyRemovedLazy)
                     {
@@ -177,7 +185,7 @@ namespace Disa.Framework
                             var lazys = bubbleGroups.Where(x => x.Lazy);
                             foreach (var lazy in lazys)
                             {
-                                BubbleGroupFactory.Delete(lazy);
+                                BubbleGroupFactory.Delete(lazy, false);
                             }
                             //FIXME: call into service needs to be atomic.
                             foreach (var lazyGroup in lazys.GroupBy(x => x.Service))

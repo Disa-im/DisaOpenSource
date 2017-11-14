@@ -230,7 +230,7 @@ namespace Disa.Framework
             }
         }
 
-        public static async Task<bool> DeleteBubbleGroupIfHasAgent(BubbleGroup group)
+        public static async Task<bool> DeleteBubbleGroupIfHasAgent(BubbleGroup group, bool notifyService = true)
         {
             if (group is UnifiedBubbleGroup)
                 return false;
@@ -238,16 +238,19 @@ namespace Disa.Framework
             if (!SupportsSyncAndIsRunning(group.Service))
                 return false;
 
-            var groupAgent = group.Service as Agent;
-            try
+            if (notifyService)
             {
-                return await groupAgent.DeleteConversation(group);
+                var groupAgent = group.Service as Agent;
+                try
+                {
+                    return await groupAgent.DeleteConversation(group);
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint("Failed to delete conversation in sync agent: " + ex);
+                }
             }
-            catch (Exception ex)
-            {
-                Utils.DebugPrint("Failed to delete conversation in sync agent: " + ex);
-                return false;
-            }
+            return false;
         }
 
         public static bool NeedsSync(BubbleGroup group)

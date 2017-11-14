@@ -441,7 +441,7 @@ namespace Disa.Framework
             }
         }
 
-        public static void Delete(BubbleGroup group)
+        public static void Delete(BubbleGroup group, bool notifyService = true)
         {
             lock (BubbleGroupDatabase.OperationLock)
             {
@@ -461,7 +461,7 @@ namespace Disa.Framework
 
                 BubbleGroupSync.RemoveFromSync(@group);
 
-                BubbleGroupSync.DeleteBubbleGroupIfHasAgent(@group);
+                BubbleGroupSync.DeleteBubbleGroupIfHasAgent(@group, notifyService);
 
                 BubbleGroupManager.BubbleGroupsRemove(@group);
             }
