@@ -9,6 +9,8 @@
         bool BackPressEnabled { get; set; }
 
         void LaunchPrivacyList();
+
+        bool IsOnboarding { get; set; }
     }
 }
 
