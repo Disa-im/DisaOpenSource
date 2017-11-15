@@ -715,24 +715,55 @@ namespace Disa.Framework
                         return theGroup;
                     }
 
+                    // Does the Service for this VisualBubble require that the VisualBubble's IdService and IdService2
+                    // be distinct?
                     var visualBubbleServiceId = vb.Service as IVisualBubbleServiceId;
                     if (visualBubbleServiceId != null && 
-                        visualBubbleServiceId.DisctinctIncomingVisualBubbleIdServices())
+                        visualBubbleServiceId.DistinctIncomingVisualBubbleIdServices())
                     {
+                        // Ok, we need to be distinct, BUT do the VisualBubble Type's have to be distinct as well?
                         var checkType = true;
                         if (!DisaFrameworkMethods.Missing(vb.Service, DisaFrameworkMethods.IVisualBubbleServiceIdCheckType))
                         {
                             checkType = visualBubbleServiceId.CheckType();
                         }
-                        if (vb.IdService != null)
+
+                        // Ok, now does the Service have special additional logic it wants to use for the distinction comparison?
+                        // Example: For Telegram, we allow an ImageBubble immediately followed by a TextBubble to have the 
+                        //          same VisualBubble.IdService - as this represents an image with a caption in Telegram.
+                        if (DisaFrameworkMethods.Missing(vb.Service, DisaFrameworkMethods.IVisualBubbleServiceIdVisualBubbleIdComparer))
                         {
-                            duplicate = theGroup.Bubbles.FirstOrDefault(x => 
-                                                (!checkType || x.GetType() == vb.GetType()) && x.IdService == vb.IdService) != null;
+                            // Normal distinction checks
+                            if (vb.IdService != null)
+                            {
+                                duplicate = theGroup.Bubbles.FirstOrDefault(x =>
+                                                    (!checkType || x.GetType() == vb.GetType()) && x.IdService == vb.IdService) != null;
+                            }
+                            if (!duplicate && vb.IdService2 != null)
+                            {
+                                duplicate = theGroup.Bubbles.FirstOrDefault(x =>
+                                                    (!checkType || x.GetType() == vb.GetType()) && x.IdService2 == vb.IdService2) != null;
+                            }
                         }
-                        if (!duplicate && vb.IdService2 != null)
+                        else
                         {
-                            duplicate = theGroup.Bubbles.FirstOrDefault(x => 
-                                                (!checkType || x.GetType() == vb.GetType()) && x.IdService2 == vb.IdService2) != null;
+                            // Special additional Service defined distinction checks
+                            if (vb.IdService != null)
+                            {
+                                var duplicateBubble = theGroup.Bubbles.FirstOrDefault(x =>
+                                                    (!checkType || x.GetType() == vb.GetType()) && x.IdService == vb.IdService);
+
+                                duplicate = duplicateBubble == null ? false :
+                                    visualBubbleServiceId.VisualBubbleIdComparer(left: duplicateBubble, right: vb);
+                            }
+                            if (!duplicate && vb.IdService2 != null)
+                            {
+                                var duplicateBubble = theGroup.Bubbles.FirstOrDefault(x =>
+                                                    (!checkType || x.GetType() == vb.GetType()) && x.IdService2 == vb.IdService2);
+
+                                duplicate = duplicateBubble == null ? false :
+                                    visualBubbleServiceId.VisualBubbleIdComparer(duplicateBubble, vb);
+                            }
                         }
                     }
 
