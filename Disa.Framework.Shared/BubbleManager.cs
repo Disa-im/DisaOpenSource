@@ -719,7 +719,7 @@ namespace Disa.Framework
                     // be distinct?
                     var visualBubbleServiceId = vb.Service as IVisualBubbleServiceId;
                     if (visualBubbleServiceId != null && 
-                        visualBubbleServiceId.DistinctIncomingVisualBubbleIdServices())
+                        visualBubbleServiceId.DisctinctIncomingVisualBubbleIdServices())
                     {
                         // Ok, we need to be distinct, BUT do the VisualBubble Type's have to be distinct as well?
                         var checkType = true;

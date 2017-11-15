@@ -11,7 +11,7 @@ namespace Disa.Framework
     /// 
     /// Example: Telegram
     /// 1. Implements <see cref="AddVisualBubbleIdServices(VisualBubble)"/> during a message send to store the next message id in <see cref="VisualBubble.IdService2"/>.
-    /// 2. Returns true from <see cref="DistinctIncomingVisualBubbleIdServices"/> to specify that <see cref="VisualBubble.IdService"/> 
+    /// 2. Returns true from <see cref="DisctinctIncomingVisualBubbleIdServices"/> to specify that <see cref="VisualBubble.IdService"/> 
     ///    and <see cref="VisualBubble.IdService2"/> must be distinct on device.
     /// 3. Returns false from <see cref="CheckType"/> to specify that only <see cref="VisualBubble.IdService"/> and <see cref="VisualBubble.IdService2"/> are used
     ///    to determine if a <see cref="VisualBubble"/> is distinct.
@@ -57,7 +57,7 @@ namespace Disa.Framework
         /// <returns>True if the <see cref="Service"/> requires that the <see cref="VisualBubble.IdService"/>
         /// and <see cref="VisualBubble.IdService2"/> should be distinct. False if the <see cref="Service"/>
         /// does not have such a requirement.</returns>
-        bool DistinctIncomingVisualBubbleIdServices();
+        bool DisctinctIncomingVisualBubbleIdServices();
 
 
         //
@@ -92,7 +92,7 @@ namespace Disa.Framework
         /// <summary>
         /// Allows a <see cref="Service"/> to specify additional comparison logic for determining distinction.
         /// 
-        /// IMPORTANT: This is called after the logic for <see cref="DistinctIncomingVisualBubbleIdServices"/> and <see cref="CheckType"/>
+        /// IMPORTANT: This is called after the logic for <see cref="DisctinctIncomingVisualBubbleIdServices"/> and <see cref="CheckType"/>
         ///            has run AND determined that we have a duplicate based on that criteria.
         ///            
         /// For example, in Telegram, we allow an ImageBubble immediately followed by a TextBubble to have the 

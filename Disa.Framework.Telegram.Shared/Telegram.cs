@@ -3758,7 +3758,7 @@ namespace Disa.Framework.Telegram
             bubble.IdService2 = NextMessageId;
         }
 
-        public bool DistinctIncomingVisualBubbleIdServices()
+        public bool DisctinctIncomingVisualBubbleIdServices()
         {
             // Telegram requires that the IdService or IdService2 shall be distinct.
             //  See CheckType and VisualBubbleIdComparer for a full picture on Telegram's
