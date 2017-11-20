@@ -1,0 +1,448 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TelegramRunning" xml:space="preserve">
+    <value>Telegram loopt</value>
+  </data>
+  <data name="TelegramNotRunning" xml:space="preserve">
+    <value>Telegram loopt niet</value>
+  </data>
+  <data name="TelegramAllGood" xml:space="preserve">
+    <value>Alles ziet er goed uit.</value>
+  </data>
+  <data name="TelegramHelp" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="TelegramSettingsTitle" xml:space="preserve">
+    <value>Telegram Instellingen</value>
+  </data>
+  <data name="TelegramPleaseStart" xml:space="preserve">
+    <value>Start Telegram in Disa's instellingen AUB.</value>
+  </data>
+  <data name="TelegramPleaseStartNoInternet" xml:space="preserve">
+    <value>Start Telegram in Disa's instellingen, of ga door de installatiewizard opnieuw. Als geen van deze opties werkt, dan is er waarschijnlijk een fout bij Telegram.</value>
+  </data>
+  <data name="TelegramSetupWizard" xml:space="preserve">
+    <value>Installatiewizard</value>
+  </data>
+  <data name="TelegramProfileSettings" xml:space="preserve">
+    <value>Profiel Instellingen</value>
+  </data>
+  <data name="TelegramDescription" xml:space="preserve">
+    <value>Telegram is een messaging app met een focus op snelheid en veiligheid. Het is super snel, eenvoudig, veilig en gratis.</value>
+  </data>
+  <data name="TelegramPleaseConnectToInternet" xml:space="preserve">
+    <value>Maak een verbinding met het internet voor dat u het Installatiewizard start.</value>
+  </data>
+  <data name="TelegramSetupWizardTitle" xml:space="preserve">
+    <value>Telegram Installatiewizard</value>
+  </data>
+  <data name="TelegramFirstName" xml:space="preserve">
+    <value>Voornaam</value>
+  </data>
+  <data name="TelegramLastName" xml:space="preserve">
+    <value>Achternaam</value>
+  </data>
+  <data name="TelegramLoadConversations" xml:space="preserve">
+    <value>Laad de 10 meest recente gesprekken in Disa.</value>
+  </data>
+  <data name="TelegramPhoneNumber" xml:space="preserve">
+    <value>Telefoon Nummer</value>
+  </data>
+  <data name="TelegramNext" xml:space="preserve">
+    <value>Volgende</value>
+  </data>
+  <data name="TelegramInvalidFirstNameTitle" xml:space="preserve">
+    <value>Ongeldige Voornaam</value>
+  </data>
+  <data name="TelegramInvalidFirstNameMessage" xml:space="preserve">
+    <value>Voer uw voornaam in.</value>
+  </data>
+  <data name="TelegramInvalidLastNameTitle" xml:space="preserve">
+    <value>Ongeldige Achternaam</value>
+  </data>
+  <data name="TelegramInvalidLastNameMessage" xml:space="preserve">
+    <value>Voer uw achternaam in.</value>
+  </data>
+  <data name="TelegramOkay" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="TelegramYes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="TelegramNo" xml:space="preserve">
+    <value>Nee</value>
+  </data>
+  <data name="TelegramInvalidNumberTitle" xml:space="preserve">
+    <value>Ongeldige Nummer</value>
+  </data>
+  <data name="TelegramInvalidNumberMessage" xml:space="preserve">
+    <value>De nummer die u hebt ingevoerd is ongeldig. Voer een werkende nummer in.</value>
+  </data>
+  <data name="TelegramConfirmNumberTitle" xml:space="preserve">
+    <value>Nummer bevestigen</value>
+  </data>
+  <data name="TelegramConfirmNumberMessage" xml:space="preserve">
+    <value>Is deze nummer [number] juist? Wij zullen deze nummer gebruiken om uw Telegram account te verifieren.</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedMessage" xml:space="preserve">
+    <value>Authenticatie generatie is mislukt. Probeer het opnieuw.</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedTitle" xml:space="preserve">
+    <value>Authenticatie generatie is mislukt</value>
+  </data>
+  <data name="TelegramInformationTitle" xml:space="preserve">
+    <value>Informatie</value>
+  </data>
+  <data name="TelegramVerificationTitle" xml:space="preserve">
+    <value>Verificatie</value>
+  </data>
+  <data name="TelegramVerifyHaveCode" xml:space="preserve">
+    <value>Ik heb een code</value>
+  </data>
+  <data name="TelegramVerifyQuestion" xml:space="preserve">
+    <value>Hoe wilt u uw Telegram account verifieren?</value>
+  </data>
+  <data name="TelegramVerifyViaPhone" xml:space="preserve">
+    <value>Via telefoon</value>
+  </data>
+  <data name="TelegramVerifyViaSms" xml:space="preserve">
+    <value>Via SMS</value>
+  </data>
+  <data name="TelegramVerifySentToTelegram" xml:space="preserve">
+    <value>De verificatie code was naar de telegram app op uw andere apparaat gestuurd</value>
+  </data>
+  <data name="TelegramVerifySentViaSms" xml:space="preserve">
+    <value>De verificatie code was via SMS gestuurd naar </value>
+  </data>
+  <data name="TelegramVerifyError" xml:space="preserve">
+    <value>Er is een fout opgetreden. Probeer het opnieuw.</value>
+  </data>
+  <data name="TelegramVerifyInvalidNumber" xml:space="preserve">
+    <value>De nummer die u hebt ingevuld is ongeldig. Gebruik een andere nummer.</value>
+  </data>
+  <data name="TelegramCodeSentViaSms" xml:space="preserve">
+    <value>Telegram activatie is gecontacteerd geweest. Binnenkort ontvangt u een activatie code.</value>
+  </data>
+  <data name="TelegramCodeSentViaPhone" xml:space="preserve">
+    <value>Telegram activatie is gecontacteerd geweest. Binnenkort wordt u gebeld met een activatie code.</value>
+  </data>
+  <data name="TelegramCodeManualEnter" xml:space="preserve">
+    <value>Geef de 6 character code van Telegram beneden op.</value>
+  </data>
+  <data name="TelegramCodeSentNotComingSms" xml:space="preserve">
+    <value>Als uw code niet door komt, klik op de 'Verificatie' tab en gebruik de 'Via telefoon' optie om Telegram te activeren.</value>
+  </data>
+  <data name="TelegramCodeTitle" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="TelegramCode" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="TelegramCodeInvalidTitle" xml:space="preserve">
+    <value>Ongeldige code</value>
+  </data>
+  <data name="TelegramCodeInvalidMessage" xml:space="preserve">
+    <value>Voer een code in om Telegram te verifieren.</value>
+  </data>
+  <data name="TelegramInvalidCodeDetail" xml:space="preserve">
+    <value>De code die u hebt ingevuld is niet geldig</value>
+  </data>
+  <data name="TelegramSubmit" xml:space="preserve">
+    <value>Verzenden</value>
+  </data>
+  <data name="TelegramCodeError" xml:space="preserve">
+    <value>Er is een fout opgetreden. Probeer opnieuw AUB.</value>
+  </data>
+  <data name="TelegramCodeNumberInvalid" xml:space="preserve">
+    <value>Deze telefoon nummer is ongeldig. Probeer opnieuw met een geldige nummer.</value>
+  </data>
+  <data name="TelegramCodeCodeExpired" xml:space="preserve">
+    <value>Deze code is niet meer geldig. Verstuur een nieuwe code naar u zelf.</value>
+  </data>
+  <data name="TelegramCodeCodeInvalid" xml:space="preserve">
+    <value>De code die u hebt ingevuld is niet geldig. Probeer opnieuw AUB.</value>
+  </data>
+  <data name="TelegramCodeFirstNameInvalid" xml:space="preserve">
+    <value>De voornaam die u hebt ingevuld is niet geldig. Probeer opnieuw AUB.</value>
+  </data>
+  <data name="TelegramCodeLastNameInvalid" xml:space="preserve">
+    <value>De achternaam die u hebt ingevuld is niet geldig. Probeer opnieuw AUB.</value>
+  </data>
+  <data name="TelegramContact" xml:space="preserve">
+    <value>Contacten</value>
+  </data>
+  <data name="TelegramEveryone" xml:space="preserve">
+    <value>Iedereen</value>
+  </data>
+  <data name="TelegramGroups" xml:space="preserve">
+    <value>Groepen</value>
+  </data>
+  <data name="TelegramLastSeen" xml:space="preserve">
+    <value>Laatst gezien</value>
+  </data>
+  <data name="TelegramNobody" xml:space="preserve">
+    <value>Niemand</value>
+  </data>
+  <data name="TelegramNone" xml:space="preserve">
+    <value>Geen</value>
+  </data>
+  <data name="TelegramNotRunningLong" xml:space="preserve">
+    <value>Telegram moet open zijn als je de profiel instellingen wilt veranderen.</value>
+  </data>
+  <data name="TelegramPrivacyList" xml:space="preserve">
+    <value>Privacy Lijst</value>
+  </data>
+  <data name="TelegramCodeSentPhoneCall" xml:space="preserve">
+    <value>Telegram gaat u opbellen met een code. Voer die code in hier onder.</value>
+  </data>
+  <data name="TelegramCodeSentTelegramApp" xml:space="preserve">
+    <value>Er is een code verstuurd naar de Telegram app op uw andere apparaat</value>
+  </data>
+  <data name="TelegramCodeSentText" xml:space="preserve">
+    <value>De code was naar u gestuurd via SMS</value>
+  </data>
+  <data name="TelegramCodeResendViaPhoneCall" xml:space="preserve">
+    <value>Hebt u zelfs naar een minuut geen code ontvangen? Druk op de knopje hier boven om opgebeld te worden met een code.</value>
+  </data>
+  <data name="TelegramCodeResendViaText" xml:space="preserve">
+    <value>Hebt u geen code ontvangen? Druk op de knopje hier boven om een code to ontvangen via SMS.</value>
+  </data>
+  <data name="TelegramSelect" xml:space="preserve">
+    <value>Kies</value>
+  </data>
+  <data name="TelegramVerify" xml:space="preserve">
+    <value>Verifieren</value>
+  </data>
+  <data name="TelegramPassword" xml:space="preserve">
+    <value>Wachtwoord</value>
+  </data>
+  <data name="TelegramEnterPassword" xml:space="preserve">
+    <value>Voer uw wachtwoord in om in te loggen</value>
+  </data>
+  <data name="TelegramPasswordTitle" xml:space="preserve">
+    <value>Wachtwoord</value>
+  </data>
+  <data name="TelegramFinish" xml:space="preserve">
+    <value>Voltooien</value>
+  </data>
+  <data name="TelegramForgotPassword" xml:space="preserve">
+    <value>Wachtwoord vergeten?</value>
+  </data>
+  <data name="TelegramInvalidPassword" xml:space="preserve">
+    <value>Ongeldig wachtwoord</value>
+  </data>
+  <data name="TelegramInvalidPasswordDetail" xml:space="preserve">
+    <value>De wachtwoord die u hebt ingevoerd is niet geldig. Probeer opnieuw.</value>
+  </data>
+  <data name="TelegramPasswordError" xml:space="preserve">
+    <value>Er is een fout opgetreden. Probeer opnieuw.</value>
+  </data>
+  <data name="TelegramCodeIntitalText" xml:space="preserve">
+    <value>Druk op de knopje om uw telefoon nummer te verifieren.</value>
+  </data>
+  <data name="TelegramRecoverPassword" xml:space="preserve">
+    <value>Wachtwoord Herstel</value>
+  </data>
+  <data name="TelegramRecoverPasswordEmail" xml:space="preserve">
+    <value>Wachtwoord Herstel</value>
+  </data>
+  <data name="TelegramEnterCodeSentToEmail" xml:space="preserve">
+    <value>Voer de code in die u hebt ontvangen op [emailPattern].</value>
+  </data>
+  <data name="TelegramCannotAccessEmail" xml:space="preserve">
+    <value>Geen toegang naar uw email?</value>
+  </data>
+  <data name="TelegramCancel" xml:space="preserve">
+    <value>Annuleren</value>
+  </data>
+  <data name="TelegramResetAccount" xml:space="preserve">
+    <value>Account Resetten</value>
+  </data>
+  <data name="TelegramNeedToResetAccount" xml:space="preserve">
+    <value>Als u geen toegang hebt tot uw email is uw enige optie uw account resetten. AANDACHT: Als u OK klikt wist u alle chats en data van de Telegram servers.</value>
+  </data>
+  <data name="TelegramPasswordCodeTitle" xml:space="preserve">
+    <value>Wachtwoord Herstel Code</value>
+  </data>
+  <data name="TelegramUserInformationTitle" xml:space="preserve">
+    <value>Gebruikers Informatie</value>
+  </data>
+  <data name="TelegramUsername" xml:space="preserve">
+    <value>Gebruikersnaam</value>
+  </data>
+  <data name="TelegramEdit" xml:space="preserve">
+    <value>Bewerk</value>
+  </data>
+  <data name="TelegramDone" xml:space="preserve">
+    <value>Klaar</value>
+  </data>
+  <data name="TelegramNoUsernameSet" xml:space="preserve">
+    <value>Geek gebruikersnaam ingesteld</value>
+  </data>
+  <data name="TelegramEnterUsername" xml:space="preserve">
+    <value>Voer een gebruikersnaam in</value>
+  </data>
+  <data name="TelegramEnterLastName" xml:space="preserve">
+    <value>Voer uw achternaam in</value>
+  </data>
+  <data name="TelegramUserInformation" xml:space="preserve">
+    <value>U kunt tekens van a-z, 0-9 en _ gebruiken. Minimum lengte is 5 tekens.</value>
+  </data>
+  <data name="TelegramUsernameNotLongEnough" xml:space="preserve">
+    <value>Een gebruikersnaam moet minstens 5 tekens hebben.</value>
+  </data>
+  <data name="TelegramUsernameInvalid" xml:space="preserve">
+    <value>Sorry, deze gebruikersnaam in ongeldig.</value>
+  </data>
+  <data name="TelegramUsernameTaken" xml:space="preserve">
+    <value>Sorry, deze gebruikersnaam is reeds in gebruik.</value>
+  </data>
+  <data name="TelegramUsernameAvailable" xml:space="preserve">
+    <value>[username] is beschikbaar!</value>
+  </data>
+  <data name="TelegramUsernameChecking" xml:space="preserve">
+    <value>Gebruikersnaam controleren...</value>
+  </data>
+  <data name="TelegramUsernameTryAgainLater" xml:space="preserve">
+    <value>Probeer later opnieuw...</value>
+  </data>
+  <data name="TelegramNameFirstNameEmpty" xml:space="preserve">
+    <value>Voornaam mag niet leeg zijn.</value>
+  </data>
+  <data name="TelegramMuteNotificationsTitle" xml:space="preserve">
+    <value>Notificaties Dempen</value>
+  </data>
+  <data name="TelegramMuteNotificationsHeader" xml:space="preserve">
+    <value>Telegram is al geinstalleerd. Telegram en Disa kunnen tegerlijke tijd gebruikt worden. &lt;b&gt;Om duplicate meldingen te voorkomen, stel de notificaties van Telegram uit:&lt;/b&gt;</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Title" xml:space="preserve">
+    <value>Hoe?</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Text" xml:space="preserve">
+    <value>Druk op de hamburger toets op de Telegram hoofdscherm om de menu te openen. Druk daarna op &lt;i&gt;Instellingen&lt;/i&gt; &gt; &lt;i&gt;Notificaties en Geluiden&lt;/i&gt;. Stel beide &lt;i&gt;Alert&lt;/i&gt; knoppen onder &lt;i&gt;Bericht Notificaties&lt;/i&gt; en &lt;i&gt;Groep Notificaties&lt;/i&gt; uit.</value>
+  </data>
+  <data name="TelegramMuteNotificationsWatchVideo" xml:space="preserve">
+    <value>Video Bekijken</value>
+  </data>
+  <data name="TelegramSearchHint" xml:space="preserve">
+    <value>Voer de contact naam in</value>
+  </data>
+
+</root>

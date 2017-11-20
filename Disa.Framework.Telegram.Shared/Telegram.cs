@@ -1867,7 +1867,14 @@ namespace Disa.Framework.Telegram
                                 addressStr, participantAddress, true, this, messageMediaPhoto.Caption,
                                 message.Id.ToString(CultureInfo.InvariantCulture));
                         }
+
+                        if (captionBubble.Direction == Bubble.BubbleDirection.Outgoing)
+                        {
+                            captionBubble.Status = Bubble.BubbleStatus.Sent;
+                        }
+
                         captionBubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
+
                         returnList.Add(captionBubble);
                     }
                     return returnList;
@@ -3746,17 +3753,54 @@ namespace Disa.Framework.Telegram
 
         public void AddVisualBubbleIdServices(VisualBubble bubble)
         {
+            // When sending we will use the IdService2 field to hold our our NextMessageId to use.
+            // This will occur during BubbleManager's send flow, before we call this Telegram's send implementation.
             bubble.IdService2 = NextMessageId;
         }
 
         public bool DisctinctIncomingVisualBubbleIdServices()
         {
+            // Telegram requires that the IdService or IdService2 shall be distinct.
+            //  See CheckType and VisualBubbleIdComparer for a full picture on Telegram's
+            // definition of distinction.
             return true;
         }
 
         public bool CheckType()
         {
+            // When checking for distinction between two VisualBubbles IdService or IdService2,
+            // we do not include a check on the VisualBubbles Types.
+            // That is, we do not allow an ImageBubble and a TextBubble to have the same IdService or IdService2.
             return false;
+        }
+
+        public bool VisualBubbleIdComparer(VisualBubble left, VisualBubble right)
+        {
+            // Sanity checks
+            if (left == null ||
+                right == null)
+            {
+                return false;
+            }
+
+            // Our implementation for an image caption is to split it out as a TextBubble
+            // and give it the same IdService as the ImageBubble that preceeds it.
+            //
+            // Hence, an ImageBubble, immediately followed by a TextBubble with the same IdService
+            // - we will let that pass as two distinct VisualBubbles.
+            if (left.IdService == right.IdService &&
+                left is ImageBubble &&
+                right is TextBubble)
+            {
+                // IMPORTANT: We need to bump the time for the TextBubble so that it will display
+                //            after the ImageBubble
+                right.Time += 1;
+
+                // OK, now tell the caller that these two bubbles are distinct
+                return false;
+            }
+
+            return true;
         }
 
         public override void RefreshPhoneBookContacts()
