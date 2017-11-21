@@ -205,7 +205,7 @@ namespace Disa.Framework
 			}
 			catch (Exception ex)
 			{
-				Insights.Report(ex);
+				// Insights.Report(ex);
 				Utils.DebugPrint("Failed to export conversation: " + ex);
 			}
 			finally
