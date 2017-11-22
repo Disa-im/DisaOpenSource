@@ -38,8 +38,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)IMentions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INewChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPartyParticipantRequests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IStickers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IUserInformationExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mention.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Stickers\ServiceStickerPacks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Stickers\EmojiStickerPack.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Stickers\StickerLocationInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Stickers\Sticker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Stickers\StickerPack.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Stickers\FullStickerPack.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ZipStorer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Axolotl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AxolotlImplementation.cs" />
