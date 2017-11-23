@@ -207,7 +207,7 @@ namespace Disa.Framework.Telegram.Mobile
                 }
 
                 Utils.DebugPrint("Starting the service...!");
-				Insights.Report(new SetupException("Telegram Setup Ended"));
+				// Insights.Report(new SetupException("Telegram Setup Ended"));
                 ServiceManager.Start(service, true);
 
                 _cachedPage = null;
@@ -337,7 +337,7 @@ namespace Disa.Framework.Telegram.Mobile
 
             tabs.Title = Localize.GetString("TelegramSetupWizardTitle");
             _cachedPage = tabs;
-			Insights.Report(new SetupException("Telegram Setup Started"));
+			// Insights.Report(new SetupException("Telegram Setup Started"));
             return tabs;
         }
 
