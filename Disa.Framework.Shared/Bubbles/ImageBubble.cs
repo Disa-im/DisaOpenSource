@@ -75,6 +75,9 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(9)]
         public int Height { get; set; }
 
+        [ProtoMember(10)]
+        public string Caption { get; set; }
+
         [NonSerialized] 
         public BubbleTransfer Transfer;
 
