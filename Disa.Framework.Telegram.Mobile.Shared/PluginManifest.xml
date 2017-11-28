@@ -2,7 +2,7 @@
 <plugin>
   <name>Telegram</name>
   <version>21</version>
-  <minimumframeworkversion>48</minimumframeworkversion>
+  <minimumframeworkversion>49</minimumframeworkversion>
   <production>false</production>
   <changelog>http://disa-im.github.io/DisaOpenSource/telegram/changelog.html</changelog>
   <author>Disa Technologies Inc.</author>
