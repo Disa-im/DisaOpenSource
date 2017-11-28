@@ -1846,37 +1846,13 @@ namespace Disa.Framework.Telegram
                     imageBubble.Width = dimensions.Width;
                     imageBubble.Height = dimensions.Height;
                     imageBubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
+                    imageBubble.Caption = messageMediaPhoto.Caption;
+
                     var returnList = new List<VisualBubble>
                     {
                         imageBubble  
                     };
-                    if (!string.IsNullOrEmpty(messageMediaPhoto.Caption))
-                    {
-                        TextBubble captionBubble;
-                        if (isUser)
-                        {
-                            captionBubble = new TextBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                                message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
-                                addressStr, null, false, this, messageMediaPhoto.Caption,
-                                message.Id.ToString(CultureInfo.InvariantCulture));
-                        }
-                        else
-                        {
-                            captionBubble = new TextBubble(useCurrentTime ? Time.GetNowUnixTimestamp() : (long)message.Date,
-                                message.Out != null ? Bubble.BubbleDirection.Outgoing : Bubble.BubbleDirection.Incoming,
-                                addressStr, participantAddress, true, this, messageMediaPhoto.Caption,
-                                message.Id.ToString(CultureInfo.InvariantCulture));
-                        }
 
-                        if (captionBubble.Direction == Bubble.BubbleDirection.Outgoing)
-                        {
-                            captionBubble.Status = Bubble.BubbleStatus.Sent;
-                        }
-
-                        captionBubble.ViaBotId = message.ViaBotId > 0 ? message.ViaBotId.ToString() : null;
-
-                        returnList.Add(captionBubble);
-                    }
                     return returnList;
                 }
                 
@@ -3780,23 +3756,6 @@ namespace Disa.Framework.Telegram
             if (left == null ||
                 right == null)
             {
-                return false;
-            }
-
-            // Our implementation for an image caption is to split it out as a TextBubble
-            // and give it the same IdService as the ImageBubble that preceeds it.
-            //
-            // Hence, an ImageBubble, immediately followed by a TextBubble with the same IdService
-            // - we will let that pass as two distinct VisualBubbles.
-            if (left.IdService == right.IdService &&
-                left is ImageBubble &&
-                right is TextBubble)
-            {
-                // IMPORTANT: We need to bump the time for the TextBubble so that it will display
-                //            after the ImageBubble
-                right.Time += 1;
-
-                // OK, now tell the caller that these two bubbles are distinct
                 return false;
             }
 
