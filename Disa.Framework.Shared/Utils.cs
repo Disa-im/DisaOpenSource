@@ -11,6 +11,7 @@ using System.Timers;
 using System.Linq;
 using Disa.Framework.Bubbles;
 using System.Reflection;
+using ProtoBuf;
 
 namespace Disa.Framework
 {
@@ -285,6 +286,39 @@ namespace Disa.Framework
                 }
             }
             return types;
+        }
+
+        /// <summary>
+        /// Returns protobuf serialized bytes
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public static byte[] ToProtoBytes<T>(T item)
+        {
+            byte[] bytes = null;
+            using (var stream = new MemoryStream())
+            {
+                Serializer.Serialize<T>(stream, item);
+                bytes = stream.ToArray();
+            }
+            return bytes;
+        }
+
+        /// <summary>
+        /// Returns protobuf serialized bytes to an actual object
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="protoBytes"></param>
+        /// <returns></returns>
+        public static T FromProtoBytesToObject<T>(byte[] protoBytes)
+        {
+            var obj = default(T);
+            using (var stream = new MemoryStream(protoBytes))
+            {
+                obj = Serializer.Deserialize<T>(stream);
+            }
+            return obj;
         }
     }
 }
