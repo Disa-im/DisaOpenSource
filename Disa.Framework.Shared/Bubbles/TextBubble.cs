@@ -14,6 +14,9 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(2)]
         public bool HasParsedMessageForUrls { get; set; }
 
+        [ProtoMember(3)]
+        public string HtmlMessage { get; set; }
+
         public TextBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string message, string idService = null) :
             base(time, direction, address, participantAddress, party, service, null, idService)
