@@ -148,6 +148,7 @@ namespace Disa.Framework
 
         public bool Exists(Service service, Tag tag)
         {
+            tag.FullyQualifiedId = $"{service.Information.ServiceName}|{tag.Id}";
             return tags.Contains(tag);
         }
 
