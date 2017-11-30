@@ -24,7 +24,7 @@ namespace Disa.Framework
         
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return FullyQualifiedId.GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -34,7 +34,7 @@ namespace Disa.Framework
             {
                 return false;
             }
-            return Id.Equals(tag.Id);
+            return FullyQualifiedId.Equals(tag.FullyQualifiedId);
         }
 
         public override string ToString()
