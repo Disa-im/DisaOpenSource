@@ -11,18 +11,17 @@ namespace Disa.Framework
         [ProtoMember(1)]
         public string Id { get; set; }
         [ProtoMember(2)]
+        internal string FullyQualifiedId { get; set; }
+        [ProtoMember(3)]
         public string Name { get; set; }
-        [ProtoMember(3, AsReference = true)]
+        [ProtoMember(4, AsReference = true)]
         public Tag Parent { get; set; }
 
-        [ProtoMember(4)]
+        [ProtoMember(5)]
         public string ServiceName { get; set; }
 
         public Service Service { get; set; }
-
-        [ProtoMember(5)]
-        internal string Path { get; set; }
-
+        
         public override int GetHashCode()
         {
             return Id.GetHashCode();
