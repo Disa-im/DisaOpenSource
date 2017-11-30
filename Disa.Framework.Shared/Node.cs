@@ -89,14 +89,26 @@ namespace Disa.Framework
             return set;
         }
 
-        public void Print(string padding)
+        public void Print(StringBuilder builder, string padding)
         {
             foreach (var child in children)
             {
-                Console.WriteLine($"{padding}|");
-                Console.WriteLine($"{padding}----{child.Key}");
-                child.Print($"{padding}    ");
+                builder.AppendLine($"{padding}|");
+                builder.AppendLine($"{padding}----{child.Key}");
+                child.Print(builder, $"{padding}    ");
             }
+        }
+
+        public string PrintToString(string padding)
+        {
+            var builder = new StringBuilder();
+            foreach (var child in children)
+            {
+                builder.AppendLine($"{padding}|");
+                builder.AppendLine($"{padding}----{child.Key}");
+                child.Print(builder, $"{padding}    ");
+            }
+            return builder.ToString();
         }
 
         public bool Equals(Node<K, V> otherNode)

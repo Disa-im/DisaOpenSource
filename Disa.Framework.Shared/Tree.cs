@@ -22,10 +22,12 @@ namespace Disa.Framework
             rootNode = new Node<K, V>(key, rootData, null);
         }
 
-        public void Print()
+        public string PrintToString()
         {
-            Console.WriteLine($"{rootNode.Key}");
-            rootNode.Print("");
+            var builder = new StringBuilder();
+            builder.AppendLine($"{rootNode.Key}");
+            rootNode.Print(builder, "");
+            return builder.ToString();
         }
     }
 }
