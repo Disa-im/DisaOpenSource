@@ -235,9 +235,9 @@ namespace Disa.Framework
             return bubbleGroups;
         }
 
-        public void PrintHierarchy()
+        public string PrintHierarchy()
         {
-            tree.PrintToString();
+            return tree.PrintToString();
         }
 
         public void PrintAllTags()
