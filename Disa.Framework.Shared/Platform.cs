@@ -243,5 +243,22 @@ namespace Disa.Framework
         {
             return PlatformImplementation.GetDeviceRegistrationId();
         }
+
+        public static TagManager GetTagManager()
+        {
+            var filesPath = PlatformImplementation.GetFilesPath();
+            var tagManagerPath = Path.Combine(filesPath, "TagManager");
+            TagManager tagManager = null;
+            if (File.Exists(tagManagerPath))
+            {
+                tagManager = Utils.FromProtoBytesToObject<TagManager>(File.ReadAllBytes(tagManagerPath));
+            }
+            else
+            {
+                tagManager = new TagManager();
+            }
+            tagManager.InitializeServices();
+            return tagManager;
+        }
     }
 }
