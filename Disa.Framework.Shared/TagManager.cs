@@ -7,7 +7,7 @@ using ProtoBuf;
 namespace Disa.Framework
 {
     [ProtoContract]
-    public class TagManager
+    public static class TagManager
     {
         [ProtoContract]
         class Conversation
@@ -34,30 +34,25 @@ namespace Disa.Framework
         [ProtoMember(1)]
         private static readonly string rootName = string.Empty;
         [ProtoMember(2)]
-        private readonly HashSet<Tag> tags = new HashSet<Tag>();
+        private static readonly HashSet<Tag> tags = new HashSet<Tag>();
         [ProtoMember(3)]
-        private readonly Tree<Tag, HashSet<Conversation>> tree = new Tree<Tag, HashSet<Conversation>>(new Tag() { Id = rootName, Name = rootName, });
-        private readonly Dictionary<Service, Node<Tag, HashSet<Conversation>>> serviceRoots =
+        private static readonly Tree<Tag, HashSet<Conversation>> tree = new Tree<Tag, HashSet<Conversation>>(new Tag() { Id = rootName, Name = rootName, });
+        private static readonly Dictionary<Service, Node<Tag, HashSet<Conversation>>> serviceRoots =
             new Dictionary<Service, Node<Tag, HashSet<Conversation>>>();
         
         // string: internal path of a tag
         // (internal path of a tag ("email/Label_31/Label_34/Label_49") => "email/Label_49")
         // useful for providing quick tag object lookup for services
         [ProtoMember(4)]
-        private readonly Dictionary<string, Node<Tag, HashSet<Conversation>>> fullyQualifiedIdDictionary =
+        private static readonly Dictionary<string, Node<Tag, HashSet<Conversation>>> fullyQualifiedIdDictionary =
             new Dictionary<string, Node<Tag, HashSet<Conversation>>>();
 
         // service root
         [ProtoMember(5)]
-        private readonly Dictionary<string, Node<Tag, HashSet<Conversation>>> serviceRootNodeDictionary =
+        private static readonly Dictionary<string, Node<Tag, HashSet<Conversation>>> serviceRootNodeDictionary =
             new Dictionary<string, Node<Tag, HashSet<Conversation>>>();
-
-        public TagManager()
-        {
-
-        }
-
-        internal void InitializeServices()
+        
+        internal static void InitializeServices()
         {
             var services = ServiceManager.RegisteredNoUnified;
             foreach (var service in services)
@@ -76,7 +71,7 @@ namespace Disa.Framework
             // TODO: add code for removing tag space when a plugin is uninstalled
         }
 
-        private Tag CreateNewService(Service service)
+        private static Tag CreateNewService(Service service)
         {
             var tag = new Tag()
             {
@@ -96,12 +91,12 @@ namespace Disa.Framework
             return tag;
         }
 
-        public Tag GetServiceRootTag(Service service)
+        public static Tag GetServiceRootTag(Service service)
         {
             return serviceRoots[service].Key;
         }
 
-        public Tag GetTagById(Service service, string id)
+        public static Tag GetTagById(Service service, string id)
         {
             var fullId = $"{service.Information.ServiceName}|{id}";
             if (!fullyQualifiedIdDictionary.ContainsKey(fullId))
@@ -111,7 +106,7 @@ namespace Disa.Framework
             return fullyQualifiedIdDictionary[fullId].Key;
         }
 
-        public Tag Create(Tag tag)
+        public static Tag Create(Tag tag)
         {
             if (tag.Parent == null || tag.Parent == tag)
             {
@@ -138,7 +133,7 @@ namespace Disa.Framework
             return tag;
         }
 
-        public void Delete(Tag tag)
+        public static void Delete(Tag tag)
         {
             var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
             node.Parent.RemoveChild(node);
@@ -146,13 +141,13 @@ namespace Disa.Framework
             tags.Remove(tag);
         }
 
-        public bool Exists(Service service, Tag tag)
+        public static bool Exists(Service service, Tag tag)
         {
             tag.FullyQualifiedId = $"{service.Information.ServiceName}|{tag.Id}";
             return tags.Contains(tag);
         }
 
-        public void Add(Service service, BubbleGroup bubbleGroup, IEnumerable<Tag> tags)
+        public static void Add(Service service, BubbleGroup bubbleGroup, IEnumerable<Tag> tags)
         {
             foreach (var tag in tags)
             {
@@ -165,7 +160,7 @@ namespace Disa.Framework
             }
         }
 
-        public void Remove(Service service, BubbleGroup bubbleGroup, IEnumerable<Tag> tags)
+        public static void Remove(Service service, BubbleGroup bubbleGroup, IEnumerable<Tag> tags)
         {
             foreach (var tag in tags)
             {
@@ -178,12 +173,12 @@ namespace Disa.Framework
             }
         }
 
-        public HashSet<Tag> GetAllTags()
+        public static HashSet<Tag> GetAllTags()
         {
             return tags;
         }
 
-        public HashSet<Tag> GetAllServiceTags(Service service)
+        public static HashSet<Tag> GetAllServiceTags(Service service)
         {
             var serviceRoot = serviceRoots[service];
             var nodes = serviceRoot.EnumerateAllDescendantsAndSelf();
@@ -217,7 +212,7 @@ namespace Disa.Framework
         //    return null;
         //}
 
-        public HashSet<BubbleGroup> GetAllBubbleGroups(IEnumerable<Tag> tags)
+        public static HashSet<BubbleGroup> GetAllBubbleGroups(IEnumerable<Tag> tags)
         {
             var conversationIds = new HashSet<string>();
             foreach (var tag in tags)
@@ -236,12 +231,12 @@ namespace Disa.Framework
             return bubbleGroups;
         }
 
-        public string PrintHierarchy()
+        public static string PrintHierarchy()
         {
             return tree.PrintToString();
         }
 
-        public void PrintAllTags()
+        public static void PrintAllTags()
         {
             foreach (var tag in tags)
             {
