@@ -8,70 +8,65 @@ namespace Disa.Framework
     [ProtoContract]
     public class Node<K, V> where V : new()
     {
+        
         [ProtoMember(1)]
-        private readonly string name;
-        [ProtoMember(2)]
-        private readonly K key;
-        [ProtoMember(3)]
-        private readonly V value;
-        [ProtoMember(4)]
-        private readonly List<Node<K, V>> children = new List<Node<K, V>>();
-        [ProtoMember(5)]
-        private readonly Dictionary<K, Node<K, V>> idChildren = new Dictionary<K, Node<K, V>>();
-
         public string Name
         {
-            get => name;
+            get; set;
         }
+        [ProtoMember(2)]
         public K Key
         {
-            get => key;
+            get; set;
         }
+        [ProtoMember(3)]
         public V Value
         {
-            get => value;
+            get; set;
         }
         public int Height { get; set; }
 
-        [ProtoMember(6, AsReference = true)]
+        [ProtoMember(4, AsReference = true)]
         public Node<K, V> Parent { get; set; }
-        public IReadOnlyList<Node<K, V>> Children { get => children.AsReadOnly(); }
-        public Dictionary<K, Node<K, V>> ChildrenDictionary { get => idChildren; }
-
+        [ProtoMember(5)]
+        public List<Node<K, V>> Children { get; set; } = new List<Node<K, V>>();
+        [ProtoMember(6)]
+        public Dictionary<K, Node<K, V>> ChildrenDictionary { get; set; } = new Dictionary<K, Node<K, V>>();
+        
         public Node()
         {
         }
 
         public Node(K key, Node<K, V> parent)
         {
-            this.key = key;
-            this.value = new V();
+            this.Key = key;
+            this.Value = new V();
             Parent = parent;
         }
 
         public Node(K key, V data, Node<K, V> parent)
         {
-            this.key = key;
-            this.value = data;
+            this.Key = key;
+            this.Value = data;
             Parent = parent;
         }
 
         public void AddChild(Node<K, V> node)
         {
-            children.Add(node);
-            idChildren[node.Key] = node;
+            Children.Add(node);
+            ChildrenDictionary[node.Key] = node;
         }
 
         public void RemoveChild(Node<K, V> node)
         {
-            children.Remove(node);
-            idChildren.Remove(node.Key);
+            Children.Remove(node);
+            ChildrenDictionary.Remove(node.Key);
         }
 
         public HashSet<Node<K, V>> EnumerateAllDescendantsAndSelf()
         {
             var set = new HashSet<Node<K, V>>() { this };
-            foreach (var child in children)
+            foreach (var child in Children)
             {
                 set.UnionWith(child.EnumerateAllDescendantsAndSelf());
             }
@@ -91,7 +86,7 @@ namespace Disa.Framework
 
         public void Print(StringBuilder builder, string padding)
         {
-            foreach (var child in children)
+            foreach (var child in Children)
             {
                 builder.AppendLine($"{padding}|");
                 builder.AppendLine($"{padding}----{child.Key}");
@@ -102,7 +97,7 @@ namespace Disa.Framework
         public string PrintToString(string padding)
         {
             var builder = new StringBuilder();
-            foreach (var child in children)
+            foreach (var child in Children)
             {
                 builder.AppendLine($"{padding}|");
                 builder.AppendLine($"{padding}----{child.Key}");
@@ -117,7 +112,7 @@ namespace Disa.Framework
             {
                 return false;
             }
-            return value.Equals(otherNode.Value);
+            return Value.Equals(otherNode.Value);
         }
 
         public override bool Equals(object obj)
@@ -135,7 +130,7 @@ namespace Disa.Framework
             unchecked // Overflow is fine, just wrap
             {
                 int hash = 17;
-                hash = hash * 23 + key.GetHashCode();
+                hash = hash * 23 + Key.GetHashCode();
                 return hash;
             }
         }
