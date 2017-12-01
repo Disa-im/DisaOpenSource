@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using ProtoBuf;
+using SQLite;
 
 namespace Disa.Framework
 {
@@ -10,10 +13,20 @@ namespace Disa.Framework
     public static class TagManager
     {
         [ProtoContract]
-        class Conversation
+        class ConversationTagIds : ISerializableType<ConversationTagIds>
         {
             [ProtoMember(1)]
+            [PrimaryKey]
             public string Id { get; set; }
+            public byte[] FullyQualifiedTagIdsProtoBytes
+            { get; set; }
+
+            [Ignore]
+            public HashSet<string> FullyQualifiedTagIds
+            {
+                get;
+                set;
+            }
 
             public override int GetHashCode()
             {
@@ -22,36 +35,126 @@ namespace Disa.Framework
 
             public override bool Equals(object obj)
             {
-                var conversation = obj as Conversation;
+                var conversation = obj as ConversationTagIds;
                 if (conversation == null)
                 {
                     return false;
                 }
                 return Id.Equals(conversation.Id);
             }
+
+            public ConversationTagIds SerializeProperties()
+            {
+                FullyQualifiedTagIdsProtoBytes = Utils.ToProtoBytes(FullyQualifiedTagIds);
+                return this;
+            }
+
+            public ConversationTagIds DeserializeProperties()
+            {
+                FullyQualifiedTagIds = Utils.FromProtoBytesToObject<HashSet<string>>(FullyQualifiedTagIdsProtoBytes);
+                return this;
+            }
+        }
+
+        class TagConversationIds : ISerializableType<TagConversationIds>
+        {
+            [PrimaryKey]
+            public string FullyQualifiedId { get; set; }
+            public byte[] FullyQualifiedConversationIdsProtoBytes
+            { get; set; }
+
+            [Ignore]
+            public HashSet<string> BubbleGroupAddresses
+            {
+                get;
+                set;
+            }
+
+            public override int GetHashCode()
+            {
+                return FullyQualifiedId.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                var conversation = obj as TagConversationIds;
+                if (conversation == null)
+                {
+                    return false;
+                }
+                return FullyQualifiedId.Equals(conversation.FullyQualifiedId);
+            }
+
+            public TagConversationIds SerializeProperties()
+            {
+                FullyQualifiedConversationIdsProtoBytes = Utils.ToProtoBytes(BubbleGroupAddresses);
+                return this;
+            }
+
+            public TagConversationIds DeserializeProperties()
+            {
+                BubbleGroupAddresses = Utils.FromProtoBytesToObject<HashSet<string>>(FullyQualifiedConversationIdsProtoBytes);
+                return this;
+            }
         }
 
         [ProtoMember(1)]
         private static readonly string rootName = string.Empty;
         [ProtoMember(2)]
-        private static readonly HashSet<Tag> tags = new HashSet<Tag>();
+        private static HashSet<Tag> tags = new HashSet<Tag>();
         [ProtoMember(3)]
-        private static readonly Tree<Tag, HashSet<Conversation>> tree = new Tree<Tag, HashSet<Conversation>>(new Tag() { Id = rootName, Name = rootName, });
-        private static readonly Dictionary<Service, Node<Tag, HashSet<Conversation>>> serviceRoots =
-            new Dictionary<Service, Node<Tag, HashSet<Conversation>>>();
+        private static Tree<Tag, HashSet<string>> tree = new Tree<Tag, HashSet<string>>(new Tag() { Id = rootName, Name = rootName, });
+        private static Dictionary<Service, Node<Tag, HashSet<string>>> serviceRoots =
+            new Dictionary<Service, Node<Tag, HashSet<string>>>();
         
         // string: internal path of a tag
         // (internal path of a tag ("email/Label_31/Label_34/Label_49") => "email/Label_49")
         // useful for providing quick tag object lookup for services
         [ProtoMember(4)]
-        private static readonly Dictionary<string, Node<Tag, HashSet<Conversation>>> fullyQualifiedIdDictionary =
-            new Dictionary<string, Node<Tag, HashSet<Conversation>>>();
+        private static Dictionary<string, Node<Tag, HashSet<string>>> fullyQualifiedIdDictionary =
+            new Dictionary<string, Node<Tag, HashSet<string>>>();
 
         // service root
         [ProtoMember(5)]
-        private static readonly Dictionary<string, Node<Tag, HashSet<Conversation>>> serviceRootNodeDictionary =
-            new Dictionary<string, Node<Tag, HashSet<Conversation>>>();
-        
+        private static Dictionary<string, Node<Tag, HashSet<string>>> serviceRootNodeDictionary =
+            new Dictionary<string, Node<Tag, HashSet<string>>>();
+
+        private static DatabaseManager databaseManager;
+        private static AsyncTableQuery<ConversationTagIds> conversationTagIdsTable;
+        private static AsyncTableQuery<TagConversationIds> tagConversationIdsTable;
+
+        internal static void Initialize()
+        {
+            var databasePath = Platform.GetDatabasePath();
+            var conversationDatabasePath = Path.Combine(databasePath, @"ConversationTags.db");
+            databaseManager = new DatabaseManager(conversationDatabasePath);
+
+            conversationTagIdsTable = databaseManager.SetupTableObject<ConversationTagIds>();
+            tagConversationIdsTable = databaseManager.SetupTableObject<TagConversationIds>();
+
+            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.db");
+            if (File.Exists(treeDatabasePath))
+            {
+                tree = Utils.FromProtoBytesToObject <Tree<Tag, HashSet<string>>>(File.ReadAllBytes(treeDatabasePath));
+            }
+
+            var nodes = new List<Node<Tag, HashSet<string>>>()
+            {
+                tree.Root,
+            };
+            while (nodes.Count > 0)
+            {
+                var node = nodes[0];
+                nodes.RemoveAt(0);
+                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Key.FullyQualifiedId);
+                var tagConversationIds = databaseManager.FindRow<TagConversationIds>(filter);
+                node.Value = tagConversationIds.BubbleGroupAddresses;
+                fullyQualifiedIdDictionary[node.Key.FullyQualifiedId] = node;
+                tags.Add(node.Key);
+                nodes.AddRange(node.Children);
+            }
+        }
+
         internal static void InitializeServices()
         {
             var services = ServiceManager.RegisteredNoUnified;
@@ -79,9 +182,10 @@ namespace Disa.Framework
                 FullyQualifiedId = $"{service.Information.ServiceName}",
                 Name = service.Information.ServiceName,
                 Service = service,
+                Parent = tree.Root.Key,
             };
 
-            var serviceRoot = new Node<Tag, HashSet<Conversation>>(tag, tree.Root);
+            var serviceRoot = new Node<Tag, HashSet<string>>(tag, tree.Root);
             serviceRoots[service] = serviceRoot;
             serviceRootNodeDictionary[service.Information.ServiceName] = serviceRoot;
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = serviceRoot;
@@ -126,7 +230,7 @@ namespace Disa.Framework
                 throw new ArgumentException($"{nameof(Tag.Parent)}");
             }
             var parentNode = fullyQualifiedIdDictionary[tag.Parent.FullyQualifiedId];
-            var childNode = new Node<Tag, HashSet<Conversation>>(tag, parentNode);
+            var childNode = new Node<Tag, HashSet<string>>(tag, parentNode);
             parentNode.AddChild(childNode);
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = childNode;
             tags.Add(tag);
@@ -152,11 +256,7 @@ namespace Disa.Framework
             foreach (var tag in tags)
             {
                 var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
-                var conversation = new Conversation()
-                {
-                    Id = bubbleGroup.Address,
-                };
-                node.Value.Add(conversation);
+                node.Value.Add(bubbleGroup.Address);
             }
         }
 
@@ -165,11 +265,7 @@ namespace Disa.Framework
             foreach (var tag in tags)
             {
                 var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
-                var conversation = new Conversation()
-                {
-                    Id = bubbleGroup.Address,
-                };
-                node.Value.Remove(conversation);
+                node.Value.Remove(bubbleGroup.Address);
             }
         }
 
@@ -222,13 +318,27 @@ namespace Disa.Framework
                 {
                     continue;
                 }
-                var tagConversations = node.EnumerateAllDescendantsAndSelfData().SelectMany(list => list);
-                var tagConversationIds = tagConversations.Select(c => c.Id).ToHashSet();
+                var tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(list => list);
                 conversationIds.UnionWith(tagConversationIds);
             }
 
             var bubbleGroups = BubbleGroupManager.FindAll((BubbleGroup bg) => conversationIds.Contains(bg.Address)).ToHashSet();
             return bubbleGroups;
+        }
+
+        internal static void Persist()
+        {
+            var databasePath = Platform.GetDatabasePath();
+            var conversationDatabasePath = Path.Combine(databasePath, @"ConversationTags.db");
+            databaseManager = new DatabaseManager(conversationDatabasePath);
+
+            conversationTagIdsTable = databaseManager.SetupTableObject<ConversationTagIds>();
+            tagConversationIdsTable = databaseManager.SetupTableObject<TagConversationIds>();
+
+            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.db");
+            
+            var bytes = Utils.ToProtoBytes(tree);
+            File.WriteAllBytes(treeDatabasePath, bytes);
         }
 
         public static string PrintHierarchy()
