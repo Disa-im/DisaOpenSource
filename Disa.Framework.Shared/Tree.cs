@@ -12,6 +12,11 @@ namespace Disa.Framework
         private readonly Node<K, V> rootNode;
         public Node<K, V> Root { get => rootNode; }
 
+        public Tree()
+        {
+            rootNode = new Node<K, V>(default(K), null);
+        }
+
         public Tree(K key)
         {
             rootNode = new Node<K, V>(key, null);
