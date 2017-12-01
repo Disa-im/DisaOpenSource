@@ -137,26 +137,32 @@ namespace Disa.Framework
             conversationTagIdsTable = databaseManager.SetupTableObject<ConversationTagIds>();
             tagConversationIdsTable = databaseManager.SetupTableObject<TagConversationIds>();
 
-            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.db");
+            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
             if (File.Exists(treeDatabasePath))
             {
                 tree = Utils.FromProtoBytesToObject <Tree<Tag, HashSet<string>>>(File.ReadAllBytes(treeDatabasePath));
-            }
-
-            var nodes = new List<Node<Tag, HashSet<string>>>()
-            {
-                tree.Root,
-            };
-            while (nodes.Count > 0)
-            {
-                var node = nodes[0];
-                nodes.RemoveAt(0);
-                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Key.FullyQualifiedId);
-                var tagConversationIds = databaseManager.FindRow<TagConversationIds>(filter);
-                node.Value = tagConversationIds.BubbleGroupAddresses;
-                fullyQualifiedIdDictionary[node.Key.FullyQualifiedId] = node;
-                tags.Add(node.Key);
-                nodes.AddRange(node.Children);
+                var nodes = new List<Node<Tag, HashSet<string>>>()
+                {
+                    tree.Root,
+                };
+                while (nodes.Count > 0)
+                {
+                    var node = nodes[0];
+                    nodes.RemoveAt(0);
+                    Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Key.FullyQualifiedId);
+                    var tagConversationIds = databaseManager.FindRow<TagConversationIds>(filter);
+                    if (tagConversationIds == null)
+                    {
+                        Utils.DebugPrint($"WUT");
+                    }
+                    else
+                    {
+                        node.Value = tagConversationIds.BubbleGroupAddresses;
+                    }
+                    fullyQualifiedIdDictionary[node.Key.FullyQualifiedId] = node;
+                    tags.Add(node.Key);
+                    nodes.AddRange(node.Children);
+                }
             }
         }
 
