@@ -1,0 +1,263 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
+using System.Threading.Tasks;
+using SQLite;
+using System.Linq.Expressions;
+
+namespace Disa.Framework
+{
+	public class DatabaseManager
+	{
+	    private static T ExecuteTask<T>(Task<T> task)
+	    {
+		    try
+		    {
+			    task.Wait();
+			    return task.Result;
+		    }
+		    catch (SQLiteException ex)
+		    {
+			    Utils.DebugPrint($"SQLiteException {ex.Message}");
+			    return default(T);
+		    }
+		    catch (AggregateException ex)
+		    {
+			    Utils.DebugPrint($"{nameof(AggregateException)} {ex.Message}");
+			    return default(T);
+		    }
+		    catch (Exception ex)
+		    {
+			    throw;
+		    }
+	    }
+		
+		private readonly string filePath;
+		private readonly SQLiteAsyncConnection sqliteAsyncConnection;
+
+		public SQLiteAsyncConnection SqliteConnection
+		{ get => sqliteAsyncConnection; }
+        
+        public DatabaseManager(string filePath)
+        {
+            this.filePath = filePath;
+            sqliteAsyncConnection = new SQLiteAsyncConnection(filePath);
+        }
+
+        // Creates table if they don't exist
+        public AsyncTableQuery<T> SetupTableObject<T>() where T : class, ISerializableType<T>, new()
+        {
+            var connection = sqliteAsyncConnection.GetConnection();
+            var fullEmailInfo = connection.GetTableInfo(nameof(T));
+            if (!fullEmailInfo.Any())
+            {
+                var fullEmailSuccess = CreateTable<T>();
+            }
+
+            return sqliteAsyncConnection.Table<T>();
+		}
+
+		public List<T> ReadRows<T>() where T : ISerializableType<T>, new()
+        {
+			var query = sqliteAsyncConnection.Table<T>();
+
+			var task = query.ToListAsync();
+			var result = ExecuteTask(task);
+
+            foreach (var row in result)
+            {
+                row.DeserializeProperties();
+            }
+
+            return result;
+		}
+    
+        private bool CreateTable<T>() where T : class, ISerializableType<T>, new()
+		{
+			var task = sqliteAsyncConnection.CreateTableAsync<T>();
+			var result = ExecuteTask(task);
+			return task.IsCompleted;
+		}
+        
+		public bool DropTable<T>() where T : new()
+		{
+			var task = sqliteAsyncConnection.DropTableAsync<T>();
+			var result = ExecuteTask(task);
+			return task.IsCompleted;
+		}
+        
+        public bool InsertOrReplaceRow<T>(T row) where T : ISerializableType<T>
+        {
+            row.SerializeProperties();
+
+            var task = sqliteAsyncConnection.InsertOrReplaceAsync(row);
+	        var result = ExecuteTask(task);
+	        return task.IsCompleted;
+	    }
+
+        public void InsertOrReplaceRows<T>(IEnumerable<T> rows) where T : ISerializableType<T>
+        {
+	        var enumerable = rows as IList<T> ?? rows.ToList();
+	        foreach (var row in enumerable)
+            {
+                row.SerializeProperties();
+            }
+
+            var c = sqliteAsyncConnection.GetConnection();
+			foreach (var row in enumerable)
+			{
+				var task = sqliteAsyncConnection.InsertOrReplaceAsync(row);
+				var result = ExecuteTask(task);
+			}
+        }
+        
+        public bool InsertRow<T>(T row) where T : ISerializableType<T>
+        {
+            row.SerializeProperties();
+            var task = sqliteAsyncConnection.InsertAsync(row);
+	        var result = ExecuteTask(task);
+	        return task.IsCompleted;
+	    }
+
+        public bool InsertRows<T>(IEnumerable<T> rows) where T : ISerializableType<T>
+        {
+	        var enumerable = rows as IList<T> ?? rows.ToList();
+	        foreach (var row in enumerable)
+            {
+                row.SerializeProperties();
+            }
+
+            var task = sqliteAsyncConnection.InsertAllAsync(enumerable);
+	        var result = ExecuteTask(task);
+			return task.IsCompleted;
+		}
+
+        public T FindRow<T>(Expression<Func<T, bool>> filter)
+            where T : class, ISerializableType<T>, new()
+        {
+            var table = sqliteAsyncConnection.Table<T>();
+            var task = table.Where(filter).FirstOrDefaultAsync();
+	        var result = ExecuteTask(task);
+
+            if (result == null)
+            {
+                return null;
+            }
+
+	        result.DeserializeProperties();
+            return result;
+        }
+
+        public List<T> FindRows<T>(Expression<Func<T, bool>> filter)
+            where T : class, ISerializableType<T>, new()
+        {
+            var table = sqliteAsyncConnection.Table<T>();
+            var task = table.Where(filter).ToListAsync();
+            var rows = ExecuteTask(task);
+            foreach (var row in rows)
+            {
+                row.DeserializeProperties();
+            }
+            return rows;
+        }
+
+        public bool UpdateRow<T>(Expression<Func<T, bool>> filter, Func<T, T> updateFunc) 
+            where T : class, ISerializableType<T>, new()
+        {
+            var table = sqliteAsyncConnection.Table<T>();
+            var task = table.Where(filter).FirstOrDefaultAsync();
+	        var row = ExecuteTask(task);
+
+            if (row == null)
+            {
+                return false;
+            }
+
+            row.DeserializeProperties();
+            row = updateFunc(row);
+            row.SerializeProperties();
+
+            var updateTask = sqliteAsyncConnection.UpdateAsync(row);
+	        ExecuteTask(updateTask);
+            return updateTask.IsCompleted;
+        }
+
+        public bool UpdateRows<T>(Expression<Func<T, bool>> filter, Func<T, T> updateFunc)
+            where T : class, ISerializableType<T>, new()
+        {
+            var table = sqliteAsyncConnection.Table<T>();
+            var task = table.Where(filter).ToListAsync();
+	        var rows = ExecuteTask(task);
+
+            rows = rows.Select(r => 
+            {
+                r.DeserializeProperties();
+                var updatedRow = updateFunc(r);
+                return updatedRow.SerializeProperties();
+            }).ToList();
+            
+            var updateTask = sqliteAsyncConnection.UpdateAllAsync(rows);
+	        ExecuteTask(task);
+            return updateTask.IsCompleted;
+        }
+
+        public bool UpdateRow<T>(T row) where T : ISerializableType<T>
+        {
+            row.SerializeProperties();
+
+            var task = sqliteAsyncConnection.UpdateAsync(row);
+	        var rows = ExecuteTask(task);
+            return task.IsCompleted;
+        }
+
+        public bool UpdateRows<T>(IEnumerable<T> rows) where T : ISerializableType<T>
+        {
+	        var enumerable = rows as IList<T> ?? rows.ToList();
+	        foreach (var row in enumerable)
+            {
+                row.SerializeProperties();
+            }
+
+            var task = sqliteAsyncConnection.UpdateAllAsync(enumerable);
+	        ExecuteTask(task);
+			return task.IsCompleted;
+		}
+		
+		public bool DeleteRow<T>(T row)
+		{
+			try
+			{
+				var deleteTask = sqliteAsyncConnection.DeleteAsync(row);
+				var rows = ExecuteTask(deleteTask);
+				return deleteTask.IsCompleted;
+			}
+			catch (Exception ex)
+			{
+				Utils.DebugPrint($"Exception {nameof(DeleteRow)}: {ex}");
+				return false;
+			}
+		}
+
+        public bool DeleteRows<T>(Expression<Func<T, bool>> filter)
+            where T : class, ISerializableType<T>, new()
+        {
+            var table = sqliteAsyncConnection.Table<T>();
+            var task = table.Where(filter).ToListAsync();
+	        var rows = ExecuteTask(task);
+	        var flag = true;
+	        
+            foreach (var row in rows)
+            {
+                var deleteTask = sqliteAsyncConnection.DeleteAsync(row);
+                ExecuteTask(deleteTask);
+            }
+            return flag;
+        }
+
+        public bool DeleteRows<T>(IEnumerable<T> rows)
+        {
+	        return rows.Aggregate(true, (current, row) => current & DeleteRow(row));
+        }
+    }
+}
