@@ -103,7 +103,12 @@ namespace Disa.Framework
         [ProtoMember(2)]
         private static HashSet<Tag> tags = new HashSet<Tag>();
         [ProtoMember(3)]
-        private static Tree<Tag, HashSet<string>> tree = new Tree<Tag, HashSet<string>>(new Tag() { Id = rootName, Name = rootName, });
+        private static Tree<Tag, HashSet<string>> tree = new Tree<Tag, HashSet<string>>(new Tag()
+        {
+            Id = rootName,
+            Name = rootName,
+            FullyQualifiedId = rootName,
+        });
         private static Dictionary<Service, Node<Tag, HashSet<string>>> serviceRoots =
             new Dictionary<Service, Node<Tag, HashSet<string>>>();
         
