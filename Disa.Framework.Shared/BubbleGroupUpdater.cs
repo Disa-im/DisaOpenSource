@@ -105,23 +105,11 @@ namespace Disa.Framework
                         return;
                     }
 
-                    Action<DisaThumbnail> callbackFinished = thePhoto =>
+                    bubbleGroup.Photo = photo;
+                    bubbleGroup.IsPhotoSetFromService = true;
+                    if (finished != null)
                     {
-                        bubbleGroup.Photo = thePhoto;
-                        bubbleGroup.IsPhotoSetFromService = true;
-                        if (finished != null)
-                        {
-                            finished(bubbleGroup.Photo);
-                        }
-                    };
-
-                    if (photo == null && bubbleGroup.IsParty)
-                    {
-                        BubbleGroupUtils.StitchPartyPhoto(bubbleGroup, callbackFinished);
-                    }
-                    else
-                    {
-                        callbackFinished(photo);
+                        finished(bubbleGroup.Photo);
                     }
                 });
             }
@@ -207,11 +195,16 @@ namespace Disa.Framework
                         }
                     }
                     // move all unknown participants over
-                    foreach (var unknownParticipant in bubbleGroup.Participants.Where(x => x.Unknown))
+                    // if there are more than 100 unknown participants, we'll ignore and force unknown participants to be rebuilt
+                    // to prevent an exceedingly large cache
+                    if (bubbleGroup.Participants.Count(x => x.Unknown) < 100)
                     {
-                        if (newParticipants.FirstOrDefault(x => service.BubbleGroupComparer(x.Address, unknownParticipant.Address)) == null)
+                        foreach (var unknownParticipant in bubbleGroup.Participants.Where(x => x.Unknown))
                         {
-                            newParticipants.Add(unknownParticipant);
+                            if (newParticipants.FirstOrDefault(x => service.BubbleGroupComparer(x.Address, unknownParticipant.Address)) == null)
+                            {
+                                newParticipants.Add(unknownParticipant);
+                            }
                         }
                     }
                     bubbleGroup.Participants = new ThreadSafeList<DisaParticipant>(newParticipants);
@@ -465,6 +458,43 @@ namespace Disa.Framework
             {
                 Utils.DebugPrint("Error getting quoted message title " + e);
                 return false;
+            }
+        }
+
+        public static void GetMentions(BubbleGroup group, Action<List<Mention>> result)
+        {
+            if (ServiceManager.IsRunning(group.Service))
+            {
+                // Pull latest mention values
+                Task.Factory.StartNew(() =>
+                {
+                    var uiMentions = group.Service as IMentions;
+                    if (uiMentions != null)
+                    {
+                        uiMentions.GetMentions(group, (mentions) =>
+                        {
+                            // No RemoveAll for ThreadSafeList
+                            var itemsToRemove = group.Mentions.ToList();
+                            foreach(var itemToRemove in itemsToRemove)
+                            {
+                                group.Mentions.Remove(itemToRemove);
+                            }
+                            group.Mentions.AddRange(mentions);
+
+                            result(mentions);
+                        });
+                    }
+                    else
+                    {
+                        result(new List<Mention>());
+                    } 
+                });
+            }
+            else
+            {
+                // TODO: For hashtags we pull across all groups.
+                var mentions = group.Mentions.Where(m => m.BubbleGroupId == group.ID).ToList();
+                result(mentions);
             }
         }
     }

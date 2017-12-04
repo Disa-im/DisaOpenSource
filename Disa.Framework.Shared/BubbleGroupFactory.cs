@@ -102,58 +102,63 @@ namespace Disa.Framework
                 public Func<VisualBubble, bool> Comparer { get; set; }
             }
 
-            public Task<List<VisualBubble>> FetchNext()
+			public List<VisualBubble> FetchNext()
+			{
+				if (_endReached)
+					return null;
+
+				lock (BubbleGroupDatabase.OperationLock)
+				{
+					var groups = BubbleGroupManager.GetInner(_group);
+					var groupCursors = groups.Select(@group => new Tuple<BubbleGroup, long>(@group, -1)).ToList();
+
+					var allBubbles = new List<VisualBubble>();
+
+					var handles = OpenDatabaseStreams(groups).ToList();
+
+				GetMoreBubbles:
+
+					var result = LoadDatabaseBubblesOnUnitInto(groups, _day, handles, groupCursors, _selection.BubbleTypes, _selection.Comparer);
+
+					var bubbles = result.Item1;
+					if (bubbles != null)
+					{
+						allBubbles.AddRange(bubbles);
+					}
+
+					groupCursors = result.Item2;
+					_day++;
+
+					var endReached = result.Item2.Count(cursor => cursor.Item2 == -2);
+					if (endReached == result.Item2.Count)
+					{
+						_endReached = true;
+						goto ReturnResult;
+					}
+					if (bubbles == null)
+					{
+						goto GetMoreBubbles;
+					}
+					if (allBubbles.Count < 100)
+					{
+						goto GetMoreBubbles;
+					}
+
+				ReturnResult:
+
+					CloseDatabaseStreams(handles);
+
+					allBubbles.TimSort((x, y) => -x.Time.CompareTo(y.Time));
+
+					return allBubbles;
+				}
+			}
+
+            public Task<List<VisualBubble>> FetchNextAsync()
             {
                 return Task.Factory.StartNew<List<VisualBubble>>(() =>
                 {
-                    if (_endReached)
-                        return null;
-                    
-                    lock (BubbleGroupDatabase.OperationLock)
-                    {
-                        var groups = BubbleGroupManager.GetInner(_group);
-                        var groupCursors = groups.Select(@group => new Tuple<BubbleGroup, long>(@group, -1)).ToList();
-
-                        var allBubbles = new List<VisualBubble>();
-
-                        var handles = OpenDatabaseStreams(groups).ToList();
-
-                        GetMoreBubbles:
-
-                        var result = LoadDatabaseBubblesOnUnitInto(groups, _day, handles, groupCursors, _selection.BubbleTypes, _selection.Comparer);
-
-                        var bubbles = result.Item1;
-                        if (bubbles != null)
-                        {
-                            allBubbles.AddRange(bubbles);
-                        }
-
-                        groupCursors = result.Item2;
-                        _day++;
-
-                        var endReached = result.Item2.Count(cursor => cursor.Item2 == -2);
-                        if (endReached == result.Item2.Count)
-                        {
-                            _endReached = true;
-                            goto ReturnResult;
-                        }
-                        if (bubbles == null)
-                        {
-                            goto GetMoreBubbles;
-                        }
-                        if (allBubbles.Count < 100)
-                        {
-                            goto GetMoreBubbles;
-                        }
-
-                        ReturnResult:
-
-                        CloseDatabaseStreams(handles);
-
-                        allBubbles.TimSort((x, y) => -x.Time.CompareTo(y.Time));
-
-                        return allBubbles;
-                    }
+					return FetchNext();
                 });
             }
         }

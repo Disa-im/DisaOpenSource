@@ -46,8 +46,14 @@ namespace Disa.Framework
             "Xamarin.GooglePlayServices.Location.dll",
             "Xamarin.GooglePlayServices.Maps.dll", 
             "Xamarin.GooglePlayServices.Measurement.dll", 
-            "Xamarin.Insights.dll", "ZXing.Net.Mobile.dll", "mscorlib.dll", 
-            "protobuf-net.dll", "zxing.monoandroid.dll"
+            "ZXing.Net.Mobile.dll", "mscorlib.dll", 
+            "protobuf-net.dll", "zxing.monoandroid.dll",
+            "Microsoft.AppCenter.Analytics.Android.Bindings.dll",
+            "Microsoft.AppCenter.Analytics.dll",
+            "Microsoft.AppCenter.Android.Bindings.dll",
+            "Microsoft.AppCenter.Crashes.Android.Bindings.dll",
+            "Microsoft.AppCenter.Crashes.dll",
+            "Microsoft.AppCenter.dll",
         };
 
         public static void PreInitialize(PlatformImplementation platform, 
@@ -73,7 +79,7 @@ namespace Disa.Framework
         {
             get
             {
-                return "34";
+                return "49";
             }
         }
 

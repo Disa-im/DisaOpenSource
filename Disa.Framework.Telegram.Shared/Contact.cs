@@ -17,8 +17,13 @@ namespace Disa.Framework.Telegram
     {
         public TelegramPartyContact()
         {
-            
+
         }
+
+        /// <summary>
+        /// An AccessHash is used by Telegram when accessing public entities such as public channels.
+        /// </summary>
+        public ulong AccessHash { get; set; }
     }
 
     public class TelegramBotContact : Disa.Framework.BotContact

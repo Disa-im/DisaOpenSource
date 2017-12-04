@@ -10,6 +10,8 @@ namespace Disa.Framework
         public static event EventHandler<Service> Expired;
         public static event EventHandler<Service> Started;
         public static event EventHandler<Service> ContactsUpdated;
+        public static event EventHandler<Service> ServiceUserSettingsChanged;
+        public static event EventHandler<Service> SettingsSaved;
 
         private static Action<ComposeBubbleGroup, BubbleGroup> _composeFinished;
         private static Action _privacyListUpdated;
@@ -85,5 +87,21 @@ namespace Disa.Framework
 
             ContactsUpdated(null, service);
         }
+
+        public static void RaiseServiceUserSettingsChanged(Service service)
+        {
+            if (ServiceUserSettingsChanged == null)
+                return;
+
+            ServiceUserSettingsChanged(null, service);
+        }
+
+		public static void RaiseSettingsSaved(Service service)
+		{
+			if (SettingsSaved == null)
+				return;
+
+            SettingsSaved(null, service);
+		}
     }
 }

@@ -1,0 +1,448 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TelegramRunning" xml:space="preserve">
+    <value>Telegram je spustený</value>
+  </data>
+  <data name="TelegramNotRunning" xml:space="preserve">
+    <value>Telegram nie je spustený</value>
+  </data>
+  <data name="TelegramAllGood" xml:space="preserve">
+    <value>Všetko vyzerá dobre.</value>
+  </data>
+  <data name="TelegramHelp" xml:space="preserve">
+    <value>Pomoc</value>
+  </data>
+  <data name="TelegramSettingsTitle" xml:space="preserve">
+    <value>Telegram nastavenia</value>
+  </data>
+  <data name="TelegramPleaseStart" xml:space="preserve">
+    <value>Prosím spustite Telegram v Disa nastaveniach.</value>
+  </data>
+  <data name="TelegramPleaseStartNoInternet" xml:space="preserve">
+    <value>Prosím spustite Telegram v Disa nastaveniach alebo zopakujte sprievodcu nastavením. Ak žiadna z týchto možností nefunguje, potom je Telegram pravdepodobne nefunkčný.</value>
+  </data>
+  <data name="TelegramSetupWizard" xml:space="preserve">
+    <value>Sprievodca nastavením</value>
+  </data>
+  <data name="TelegramProfileSettings" xml:space="preserve">
+    <value>Nastavenia profilu</value>
+  </data>
+  <data name="TelegramDescription" xml:space="preserve">
+    <value>Telegram je aplikácia na odosielanie správ, ktorá sa zameriava na rýchlosť a bezpečnosť. Je super-rýchly, jednoduchý, bezpečný a zadarmo.</value>
+  </data>
+  <data name="TelegramPleaseConnectToInternet" xml:space="preserve">
+    <value>Pred spustením sprievodcu nastavením sa prosím pripojte na internet.</value>
+  </data>
+  <data name="TelegramSetupWizardTitle" xml:space="preserve">
+    <value>Telegram sprievodca nastavením</value>
+  </data>
+  <data name="TelegramFirstName" xml:space="preserve">
+    <value>Meno</value>
+  </data>
+  <data name="TelegramLastName" xml:space="preserve">
+    <value>Priezvisko</value>
+  </data>
+  <data name="TelegramLoadConversations" xml:space="preserve">
+    <value>Načítať do DIsa posledných 10 konverzácií</value>
+  </data>
+  <data name="TelegramPhoneNumber" xml:space="preserve">
+    <value>Telefónne číslo</value>
+  </data>
+  <data name="TelegramNext" xml:space="preserve">
+    <value>Ďalej</value>
+  </data>
+  <data name="TelegramInvalidFirstNameTitle" xml:space="preserve">
+    <value>Nesprávne meno</value>
+  </data>
+  <data name="TelegramInvalidFirstNameMessage" xml:space="preserve">
+    <value>Prosím zadajte Vaše meno.</value>
+  </data>
+  <data name="TelegramInvalidLastNameTitle" xml:space="preserve">
+    <value>Nesprávne priezvisko</value>
+  </data>
+  <data name="TelegramInvalidLastNameMessage" xml:space="preserve">
+    <value>Prosím zadajte Vaše priezvisko.</value>
+  </data>
+  <data name="TelegramOkay" xml:space="preserve">
+    <value>Okej</value>
+  </data>
+  <data name="TelegramYes" xml:space="preserve">
+    <value>Áno</value>
+  </data>
+  <data name="TelegramNo" xml:space="preserve">
+    <value>Nie</value>
+  </data>
+  <data name="TelegramInvalidNumberTitle" xml:space="preserve">
+    <value>Nesprávne číslo</value>
+  </data>
+  <data name="TelegramInvalidNumberMessage" xml:space="preserve">
+    <value>Číslo, ktoré ste zadali je nesprávne. Prosím opravte to.</value>
+  </data>
+  <data name="TelegramConfirmNumberTitle" xml:space="preserve">
+    <value>Potvrdiť číslo</value>
+  </data>
+  <data name="TelegramConfirmNumberMessage" xml:space="preserve">
+    <value>Je toto číslo [number] správne? Číslo bude použité na potvrdenie účtu Telegram</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedMessage" xml:space="preserve">
+    <value>Nebolo možné vygenerovať autorizačný kľúč. prosím skúste to znovu.</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedTitle" xml:space="preserve">
+    <value>Generovanie autorizácie zlyhalo</value>
+  </data>
+  <data name="TelegramInformationTitle" xml:space="preserve">
+    <value>Informácia</value>
+  </data>
+  <data name="TelegramVerificationTitle" xml:space="preserve">
+    <value>Overenie</value>
+  </data>
+  <data name="TelegramVerifyHaveCode" xml:space="preserve">
+    <value>Už mám kód</value>
+  </data>
+  <data name="TelegramVerifyQuestion" xml:space="preserve">
+    <value>Akým spôsobom by ste chceli overiť Váš Telegram účet ?</value>
+  </data>
+  <data name="TelegramVerifyViaPhone" xml:space="preserve">
+    <value>cez mobil</value>
+  </data>
+  <data name="TelegramVerifyViaSms" xml:space="preserve">
+    <value>cez SMS</value>
+  </data>
+  <data name="TelegramVerifySentToTelegram" xml:space="preserve">
+    <value>Overovací kľúč bol odoslaný do aplikácie Telegram na vašom druhom zariadení</value>
+  </data>
+  <data name="TelegramVerifySentViaSms" xml:space="preserve">
+    <value>Overovací kľúč bol odoslaný pomocou SMS na číslo</value>
+  </data>
+  <data name="TelegramVerifyError" xml:space="preserve">
+    <value>Nastala chyba. Prosím skúste to znovu</value>
+  </data>
+  <data name="TelegramVerifyInvalidNumber" xml:space="preserve">
+    <value>Telefónne číslo, ktoré ste zadali je nesprávne. Prosím skúste iné</value>
+  </data>
+  <data name="TelegramCodeSentViaSms" xml:space="preserve">
+    <value>Telegram bol kontaktovaný. Za chvíľu Vám príde správa s aktivačným kľúčom</value>
+  </data>
+  <data name="TelegramCodeSentViaPhone" xml:space="preserve">
+    <value>Telegram bol kontaktovaný. Za chvíľu Vám zavoláme s aktivačným kľúčom.</value>
+  </data>
+  <data name="TelegramCodeManualEnter" xml:space="preserve">
+    <value>Prosím napíšte 6 znakov ktoré ste dostali od Telegramu.</value>
+  </data>
+  <data name="TelegramCodeSentNotComingSms" xml:space="preserve">
+    <value>Ak nedostanete Váš kód, prosím kliknite na 'Overenie' a aktivujte Telegram voľbou "cez mobil"</value>
+  </data>
+  <data name="TelegramCodeTitle" xml:space="preserve">
+    <value>Kód</value>
+  </data>
+  <data name="TelegramCode" xml:space="preserve">
+    <value>Kód</value>
+  </data>
+  <data name="TelegramCodeInvalidTitle" xml:space="preserve">
+    <value>Nesprávny kód</value>
+  </data>
+  <data name="TelegramCodeInvalidMessage" xml:space="preserve">
+    <value>Prosím zadajte kód aby ste overili Telegram.</value>
+  </data>
+  <data name="TelegramInvalidCodeDetail" xml:space="preserve">
+    <value>Vložený kód nie je správny</value>
+  </data>
+  <data name="TelegramSubmit" xml:space="preserve">
+    <value>Odoslať</value>
+  </data>
+  <data name="TelegramCodeError" xml:space="preserve">
+    <value>Nastala chyba. Prosím skúste to znovu.</value>
+  </data>
+  <data name="TelegramCodeNumberInvalid" xml:space="preserve">
+    <value>Vložené telefónne číslo nie je správne. Prosím skúste iné.</value>
+  </data>
+  <data name="TelegramCodeCodeExpired" xml:space="preserve">
+    <value>Vložený kód už vypršal. Prosím zašlite si ďalší.</value>
+  </data>
+  <data name="TelegramCodeCodeInvalid" xml:space="preserve">
+    <value>Vložený kód nie je platný. Prosím skúste iný.</value>
+  </data>
+  <data name="TelegramCodeFirstNameInvalid" xml:space="preserve">
+    <value>Prvé meno nie je platné. Prosím skúste iné.</value>
+  </data>
+  <data name="TelegramCodeLastNameInvalid" xml:space="preserve">
+    <value>Priezvisko nie je platné. Prosím skúste iné.</value>
+  </data>
+  <data name="TelegramContact" xml:space="preserve">
+    <value>Kontakty</value>
+  </data>
+  <data name="TelegramEveryone" xml:space="preserve">
+    <value>Každý</value>
+  </data>
+  <data name="TelegramGroups" xml:space="preserve">
+    <value>Skupiny</value>
+  </data>
+  <data name="TelegramLastSeen" xml:space="preserve">
+    <value>Naposledy videný</value>
+  </data>
+  <data name="TelegramNobody" xml:space="preserve">
+    <value>Nikto</value>
+  </data>
+  <data name="TelegramNone" xml:space="preserve">
+    <value>Žiadne</value>
+  </data>
+  <data name="TelegramNotRunningLong" xml:space="preserve">
+    <value>Telegram potrebuje byť spustený pred tým než začnete upravovať nastavenia.</value>
+  </data>
+  <data name="TelegramPrivacyList" xml:space="preserve">
+    <value>Zoznam blokovaných kontaktov</value>
+  </data>
+  <data name="TelegramCodeSentPhoneCall" xml:space="preserve">
+    <value>Obdržíte hovor od Telegramu, kde získate kôd. Zadajte kód nižsie.</value>
+  </data>
+  <data name="TelegramCodeSentTelegramApp" xml:space="preserve">
+    <value>Kód bol poslaný do aplikácie Telegram na vašom druhom zariadení.</value>
+  </data>
+  <data name="TelegramCodeSentText" xml:space="preserve">
+    <value>Kód vám bol zaslaný pomocou SMS</value>
+  </data>
+  <data name="TelegramCodeResendViaPhoneCall" xml:space="preserve">
+    <value>Neobdržaliste kód ani po minúte ? Stlačte tlačidlo vyššie aby ste dostali hovor kde získate kód ktorý treba zadať. </value>
+  </data>
+  <data name="TelegramCodeResendViaText" xml:space="preserve">
+    <value>Nedostali ste kód? Stlačením tlačidla vyššie dostanete kód prostredníctvom SMS.</value>
+  </data>
+  <data name="TelegramSelect" xml:space="preserve">
+    <value>Zvoliť</value>
+  </data>
+  <data name="TelegramVerify" xml:space="preserve">
+    <value>Overiť</value>
+  </data>
+  <data name="TelegramPassword" xml:space="preserve">
+    <value>Heslo</value>
+  </data>
+  <data name="TelegramEnterPassword" xml:space="preserve">
+    <value>Prosím zadajte vaše heslo k prihláseniu</value>
+  </data>
+  <data name="TelegramPasswordTitle" xml:space="preserve">
+    <value>Heslo</value>
+  </data>
+  <data name="TelegramFinish" xml:space="preserve">
+    <value>Dokončiť</value>
+  </data>
+  <data name="TelegramForgotPassword" xml:space="preserve">
+    <value>Zabudnuté heslo?</value>
+  </data>
+  <data name="TelegramInvalidPassword" xml:space="preserve">
+    <value>Nesprávne heslo</value>
+  </data>
+  <data name="TelegramInvalidPasswordDetail" xml:space="preserve">
+    <value>Zadané heslo nieje správne. Prosím skúste znova.</value>
+  </data>
+  <data name="TelegramPasswordError" xml:space="preserve">
+    <value>Nastala chyba. Prosím skúste znova.</value>
+  </data>
+  <data name="TelegramCodeIntitalText" xml:space="preserve">
+    <value>Kliknutím na tlačidlo nižšie overíte svoje telefónne číslo</value>
+  </data>
+  <data name="TelegramRecoverPassword" xml:space="preserve">
+    <value>Obnovenie hesla</value>
+  </data>
+  <data name="TelegramRecoverPasswordEmail" xml:space="preserve">
+    <value>Obnovenie hesla</value>
+  </data>
+  <data name="TelegramEnterCodeSentToEmail" xml:space="preserve">
+    <value>Zadajte kód odoslaný na vašu e-mailovú adresu na obnovenie účtu [emailPattern].</value>
+  </data>
+  <data name="TelegramCannotAccessEmail" xml:space="preserve">
+    <value>Nemôžete získať prístup k e-mailom?</value>
+  </data>
+  <data name="TelegramCancel" xml:space="preserve">
+    <value>Zrušiť</value>
+  </data>
+  <data name="TelegramResetAccount" xml:space="preserve">
+    <value>Resetovať účet</value>
+  </data>
+  <data name="TelegramNeedToResetAccount" xml:space="preserve">
+    <value>Ak nemôžete získať prístup k svojmu e-mailu, jedinou možnosťou je obnoviť svoj účet. VÝSTRAHA! Kliknutím na tlačidlo OK vymažete všetky svoje rozhovory a dáta z Telegram serverov. </value>
+  </data>
+  <data name="TelegramPasswordCodeTitle" xml:space="preserve">
+    <value>Kód pre obnovu hesla</value>
+  </data>
+  <data name="TelegramUserInformationTitle" xml:space="preserve">
+    <value>Informácie o užívateľovi</value>
+  </data>
+  <data name="TelegramUsername" xml:space="preserve">
+    <value>Užívateľské meno</value>
+  </data>
+  <data name="TelegramEdit" xml:space="preserve">
+    <value>Upraviť</value>
+  </data>
+  <data name="TelegramDone" xml:space="preserve">
+    <value>Hotovo</value>
+  </data>
+  <data name="TelegramNoUsernameSet" xml:space="preserve">
+    <value>Užívateľské meno nebolo nastavené</value>
+  </data>
+  <data name="TelegramEnterUsername" xml:space="preserve">
+    <value>Zadajte užívateľské meno</value>
+  </data>
+  <data name="TelegramEnterLastName" xml:space="preserve">
+    <value>Zadajte priezvisko</value>
+  </data>
+  <data name="TelegramUserInformation" xml:space="preserve">
+    <value>Je možné použiť a-z, 0-9 a "_" symbol. Minimálna dĺžka je 5 znakov.</value>
+  </data>
+  <data name="TelegramUsernameNotLongEnough" xml:space="preserve">
+    <value>Užívateľské meno musí mať minimálne 5 znakov.</value>
+  </data>
+  <data name="TelegramUsernameInvalid" xml:space="preserve">
+    <value>Prepáčte, užívateľské meno je nesprávne.</value>
+  </data>
+  <data name="TelegramUsernameTaken" xml:space="preserve">
+    <value>Prepáčte, užívateľské meno už bolo použité.</value>
+  </data>
+  <data name="TelegramUsernameAvailable" xml:space="preserve">
+    <value>[username] je dostupné!</value>
+  </data>
+  <data name="TelegramUsernameChecking" xml:space="preserve">
+    <value>Preverujem užívateľské meno...</value>
+  </data>
+  <data name="TelegramUsernameTryAgainLater" xml:space="preserve">
+    <value>Prosím skúste znova neskôr...</value>
+  </data>
+  <data name="TelegramNameFirstNameEmpty" xml:space="preserve">
+    <value>Meno nemôže byť prázdne.</value>
+  </data>
+  <data name="TelegramMuteNotificationsTitle" xml:space="preserve">
+    <value>Vypnúť notifikácie</value>
+  </data>
+  <data name="TelegramMuteNotificationsHeader" xml:space="preserve">
+    <value>V súčasnosti máte nainštalovaný telegram! Telegram aj Disa môžu byť použité súčasne. &lt;b&gt; Ak chcete zabrániť duplicitným notifikáciám, zakážte Telegram notifikácie: &lt;/b&gt;</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Title" xml:space="preserve">
+    <value>Ako?</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Text" xml:space="preserve">
+    <value>Stlačte hamburger menu na hlavnej obrazovke v Telegram aplikácii. Potom stlačte '&lt;i&gt;Settings&lt;/i&gt;,' ďalej '&lt;i&gt;Notifications and Sounds&lt;/i&gt;.' Vypnite dva '&lt;i&gt;Alert&lt;/i&gt;' prepínače pri '&lt;i&gt;Message notifications&lt;/i&gt;' a '&lt;i&gt;Group notifications&lt;/i&gt;.'</value>
+  </data>
+  <data name="TelegramMuteNotificationsWatchVideo" xml:space="preserve">
+    <value>Pozerať video</value>
+  </data>
+  <data name="TelegramSearchHint" xml:space="preserve">
+    <value>Zadajte názov kontaktu</value>
+  </data>
+
+</root>

@@ -7,7 +7,7 @@ namespace Disa.Framework.Bubbles
     [ProtoContract]
     public class PartyInformationBubble : VisualBubble
     {
-        public enum InformationType { ParticipantAdded, ParticipantRemoved, TitleChanged, ThumbnailChanged, UpgradedToExtendedParty }
+        public enum InformationType { ParticipantAdded, ParticipantRemoved, TitleChanged, ThumbnailChanged, UpgradedToExtendedParty, AddedToChannel }
 
         [ProtoMember(1)]
         public string Message { get; private set; }

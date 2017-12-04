@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
+using Disa.Framework.Bots;
 
 namespace Disa.Framework
 {
@@ -270,6 +272,14 @@ namespace Disa.Framework
 
             Utils.DebugPrint("Sending " + b.GetType().Name + " on service " + b.Service.Information.ServiceName);
             b.Service.SendBubble(b);
+
+            if (b is VisualBubble)
+            {
+                Analytics.RaiseServiceEvent(
+                    Analytics.EventAction.MessageSent,
+                    Analytics.EventCategory.Messaging,
+                    b.Service);
+            }
         }
 
         public static void SendSubscribe(Service service, bool subscribe)
@@ -593,7 +603,68 @@ namespace Disa.Framework
                 return fileBubble.Path;
             }
 
+            var stickerBubble = bubble as StickerBubble;
+            if (stickerBubble != null)
+            {
+                return stickerBubble.StickerPath;
+            }
+
             return null;
+        }
+
+        private static Regex _linkExtraction;
+        private static void AddUrlMarkupIfNeeded(VisualBubble bubble)
+        {
+            try
+            {
+                var textBubble = bubble as TextBubble;
+                if (textBubble != null && !textBubble.HasParsedMessageForUrls) 
+                {
+                    var markups = new List<BubbleMarkup>();
+                    if (_linkExtraction == null) 
+                    {
+                        _linkExtraction = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    }
+                    var rawString = textBubble.Message;
+                    foreach (Match m in _linkExtraction.Matches(rawString))
+                    {
+                        markups.Add(new BubbleMarkupUrl
+                        {
+                            Url = m.Value,
+                        });
+                    }
+                    if (textBubble.BubbleMarkups == null)
+                    {
+                        textBubble.BubbleMarkups = new List<BubbleMarkup>();
+                    }
+                    textBubble.BubbleMarkups.AddRange(markups);
+                    textBubble.HasParsedMessageForUrls = true;
+                }
+            }
+            catch (Exception e)
+            {
+                Utils.DebugPrint("Failed to add UrlMarkup: " + e);
+            }
+        }
+
+        internal static void AddUrlMarkupIfNeeded(VisualBubble[] bubbles)
+        {
+            if (bubbles == null)
+                return;
+            foreach (var bubble in bubbles)
+            {
+                AddUrlMarkupIfNeeded(bubble);
+            }
+        }
+
+        internal static void AddUrlMarkupIfNeeded(List<VisualBubble> bubbles)
+        {
+            if (bubbles == null)
+                return;
+            foreach (var bubble in bubbles)
+            {
+                AddUrlMarkupIfNeeded(bubble);
+            }
         }
 
         internal static BubbleGroup Group(VisualBubble vb, bool resend = false, bool insertAtBottom = false)
@@ -601,6 +672,8 @@ namespace Disa.Framework
             lock (BubbleGroupDatabase.OperationLock)
             {
                 Utils.DebugPrint("Grouping an " + vb.Direction + " bubble on service " + vb.Service.Information.ServiceName);
+
+                AddUrlMarkupIfNeeded(vb);
 
                 var theGroup =
                     BubbleGroupManager.FindWithAddress(vb.Service, vb.Address);
@@ -642,17 +715,55 @@ namespace Disa.Framework
                         return theGroup;
                     }
 
+                    // Does the Service for this VisualBubble require that the VisualBubble's IdService and IdService2
+                    // be distinct?
                     var visualBubbleServiceId = vb.Service as IVisualBubbleServiceId;
                     if (visualBubbleServiceId != null && 
                         visualBubbleServiceId.DisctinctIncomingVisualBubbleIdServices())
                     {
-                        if (vb.IdService != null)
+                        // Ok, we need to be distinct, BUT do the VisualBubble Type's have to be distinct as well?
+                        var checkType = true;
+                        if (!DisaFrameworkMethods.Missing(vb.Service, DisaFrameworkMethods.IVisualBubbleServiceIdCheckType))
                         {
-                            duplicate = theGroup.Bubbles.FirstOrDefault(x => x.GetType() == vb.GetType() && x.IdService == vb.IdService) != null;
+                            checkType = visualBubbleServiceId.CheckType();
                         }
-                        if (!duplicate && vb.IdService2 != null)
+
+                        // Ok, now does the Service have special additional logic it wants to use for the distinction comparison?
+                        // Example: For Telegram, we allow an ImageBubble immediately followed by a TextBubble to have the 
+                        //          same VisualBubble.IdService - as this represents an image with a caption in Telegram.
+                        if (DisaFrameworkMethods.Missing(vb.Service, DisaFrameworkMethods.IVisualBubbleServiceIdVisualBubbleIdComparer))
                         {
-                            duplicate = theGroup.Bubbles.FirstOrDefault(x => x.GetType() == vb.GetType() && x.IdService2 == vb.IdService2) != null;
+                            // Normal distinction checks
+                            if (vb.IdService != null)
+                            {
+                                duplicate = theGroup.Bubbles.FirstOrDefault(x =>
+                                                    (!checkType || x.GetType() == vb.GetType()) && x.IdService == vb.IdService) != null;
+                            }
+                            if (!duplicate && vb.IdService2 != null)
+                            {
+                                duplicate = theGroup.Bubbles.FirstOrDefault(x =>
+                                                    (!checkType || x.GetType() == vb.GetType()) && x.IdService2 == vb.IdService2) != null;
+                            }
+                        }
+                        else
+                        {
+                            // Special additional Service defined distinction checks
+                            if (vb.IdService != null)
+                            {
+                                var duplicateBubble = theGroup.Bubbles.FirstOrDefault(x =>
+                                                    (!checkType || x.GetType() == vb.GetType()) && x.IdService == vb.IdService);
+
+                                duplicate = duplicateBubble == null ? false :
+                                    visualBubbleServiceId.VisualBubbleIdComparer(left: duplicateBubble, right: vb);
+                            }
+                            if (!duplicate && vb.IdService2 != null)
+                            {
+                                var duplicateBubble = theGroup.Bubbles.FirstOrDefault(x =>
+                                                    (!checkType || x.GetType() == vb.GetType()) && x.IdService2 == vb.IdService2);
+
+                                duplicate = duplicateBubble == null ? false :
+                                    visualBubbleServiceId.VisualBubbleIdComparer(duplicateBubble, vb);
+                            }
                         }
                     }
 

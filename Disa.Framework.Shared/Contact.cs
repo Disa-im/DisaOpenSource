@@ -11,6 +11,11 @@ namespace Disa.Framework
         public long LastSeen { get; set; }
         public bool? Available { get; set; }
 
+        /// <summary>
+        /// For Channels, will contain the Channel description.
+        /// </summary>
+        public string Description { get; set; }
+
         public string FullName
         {
             get
@@ -53,5 +58,6 @@ namespace Disa.Framework
 
     public class BotContact : Contact
     {
+        public string BotInlinePlaceholder { get; set; }
     }
 }

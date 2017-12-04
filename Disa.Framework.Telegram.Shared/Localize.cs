@@ -3,7 +3,7 @@ using System.Resources;
 using System.Globalization;
 using System.Reflection;
 
-namespace Disa.Framework.Telegram.Mobile
+namespace Disa.Framework.Telegram
 {
     public class Localize
     {
@@ -20,7 +20,7 @@ namespace Disa.Framework.Telegram.Mobile
             if (_cachedCultureInfo == null || _cachedResourceManager == null)
             {
                 _cachedCultureInfo = new CultureInfo(Locale());
-                _cachedResourceManager = new ResourceManager("Disa.Framework.Telegram.Mobile.Resx.AppResources", typeof(Localize).GetTypeInfo().Assembly);
+                _cachedResourceManager = new ResourceManager("Disa.Framework.Telegram.Resx.AppResources", typeof(Localize).GetTypeInfo().Assembly);
             }
             return _cachedResourceManager.GetString(key, _cachedCultureInfo);
         }

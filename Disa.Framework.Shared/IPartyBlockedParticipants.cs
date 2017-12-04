@@ -3,8 +3,22 @@ using System.Threading.Tasks;
 
 namespace Disa.Framework
 {
+    [DisaFramework]
     public interface IPartyBlockedParticipants
     {
+        //
+        // Original interface - for these you can use the following test methodology:
+        //
+        // // Does the service implement the required interface?
+        // var partyBlockedParticipantsUi = service as IPartyBlockedParticipants
+        // if (partyBlockedParticipantsUi != null)
+        // {
+        //     .
+        //     .
+        //     .
+        // }
+        //
+
         /// <summary>
         /// Set the result of this with an array of DisaParticipants which are blocked for this party.
         /// </summary>
@@ -36,6 +50,19 @@ namespace Disa.Framework
         /// <param name="address">the address of whom the Disa thumbnail is needed</param>
         /// <param name="result">The result Action to set the DisaThumbnail on.</param>
         Task GetPartyBlockedParticipantPicture(BubbleGroup group, string address, Action<DisaThumbnail> result);
+
+        //
+        // Begin interface extensions below. For these you must use the following test methodology
+        // or something similar:
+        // 
+        // // Do we have the required method?
+        // if(DisaFrameworkMethods.Missing(service, DisaFrameWorkMethods.IPartyBlockedParticipantsXxx)
+        // {
+        //     return;
+        // }
+        //
+        // // Ok to proceed
+        //
 
     }
 }

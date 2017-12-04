@@ -4,6 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System;
 using SharpMTProto.Utils;
 
 namespace SharpMTProto.Services
@@ -13,6 +14,8 @@ namespace SharpMTProto.Services
     /// </summary>
     public interface IMessageIdGenerator
     {
+		long TimeDifference { get; set; }
+
         ulong GetNextMessageId();
     }
 
@@ -21,20 +24,41 @@ namespace SharpMTProto.Services
     /// </summary>
     public class MessageIdGenerator : IMessageIdGenerator
     {
-        private const ulong X4Mask = ~3UL;
+        private long _timeDifference;
         private ulong _lastMessageId;
+
+        public long TimeDifference
+        {
+            get
+            {
+                return _timeDifference;
+            }
+            set
+            {
+                _lastMessageId = 0;
+                _timeDifference = value;
+            }
+        }
+
+        private ulong GetCurrentUnixTimestampMilliseconds()
+        {
+            var time = UnixTimeUtils.GetCurrentUnixTimestampMilliseconds();
+            var newTime = (ulong)((long)time + TimeDifference);
+            return newTime;
+        }
 
         public ulong GetNextMessageId()
         {
-            // Documentation says that message id should be unixtime * 2^32.
-            // But the real world calculations in other client software looking very weird.
-            // Have no idea how it is actually calculated.
-            ulong messageId = UnixTimeUtils.GetCurrentUnixTimestampMilliseconds();
-            messageId = (messageId*4294967 + (messageId*296/1000)) & X4Mask;
+            var currentTime = GetCurrentUnixTimestampMilliseconds();
+            ulong messageId = (ulong)(((double)currentTime * 4294967296.0) / 1000.0);
             if (messageId <= _lastMessageId)
             {
-                messageId = _lastMessageId + 4;
+                messageId = _lastMessageId + 1;
             }
+            while (messageId % 4 != 0)
+			{
+				messageId++;
+			}
             _lastMessageId = messageId;
             return messageId;
         }

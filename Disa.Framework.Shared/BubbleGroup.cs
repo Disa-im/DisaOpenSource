@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
 using ProtoBuf;
+using System.Globalization;
 
 namespace Disa.Framework
 {
@@ -22,7 +23,7 @@ namespace Disa.Framework
             
         public bool IsPhotoSetFromService { get; set; }
         public bool IsPhotoSetInitiallyFromCache { get; internal set; }
-        public DisaThumbnail Photo { get; internal set; }
+        public DisaThumbnail Photo { get; set; }
 
         public bool IsParticipantsSetFromService { get; internal set; }
         public ThreadSafeList<DisaParticipant> Participants = new ThreadSafeList<DisaParticipant>();
@@ -32,6 +33,8 @@ namespace Disa.Framework
 
         public readonly ThreadSafeList<SendBubbleAction> SendBubbleActions = new ThreadSafeList<SendBubbleAction>();
         public long LastSeen { get; internal set; }
+
+        public ThreadSafeList<Mention> Mentions = new ThreadSafeList<Mention>();
 
         public PresenceBubble.PresenceType PresenceType { get; internal set; }
         public PresenceBubble.PlatformType PresencePlatformType { get; internal set; }
@@ -93,6 +96,8 @@ namespace Disa.Framework
         internal BubbleGroupSettings Settings { get; set; }
 
         private long _bubblesInsertedCount;
+
+		public bool InputDisabled { get; set; }
 
         public void RegisterSynced(Action<BubbleGroup> updated)
         {
@@ -178,7 +183,56 @@ namespace Disa.Framework
                         unreadIndicatorIndex = i;
                     }
 
-                    if (nBubble.Time <= b.Time)
+                    // IMPORTANT: Our Time field is specified in seconds, however scenarios are appearing
+                    //            (e.g., bots) where messages are sent in on the same second but still require
+                    //            proper ordering. In this case, Services may set a flag specifying a fallback 
+                    //            to the ID assigned by the Service (e.g. Telegram).
+                    if ((nBubble.Time == b.Time) &&
+                        (nBubble.IsServiceIdSequence && b.IsServiceIdSequence))
+                    {
+                        if (string.Compare(
+                            strA: nBubble.IdService,
+                            strB: b.IdService,
+                            ignoreCase: false,
+                            culture: CultureInfo.InvariantCulture) < 0)
+                        {
+                            //
+                            // Incoming bubble must be placed AFTER current bubble we are evaluating
+                            //
+
+                            if (i == Bubbles.Count - 1)
+                            {
+                                Bubbles.Add(b);
+                                if (b.Direction == Bubble.BubbleDirection.Incoming)
+                                {
+                                    BubbleGroupSettingsManager.SetUnread(this, true);
+                                }
+                            }
+                            else
+                            {
+                                Bubbles.Insert(i + 1, b);
+                                if (i >= unreadIndicatorIndex && b.Direction == Bubble.BubbleDirection.Outgoing)
+                                {
+                                    BubbleGroupSettingsManager.SetUnreadIndicatorGuid(this, b.ID, false);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //
+                            // Incoming bubble must be placed BEFORE current bubble we are evaluating
+                            //
+
+                            Bubbles.Insert(i, b);
+                            if (i >= unreadIndicatorIndex && b.Direction == Bubble.BubbleDirection.Outgoing)
+                            {
+                                BubbleGroupSettingsManager.SetUnreadIndicatorGuid(this, b.ID, false);
+                            }
+                        }
+                        break;
+                    }
+                    // OK, simpler scenario, incoming bubble must be placed AFTER current bubble we are evaluating
+                    else if (nBubble.Time <= b.Time)
                     {
                         // adding it to the end, we can do a simple contract
                         if (i == Bubbles.Count - 1)

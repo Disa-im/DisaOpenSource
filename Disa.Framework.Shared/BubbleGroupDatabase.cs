@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Disa.Framework.Bubbles;
 using ProtoBuf;
+using System.Globalization;
 
 namespace Disa.Framework
 {
@@ -166,7 +167,28 @@ namespace Disa.Framework
                                 stream.Position = 0;
 
                                 var bubblesToInsert = bubbleTuples.Select(x => x.Item2).ToList();
-                                bubblesToInsert.TimSort((x, y) => x.Time.CompareTo(y.Time));
+                                bubblesToInsert.TimSort((x, y) =>
+                                {
+                                    // IMPORTANT: Our Time field is specified in seconds, however scenarios are appearing
+                                    //            (e.g., bots) where messages are sent in on the same second but still require
+                                    //            proper ordering. In this case, Services may set a flag specifying a fallback 
+                                    //            to the ID assigned by the Service (e.g. Telegram).
+                                    if ((x.Time == y.Time) &&
+                                        (x.IsServiceIdSequence && y.IsServiceIdSequence))
+                                    {
+                                        return string.Compare(
+                                            strA: x.IdService,
+                                            strB: y.IdService,
+                                            ignoreCase: false,
+                                            culture: CultureInfo.InvariantCulture);
+                                    }
+                                    // OK, simpler scenario, just compare the Time field for the bubbles
+                                    else
+                                    {
+                                        return x.Time.CompareTo(y.Time);
+                                    }
+                                });
+
                                 foreach (var bubbleToInsert in bubblesToInsert)
                                 {
                                     using (var ms = new MemoryStream())
@@ -196,10 +218,14 @@ namespace Disa.Framework
                         byte[] headerBytes;
                         int headerBytesLength;
                         int endPosition;
+                        int bubbleDataLength;
 
                         BubbleGroupDatabasePrimitives.ReadBubbleHeader(stream, out headerBytes, out headerBytesLength);
                         BubbleGroupDatabasePrimitives.FindBubbleHeaderDelimiter(headerBytes, headerBytesLength, 0, out endPosition);
-                        var bubbleDataLength = BubbleGroupDatabasePrimitives.JumpBubbleData(stream); //we need to seek over the data.
+
+                        //we need to seek over the data.
+                        var bubbleData = BubbleGroupDatabasePrimitives.ReadBubbleData(stream, out bubbleDataLength);
+                        var nBubble = Deserialize(bubbleData);
 
                         var guid = BubbleGroupDatabasePrimitives.ReadBubbleHeaderStruct(headerBytes, headerBytesLength,
                             endPosition + 1, out endPosition);
@@ -214,10 +240,43 @@ namespace Disa.Framework
                                 if (guidCheck && guid == x.Item2.ID)
                                     return false;
 
-                                if (longTime <= x.Item1)
-                                    return true;
+                                // IMPORTANT: Our Time field is specified in seconds, however scenarios are appearing
+                                //            (e.g., bots) where messages are sent in on the same second but still require
+                                //            proper ordering. In this case, Services may set a flag specifying a fallback 
+                                //            to the ID assigned by the Service (e.g. Telegram).
+                                if ((longTime == x.Item1) &&
+                                    (nBubble.IsServiceIdSequence && x.Item2.IsServiceIdSequence))
+                                {
+                                    if (string.Compare(
+                                        strA: nBubble.IdService,
+                                        strB: x.Item2.IdService,
+                                        ignoreCase: false,
+                                        culture: CultureInfo.InvariantCulture) < 0)
+                                    {
+                                        //
+                                        // Incoming bubble qualifies to be placed AFTER current bubble we are evaluating
+                                        //
 
-                                return false;
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        //
+                                        // Incoming bubble DOES NOT qualify to be placed AFTER current bubble we are evaluating
+                                        //
+
+                                        return false;
+                                    }
+                                }
+                                // OK, simpler scenario, DOES incoming bubble qualify to be placed AFTER current bubble we are evaluating
+                                if (longTime <= x.Item1)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
 
                             }).ToList();
                             if (!bubblesToInsert.Any())

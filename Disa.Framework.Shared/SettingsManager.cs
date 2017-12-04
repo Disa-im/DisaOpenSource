@@ -10,7 +10,30 @@ namespace Disa.Framework
 
         private static string GetPath(Service service)
         {
-            return Path.Combine(Platform.GetSettingsPath(), service.Information.ServiceName + ".xml");
+            return GetPath(service.Information.ServiceName);
+        }
+
+		private static string GetPath(string serviceName)
+		{
+			return Path.Combine(Platform.GetSettingsPath(), serviceName + ".xml");
+		}
+
+		public static bool Has(string serviceName)
+		{
+			lock (Lock)
+			{
+				var path = GetPath(serviceName);
+				return File.Exists(path);
+			}
+		}
+
+        public static bool Has(Service service)
+        {
+			lock (Lock)
+			{
+				var path = GetPath(service);
+                return File.Exists(path);
+			}
         }
 
         public static void Delete(Service service)
@@ -21,6 +44,11 @@ namespace Disa.Framework
                 if (File.Exists(path))
                 {
                     File.Delete(path);
+
+                    Analytics.RaiseServiceEvent(
+                        Analytics.EventAction.ServiceUnsetup,
+                        Analytics.EventCategory.Services,
+                        service);
                 }
             }
         }
@@ -30,6 +58,8 @@ namespace Disa.Framework
             lock (Lock)
             {
                 var path = GetPath(service);
+                bool settingsFileExists = File.Exists(path);
+
                 MemoryStream sw2;
                 using (var sw = new MemoryStream())
                 {
@@ -39,6 +69,15 @@ namespace Disa.Framework
                 if (sw2 != null)
                 {
                     File.WriteAllBytes(path, sw2.ToArray());
+                    ServiceEvents.RaiseSettingsSaved(service);
+                }
+
+                if (!settingsFileExists)
+                {
+                    Analytics.RaiseServiceEvent(
+                        Analytics.EventAction.ServiceSetup,
+                        Analytics.EventCategory.Services,
+                        service);
                 }
             }
         }

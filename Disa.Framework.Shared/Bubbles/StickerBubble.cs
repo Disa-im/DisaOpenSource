@@ -54,8 +54,7 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(2)]
         public Type StickerType { get; set; }
 
-        [ProtoMember(4)]
-        public int DownloadAttempt { get; set; }
+        // Proto member 4 (DownloadAttempt) deprecated
 
         [ProtoMember(5)]
         public string StickerId { get; set; }
@@ -72,8 +71,14 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(10)]
         public string AnimatedImage { get; set; }
 
-        [NonSerialized] 
-        public BubbleTransfer Transfer;
+        [ProtoMember(11)]
+        public string AlternativeEmoji { get; set; }
+
+		[NonSerialized]
+		public BubbleTransfer Transfer;
+
+		[NonSerialized]
+		public bool DownloadFailed;
 
         public StickerBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string stickerId, Type stickerType, 
@@ -90,11 +95,6 @@ namespace Disa.Framework.Bubbles
 
         public StickerBubble()
         {
-        }
-
-        public bool CanAutoDownload()
-        {           
-            return DownloadAttempt < 10;
         }
     }
 }

@@ -27,6 +27,8 @@ namespace Disa.Framework
                 Photo = group.Photo,
                 Participants = group.Participants.ToList(),
                 Guid = guid,
+                InputDisabled = group.InputDisabled,
+                Mentions = group.Mentions.ToList(),
             };
             return bubbleGroupCache;
         }
@@ -81,6 +83,7 @@ namespace Disa.Framework
         private static void Bind(BubbleGroup associatedGroup, BubbleGroupCache item)
         {
             associatedGroup.Title = item.Name;
+			associatedGroup.InputDisabled = item.InputDisabled;
             associatedGroup.Photo = item.Photo;
             associatedGroup.IsPhotoSetInitiallyFromCache = true;
             if (item.Participants != null)
@@ -91,56 +94,83 @@ namespace Disa.Framework
                     participant.IsPhotoSetInitiallyFromCache = true;
                 }
             }
+            if (item.Mentions != null)
+            {
+                associatedGroup.Mentions = new ThreadSafeList<Mention>(item.Mentions);
+            }
+
         }
+
+        internal static BubbleGroupCache Load(BubbleGroup group)
+		{
+			return LoadInternal(group);
+		}
+
+		private static BubbleGroupCache LoadInternal(BubbleGroup group = null)
+		{
+			lock (Lock)
+			{
+				var sw = new Stopwatch();
+				sw.Start();
+
+				var location = GetLocation();
+
+				try
+				{
+					if (File.Exists(location))
+					{
+						using (var fs = File.OpenRead(location))
+						{
+							var items = Serializer.Deserialize<List<BubbleGroupCache>>(fs);
+
+							foreach (var item in items)
+							{
+								if (group != null)
+								{
+									if (item.Guid == group.ID)
+									{
+										return item;
+									}
+								}
+								else
+								{
+									var associatedGroup = BubbleGroupManager.Find(item.Guid);
+
+									if (associatedGroup == null)
+									{
+										continue;
+									}
+
+									var unifiedGroup = associatedGroup as UnifiedBubbleGroup;
+									if (unifiedGroup != null)
+									{
+										associatedGroup = unifiedGroup.PrimaryGroup;
+									}
+									Bind(associatedGroup, item);
+								}
+							}
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					Utils.DebugPrint("Failed to load bubble group cache: " + ex);
+					if (File.Exists(location))
+					{
+						File.Delete(location);
+					}
+				}
+
+				sw.Stop();
+				Utils.DebugPrint("Loading bubble group cache took " + sw.ElapsedMilliseconds + "ms.");
+			}
+
+			return null;
+		}
 
         internal static void LoadAll()
         {
-            lock (Lock)
-            {
-                var sw = new Stopwatch();
-                sw.Start();
-
-                var location = GetLocation();
-
-                try
-                {
-                    if (File.Exists(location))
-                    {
-                        using (var fs = File.OpenRead(location))
-                        {
-                            var items = Serializer.Deserialize<List<BubbleGroupCache>>(fs);
-
-                            foreach (var item in items)
-                            {
-                                var associatedGroup = BubbleGroupManager.Find(item.Guid);
-
-                                if (associatedGroup == null)
-                                {
-                                    continue;
-                                }
-
-                                var unifiedGroup = associatedGroup as UnifiedBubbleGroup;
-                                if (unifiedGroup != null)
-                                {
-                                    associatedGroup = unifiedGroup.PrimaryGroup;
-                                }
-                                Bind(associatedGroup, item);
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Utils.DebugPrint("Failed to load bubble group cache: " + ex);
-                    if (File.Exists(location))
-                    {
-                        File.Delete(location);
-                    }
-                }
-
-                sw.Stop();
-                Utils.DebugPrint("Loading bubble group cache took " + sw.ElapsedMilliseconds + "ms.");
-            }
+			LoadInternal();
         }
     }
 }

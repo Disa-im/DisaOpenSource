@@ -7,6 +7,8 @@
 using System;
 using System.Threading.Tasks;
 using SharpMTProto.Schema;
+using SharpMTProto.Services;
+using SharpMTProto.Utils;
 
 namespace SharpMTProto.Messaging.Handlers
 {
@@ -121,16 +123,28 @@ namespace SharpMTProto.Messaging.Handlers
                 {
                     case ErrorCode.MsgIdIsTooSmall:
                     case ErrorCode.MsgIdIsTooBig:
-                    case ErrorCode.MsgIdBadTwoLowBytes:
-                    case ErrorCode.MsgIdDuplicate:
-                    case ErrorCode.MsgTooOld:
+					case ErrorCode.MsgIdDuplicate:
+					case ErrorCode.MsgTooOld:	
+					case ErrorCode.MsgIdBadTwoLowBytes:
+						ulong time = (ulong)(responseMessage.MsgId / 4294967296.0 * 1000);
+						ulong currentTime = UnixTimeUtils.GetCurrentUnixTimestampMilliseconds();
+                        var timeDelta = ((long)time - (long)currentTime);
+                        _connection.MessageIdGenerator.TimeDifference = timeDelta;
+                        Disa.Framework.Utils.DebugPrint("Time drift set to: " + _connection.MessageIdGenerator.TimeDifference);
+                        var newMessageId = _connection.MessageIdGenerator.GetNextMessageId();
+                        var oldMessageId = request.Message.MsgId;
+                        var message = new Message(newMessageId, request.Message.Seqno, request.Message.Body);
+						request.UpdateMessage(message);
+                        _requestsManager.Change(newMessageId, oldMessageId);
+						await request.SendAsync();
+						break;
                     case ErrorCode.MsgSeqnoIsTooLow:
                     case ErrorCode.MsgSeqnoIsTooBig:
                     case ErrorCode.MsgSeqnoNotEven:
                     case ErrorCode.MsgSeqnoNotOdd:
                     case ErrorCode.IncorrectServerSalt:
                     case ErrorCode.InvalidContainer:
-                        throw new NotImplementedException();
+						throw new NotImplementedException();
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

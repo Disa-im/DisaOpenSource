@@ -1,5 +1,7 @@
 using System;
+using Newtonsoft.Json;
 using ProtoBuf;
+using Disa.Framework.Bots;
 
 namespace Disa.Framework.Bubbles
 {
@@ -21,16 +23,48 @@ namespace Disa.Framework.Bubbles
     {
         public enum MediaType
         {
-            None, Audio, Video, Text, Location, File, Contact,Image
+            None, Audio, Video, Text, Location, File, Contact, Image, Sticker
         }
 
         public static string QuotedNameMyself
         {
             get
             {
+                return QuotedAddressMyself;
+            }
+        }
+
+        public static string QuotedNameThemselves
+        {
+            get
+            {
+                return QuotedAddressThemselves;
+            }
+        }
+
+        public static string QuotedAddressMyself
+        {
+            get
+            {
                 return "&^%$#@?!myself!?@#$%^&";
             }
         }
+
+        public static string QuotedAddressThemselves
+        {
+            get
+            {
+                return "&^%$#@?!themselves!?@#$%^&";
+            }
+        }
+
+		public static string NonSignedChannel
+		{
+			get
+			{
+				return "&^%$#@?!nonSignedChannel!?@#$%^&";
+			}
+		}
 
         [ProtoMember(251)]
         public bool Deleted { get; set; }
@@ -79,20 +113,53 @@ namespace Disa.Framework.Bubbles
         [ProtoMember(265)]
         public double QuotedLocationLongitude { get; set; }
 
+        /// <summary>
+        /// A flag to specify if the <see cref="VisualBubble.IdService"/> field can be used to determine message ordering
+        /// in the event that two <see cref="VideoBubble"/>s have the same <see cref="Bubble.Time"/> value.
+        /// 
+        /// Defaults to false. 
+        /// 
+        /// Discussion:
+        /// The <see cref="Bubble.Time"/> field has a granularity in seconds. If two <see cref="VisualBubble"/>s arrive
+        /// at the same second, a <see cref="Service"/> may wish to specify that the <see cref="VisualBubble.IdService"/>
+        /// may be used to specify the sequence of the <see cref="VisualBubble"/>s.
+        /// </summary>
+        [ProtoMember(266)]
+        public bool IsServiceIdSequence { get; set; }
+
+        /// <summary>
+        /// If this message was sent by a Bot, this will contain the string value of the <see cref="BotContact"/>'s ID.
+        /// </summary>
+        [ProtoMember(267)]
+        public string ViaBotId { get; set; }
+
+        [JsonIgnore]
         [NonSerialized]
         public string ID;
+		[JsonIgnore]
         [NonSerialized]
         public bool ContractInfo;
+		[JsonIgnore]
         [NonSerialized]
         public bool NeedsPhoto = true;
+		[JsonIgnore]
         [NonSerialized]
         internal BubbleGroup BubbleGroupReference;
+		[JsonIgnore]
         [NonSerialized]
         public object Tag;
+		[JsonIgnore]
         [NonSerialized]
         public ThumbnailTransfer QuotedThumbnailTransfer;
+		[JsonIgnore]
         [NonSerialized]
         public bool QuotedThumbnailDownloadFailed;
+        [JsonIgnore]
+        [NonSerialized]
+		public bool InvalidatedCache;
+        [JsonIgnore]
+        [NonSerialized]
+        public BotInlineResultBase BotInlineResult;
 
         protected VisualBubble(long time, BubbleDirection direction, string address,
             string participantAddress, bool party, Service service, string id = null, string idService = null)

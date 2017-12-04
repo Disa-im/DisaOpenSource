@@ -51,6 +51,14 @@ namespace Disa.Framework
 
         public abstract Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result);
 
+		public virtual Task GetBubbleGroupInputDisabled(BubbleGroup group, Action<bool> result)
+		{
+			return Task.Factory.StartNew(() =>
+			{
+				result(false);
+			});
+		}
+
         public virtual void RefreshPhoneBookContacts()
         {
             Utils.DebugPrint("Refresh contacts not implemented.... but the service has it enabled.");

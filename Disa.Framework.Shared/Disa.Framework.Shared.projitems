@@ -9,7 +9,37 @@
     <Import_RootNamespace>Disa.Framework.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Analytics.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotInlineMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotInlineResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BotResults.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\BubbleMarkup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\Document.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\DocumentAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\FileLocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\GeoPoint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\InlineBotSwitchPM.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\InputBotInlineMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\InputBotInlineMessageID.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\InputBotInlineResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\InputStickerSet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\KeyboardButton.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\KeyboardButtonRow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\KeyboardMarkup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\MessagesBotCallbackAnswer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\MessagesBotResults.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\Photo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\PhotoSize.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bots\Update.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Hashtag.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IBots.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IMentions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)INewChannel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPartyParticipantRequests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IUserInformationExtended.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mention.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ZipStorer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Axolotl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AxolotlImplementation.cs" />
@@ -124,8 +154,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bubbles\SoloInformationBubble.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INewMessageExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IAnnouncement.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Bubbles\" />
+    <Compile Include="$(MSBuildThisFileDirectory)BubbleGroupExport.cs" />
   </ItemGroup>
 </Project>
