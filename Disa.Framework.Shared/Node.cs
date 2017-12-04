@@ -19,14 +19,14 @@ namespace Disa.Framework
         {
             get; set;
         }
-        [ProtoMember(3)]
+        //[ProtoMember(3)]
         public V Value
         {
             get; set;
         }
         public int Height { get; set; }
 
-        [ProtoMember(4, AsReference = true)]
+        //[ProtoMember(4, AsReference = true)]
         public Node<K, V> Parent { get; set; }
         [ProtoMember(5)]
         public List<Node<K, V>> Children { get; set; } = new List<Node<K, V>>();
