@@ -1,4 +1,5 @@
 <plugins>
+	<plugin version="22" minimumframeworkversion="49" url="http://disa-im.github.io/DisaOpenSource/telegram/Disa.Framework.Telegram.Mobile-22.dpk" production="false"/>
 	<plugin version="21" minimumframeworkversion="48" url="http://disa-im.github.io/DisaOpenSource/telegram/Disa.Framework.Telegram.Mobile-21.dpk" production="false"/>
 	<plugin version="20" minimumframeworkversion="47" url="http://disa-im.github.io/DisaOpenSource/telegram/Disa.Framework.Telegram.Mobile-20.dpk" production="false"/>
 	<plugin version="19" minimumframeworkversion="46" url="http://disa-im.github.io/DisaOpenSource/telegram/Disa.Framework.Telegram.Mobile-19.dpk" production="false"/>
