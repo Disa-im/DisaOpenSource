@@ -149,6 +149,7 @@ namespace Disa.Framework
                 {
                     var node = nodes[0];
                     nodes.RemoveAt(0);
+                    // Setup values, which are stored in a sqlite database
                     Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Key.FullyQualifiedId);
                     var tagConversationIds = databaseManager.FindRow<TagConversationIds>(filter);
                     if (tagConversationIds == null)
@@ -161,6 +162,11 @@ namespace Disa.Framework
                     }
                     fullyQualifiedIdDictionary[node.Key.FullyQualifiedId] = node;
                     tags.Add(node.Key);
+                    // Setup Parents
+                    foreach (var child in node.Children)
+                    {
+                        child.Parent = node;
+                    }
                     nodes.AddRange(node.Children);
                 }
             }
@@ -202,7 +208,14 @@ namespace Disa.Framework
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = serviceRoot;
             tree.Root.AddChild(serviceRoot);
             tags.Add(tag);
-            //service.RootTag = tag;
+
+            var tagConversationIds = new TagConversationIds()
+            {
+                FullyQualifiedId = tag.FullyQualifiedId,
+                BubbleGroupAddresses = new HashSet<string>()
+            };
+            databaseManager.InsertRow(tagConversationIds);
+
             return tag;
         }
 
@@ -221,6 +234,7 @@ namespace Disa.Framework
             return fullyQualifiedIdDictionary[fullId].Key;
         }
 
+         // TODO: Extract Create and CreateService to common method
         public static Tag Create(Tag tag)
         {
             if (tag.Parent == null || tag.Parent == tag)
@@ -245,6 +259,14 @@ namespace Disa.Framework
             parentNode.AddChild(childNode);
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = childNode;
             tags.Add(tag);
+
+            var tagConversationIds = new TagConversationIds()
+            {
+                FullyQualifiedId = tag.FullyQualifiedId,
+                BubbleGroupAddresses = new HashSet<string>()
+            };
+            databaseManager.InsertRow(tagConversationIds);
+
             return tag;
         }
 
@@ -262,21 +284,61 @@ namespace Disa.Framework
             return tags.Contains(tag);
         }
 
-        public static void Add(Service service, BubbleGroup bubbleGroup, IEnumerable<Tag> tags)
+        public static void UpdateTags(Service service, 
+                                      string bubbleGroupAddress, 
+                                      IEnumerable<Tag> tagsToAdd = null, 
+                                      IEnumerable<Tag> tagsToRemove = null)
         {
-            foreach (var tag in tags)
+            if (tagsToAdd != null)
             {
-                var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
-                node.Value.Add(bubbleGroup.Address);
+                Add(service, bubbleGroupAddress, tagsToAdd);
+            }
+            if (tagsToRemove != null)
+            {
+                Remove(service, bubbleGroupAddress, tagsToRemove);
             }
         }
 
-        public static void Remove(Service service, BubbleGroup bubbleGroup, IEnumerable<Tag> tags)
+        public static void Add(Service service, string bubbleGroupAddress, IEnumerable<Tag> tags)
         {
             foreach (var tag in tags)
             {
                 var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
-                node.Value.Remove(bubbleGroup.Address);
+                node.Value.Add(bubbleGroupAddress);
+
+                // Update in database
+                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Key.FullyQualifiedId);
+                var tagConversationIds = databaseManager.FindRow(filter);
+                tagConversationIds.BubbleGroupAddresses.Add(bubbleGroupAddress);
+                databaseManager.UpdateRow(tagConversationIds);
+
+                var conversationTagIds = new ConversationTagIds()
+                {
+                    Id = bubbleGroupAddress,
+                    FullyQualifiedTagIds = tags.Select(t => t.Id).ToHashSet(),
+                };
+                //databaseManager.InsertRow();
+            }
+        }
+
+        public static void Remove(Service service, string bubbleGroupAddress, IEnumerable<Tag> tags)
+        {
+            foreach (var tag in tags)
+            {
+                var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
+                node.Value.Remove(bubbleGroupAddress);
+                
+                // Update in database
+                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Key.FullyQualifiedId);
+                var tagConversationIds = databaseManager.FindRow(filter);
+                tagConversationIds.BubbleGroupAddresses.Remove(bubbleGroupAddress);
+                databaseManager.UpdateRow(tagConversationIds);
+
+                var conversationTagIds = new ConversationTagIds()
+                {
+                    Id = bubbleGroupAddress,
+                    FullyQualifiedTagIds = tags.Select(t => t.Id).ToHashSet(),
+                };
             }
         }
 
@@ -337,7 +399,7 @@ namespace Disa.Framework
             return bubbleGroups;
         }
 
-        internal static void Persist()
+        public static void Persist()
         {
             var databasePath = Platform.GetDatabasePath();
             var conversationDatabasePath = Path.Combine(databasePath, @"ConversationTags.db");
@@ -346,7 +408,7 @@ namespace Disa.Framework
             conversationTagIdsTable = databaseManager.SetupTableObject<ConversationTagIds>();
             tagConversationIdsTable = databaseManager.SetupTableObject<TagConversationIds>();
 
-            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.db");
+            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
             
             var bytes = Utils.ToProtoBytes(tree);
             File.WriteAllBytes(treeDatabasePath, bytes);
