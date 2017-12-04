@@ -143,6 +143,13 @@ namespace Disa.Framework
             if (File.Exists(treeDatabasePath))
             {
                 tree = Utils.FromProtoBytesToObject <DirectedAcyclicGraph<Tag, HashSet<string>>>(File.ReadAllBytes(treeDatabasePath));
+
+                //Initialize serviceRootNodeDictionary
+                foreach (var child in tree.Root.Children)
+                {
+                    serviceRootNodeDictionary[child.Key.FullyQualifiedId] = child;
+                }
+
                 var nodes = new List<Node<Tag, HashSet<string>>>()
                 {
                     tree.Root,
@@ -357,6 +364,8 @@ namespace Disa.Framework
             var nodes = serviceRoot.EnumerateAllDescendantsAndSelf();
             return nodes.Select(n => n.Key).ToHashSet();
         }
+
+        // Expose a method to return a node
 
         //public Node<Tag, HashSet<Conversation>> GetNode(Node<Tag, HashSet<Conversation>> root, string tag)
         //{
