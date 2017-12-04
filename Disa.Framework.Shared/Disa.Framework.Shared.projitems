@@ -45,7 +45,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Node.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TagManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectedAcyclicGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ZipStorer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Axolotl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AxolotlImplementation.cs" />

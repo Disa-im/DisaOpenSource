@@ -103,7 +103,7 @@ namespace Disa.Framework
         [ProtoMember(2)]
         private static HashSet<Tag> tags = new HashSet<Tag>();
         [ProtoMember(3)]
-        private static Tree<Tag, HashSet<string>> tree = new Tree<Tag, HashSet<string>>(new Tag()
+        private static DirectedAcyclicGraph<Tag, HashSet<string>> tree = new DirectedAcyclicGraph<Tag, HashSet<string>>(new Tag()
         {
             Id = rootName,
             Name = rootName,
@@ -128,7 +128,7 @@ namespace Disa.Framework
         private static AsyncTableQuery<ConversationTagIds> conversationTagIdsTable;
         private static AsyncTableQuery<TagConversationIds> tagConversationIdsTable;
 
-        public static Node<Tag, HashSet<string>> Root { get => tree.Root; }
+        internal static Node<Tag, HashSet<string>> Root { get => tree.Root; }
 
         internal static void Initialize()
         {
@@ -142,7 +142,7 @@ namespace Disa.Framework
             var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
             if (File.Exists(treeDatabasePath))
             {
-                tree = Utils.FromProtoBytesToObject <Tree<Tag, HashSet<string>>>(File.ReadAllBytes(treeDatabasePath));
+                tree = Utils.FromProtoBytesToObject <DirectedAcyclicGraph<Tag, HashSet<string>>>(File.ReadAllBytes(treeDatabasePath));
                 var nodes = new List<Node<Tag, HashSet<string>>>()
                 {
                     tree.Root,

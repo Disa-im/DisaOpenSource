@@ -6,23 +6,23 @@ using ProtoBuf;
 namespace Disa.Framework
 {
     [ProtoContract]
-    public class Tree<K, V> where V : new()
+    public class DirectedAcyclicGraph<K, V> where V : new()
     {
         [ProtoMember(1)]
         private readonly Node<K, V> rootNode;
         public Node<K, V> Root { get => rootNode; }
 
-        public Tree()
+        public DirectedAcyclicGraph()
         {
             rootNode = new Node<K, V>(default(K), null);
         }
 
-        public Tree(K key)
+        public DirectedAcyclicGraph(K key)
         {
             rootNode = new Node<K, V>(key, null);
         }
 
-        public Tree(K key, V rootData)
+        public DirectedAcyclicGraph(K key, V rootData)
         {
             rootNode = new Node<K, V>(key, rootData, null);
         }
