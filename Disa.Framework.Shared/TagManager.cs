@@ -128,6 +128,8 @@ namespace Disa.Framework
         private static AsyncTableQuery<ConversationTagIds> conversationTagIdsTable;
         private static AsyncTableQuery<TagConversationIds> tagConversationIdsTable;
 
+        public static Node<Tag, HashSet<string>> Root { get => tree.Root; }
+
         internal static void Initialize()
         {
             var databasePath = Platform.GetDatabasePath();
