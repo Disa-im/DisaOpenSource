@@ -60,7 +60,7 @@ namespace Disa.Framework
         {
             [PrimaryKey]
             public string FullyQualifiedId { get; set; }
-            public byte[] FullyQualifiedConversationIdsProtoBytes
+            public byte[] BubbleGroupAddressesProtoBytes
             { get; set; }
 
             [Ignore]
@@ -87,13 +87,13 @@ namespace Disa.Framework
 
             public TagConversationIds SerializeProperties()
             {
-                FullyQualifiedConversationIdsProtoBytes = Utils.ToProtoBytes(BubbleGroupAddresses);
+                BubbleGroupAddressesProtoBytes = Utils.ToProtoBytes(BubbleGroupAddresses);
                 return this;
             }
 
             public TagConversationIds DeserializeProperties()
             {
-                BubbleGroupAddresses = Utils.FromProtoBytesToObject<HashSet<string>>(FullyQualifiedConversationIdsProtoBytes);
+                BubbleGroupAddresses = Utils.FromProtoBytesToObject<HashSet<string>>(BubbleGroupAddressesProtoBytes);
                 return this;
             }
         }
