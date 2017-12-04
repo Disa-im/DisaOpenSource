@@ -73,6 +73,7 @@ namespace Disa.Framework
             ServiceManager.Initialize(allServices.ToList());
             ServiceUserSettingsManager.LoadAll();
             BubbleGroupFactory.LoadAllPartiallyIfPossible();
+            TagManager.Initialize();
         }
 
         public static string FrameworkVersion

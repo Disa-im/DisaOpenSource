@@ -170,11 +170,13 @@ namespace Disa.Framework
                     nodes.AddRange(node.Children);
                 }
             }
+            InitializeServices();
         }
 
         internal static void InitializeServices()
         {
-            var services = ServiceManager.RegisteredNoUnified;
+            //var services = ServiceManager.RegisteredNoUnified;
+            var services = ServiceManager.AllNoUnified;
             foreach (var service in services)
             {
                 if (!serviceRootNodeDictionary.ContainsKey(service.Information.ServiceName))
