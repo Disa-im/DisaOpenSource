@@ -49,10 +49,10 @@ namespace Disa.Framework
         public AsyncTableQuery<T> SetupTableObject<T>() where T : class, ISerializableType<T>, new()
         {
             var connection = sqliteAsyncConnection.GetConnection();
-            var fullEmailInfo = connection.GetTableInfo(nameof(T));
-            if (!fullEmailInfo.Any())
+            var tableInfo = connection.GetTableInfo(nameof(T));
+            if (!tableInfo.Any())
             {
-                var fullEmailSuccess = CreateTable<T>();
+                var tableSuccess = CreateTable<T>();
             }
 
             return sqliteAsyncConnection.Table<T>();

@@ -72,7 +72,7 @@ namespace Disa.Framework
             }
             return set;
         }
-
+        
         public HashSet<V> EnumerateAllDescendantsAndSelfData()
         {
             var descendants = EnumerateAllDescendantsAndSelf();
