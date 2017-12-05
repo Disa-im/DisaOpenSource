@@ -27,19 +27,26 @@ namespace Disa.Framework.Stickers
         /// <summary>
         /// The <see cref="StickerPack.Id"/> that contains this <see cref="Sticker"/>.
         /// </summary>
+        [ProtoMember(153)]
         public string StickerPackId { get; set; }
+
+        /// <summary>
+        /// The <see cref="StickerPack.Location"/> that contains this <see cref="Sticker"/>.
+        /// </summary>
+        [ProtoMember(154)]
+        public string StickerPackLocation { get; set; }
 
         /// <summary>
         /// On-device location of the <see cref="Sticker"/>.
         /// </summary>
-        [ProtoMember(153)]
+        [ProtoMember(155)]
         public string Location { get; set; }
 
         /// <summary>
         /// <see cref="Service"/> specific data as needed by the <see cref="Service"/> for 
         /// accessing and working with the <see cref="Sticker"/>.
         /// </summary>
-        [ProtoMember(154)]
+        [ProtoMember(156)]
         public byte[] AdditionalData { get; set; }
     }
 }

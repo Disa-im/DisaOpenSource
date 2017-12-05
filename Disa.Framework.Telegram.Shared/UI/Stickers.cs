@@ -17,21 +17,51 @@ namespace Disa.Framework.Telegram
 
         public Task GetTrendingStickers(int page, Action<List<Sticker>> result)
         {
-            // Currently a no-op for Telegram
             return Task.Factory.StartNew(() =>
             {
-                result(null);
-                return;
+                // Standardize error response
+                Action errorResponse = () =>
+                {
+                    result(null);
+                };
+
+                try
+                {
+                    // Currently a no-op for Telegram, once we get to Schema 66, we can add in.
+                    errorResponse();
+                    return;
+                }
+                catch(Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetTrendingStickers) + " exception getting trending sticker packs for Telegram: " + ex);
+
+                    errorResponse();
+                }
             });
         }
 
         public Task SearchStickers(string query, int page, Action<List<Sticker>> result)
         {
-            // Currently a no-op for Telegram
             return Task.Factory.StartNew(() =>
             {
-                result(null);
-                return;
+                // Standardize error response
+                Action errorResponse = () =>
+                {
+                    result(null);
+                };
+
+                try
+                {
+                    // Currently a no-op for Telegram
+                    errorResponse();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(SearchStickers) + " exception searching stickers for Telegram: " + ex);
+
+                    errorResponse();
+                }
             });
         }
 
@@ -39,89 +69,137 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                using (var client = new FullClientDisposable(this))
+                // Standardize error response
+                Action errorResponse = () =>
                 {
-                    var args = new MessagesGetAllStickersArgs
-                    {
-                    };
+                    result(null);
+                };
 
-                    if (!string.IsNullOrEmpty(hash))
+                try
+                {
+                    using (var client = new FullClientDisposable(this))
                     {
-                        args.Hash = uint.Parse(hash);
-                    }
-
-                    SharpTelegram.Schema.IMessagesAllStickers iMessagesAllStickers =
-                        (SharpTelegram.Schema.IMessagesAllStickers)
-                            TelegramUtils.RunSynchronously(
-                                client.Client.Methods.MessagesGetAllStickersAsync(args));
-
-                    // Short circuit on a "not modified" response
-                    if (iMessagesAllStickers is MessagesAllStickersNotModified)
-                    {
-                        var serviceStickerPacksNotModified = new ServiceStickerPacks
+                        var args = new MessagesGetAllStickersArgs
                         {
-                            Hash = hash
                         };
 
-                        result(serviceStickerPacksNotModified);
-                        return;
-                    }
-
-                    // Ok, let's go for full blown processing
-                    var messagesAllStickers = iMessagesAllStickers as MessagesAllStickers;
-
-                    // Sanity check
-                    if (messagesAllStickers == null)
-                    {
-                        Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetUserStickerPacks) + " MessagesAllStickers is null.");
-                        result(null);
-                        return;
-                    }
-
-                    // Loop over Telegram representations for sticker packs and build out a collection
-                    // of Disa representations for sticker packs
-                    var stickerPacks = new List<Disa.Framework.Stickers.StickerPack>();
-                    foreach(var set in messagesAllStickers.Sets)
-                    {
-                        var disaStickerPack = HandleStickerSet(set);
-
-                        if (disaStickerPack != null)
+                        if (!string.IsNullOrEmpty(hash))
                         {
-                            stickerPacks.Add(disaStickerPack);
+                            args.Hash = uint.Parse(hash);
                         }
+
+                        SharpTelegram.Schema.IMessagesAllStickers iMessagesAllStickers =
+                            (SharpTelegram.Schema.IMessagesAllStickers)
+                                TelegramUtils.RunSynchronously(
+                                    client.Client.Methods.MessagesGetAllStickersAsync(args));
+
+                        // Short circuit on a "not modified" response
+                        if (iMessagesAllStickers is MessagesAllStickersNotModified)
+                        {
+                            errorResponse();
+                            return;
+                        }
+
+                        // Ok, let's go for full blown processing
+                        var messagesAllStickers = iMessagesAllStickers as MessagesAllStickers;
+
+                        // Sanity check
+                        if (messagesAllStickers == null)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetUserStickerPacks) + " MessagesAllStickers is null.");
+
+                            errorResponse();
+                            return;
+                        }
+
+                        // Loop over Telegram representations for sticker packs and build out a collection
+                        // of Disa representations for sticker packs
+                        var stickerPacks = new List<Disa.Framework.Stickers.StickerPack>();
+                        foreach (var set in messagesAllStickers.Sets)
+                        {
+                            var disaStickerPack = HandleStickerSet(set);
+
+                            if (disaStickerPack != null)
+                            {
+                                stickerPacks.Add(disaStickerPack);
+                            }
+                            else
+                            {
+                                Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetUserStickerPacks) + " disaStickerPack is null.");
+                            }
+                        }
+                        if (stickerPacks.Count == 0)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetUserStickerPacks) + " stickerPacks.Count is 0.");
+                        }
+
+                        var serviceStickerPacks = new ServiceStickerPacks
+                        {
+                            Hash = messagesAllStickers.Hash.ToString(),
+                            StickerPacks = stickerPacks
+                        };
+
+                        result(serviceStickerPacks);
                     }
+                }
+                catch(Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetUserStickerPacks) + " exception getting user sticker packs for Telegram: " + ex);
 
-                    var serviceStickerPacks = new ServiceStickerPacks
-                    {
-                        Hash = messagesAllStickers.Hash.ToString(),
-                        StickerPacks = stickerPacks
-                    };
-
-                    result(serviceStickerPacks);
+                    errorResponse();
                 }
             });
         }
 
         public Task GetAvailableStickerPacks(string hash, Action<ServiceStickerPacks> result)
         {
-            // Once we get to Telegram Schema 66, we'll implement available stickers
-            // as a call to GetTrendingStickerPacks.
-            // It appears, for Telegram, that available and trending sticker packs are the same.
             return Task.Factory.StartNew(() =>
             {
-                result(null);
-                return;
-            });
+                // Standardize error response
+                Action errorResponse = () =>
+                {
+                    result(null);
+                };
 
+                try
+                {
+                    // Once we get to Telegram Schema 66, we'll implement available stickers
+                    // as a call to GetTrendingStickerPacks.
+                    // It appears, for Telegram, that available and trending sticker packs are the same.
+                    errorResponse();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetAvailableStickerPacks) + " exception getting available sticker packs for Telegram: " + ex);
+
+                    errorResponse();
+                }
+            });
         }
 
         public Task GetTrendingStickerPacks(string hash, Action<ServiceStickerPacks> result)
         {
-            // Once we get to Telegram Schema 66, we'll implement trending stickers
             return Task.Factory.StartNew(() =>
             {
-                result(null);
-                return;
+                // Standardize error response
+                Action errorResponse = () =>
+                {
+                    result(null);
+                };
+
+                try
+                {
+                    // Once we get to Telegram Schema 66, we'll implement trending sticker packs
+                    errorResponse();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetTrendingStickerPacks) + " exception getting trending sticker packs for Telegram: " + ex);
+
+                    errorResponse();
+                }
             });
         }
 
@@ -129,70 +207,112 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                using (var client = new FullClientDisposable(this))
+                // Standardize error response
+                Action errorResponse = () =>
                 {
-                    // IMPORTANT: We have stored away a Telegram StickerSet into StickerPack.AdditionalData
-                    //            to reprsent the Telegram specific identity info for a sticker pack
-                    var telegramInputStickerSet = HandleAdditionalData(stickerPack.AdditionalData);
-                    if (telegramInputStickerSet == null)
+                    result(null);
+                };
+
+                try
+                {
+                    using (var client = new FullClientDisposable(this))
                     {
-                        result(null);
-                        return;
+                        // IMPORTANT: We have stored away a Telegram StickerSet into StickerPack.AdditionalData
+                        //            to represent the Telegram specific identity info for a sticker pack
+                        var telegramInputStickerSet = HandleAdditionalData(stickerPack.AdditionalData);
+                        if (telegramInputStickerSet == null)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetFullStickerPack) + " telegramInputStickerSet is null.");
+
+                            errorResponse();
+                            return;
+                        }
+
+                        var args = new MessagesGetStickerSetArgs
+                        {
+                            Stickerset = telegramInputStickerSet,
+                        };
+
+                        // Attempt to get the sticker pack
+                        MessagesStickerSet messagesStickerSet =
+                            (MessagesStickerSet)TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesGetStickerSetAsync(args));
+
+                        var disaStickerPack = HandleStickerSet(messagesStickerSet.Set, skipFeaturedSticker: true);
+                        if (disaStickerPack == null)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetFullStickerPack) + " disaStickerPack is null.");
+
+                            errorResponse();
+                            return;
+                        }
+
+                        // Good to go, let's build out a Disa representation for this sticker pack
+
+                        // Emoji to sticker mapping for this sticker pack
+                        var disaEmojiStickerPacks = new List<Disa.Framework.Stickers.EmojiStickerPack>();
+                        foreach (var telegramPack in messagesStickerSet.Packs)
+                        {
+                            var disaEmojiStickerPack = HandleStickerPack(telegramPack);
+                            if (disaEmojiStickerPack == null)
+                            {
+                                Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetFullStickerPack) + " disaEmojiStickerPack is null.");
+
+                                continue;
+                            }
+
+                            disaEmojiStickerPacks.Add(disaEmojiStickerPack);
+                        }
+                        if (disaEmojiStickerPacks.Count == 0)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetFullStickerPack) + " disaEmojiStickerPacks.Count is 0.");
+                        }
+
+                        // Telegram uses a Telegram Document to represent the location info for a Sticker.
+                        // Let's convert that to a Disa Sticker representation.
+                        var disaStickers = new List<Stickers.Sticker>();
+                        foreach (var telegramDocument in messagesStickerSet.Documents)
+                        {
+                            var disaSticker = HandleStickerDocument(disaStickerPack.Id, telegramDocument);
+                            if (disaSticker == null)
+                            {
+                                Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetFullStickerPack) + " disaSticker is null.");
+
+                                continue;
+                            }
+
+                            disaStickers.Add(disaSticker);
+                        }
+                        if (disaStickers.Count == 0)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetFullStickerPack) + " disaStickers.Count is 0.");
+
+                            errorResponse();
+                            return;
+                        }
+
+                        var disaFullStickerPack = new FullStickerPack
+                        {
+                            Id = stickerPack.Id,
+                            ServiceGuid = stickerPack.ServiceGuid,
+                            Installed = stickerPack.Installed,
+                            Archived = stickerPack.Archived,
+                            FeaturedSticker = disaStickers[0],
+                            Title = stickerPack.Title,
+                            Count = stickerPack.Count,
+                            AdditionalData = stickerPack.AdditionalData,
+                            Stickers = disaStickers,
+                            EmojiStickerPacks = disaEmojiStickerPacks,
+                        };
+
+                        result(disaFullStickerPack);
                     }
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(GetFullStickerPack) + " exception getting full sticker pack for Telegram: " + ex);
 
-                    var args = new MessagesGetStickerSetArgs
-                    {
-                        Stickerset = telegramInputStickerSet,
-                    };
-
-                    // Attempt to get the sticker pack
-                    MessagesStickerSet messagesStickerSet =
-                        (MessagesStickerSet)TelegramUtils.RunSynchronously(
-                            client.Client.Methods.MessagesGetStickerSetAsync(args));
-
-                    var disaStickerPack = HandleStickerSet(messagesStickerSet.Set, skipFeaturedSticker: true);
-                    if (disaStickerPack == null)
-                    {
-                        result(null);
-                        return;
-                    }
-
-                    // Good to go, let's build out a Disa representation for this sticker pack
-
-                    // Emoji to sticker mapping for this sticker pack
-                    var disaEmojiStickerPacks = new List<Disa.Framework.Stickers.EmojiStickerPack>();
-                    foreach (var telegramPack in messagesStickerSet.Packs)
-                    {
-                        var disaEmojiStickerPack = HandleStickerPack(telegramPack);
-
-                        disaEmojiStickerPacks.Add(disaEmojiStickerPack);
-                    }
-
-                    // Telegram uses a Telegram Document to represent the location info for a Sticker.
-                    // Let's convert that to a Disa Sticker representation.
-                    var disaStickers = new List<Stickers.Sticker>();
-                    foreach (var telegramDocument in messagesStickerSet.Documents)
-                    {
-                        var disaSticker = HandleStickerDocument(disaStickerPack.Id, telegramDocument);
-
-                        disaStickers.Add(disaSticker);
-                    }
-
-                    var disaFullStickerPack = new FullStickerPack
-                    {
-                        Id = stickerPack.Id,
-                        ServiceGuid = stickerPack.ServiceGuid,
-                        Installed = stickerPack.Installed,
-                        Archived = stickerPack.Archived,
-                        FeaturedSticker = disaStickers[0],
-                        Title = stickerPack.Title,
-                        Count = stickerPack.Count,
-                        AdditionalData = stickerPack.AdditionalData,
-                        Stickers = disaStickers,
-                        EmojiStickerPacks = disaEmojiStickerPacks,
-                    };
-
-                    result(disaFullStickerPack);
+                    errorResponse();
                 }
             });
         }
@@ -204,118 +324,159 @@ namespace Disa.Framework.Telegram
 
             return Task.Factory.StartNew<StickerLocationInfo>(() =>
             {
-                // Sanity check
-                if (sticker.AdditionalData == null)
+                try
                 {
-                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " AdditionalData is null.");
-                    return null;
-                }
+                    // Sanity check
+                    if (sticker.AdditionalData == null)
+                    {
+                        Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " sticker.AdditionalData is null in Telegram.");
 
-                // IMPORTANT: We have stored away a Telegram Document into Sticker.AdditionalData
-                //            to reprsent the Telegram specific location info for a sticker.
-                SharpTelegram.Schema.Document telegramDocument;
-                using (var memoryStream = new MemoryStream(sticker.AdditionalData))
-                {
-                    telegramDocument = Serializer.Deserialize<SharpTelegram.Schema.Document>(memoryStream);
-                }
-                if (telegramDocument == null)
-                {
-                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " Telegram Document is null.");
-                    return null;
-                }
+                        return null;
+                    }
 
-                // Let's get our service specific save path
-                string savePath = null;
-                var stickerId = telegramDocument.DcId + "-" + telegramDocument.Id;
-                savePath = MediaManager.GenerateStickerPath(this, stickerId);
-                if (savePath == null)
-                {
-                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " savePath is null.");
-                    return null;
-                }
+                    // IMPORTANT: We have stored away a Telegram Document into Sticker.AdditionalData
+                    //            to reprsent the Telegram specific location info for a sticker.
+                    SharpTelegram.Schema.Document telegramDocument;
+                    using (var memoryStream = new MemoryStream(sticker.AdditionalData))
+                    {
+                        telegramDocument = Serializer.Deserialize<SharpTelegram.Schema.Document>(memoryStream);
+                    }
+                    if (telegramDocument == null)
+                    {
+                        Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " telegramDocument is null in Telegram.");
 
-                // Short circuit if already there
-                if (File.Exists(savePath))
-                {
+                        return null;
+                    }
+
+                    // Let's get our service specific save path
+                    string savePath = null;
+                    var stickerId = telegramDocument.DcId + "-" + telegramDocument.Id;
+                    savePath = MediaManager.GenerateStickerPath(this, stickerId) + ".webp";
+                    if (savePath == null)
+                    {
+                        Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " savePath is null in Telegram.");
+                        return null;
+                    }
+
+                    // Short circuit if already there
+                    if (File.Exists(savePath))
+                    {
+                        return new StickerLocationInfo
+                        {
+                            Location = savePath,
+                            IsUrl = false
+                        };
+                    }
+
+                    // IMPORTANT: We are only temporarily marking this file for deletion.
+                    //            See the finally block below where we unmark for deletion.
+                    Platform.MarkTemporaryFileForDeletion(savePath);
+
+                    // Ok, good to go for downloading file to temporary location
+                    var savePathTemp = savePath + DateTime.Now.ToString("ff") + ".tmp";
+                    try
+                    {
+                        using (var fs = File.Open(savePathTemp, FileMode.Append))
+                        {
+                            var fileSize = telegramDocument.Size;
+                            uint currentOffset = 0;
+                            while (currentOffset < fileSize)
+                            {
+                                using (var downloadManager = new DownloadManager(telegramDocument, this))
+                                {
+                                    currentOffset = downloadManager.DownloadDocument(fs, currentOffset, progress);
+                                }
+                            }
+                        }
+
+                        // Ok, let's move this file into its official location
+                        if (File.Exists(savePath))
+                        {
+                            File.Delete(savePath);
+                        }
+                        File.Move(savePathTemp, savePath);
+                    }
+                    catch (Exception e)
+                    {
+                        Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " exception in DownloadSticker in Telegram: " + e);
+
+                        if (File.Exists(savePath))
+                        {
+                            File.Delete(savePath);
+                        }
+                        if (File.Exists(savePathTemp))
+                        {
+                            File.Delete(savePathTemp);
+                        }
+                        return null;
+                    }
+                    finally
+                    {
+                        // Ok, we can flip back marking this file for delation that we did above
+                        Platform.UnmarkTemporaryFileForDeletion(savePath, false);
+                    }
+
                     return new StickerLocationInfo
                     {
                         Location = savePath,
                         IsUrl = false
                     };
                 }
-
-                // IMPORTANT: We are only temporarily marking this file for deletion.
-                //            See the finally block below where we unmark for deletion.
-                Platform.MarkTemporaryFileForDeletion(savePath);
-
-                // Ok, good to go for downloading file to temporary location
-                var savePathTemp = savePath + ".tmp";
-                try
+                catch(Exception ex)
                 {
-                    using (var fs = File.Open(savePathTemp, FileMode.Append))
-                    {
-                        var fileSize = telegramDocument.Size;
-                        uint currentOffset = 0;
-                        while (currentOffset < fileSize)
-                        {
-                            using (var downloadManager = new DownloadManager(telegramDocument, this))
-                            {
-                                currentOffset = downloadManager.DownloadDocument(fs, currentOffset, progress);
-                            }
-                        }
-                    }
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " exception downloading sticker for Telegram: " + ex);
 
-                    // Ok, let's move this file into its official location
-                    if (File.Exists(savePath))
-                    {
-                        File.Delete(savePath);
-                    }
-                    File.Move(savePathTemp, savePath);
-                }
-                catch (Exception e)
-                {
-                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " Exception in DownloadSticker: " + e);
-
-                    if (File.Exists(savePath))
-                    {
-                        File.Delete(savePath);
-                    }
-                    if (File.Exists(savePathTemp))
-                    {
-                        File.Delete(savePathTemp);
-                    }
                     return null;
                 }
-                finally
-                {
-                    // Ok, we can flip back marking this file for delation that we did above
-                    Platform.UnmarkTemporaryFileForDeletion(savePath, false);
-                }
-
-                return new StickerLocationInfo
-                {
-                    Location = savePath,
-                    IsUrl = false
-                };
             });
         }
 
-        public Task StickerPacksReordered(List<ulong> order, Action<bool> result)
+        public Task StickerPacksReordered(string stickerPackId, int newPos, List<string> newOrder, Action<bool> result)
         {
             return Task.Factory.StartNew(() =>
             {
-                using (var client = new FullClientDisposable(this))
+                // Standardize our error response
+                Action errorResponse = () =>
                 {
-                    var args = new MessagesReorderStickerSetsArgs
+                    result(false);
+                };
+
+                try
+                {
+
+                    using (var client = new FullClientDisposable(this))
                     {
-                        Order = order
-                    };
+                        var telegramOrder = new List<ulong>();
+                        foreach (var disaOrderEntry in newOrder)
+                        {
+                            var telegramOrderEntry = ulong.Parse(disaOrderEntry);
+                            telegramOrder.Add(telegramOrderEntry);
+                        }
+                        if (telegramOrder.Count == 0)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPacksReordered) + " telegramOrder.Count is 0.");
 
-                    bool response =
-                        (bool)TelegramUtils.RunSynchronously(
-                            client.Client.Methods.MessagesReorderStickerSetsAsync(args));
+                            errorResponse();
+                            return;
+                        }
 
-                    result(response);
+                        var args = new MessagesReorderStickerSetsArgs
+                        {
+                            Order = telegramOrder
+                        };
+
+                        bool response =
+                            (bool)TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesReorderStickerSetsAsync(args));
+
+                        result(response);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPacksReordered) + " exception reordering stickers in Telegram: " + ex);
+
+                    errorResponse();
                 }
             });
         }
@@ -324,28 +485,45 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                using (var client = new FullClientDisposable(this))
+                // Standardize error response
+                Action errorResponse = () =>
                 {
-                    // IMPORTANT: We have stored away a Telegram StickerSet into StickerPack.AdditionalData
-                    //            to reprsent the Telegram specific identity info for a sticker pack
-                    var telegramInputStickerSet = HandleAdditionalData(stickerPack.AdditionalData);
-                    if (telegramInputStickerSet == null)
+                    result(false);
+                };
+
+                try
+                {
+                    using (var client = new FullClientDisposable(this))
                     {
-                        result(false);
-                        return;
+                        // IMPORTANT: We have stored away a Telegram StickerSet into StickerPack.AdditionalData
+                        //            to reprsent the Telegram specific identity info for a sticker pack
+                        var telegramInputStickerSet = HandleAdditionalData(stickerPack.AdditionalData);
+                        if (telegramInputStickerSet == null)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPackInstalled) + " telegramInputStickerSet is null in Telegram.");
+
+                            errorResponse();
+                            return;
+                        }
+
+                        var args = new MessagesInstallStickerSetArgs
+                        {
+                            Stickerset = telegramInputStickerSet,
+                            Disabled = false
+                        };
+
+                        bool response =
+                            (bool)TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesInstallStickerSetAsync(args));
+
+                        result(response);
                     }
+                }
+                catch(Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPackInstalled) + " exception installing sticker pack in Telegram: " + ex);
 
-                    var args = new MessagesInstallStickerSetArgs
-                    {
-                        Stickerset = telegramInputStickerSet,
-                        Disabled = false
-                    };
-
-                    bool response =
-                        (bool)TelegramUtils.RunSynchronously(
-                            client.Client.Methods.MessagesInstallStickerSetAsync(args));
-
-                    result(response);
+                    errorResponse();
                 }
             });
         }
@@ -354,28 +532,45 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                using (var client = new FullClientDisposable(this))
+                // Standardize our error response
+                Action errorResponse = () =>
                 {
-                    // IMPORTANT: We have stored away a Telegram StickerSet into StickerPack.AdditionalData
-                    //            to reprsent the Telegram specific identity info for a sticker pack
-                    var telegramInputStickerSet = HandleAdditionalData(stickerPack.AdditionalData);
-                    if (telegramInputStickerSet == null)
+                    result(false);
+                };
+
+                try
+                {
+                    using (var client = new FullClientDisposable(this))
                     {
-                        result(false);
-                        return;
+                        // IMPORTANT: We have stored away a Telegram StickerSet into StickerPack.AdditionalData
+                        //            to reprsent the Telegram specific identity info for a sticker pack
+                        var telegramInputStickerSet = HandleAdditionalData(stickerPack.AdditionalData);
+                        if (telegramInputStickerSet == null)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPackArchived) + " telegramInputStickerSet is null.");
+
+                            errorResponse();
+                            return;
+                        }
+
+                        var args = new MessagesInstallStickerSetArgs
+                        {
+                            Stickerset = telegramInputStickerSet,
+                            Disabled = true
+                        };
+
+                        bool response =
+                            (bool)TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesInstallStickerSetAsync(args));
+
+                        result(response);
                     }
+                }
+                catch(Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPackArchived) + " exception archiving sticker pack in Telegram: " + ex);
 
-                    var args = new MessagesInstallStickerSetArgs
-                    {
-                        Stickerset = telegramInputStickerSet,
-                        Disabled = true
-                    };
-
-                    bool response =
-                        (bool)TelegramUtils.RunSynchronously(
-                            client.Client.Methods.MessagesInstallStickerSetAsync(args));
-
-                    result(response);
+                    errorResponse();
                 }
             });
         }
@@ -384,27 +579,44 @@ namespace Disa.Framework.Telegram
         {
             return Task.Factory.StartNew(() =>
             {
-                using (var client = new FullClientDisposable(this))
+                // Standardize error response
+                Action errorResponse = () =>
                 {
-                    // IMPORTANT: We have stored away a Telegram StickerSet into StickerPack.AdditionalData
-                    //            to reprsent the Telegram specific identity info for a sticker pack
-                    var telegramInputStickerSet = HandleAdditionalData(stickerPack.AdditionalData);
-                    if (telegramInputStickerSet == null)
+                    result(false);
+                };
+
+                try
+                {
+                    using (var client = new FullClientDisposable(this))
                     {
-                        result(false);
-                        return;
+                        // IMPORTANT: We have stored away a Telegram StickerSet into StickerPack.AdditionalData
+                        //            to reprsent the Telegram specific identity info for a sticker pack
+                        var telegramInputStickerSet = HandleAdditionalData(stickerPack.AdditionalData);
+                        if (telegramInputStickerSet == null)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPackUninstalled) + " telegramInputStickerSet is null.");
+
+                            errorResponse();
+                            return;
+                        }
+
+                        var args = new MessagesUninstallStickerSetArgs
+                        {
+                            Stickerset = telegramInputStickerSet,
+                        };
+
+                        bool response =
+                            (bool)TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesUninstallStickerSetAsync(args));
+
+                        result(response);
                     }
+                }
+                catch(Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPackUninstalled) + " exception uninstalling sticker pack in Telegram: " + ex);
 
-                    var args = new MessagesUninstallStickerSetArgs
-                    {
-                        Stickerset = telegramInputStickerSet,
-                    };
-
-                    bool response =
-                        (bool)TelegramUtils.RunSynchronously(
-                            client.Client.Methods.MessagesUninstallStickerSetAsync(args));
-
-                    result(response);
+                    errorResponse();
                 }
             });
         }

@@ -53,9 +53,9 @@ namespace Disa.Framework
         /// for the current user.
         /// </summary>
         /// <param name="hash">Contains a <see cref="ServiceStickerPacks.Hash"/> from
-        /// a previous <see cref="GetUserStickerPacks(uint, Action{ServiceStickerPacks})"/> call.
+        /// a previous <see cref="GetUserStickerPacks(string, Action{ServiceStickerPacks})"/> call.
         /// 
-        /// Can be set to 0 to indicate no hash is available.</param>
+        /// Can be set to null or empty string to indicate no hash is available.</param>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{ServiceStickerPacks}"/>.
         /// </returns>
@@ -68,7 +68,7 @@ namespace Disa.Framework
         /// <param name="hash">Contains a <see cref="ServiceStickerPacks.Hash"/> from
         /// a previous <see cref="GetAvailableStickerPacks(string hash, Action{ServiceStickerPacks})"/> call.
         /// 
-        /// Can be set to 0 to indicate no hash is available.</param>
+        /// Can be set to null or empty string to indicate no hash is available.</param>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{ServiceStickerPacks}"/>.
         /// </returns>
@@ -81,7 +81,7 @@ namespace Disa.Framework
         /// <param name="hash">Contains a <see cref="ServiceStickerPacks.Hash"/> from
         /// a previous <see cref="GetTrendingStickerPacks(string hash, Action{ServiceStickerPacks})"/> call.
         /// 
-        /// Can be set to 0 to indicate no hash is available.</param>
+        /// Can be set to null or empty string to indicate no hash is available.</param>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{ServiceStickerPacks}"/>.
         /// </returns>
@@ -97,21 +97,21 @@ namespace Disa.Framework
         Task GetFullStickerPack(StickerPack stickerPack, Action<FullStickerPack> result);
 
         /// <summary>
-        /// Sets the result of the <see cref="Action{StickerLocationInfo}"/> as the location info necessary
+        /// Returns a <see cref="StickerLocationInfo"/> as the location info necessary
         /// to store away an on-device representation for the passed in <see cref="Sticker"/>.
         /// 
         /// If the <see cref="Sticker"/> can be accessed via a simple remote http url, then the <see cref="Service"/>
-        /// should set the <see cref="StickerLocationInfo.Location"/> to the url and set the <see cref="StickerLocationInfo.IsUrl"/>
+        /// can set the <see cref="StickerLocationInfo.Location"/> to the url and set the <see cref="StickerLocationInfo.IsUrl"/>
         /// to true.
         /// 
         /// If the <see cref="Sticker"/> cannot be accessed via a simple remote http url, then the <see cref="Service"/> should
         /// download the <see cref="Sticker"/> to a temporary file location on device and set the <see cref="StickerLocationInfo.Location"/>
-        /// to the on device location. The caller of <see cref="DownloadSticker(Sticker, Action{StickerLocationInfo})"/> will move
+        /// to the on device location. The caller of <see cref="DownloadSticker(Sticker, Action{int})"/> will move
         /// the sticker in the temporary file location to a permanent cached location.
         /// </summary>
         /// <param name="sticker">The <see cref="Sticker"/> to get <see cref="StickerLocationInfo"/> for.</param>
-        /// <param name="result"><see cref="Action"/>on which the result should be set.</param>
-        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{StickerLocationInfo}"/>.</returns>
+        /// <param name="progress"><see cref="Action"/>on which progress can be reported.</param>
+        /// <returns>A new <see cref="Task"/> that returns the <see cref="StickerLocationInfo"/>.</returns>
         Task<StickerLocationInfo> DownloadSticker(Sticker sticker, Action<int> progress);
 
         /// <summary>
@@ -125,9 +125,12 @@ namespace Disa.Framework
 
         /// <summary>
         /// Set the result of the <see cref="Action{bool}"/> as the success or failure for 
-        /// recording that the <see cref="Service"/> has archived a <see cref="StickerPack"/>.
+        /// recording that the <see cref="Service"/> has archived or unarchived a <see cref="StickerPack"/>.
+        /// 
+        /// The field <see cref="StickerPack.Archived"/> will indicate if the <see cref="Service"/> should
+        /// record the <see cref="StickerPack"/> as archived or unarchived.
         /// </summary>
-        /// <param name="stickerPack">The <see cref="StickerPack"/> that has been archived.</param>
+        /// <param name="stickerPack">The <see cref="StickerPack"/> that has been archived or unarchived.</param>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{bool}"/>.</returns>
         Task StickerPackArchived(StickerPack stickerPack, Action<bool> result);
@@ -145,11 +148,13 @@ namespace Disa.Framework
         /// Set the result of the <see cref="Action{bool}"/> as the success or failure of 
         /// redefining the order of the <see cref="StickerPack"/>s.
         /// </summary>
-        /// <param name="order">A collection of <see cref="StickerPack.ID"/>s specifying the new 
+        /// <param name="stickerPackId">The <see cref="StickerPack.Id"/> whose position has changed.</param>
+        /// <param name="newPos">The new position for the <see cref="StickerPack"/>.</param>
+        /// <param name="newOrder">A collection of <see cref="StickerPack.ID"/>s specifying the new 
         /// order of the <see cref="StickerPack"/>s.</param>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{bool}"/>.</returns>
-        Task StickerPacksReordered(List<System.UInt64> order, Action<bool> result);
+        Task StickerPacksReordered(string stickerPackId, int newPos, List<string> newOrder, Action<bool> result);
 
         
         /* Will add these in once we move to Telegram Schema 66
