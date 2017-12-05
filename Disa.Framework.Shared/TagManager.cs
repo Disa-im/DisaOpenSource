@@ -245,7 +245,7 @@ namespace Disa.Framework
             return fullyQualifiedIdDictionary[fullId].Key;
         }
 
-         // TODO: Extract Create and CreateService to common method
+        // TODO: Extract Create and CreateService to common method
         public static Tag Create(Tag tag)
         {
             if (tag.Parent == null || tag.Parent == tag)
@@ -277,6 +277,7 @@ namespace Disa.Framework
                 BubbleGroupAddresses = new HashSet<string>()
             };
             databaseManager.InsertRow(tagConversationIds);
+            Persist();
 
             return tag;
         }
@@ -287,6 +288,7 @@ namespace Disa.Framework
             node.Parent.RemoveChild(node);
             fullyQualifiedIdDictionary.Remove(tag.FullyQualifiedId);
             tags.Remove(tag);
+            Persist();
         }
 
         public static bool Exists(Service service, Tag tag)
