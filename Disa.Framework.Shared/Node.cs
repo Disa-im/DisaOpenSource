@@ -6,7 +6,7 @@ using ProtoBuf;
 namespace Disa.Framework
 {
     [ProtoContract]
-    public class Node<K, V> where V : new()
+    public class Node<T> where T : new()
     {
         
         [ProtoMember(1)]
@@ -15,57 +15,44 @@ namespace Disa.Framework
             get; set;
         }
         [ProtoMember(2)]
-        public K Key
-        {
-            get; set;
-        }
-        //[ProtoMember(3)]
-        public V Value
+        public T Data
         {
             get; set;
         }
         public int Height { get; set; }
 
         //[ProtoMember(4, AsReference = true)]
-        public Node<K, V> Parent { get; set; }
+        public Node<T> Parent { get; set; }
         [ProtoMember(5)]
-        public List<Node<K, V>> Children { get; set; } = new List<Node<K, V>>();
+        public List<Node<T>> Children { get; set; } = new List<Node<T>>();
         [ProtoMember(6)]
-        public Dictionary<K, Node<K, V>> ChildrenDictionary { get; set; } = new Dictionary<K, Node<K, V>>();
+        public Dictionary<T, Node<T>> ChildrenDictionary { get; set; } = new Dictionary<T, Node<T>>();
         
         public Node()
         {
         }
 
-        public Node(K key, Node<K, V> parent)
+        public Node(T data, Node<T> parent)
         {
-            this.Key = key;
-            this.Value = new V();
+            this.Data = data;
             Parent = parent;
         }
 
-        public Node(K key, V data, Node<K, V> parent)
-        {
-            this.Key = key;
-            this.Value = data;
-            Parent = parent;
-        }
-
-        public void AddChild(Node<K, V> node)
+        public void AddChild(Node<T> node)
         {
             Children.Add(node);
-            ChildrenDictionary[node.Key] = node;
+            ChildrenDictionary[node.Data] = node;
         }
 
-        public void RemoveChild(Node<K, V> node)
+        public void RemoveChild(Node<T> node)
         {
             Children.Remove(node);
-            ChildrenDictionary.Remove(node.Key);
+            ChildrenDictionary.Remove(node.Data);
         }
 
-        public HashSet<Node<K, V>> EnumerateAllDescendantsAndSelf()
+        public HashSet<Node<T>> EnumerateAllDescendantsAndSelf()
         {
-            var set = new HashSet<Node<K, V>>() { this };
+            var set = new HashSet<Node<T>>() { this };
             foreach (var child in Children)
             {
                 set.UnionWith(child.EnumerateAllDescendantsAndSelf());
@@ -73,13 +60,13 @@ namespace Disa.Framework
             return set;
         }
         
-        public HashSet<V> EnumerateAllDescendantsAndSelfData()
+        public HashSet<T> EnumerateAllDescendantsAndSelfData()
         {
             var descendants = EnumerateAllDescendantsAndSelf();
-            var set = new HashSet<V>();
+            var set = new HashSet<T>();
             foreach (var descendant in descendants)
             {
-                set.Add(descendant.Value);
+                set.Add(descendant.Data);
             }
             return set;
         }
@@ -89,7 +76,7 @@ namespace Disa.Framework
             foreach (var child in Children)
             {
                 builder.AppendLine($"{padding}|");
-                builder.AppendLine($"{padding}----{child.Key}");
+                builder.AppendLine($"{padding}----{child.Data}");
                 child.Print(builder, $"{padding}    ");
             }
         }
@@ -100,29 +87,29 @@ namespace Disa.Framework
             foreach (var child in Children)
             {
                 builder.AppendLine($"{padding}|");
-                builder.AppendLine($"{padding}----{child.Key}");
+                builder.AppendLine($"{padding}----{child.Data}");
                 child.Print(builder, $"{padding}    ");
             }
             return builder.ToString();
         }
 
-        public bool Equals(Node<K, V> otherNode)
+        public bool Equals(Node<T> otherNode)
         {
             if (otherNode == null)
             {
                 return false;
             }
-            return Value.Equals(otherNode.Value);
+            return Data.Equals(otherNode.Data);
         }
 
         public override bool Equals(object obj)
         {
-            var otherNode = obj as Node<K, V>;
+            var otherNode = obj as Node<T>;
             if (otherNode == null)
             {
                 return false;
             }
-            return Value.Equals(otherNode.Value);
+            return Data.Equals(otherNode.Data);
         }
 
         public override int GetHashCode()
@@ -130,7 +117,7 @@ namespace Disa.Framework
             unchecked // Overflow is fine, just wrap
             {
                 int hash = 17;
-                hash = hash * 23 + Key.GetHashCode();
+                hash = hash * 23 + Data.GetHashCode();
                 return hash;
             }
         }

@@ -6,31 +6,26 @@ using ProtoBuf;
 namespace Disa.Framework
 {
     [ProtoContract]
-    public class DirectedAcyclicGraph<K, V> where V : new()
+    public class DirectedAcyclicGraph<T> where T : new()
     {
         [ProtoMember(1)]
-        private readonly Node<K, V> rootNode;
-        public Node<K, V> Root { get => rootNode; }
+        private readonly Node<T> rootNode;
+        public Node<T> Root { get => rootNode; }
 
         public DirectedAcyclicGraph()
         {
-            rootNode = new Node<K, V>(default(K), null);
+            rootNode = new Node<T>(default(T), null);
         }
 
-        public DirectedAcyclicGraph(K key)
+        public DirectedAcyclicGraph(T data)
         {
-            rootNode = new Node<K, V>(key, null);
-        }
-
-        public DirectedAcyclicGraph(K key, V rootData)
-        {
-            rootNode = new Node<K, V>(key, rootData, null);
+            rootNode = new Node<T>(data, null);
         }
 
         public string PrintToString()
         {
             var builder = new StringBuilder();
-            builder.AppendLine($"{rootNode.Key}");
+            builder.AppendLine($"{rootNode.Data}");
             rootNode.Print(builder, "");
             return builder.ToString();
         }

@@ -103,32 +103,32 @@ namespace Disa.Framework
         [ProtoMember(2)]
         private static HashSet<Tag> tags = new HashSet<Tag>();
         [ProtoMember(3)]
-        private static DirectedAcyclicGraph<Tag, HashSet<string>> tree = new DirectedAcyclicGraph<Tag, HashSet<string>>(new Tag()
+        private static DirectedAcyclicGraph<Tag> tree = new DirectedAcyclicGraph<Tag>(new Tag()
         {
             Id = rootName,
             Name = rootName,
             FullyQualifiedId = rootName,
         });
-        private static Dictionary<Service, Node<Tag, HashSet<string>>> serviceRoots =
-            new Dictionary<Service, Node<Tag, HashSet<string>>>();
+        private static Dictionary<Service, Node<Tag>> serviceRoots =
+            new Dictionary<Service, Node<Tag>>();
         
         // string: internal path of a tag
         // (internal path of a tag ("email/Label_31/Label_34/Label_49") => "email/Label_49")
         // useful for providing quick tag object lookup for services
         [ProtoMember(4)]
-        private static Dictionary<string, Node<Tag, HashSet<string>>> fullyQualifiedIdDictionary =
-            new Dictionary<string, Node<Tag, HashSet<string>>>();
+        private static Dictionary<string, Node<Tag>> fullyQualifiedIdDictionary =
+            new Dictionary<string, Node<Tag>>();
 
         // service root
         [ProtoMember(5)]
-        private static Dictionary<string, Node<Tag, HashSet<string>>> serviceRootNodeDictionary =
-            new Dictionary<string, Node<Tag, HashSet<string>>>();
+        private static Dictionary<string, Node<Tag>> serviceRootNodeDictionary =
+            new Dictionary<string, Node<Tag>>();
 
         private static DatabaseManager databaseManager;
         private static AsyncTableQuery<ConversationTagIds> conversationTagIdsTable;
         private static AsyncTableQuery<TagConversationIds> tagConversationIdsTable;
 
-        internal static Node<Tag, HashSet<string>> Root { get => tree.Root; }
+        internal static Node<Tag> Root { get => tree.Root; }
 
         internal static void Initialize()
         {
@@ -142,15 +142,15 @@ namespace Disa.Framework
             var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
             if (File.Exists(treeDatabasePath))
             {
-                tree = Utils.FromProtoBytesToObject <DirectedAcyclicGraph<Tag, HashSet<string>>>(File.ReadAllBytes(treeDatabasePath));
+                tree = Utils.FromProtoBytesToObject <DirectedAcyclicGraph<Tag>>(File.ReadAllBytes(treeDatabasePath));
 
                 //Initialize serviceRootNodeDictionary
                 foreach (var child in tree.Root.Children)
                 {
-                    serviceRootNodeDictionary[child.Key.FullyQualifiedId] = child;
+                    serviceRootNodeDictionary[child.Data.FullyQualifiedId] = child;
                 }
 
-                var nodes = new List<Node<Tag, HashSet<string>>>()
+                var nodes = new List<Node<Tag>>()
                 {
                     tree.Root,
                 };
@@ -159,7 +159,7 @@ namespace Disa.Framework
                     var node = nodes[0];
                     nodes.RemoveAt(0);
                     // Setup values, which are stored in a sqlite database
-                    Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Key.FullyQualifiedId);
+                    Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
                     var tagConversationIds = databaseManager.FindRow<TagConversationIds>(filter);
                     if (tagConversationIds == null)
                     {
@@ -167,10 +167,10 @@ namespace Disa.Framework
                     }
                     else
                     {
-                        node.Value = tagConversationIds.BubbleGroupAddresses;
+                        node.Data.BubbleGroupAddresses = tagConversationIds.BubbleGroupAddresses;
                     }
-                    fullyQualifiedIdDictionary[node.Key.FullyQualifiedId] = node;
-                    tags.Add(node.Key);
+                    fullyQualifiedIdDictionary[node.Data.FullyQualifiedId] = node;
+                    tags.Add(node.Data);
                     // Setup Parents
                     foreach (var child in node.Children)
                     {
@@ -210,10 +210,10 @@ namespace Disa.Framework
                 FullyQualifiedId = $"{service.Information.ServiceName}",
                 Name = service.Information.ServiceName,
                 Service = service,
-                Parent = tree.Root.Key,
+                Parent = tree.Root.Data,
             };
 
-            var serviceRoot = new Node<Tag, HashSet<string>>(tag, tree.Root);
+            var serviceRoot = new Node<Tag>(tag, tree.Root);
             serviceRoots[service] = serviceRoot;
             serviceRootNodeDictionary[service.Information.ServiceName] = serviceRoot;
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = serviceRoot;
@@ -232,7 +232,7 @@ namespace Disa.Framework
 
         public static Tag GetServiceRootTag(Service service)
         {
-            return serviceRoots[service].Key;
+            return serviceRoots[service].Data;
         }
 
         public static Tag GetTagById(Service service, string id)
@@ -242,7 +242,7 @@ namespace Disa.Framework
             {
                 return null;
             }
-            return fullyQualifiedIdDictionary[fullId].Key;
+            return fullyQualifiedIdDictionary[fullId].Data;
         }
 
         // TODO: Extract Create and CreateService to common method
@@ -266,7 +266,7 @@ namespace Disa.Framework
                 throw new ArgumentException($"{nameof(Tag.Parent)}");
             }
             var parentNode = fullyQualifiedIdDictionary[tag.Parent.FullyQualifiedId];
-            var childNode = new Node<Tag, HashSet<string>>(tag, parentNode);
+            var childNode = new Node<Tag>(tag, parentNode);
             parentNode.AddChild(childNode);
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = childNode;
             tags.Add(tag);
@@ -317,10 +317,10 @@ namespace Disa.Framework
             foreach (var tag in tags)
             {
                 var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
-                node.Value.Add(bubbleGroupAddress);
+                node.Data.BubbleGroupAddresses.Add(bubbleGroupAddress);
 
                 // Update in database
-                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Key.FullyQualifiedId);
+                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
                 var tagConversationIds = databaseManager.FindRow(filter);
                 tagConversationIds.BubbleGroupAddresses.Add(bubbleGroupAddress);
                 databaseManager.UpdateRow(tagConversationIds);
@@ -339,10 +339,10 @@ namespace Disa.Framework
             foreach (var tag in tags)
             {
                 var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
-                node.Value.Remove(bubbleGroupAddress);
+                node.Data.BubbleGroupAddresses.Remove(bubbleGroupAddress);
                 
                 // Update in database
-                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Key.FullyQualifiedId);
+                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
                 var tagConversationIds = databaseManager.FindRow(filter);
                 tagConversationIds.BubbleGroupAddresses.Remove(bubbleGroupAddress);
                 databaseManager.UpdateRow(tagConversationIds);
@@ -364,7 +364,7 @@ namespace Disa.Framework
         {
             var serviceRoot = serviceRoots[service];
             var nodes = serviceRoot.EnumerateAllDescendantsAndSelf();
-            return nodes.Select(n => n.Key).ToHashSet();
+            return nodes.Select(n => n.Data).ToHashSet();
         }
 
         // Expose a method to return a node
@@ -406,7 +406,7 @@ namespace Disa.Framework
                 {
                     continue;
                 }
-                var tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(list => list);
+                var tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
                 conversationIds.UnionWith(tagConversationIds);
             }
 
@@ -429,7 +429,7 @@ namespace Disa.Framework
             File.WriteAllBytes(treeDatabasePath, bytes);
         }
 
-        public static string PrintHierarchy()
+        public static string PrintHierarchyToString()
         {
             return tree.PrintToString();
         }

@@ -25,7 +25,9 @@ namespace Disa.Framework
 
         [ProtoMember(5)]
         public string ServiceName { get; set; }
-        
+
+        public HashSet<string> BubbleGroupAddresses { get; set; }
+
         public Service Service { get; set; }
         
         public override int GetHashCode()
