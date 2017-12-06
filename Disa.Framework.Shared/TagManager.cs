@@ -297,6 +297,16 @@ namespace Disa.Framework
             return tags.Contains(tag);
         }
 
+        public static void Update(Tag tag)
+        {
+            if (!fullyQualifiedIdDictionary.ContainsKey(tag.FullyQualifiedId))
+            {
+                throw new ArgumentException("Get existing tag object from the framework");                
+            }
+            tag = fullyQualifiedIdDictionary[tag.FullyQualifiedId].Data;
+            Persist();
+        }
+        
         public static void UpdateTags(Service service, 
                                       string bubbleGroupAddress, 
                                       IEnumerable<Tag> tagsToAdd = null, 
