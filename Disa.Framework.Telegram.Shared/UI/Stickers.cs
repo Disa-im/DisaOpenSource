@@ -295,6 +295,7 @@ namespace Disa.Framework.Telegram
                         {
                             Id = stickerPack.Id,
                             ServiceGuid = stickerPack.ServiceGuid,
+                            Location = stickerPack.Location,
                             Installed = stickerPack.Installed,
                             Archived = stickerPack.Archived,
                             FeaturedSticker = disaStickers[0],
@@ -363,7 +364,7 @@ namespace Disa.Framework.Telegram
                     {
                         return new StickerLocationInfo
                         {
-                            Location = savePath,
+                            LocationStill = savePath,
                             IsUrl = false
                         };
                     }
@@ -418,7 +419,7 @@ namespace Disa.Framework.Telegram
 
                     return new StickerLocationInfo
                     {
-                        Location = savePath,
+                        LocationStill = savePath,
                         IsUrl = false
                     };
                 }
@@ -569,6 +570,53 @@ namespace Disa.Framework.Telegram
                 catch(Exception ex)
                 {
                     Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPackArchived) + " exception archiving sticker pack in Telegram: " + ex);
+
+                    errorResponse();
+                }
+            });
+        }
+
+        public Task StickerPackUnarchived(Stickers.StickerPack stickerPack, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                // Standardize our error response
+                Action errorResponse = () =>
+                {
+                    result(false);
+                };
+
+                try
+                {
+                    using (var client = new FullClientDisposable(this))
+                    {
+                        // IMPORTANT: We have stored away a Telegram StickerSet into StickerPack.AdditionalData
+                        //            to reprsent the Telegram specific identity info for a sticker pack
+                        var telegramInputStickerSet = HandleAdditionalData(stickerPack.AdditionalData);
+                        if (telegramInputStickerSet == null)
+                        {
+                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPackUnarchived) + " telegramInputStickerSet is null.");
+
+                            errorResponse();
+                            return;
+                        }
+
+                        var args = new MessagesInstallStickerSetArgs
+                        {
+                            Stickerset = telegramInputStickerSet,
+                            Disabled = false
+                        };
+
+                        bool response =
+                            (bool)TelegramUtils.RunSynchronously(
+                                client.Client.Methods.MessagesInstallStickerSetAsync(args));
+
+                        result(response);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPackUnarchived) + " exception unarchiving sticker pack in Telegram: " + ex);
 
                     errorResponse();
                 }

@@ -12,7 +12,7 @@ namespace Disa.Framework.Stickers
     [ProtoContract]
     public class Sticker
     {
-        /// <summary>
+       /// <summary>
         /// Id of the <see cref="Sticker"/>.
         /// </summary>
         [ProtoMember(151)]
@@ -37,16 +37,22 @@ namespace Disa.Framework.Stickers
         public string StickerPackLocation { get; set; }
 
         /// <summary>
-        /// On-device location of the <see cref="Sticker"/>.
+        /// On-device location of the <see cref="Sticker"/> representing a still image.
         /// </summary>
         [ProtoMember(155)]
-        public string Location { get; set; }
+        public string LocationStill { get; set; }
+
+        /// <summary>
+        /// On-device location of the <see cref="Sticker"/> representing an animated image.
+        /// </summary>
+        [ProtoMember(156)]
+        public string LocationAnimated { get; set; }
 
         /// <summary>
         /// <see cref="Service"/> specific data as needed by the <see cref="Service"/> for 
         /// accessing and working with the <see cref="Sticker"/>.
         /// </summary>
-        [ProtoMember(156)]
+        [ProtoMember(157)]
         public byte[] AdditionalData { get; set; }
     }
 }

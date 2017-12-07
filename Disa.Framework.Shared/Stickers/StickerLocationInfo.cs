@@ -11,16 +11,24 @@ namespace Disa.Framework.Stickers
     public class StickerLocationInfo
     {
         /// <summary>
-        /// A <see cref="string"/> representing the location.
+        /// A <see cref="string"/> representing the location for the still image for this sticker.
         /// 
         /// If <see cref="IsUrl"/> is false, then this represents an on-device location. If <see cref="IsUrl"/>
         /// is true, then this represents a remote http location.
         /// </summary>
-        public string Location { get; set; }
+        public string LocationStill { get; set; }
 
         /// <summary>
-        /// True if <see cref="Location"/> represents a remote http location. False if <see cref="Location"/> represents
-        /// an on-device location.
+        /// An optional <see cref="string"/> representing the location for the animated image for this sticker.
+        /// 
+        /// If <see cref="IsUrl"/> is false, then this represents an on-device location. If <see cref="IsUrl"/>
+        /// is true, then this represents a remote http location.
+        /// </summary>
+        public string LocationAnimated { get; set; }
+
+        /// <summary>
+        /// True if <see cref="LocationStill"/> and <see cref="LocationAnimated"/> represent remote http locations. 
+        /// False if <see cref="LocationStill"/> and <see cref="LocationAnimated"/> represent an on-device locations.
         /// </summary>
         public bool IsUrl { get; set; }
     }

@@ -101,11 +101,11 @@ namespace Disa.Framework
         /// to store away an on-device representation for the passed in <see cref="Sticker"/>.
         /// 
         /// If the <see cref="Sticker"/> can be accessed via a simple remote http url, then the <see cref="Service"/>
-        /// can set the <see cref="StickerLocationInfo.Location"/> to the url and set the <see cref="StickerLocationInfo.IsUrl"/>
+        /// can set the <see cref="StickerLocationInfo.LocationStill"/> to the url and set the <see cref="StickerLocationInfo.IsUrl"/>
         /// to true.
         /// 
         /// If the <see cref="Sticker"/> cannot be accessed via a simple remote http url, then the <see cref="Service"/> should
-        /// download the <see cref="Sticker"/> to a temporary file location on device and set the <see cref="StickerLocationInfo.Location"/>
+        /// download the <see cref="Sticker"/> to a temporary file location on device and set the <see cref="StickerLocationInfo.LocationStill"/>
         /// to the on device location. The caller of <see cref="DownloadSticker(Sticker, Action{int})"/> will move
         /// the sticker in the temporary file location to a permanent cached location.
         /// </summary>
@@ -125,15 +125,21 @@ namespace Disa.Framework
 
         /// <summary>
         /// Set the result of the <see cref="Action{bool}"/> as the success or failure for 
-        /// recording that the <see cref="Service"/> has archived or unarchived a <see cref="StickerPack"/>.
-        /// 
-        /// The field <see cref="StickerPack.Archived"/> will indicate if the <see cref="Service"/> should
-        /// record the <see cref="StickerPack"/> as archived or unarchived.
+        /// recording that the <see cref="Service"/> has archived the passed in <see cref="StickerPack"/>.
         /// </summary>
-        /// <param name="stickerPack">The <see cref="StickerPack"/> that has been archived or unarchived.</param>
+        /// <param name="stickerPack">The <see cref="StickerPack"/> that has been archived.</param>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{bool}"/>.</returns>
         Task StickerPackArchived(StickerPack stickerPack, Action<bool> result);
+
+        /// <summary>
+        /// Set the result of the <see cref="Action{bool}"/> as the success or failure for 
+        /// recording that the <see cref="Service"/> has unarchived the passed in <see cref="StickerPack"/>.
+        /// </summary>
+        /// <param name="stickerPack">The <see cref="StickerPack"/> that has been unarchived.</param>
+        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{bool}"/>.</returns>
+        Task StickerPackUnarchived(StickerPack stickerPack, Action<bool> result);
 
         /// <summary>
         /// Set the result of the <see cref="Action{bool}"/> as the success or failure for
