@@ -73,18 +73,18 @@ namespace Disa.Framework
             return result;
 		}
     
-        private bool CreateTable<T>() where T : class, ISerializableType<T>, new()
+        protected bool CreateTable<T>() where T : class, ISerializableType<T>, new()
 		{
 			var task = sqliteAsyncConnection.CreateTableAsync<T>();
 			var result = ExecuteTask(task);
-			return task.IsCompleted;
+			return !task.IsFaulted && !task.IsCanceled && task.IsCompleted;
 		}
         
 		public bool DropTable<T>() where T : new()
 		{
 			var task = sqliteAsyncConnection.DropTableAsync<T>();
 			var result = ExecuteTask(task);
-			return task.IsCompleted;
+			return !task.IsFaulted && !task.IsCanceled && task.IsCompleted;
 		}
         
         public bool InsertOrReplaceRow<T>(T row) where T : ISerializableType<T>
@@ -93,7 +93,7 @@ namespace Disa.Framework
 
             var task = sqliteAsyncConnection.InsertOrReplaceAsync(row);
 	        var result = ExecuteTask(task);
-	        return task.IsCompleted;
+	        return !task.IsFaulted && !task.IsCanceled && task.IsCompleted;
 	    }
 
         public void InsertOrReplaceRows<T>(IEnumerable<T> rows) where T : ISerializableType<T>
@@ -117,7 +117,7 @@ namespace Disa.Framework
             row.SerializeProperties();
             var task = sqliteAsyncConnection.InsertAsync(row);
 	        var result = ExecuteTask(task);
-	        return task.IsCompleted;
+	        return !task.IsFaulted && !task.IsCanceled && task.IsCompleted;
 	    }
 
         public bool InsertRows<T>(IEnumerable<T> rows) where T : ISerializableType<T>
@@ -130,7 +130,7 @@ namespace Disa.Framework
 
             var task = sqliteAsyncConnection.InsertAllAsync(enumerable);
 	        var result = ExecuteTask(task);
-			return task.IsCompleted;
+			return !task.IsFaulted && !task.IsCanceled && task.IsCompleted;
 		}
 
         public T FindRow<T>(Expression<Func<T, bool>> filter)
@@ -155,6 +155,10 @@ namespace Disa.Framework
             var table = sqliteAsyncConnection.Table<T>();
             var task = table.Where(filter).ToListAsync();
             var rows = ExecuteTask(task);
+            if (rows == null)
+            {
+                return new List<T>();
+            }
             foreach (var row in rows)
             {
                 row.DeserializeProperties();
@@ -180,7 +184,7 @@ namespace Disa.Framework
 
             var updateTask = sqliteAsyncConnection.UpdateAsync(row);
 	        ExecuteTask(updateTask);
-            return updateTask.IsCompleted;
+            return !task.IsFaulted && !task.IsCanceled && task.IsCompleted;
         }
 
         public bool UpdateRows<T>(Expression<Func<T, bool>> filter, Func<T, T> updateFunc)
@@ -199,7 +203,7 @@ namespace Disa.Framework
             
             var updateTask = sqliteAsyncConnection.UpdateAllAsync(rows);
 	        ExecuteTask(task);
-            return updateTask.IsCompleted;
+            return !task.IsFaulted && !task.IsCanceled && task.IsCompleted;
         }
 
         public bool UpdateRow<T>(T row) where T : ISerializableType<T>
@@ -208,7 +212,7 @@ namespace Disa.Framework
 
             var task = sqliteAsyncConnection.UpdateAsync(row);
 	        var rows = ExecuteTask(task);
-            return task.IsCompleted;
+            return !task.IsFaulted && !task.IsCanceled && task.IsCompleted;
         }
 
         public bool UpdateRows<T>(IEnumerable<T> rows) where T : ISerializableType<T>
@@ -221,7 +225,7 @@ namespace Disa.Framework
 
             var task = sqliteAsyncConnection.UpdateAllAsync(enumerable);
 	        ExecuteTask(task);
-			return task.IsCompleted;
+			return !task.IsFaulted && !task.IsCanceled && task.IsCompleted;
 		}
 		
 		public bool DeleteRow<T>(T row)
@@ -230,7 +234,7 @@ namespace Disa.Framework
 			{
 				var deleteTask = sqliteAsyncConnection.DeleteAsync(row);
 				var rows = ExecuteTask(deleteTask);
-				return deleteTask.IsCompleted;
+				return !deleteTask.IsFaulted && !deleteTask.IsCanceled && deleteTask.IsCompleted;
 			}
 			catch (Exception ex)
 			{
