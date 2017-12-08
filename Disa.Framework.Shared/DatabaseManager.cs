@@ -10,7 +10,7 @@ namespace Disa.Framework
 {
 	public class DatabaseManager
 	{
-	    private static T ExecuteTask<T>(Task<T> task)
+	    protected static T ExecuteTask<T>(Task<T> task)
 	    {
 		    try
 		    {
@@ -33,8 +33,8 @@ namespace Disa.Framework
 		    }
 	    }
 		
-		private readonly string filePath;
-		private readonly SQLiteAsyncConnection sqliteAsyncConnection;
+		protected readonly string filePath;
+		protected readonly SQLiteAsyncConnection sqliteAsyncConnection;
 
 		public SQLiteAsyncConnection SqliteConnection
 		{ get => sqliteAsyncConnection; }
