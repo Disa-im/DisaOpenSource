@@ -324,8 +324,17 @@ namespace Disa.Framework
 
         public static void Add(Service service, string bubbleGroupAddress, IEnumerable<Tag> tags)
         {
+            if (tags == null)
+            {
+                Console.WriteLine($"WUT");
+            }
             foreach (var tag in tags)
             {
+                if (!fullyQualifiedIdDictionary.ContainsKey(tag.FullyQualifiedId))
+                {
+                    Utils.DebugPrint("");
+                    continue;
+                }
                 var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
                 node.Data.BubbleGroupAddresses.Add(bubbleGroupAddress);
 
