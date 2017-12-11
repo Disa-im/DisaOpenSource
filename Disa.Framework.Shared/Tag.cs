@@ -26,7 +26,7 @@ namespace Disa.Framework
         [ProtoMember(5)]
         public string ServiceName { get; set; }
 
-        public HashSet<string> BubbleGroupAddresses { get; set; }
+        public HashSet<string> BubbleGroupAddresses { get; set; } = new HashSet<string>();
 
         public Service Service { get; set; }
         
