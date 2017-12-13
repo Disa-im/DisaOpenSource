@@ -49,10 +49,34 @@ namespace Disa.Framework.Stickers
         public string LocationAnimated { get; set; }
 
         /// <summary>
+        /// Optional <see cref="Sticker"/> width for still image.
+        /// </summary>
+        [ProtoMember(157)]
+        public int WidthStill { get; set; }
+
+        /// <summary>
+        /// Optional <see cref="Sticker"/> width for animated image.
+        /// </summary>
+        [ProtoMember(158)]
+        public int WidthAnimated { get; set; }
+
+        /// <summary>
+        /// Optional <see cref="Sticker"/> height for still image.
+        /// </summary>
+        [ProtoMember(159)]
+        public int HeightStill { get; set; }
+
+        /// <summary>
+        /// Optional <see cref="Sticker"/> height for animated image.
+        /// </summary>
+        [ProtoMember(160)]
+        public int HeightAnimated { get; set; }
+
+        /// <summary>
         /// <see cref="Service"/> specific data as needed by the <see cref="Service"/> for 
         /// accessing and working with the <see cref="Sticker"/>.
         /// </summary>
-        [ProtoMember(157)]
+        [ProtoMember(161)]
         public byte[] AdditionalData { get; set; }
     }
 }
