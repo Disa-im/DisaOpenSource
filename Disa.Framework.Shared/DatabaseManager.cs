@@ -194,6 +194,11 @@ namespace Disa.Framework
             var task = table.Where(filter).ToListAsync();
 	        var rows = ExecuteTask(task);
 
+            if (rows == null)
+            {
+                return true;
+            }
+
             rows = rows.Select(r => 
             {
                 r.DeserializeProperties();
