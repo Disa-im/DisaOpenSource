@@ -13,10 +13,10 @@ namespace Disa.Framework.Stickers
     public class ServiceStickerPacks
     {
         /// <summary>
-        /// The <see cref="Service.Guid"/> this collection of <see cref="StickerPack"/>s belongs to.
+        /// The <see cref="Service.Information.ServiceName"/> this collection of <see cref="StickerPack"/>s belongs to.
         /// </summary>
         [ProtoMember(151)]
-        public string ServiceGuid { get; set; }
+        public string ServiceName { get; set; }
 
         /// <summary>
         /// A Hash representing the collection of <see cref="StickerPack"/>.

@@ -135,6 +135,7 @@ namespace Disa.Framework.Telegram
 
                         var serviceStickerPacks = new ServiceStickerPacks
                         {
+                            ServiceName = this.Information.ServiceName,
                             Hash = messagesAllStickers.Hash.ToString(),
                             StickerPacks = stickerPacks
                         };
@@ -294,7 +295,7 @@ namespace Disa.Framework.Telegram
                         var disaFullStickerPack = new FullStickerPack
                         {
                             Id = stickerPack.Id,
-                            ServiceGuid = stickerPack.ServiceGuid,
+                            ServiceName = stickerPack.ServiceName,
                             Location = stickerPack.Location,
                             Installed = stickerPack.Installed,
                             Archived = stickerPack.Archived,
@@ -444,7 +445,6 @@ namespace Disa.Framework.Telegram
 
                 try
                 {
-
                     using (var client = new FullClientDisposable(this))
                     {
                         var telegramOrder = new List<ulong>();
@@ -681,7 +681,7 @@ namespace Disa.Framework.Telegram
             var disaStickerPack = new Disa.Framework.Stickers.StickerPack
             {
                 Id = telegramStickerSet.Id.ToString(),
-                ServiceGuid = this.Guid,
+                ServiceName = this.Information.ServiceName,
                 Installed = telegramStickerSet.Installed != null ? true : false,
                 Archived = telegramStickerSet.Disabled != null ? true : false,
                 Title = telegramStickerSet.Title,
@@ -756,7 +756,7 @@ namespace Disa.Framework.Telegram
                 var disaSticker = new Disa.Framework.Stickers.Sticker
                 {
                     Id = telegramDocument.Id.ToString(),
-                    ServiceGuid = this.Guid,
+                    ServiceName = this.Information.ServiceName,
                     StickerPackId = stickerPackId,
                     AdditionalData = memoryStream.ToArray()
                 };

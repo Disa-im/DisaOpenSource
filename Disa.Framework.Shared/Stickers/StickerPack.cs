@@ -20,10 +20,10 @@ namespace Disa.Framework.Stickers
         public string Id { get; set; }
 
         /// <summary>
-        /// The <see cref="Service.Guid"/> this <see cref="StickerPack"/> belongs to.
+        /// The <see cref="Service.Information.ServiceName"/> this <see cref="StickerPack"/> belongs to.
         /// </summary>
         [ProtoMember(152)]
-        public string ServiceGuid { get; set; }
+        public string ServiceName { get; set; }
 
         /// <summary>
         /// The on-device location where this <see cref="StickerPack"/> stores its <see cref="Sticker"/>s and

@@ -19,10 +19,10 @@ namespace Disa.Framework.Stickers
         public string Id { get; set; }
 
         /// <summary>
-        /// Guid of the <see cref="Service"/> this <see cref="Sticker"/> comes from.
+        /// Name of the <see cref="Service"/> this <see cref="Sticker"/> comes from.
         /// </summary>
         [ProtoMember(152)]
-        public string ServiceGuid { get; set; }
+        public string ServiceName { get; set; }
 
         /// <summary>
         /// The <see cref="StickerPack.Id"/> that contains this <see cref="Sticker"/>.
