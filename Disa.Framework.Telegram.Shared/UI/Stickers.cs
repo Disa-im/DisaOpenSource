@@ -4,6 +4,7 @@ using SharpTelegram.Schema;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 
@@ -336,19 +337,26 @@ namespace Disa.Framework.Telegram
                         return null;
                     }
 
-                    // IMPORTANT: We have stored away a Telegram Document into Sticker.AdditionalData
+                    // IMPORTANT: We have stored away an interim representation of a Telegram Document into Sticker.AdditionalData
                     //            to reprsent the Telegram specific location info for a sticker.
-                    SharpTelegram.Schema.Document telegramDocument;
+                    StickerDocument stickerDocument;
                     using (var memoryStream = new MemoryStream(sticker.AdditionalData))
                     {
-                        telegramDocument = Serializer.Deserialize<SharpTelegram.Schema.Document>(memoryStream);
+                        stickerDocument = Serializer.Deserialize<StickerDocument>(memoryStream);
                     }
-                    if (telegramDocument == null)
+                    if (stickerDocument == null)
                     {
-                        Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " telegramDocument is null in Telegram.");
+                        Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " stickerDocument is null in Telegram.");
 
                         return null;
                     }
+                    var telegramDocument = new Document
+                    {
+                        Id = stickerDocument.Id,
+                        DcId = stickerDocument.DcId,
+                        Size = stickerDocument.Size,
+                        AccessHash = stickerDocument.AccessHash,
+                    };
 
                     // Let's get our service specific save path
                     string savePath = null;
@@ -375,7 +383,10 @@ namespace Disa.Framework.Telegram
                     Platform.MarkTemporaryFileForDeletion(savePath);
 
                     // Ok, good to go for downloading file to temporary location
+                    // Note: The use of the DateTime to make our location unique in case we get two requests for the
+                    //       same sticker coming in at the same time. 
                     var savePathTemp = savePath + DateTime.Now.ToString("ff") + ".tmp";
+
                     try
                     {
                         using (var fs = File.Open(savePathTemp, FileMode.Append))
@@ -671,7 +682,30 @@ namespace Disa.Framework.Telegram
 
         #endregion
 
-        #region Helper methods
+        #region Helper methods and classes
+
+        /// <summary>
+        /// For some reason we were losing a Telegram Document representation when serialized/deserialized.
+        /// 
+        /// Assumption is we needed a flatter model to work with, hence this interim class to hold Telegram
+        /// specific Document info to be serialized and then deserialized in DownloadSticker.
+        /// </summary>
+        [Serializable]
+        [ProtoContract]
+        public class StickerDocument
+        {
+            [ProtoMember(151)]
+            public ulong Id { get; set; }
+
+            [ProtoMember(152)]
+            public uint DcId { get; set; }
+
+            [ProtoMember(153)]
+            public uint Size { get; set; }
+
+            [ProtoMember(154)]
+            public ulong AccessHash { get; set; }
+        }
 
         // Helper function to convert a Telegram IStickerSet into a Disa Framework StickerPack
         private Disa.Framework.Stickers.StickerPack HandleStickerSet(IStickerSet stickerSet, bool skipFeaturedSticker=false)
@@ -747,18 +781,45 @@ namespace Disa.Framework.Telegram
                 return null;
             }
 
+            // Ok, parse out a full bots document to get access to width and height
+            int width = 0;
+            int height = 0;
+            var botsDocument = HandleFullDocument(telegramDocument);
+            var attribute = botsDocument.Attributes
+                                .Where(x => x is Bots.DocumentAttributeImageSize)
+                                .FirstOrDefault();
+            if (attribute == null)
+            {
+                Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(HandleStickerDocument) + " Bots.DocumentAttributeImageSize is null.");
+            }
+            else
+            {
+                var imageAttribute = attribute as Bots.DocumentAttributeImageSize;
+                width = (int)imageAttribute.W;
+                height = (int)imageAttribute.H;
+            }
+
             using (var memoryStream = new MemoryStream())
             {
-                // IMPORTANT: We store away a Telegram Document into Sticker.AdditionalData
+                // IMPORTANT: We store away an interim representation of a Telegram Document into Sticker.AdditionalData
                 //            to reprsent the Telegram specific location info for a sticker.
-                Serializer.Serialize<SharpTelegram.Schema.Document>(memoryStream, telegramDocument);
+                var stickerDocument = new StickerDocument
+                {
+                    Id = telegramDocument.Id,
+                    DcId = telegramDocument.DcId,
+                    Size = telegramDocument.Size,
+                    AccessHash = telegramDocument.AccessHash
+                };
+                Serializer.Serialize<StickerDocument>(memoryStream, stickerDocument);
 
                 var disaSticker = new Disa.Framework.Stickers.Sticker
                 {
                     Id = telegramDocument.Id.ToString(),
                     ServiceName = this.Information.ServiceName,
                     StickerPackId = stickerPackId,
-                    AdditionalData = memoryStream.ToArray()
+                    AdditionalData = memoryStream.ToArray(),
+                    WidthStill = width,
+                    HeightStill = height
                 };
 
                 return disaSticker;

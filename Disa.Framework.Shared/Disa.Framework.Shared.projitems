@@ -33,11 +33,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bots\Photo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bots\PhotoSize.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bots\Update.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Gifs\Gif.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Gifs\GifLocationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Hashtag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IBots.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IMentions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INewChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPartyParticipantRequests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IGifs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IStickers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IUserInformationExtended.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mention.cs" />

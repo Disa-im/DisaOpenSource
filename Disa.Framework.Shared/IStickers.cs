@@ -8,6 +8,7 @@ namespace Disa.Framework
     /// <summary>
     /// An optional interface for plugin developers to implement to expose their sticker capabilities.
     /// </summary>
+    [DisaFramework]
     public interface IStickers
     {
         //
