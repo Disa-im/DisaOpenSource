@@ -680,17 +680,25 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        public Task GetAttributionLogo(Action<DisaThumbnail> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                result(null);
+            });
+        }
+
         #endregion
 
         #region Helper methods and classes
 
-        /// <summary>
-        /// For some reason we were losing a Telegram Document representation when serialized/deserialized.
-        /// 
-        /// Assumption is we needed a flatter model to work with, hence this interim class to hold Telegram
-        /// specific Document info to be serialized and then deserialized in DownloadSticker.
-        /// </summary>
-        [Serializable]
+            /// <summary>
+            /// For some reason we were losing a Telegram Document representation when serialized/deserialized.
+            /// 
+            /// Assumption is we needed a flatter model to work with, hence this interim class to hold Telegram
+            /// specific Document info to be serialized and then deserialized in DownloadSticker.
+            /// </summary>
+            [Serializable]
         [ProtoContract]
         public class StickerDocument
         {

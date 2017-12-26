@@ -163,7 +163,15 @@ namespace Disa.Framework
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{bool}"/>.</returns>
         Task StickerPacksReordered(string stickerPackId, int newPos, List<string> newOrder, Action<bool> result);
 
-        
+        /// <summary>
+        /// Set the result of the <see cref="Action{DisaThumbnail}"/> as the the attribution logo
+        /// for this stickers service provider.
+        /// </summary>
+        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{DisaThumbnail}"/></returns>
+        Task GetAttributionLogo(Action<DisaThumbnail> result);
+
+
         /* Will add these in once we move to Telegram Schema 66
         Task GetFeaturedStickers(System.UInt32 hash, Action<FeaturedStickersResponse> result);
         Task ReadFeaturedStickers(List<System.UInt64> Id, Action<bool> result);

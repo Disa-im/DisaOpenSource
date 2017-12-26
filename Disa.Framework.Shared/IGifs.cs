@@ -66,5 +66,13 @@ namespace Disa.Framework
         /// <param name="progress"><see cref="Action"/>on which progress can be reported.</param>
         /// <returns>A new <see cref="Task"/> that returns the <see cref="GifLocationInfo"/>.</returns>
         Task<GifLocationInfo> DownloadGif(Gif gif, Action<int> progress);
+
+        /// <summary>
+        /// Set the result of the <see cref="Action{DisaThumbnail}"/> as the the attribution logo
+        /// for this gif service provider.
+        /// </summary>
+        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{DisaThumbnail}"/></returns>
+        Task GetAttributionLogo(Action<DisaThumbnail> result);
     }
 }
