@@ -170,24 +170,5 @@ namespace Disa.Framework
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{DisaThumbnail}"/></returns>
         Task GetAttributionLogo(Action<DisaThumbnail> result);
-
-
-        /* Will add these in once we move to Telegram Schema 66
-        Task GetFeaturedStickers(System.UInt32 hash, Action<FeaturedStickersResponse> result);
-        Task ReadFeaturedStickers(List<System.UInt64> Id, Action<bool> result);
-
-        Task GetRecentStickers(bool attached, System.UInt32 hash, Action<RecentStickersResponse> result);
-        Task SaveRecentSticker(bool attached, InputDocument Id, bool unsave, Action<bool> result);
-        Task ClearRecentStickers(bool attached, Action<bool> result);
-        Task GetArchivedStickers(bool masks, System.UInt64 offsetId, System.UInt32 limit, Action<ArchivedStickersResponse> result);
-
-        Task GetMaskStickers(System.UInt32 hash, Action<AllStickersResponse> result);
-        Task GetAttachedStickers(InputStickeredMedia media, Action<AllStickersResponse> result);
-
-        Task CreateStickerSet(bool masks, string title, string shortname, List<InputStickerSetItem> Stickers, Action<StickerSet> result);
-        Task RemoveStickerFromSet(InputDocument sticker, Action<bool> result);
-        Task ChangeStickerPosition(InputDocument sticker, System.UInt32 position, Action<bool> result);
-        Task AddStickerToSet(InputStickerSet stickerSet, InputStickerSetItem sticker, Action<StickerSet> result);
-        */
     }
 }
