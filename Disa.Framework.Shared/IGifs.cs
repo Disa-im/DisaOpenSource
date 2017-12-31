@@ -37,6 +37,13 @@ namespace Disa.Framework
         Task GetTrendingGifs(int page, Action<List<Gif>> result);
 
         /// <summary>
+        /// Property for this gif provider to specify if they offer searching of gifs.
+        /// 
+        /// True if this gif provider offers searching of gifs, false if not.
+        /// </summary>
+        bool HasSearchGifs { get; }
+
+        /// <summary>
         /// Set the result of the <see cref="Action{List{Gif}}"/> as the collection of <see cref="Gif"/>s
         /// that represent the result of the query passed in.
         /// </summary>
@@ -73,6 +80,6 @@ namespace Disa.Framework
         /// </summary>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{DisaThumbnail}"/></returns>
-        Task GetAttributionLogo(Action<DisaThumbnail> result);
+        Task GetGifsAttributionLogo(Action<DisaThumbnail> result);
     }
 }

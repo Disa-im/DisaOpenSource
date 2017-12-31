@@ -41,6 +41,8 @@ namespace Disa.Framework.Telegram
             });
         }
 
+        public bool HasSearchStickers { get { return false; } }
+
         public Task SearchStickers(string query, int page, Action<List<Sticker>> result)
         {
             return Task.Factory.StartNew(() =>
@@ -680,7 +682,7 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        public Task GetAttributionLogo(Action<DisaThumbnail> result)
+        public Task GetStickersAttributionLogo(Action<DisaThumbnail> result)
         {
             return Task.Factory.StartNew(() =>
             {

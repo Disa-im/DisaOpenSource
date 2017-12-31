@@ -37,6 +37,13 @@ namespace Disa.Framework
         Task GetTrendingStickers(int page, Action<List<Sticker>> result);
 
         /// <summary>
+        /// Property for this stickers provider to specify if they offer searching of stickers.
+        /// 
+        /// True if this stickers provider offers searching of stickers, false if not.
+        /// </summary>
+        bool HasSearchStickers { get; }
+
+        /// <summary>
         /// Set the result of the <see cref="Action{List{Sticker}}"/> as the collection of <see cref="Sticker"/>s
         /// that represent the result of the query passed in.
         /// </summary>
@@ -169,6 +176,6 @@ namespace Disa.Framework
         /// </summary>
         /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
         /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{DisaThumbnail}"/></returns>
-        Task GetAttributionLogo(Action<DisaThumbnail> result);
+        Task GetStickersAttributionLogo(Action<DisaThumbnail> result);
     }
 }
