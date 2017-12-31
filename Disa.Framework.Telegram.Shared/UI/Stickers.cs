@@ -682,7 +682,7 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        public Task GetStickersAttributionLogo(Action<DisaThumbnail> result)
+        public Task GetStickersAttributionLogo(Action<byte[]> result)
         {
             return Task.Factory.StartNew(() =>
             {

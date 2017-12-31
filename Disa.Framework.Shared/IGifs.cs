@@ -75,11 +75,17 @@ namespace Disa.Framework
         Task<GifLocationInfo> DownloadGif(Gif gif, Action<int> progress);
 
         /// <summary>
-        /// Set the result of the <see cref="Action{DisaThumbnail}"/> as the the attribution logo
+        /// Set the result of the <see cref="Action{Byte[]}"/> as the the attribution logo
         /// for this gif service provider.
+        /// 
+        /// The <see cref="Byte[]"/> shall represent a png image with transparent background meant
+        /// for a dark background.
+        /// 
+        /// If the <see cref="Service"/> does not have an attribution logo, set the <see cref="Action{Byte[]"/>
+        /// result as null.
         /// </summary>
-        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
-        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{DisaThumbnail}"/></returns>
-        Task GetGifsAttributionLogo(Action<DisaThumbnail> result);
+        /// <param name="result"><see cref="Action{Byte[]}"/> on which the result should be set.</param>
+        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{Byte[]}"/></returns>
+        Task GetGifsAttributionLogo(Action<byte[]> result);
     }
 }
