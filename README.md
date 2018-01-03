@@ -23,7 +23,7 @@ If you have any questions, give us an email at opensource@disa.im.
 
 ## License
 
- (C) Copyright 2017 Disa (http://disa.im).
+ (C) Copyright 2018 Disa (http://disa.im).
  
  All rights reserved. This program and the accompanying materials
  are made available under the terms of the GNU Lesser General Public License
