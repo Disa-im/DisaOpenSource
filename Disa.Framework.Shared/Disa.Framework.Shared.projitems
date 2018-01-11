@@ -50,7 +50,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)IGifs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IStickers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IUserInformationExtended.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Mention.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Stickers\ServiceStickerPacks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Stickers\EmojiStickerPack.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Stickers\StickerLocationInfo.cs" />
