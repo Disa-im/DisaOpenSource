@@ -1,0 +1,448 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TelegramRunning" xml:space="preserve">
+    <value>Telegram запущен</value>
+  </data>
+  <data name="TelegramNotRunning" xml:space="preserve">
+    <value>Telegram не запущен</value>
+  </data>
+  <data name="TelegramAllGood" xml:space="preserve">
+    <value>Все выглядит хорошо.</value>
+  </data>
+  <data name="TelegramHelp" xml:space="preserve">
+    <value>Помощь</value>
+  </data>
+  <data name="TelegramSettingsTitle" xml:space="preserve">
+    <value>Настройки Telegram</value>
+  </data>
+  <data name="TelegramPleaseStart" xml:space="preserve">
+    <value>Пожалуйста, запустите Telegram в настройках Disa.</value>
+  </data>
+  <data name="TelegramPleaseStartNoInternet" xml:space="preserve">
+    <value>Пожалуйста, запустите Telegram в настройках Disa или выйдите из системы и войдите снова. Если оба варианта не cработают, то Telegram, вероятно, недоступен.</value>
+  </data>
+  <data name="TelegramSetupWizard" xml:space="preserve">
+    <value>Мастер настройки</value>
+  </data>
+  <data name="TelegramProfileSettings" xml:space="preserve">
+    <value>Настройки профиля</value>
+  </data>
+  <data name="TelegramDescription" xml:space="preserve">
+    <value>Telegram это мессенджер с упором на скорость и безопасность. Супер-быстр, прост, безопасен и бесплатен.</value>
+  </data>
+  <data name="TelegramPleaseConnectToInternet" xml:space="preserve">
+    <value>Пожалуйста, включите передачу данных перед запуском мастера установки.</value>
+  </data>
+  <data name="TelegramSetupWizardTitle" xml:space="preserve">
+    <value>Мастер настройки Telegram</value>
+  </data>
+  <data name="TelegramFirstName" xml:space="preserve">
+    <value>Имя</value>
+  </data>
+  <data name="TelegramLastName" xml:space="preserve">
+    <value>Фамилия</value>
+  </data>
+  <data name="TelegramLoadConversations" xml:space="preserve">
+    <value>Загрузить в Disa последние 10 сообщений.</value>
+  </data>
+  <data name="TelegramPhoneNumber" xml:space="preserve">
+    <value>Номер телефона</value>
+  </data>
+  <data name="TelegramNext" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="TelegramInvalidFirstNameTitle" xml:space="preserve">
+    <value>Неверное имя</value>
+  </data>
+  <data name="TelegramInvalidFirstNameMessage" xml:space="preserve">
+    <value>Пожалуйста, введите ваше имя</value>
+  </data>
+  <data name="TelegramInvalidLastNameTitle" xml:space="preserve">
+    <value>Неправильная фамилия.</value>
+  </data>
+  <data name="TelegramInvalidLastNameMessage" xml:space="preserve">
+    <value>Пожалуйста, введите вашу фамилию.</value>
+  </data>
+  <data name="TelegramOkay" xml:space="preserve">
+    <value>Ок</value>
+  </data>
+  <data name="TelegramYes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="TelegramNo" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="TelegramInvalidNumberTitle" xml:space="preserve">
+    <value>Неправильный номер</value>
+  </data>
+  <data name="TelegramInvalidNumberMessage" xml:space="preserve">
+    <value>Вы ввели неправильный номер. Пожалуйста, исправьте его.</value>
+  </data>
+  <data name="TelegramConfirmNumberTitle" xml:space="preserve">
+    <value>Подтвердить номер</value>
+  </data>
+  <data name="TelegramConfirmNumberMessage" xml:space="preserve">
+    <value>Это правильный номер телефона: [number]? Мы будем использовать его для проверки вашей учетной записи Telegram.</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedMessage" xml:space="preserve">
+    <value>Не удалось пройти аутентификацию. Пожалуйста, попробуйте еще раз.</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedTitle" xml:space="preserve">
+    <value>Сбой аутентификации</value>
+  </data>
+  <data name="TelegramInformationTitle" xml:space="preserve">
+    <value>Информация</value>
+  </data>
+  <data name="TelegramVerificationTitle" xml:space="preserve">
+    <value>Верификация</value>
+  </data>
+  <data name="TelegramVerifyHaveCode" xml:space="preserve">
+    <value>У меня есть Код</value>
+  </data>
+  <data name="TelegramVerifyQuestion" xml:space="preserve">
+    <value>Как вы хотите подтвердить свою учетную запись Telegram?</value>
+  </data>
+  <data name="TelegramVerifyViaPhone" xml:space="preserve">
+    <value>c помощью Телефона</value>
+  </data>
+  <data name="TelegramVerifyViaSms" xml:space="preserve">
+    <value>с помощью SMS</value>
+  </data>
+  <data name="TelegramVerifySentToTelegram" xml:space="preserve">
+    <value>Код подтверждения был отправлен в Telegram на другом устройстве</value>
+  </data>
+  <data name="TelegramVerifySentViaSms" xml:space="preserve">
+    <value>Код подтверждения был отправлен с помощью SMS</value>
+  </data>
+  <data name="TelegramVerifyError" xml:space="preserve">
+    <value>Произошла ошибка. Пожалуйста, попробуйте еще раз.</value>
+  </data>
+  <data name="TelegramVerifyInvalidNumber" xml:space="preserve">
+    <value>Указанный номер телефона недействителен. Пожалуйста, используйте другой.</value>
+  </data>
+  <data name="TelegramCodeSentViaSms" xml:space="preserve">
+    <value>Идет активация вашего аккаунта в Telegram. Вскоре вы получите сообщение с кодом активации.</value>
+  </data>
+  <data name="TelegramCodeSentViaPhone" xml:space="preserve">
+    <value>Идет активация вашего аккаунта в Telegram. Вам скоро позвонят, чтобы сообщить код активации.</value>
+  </data>
+  <data name="TelegramCodeManualEnter" xml:space="preserve">
+    <value>Пожалуйста введите полученный 6-значный код.</value>
+  </data>
+  <data name="TelegramCodeSentNotComingSms" xml:space="preserve">
+    <value>Если вы не получили сообщения с кодом активации, пожалуйста, перейдите на вкладку "Верификация" и выберите метод активации "Телефонный звонок"</value>
+  </data>
+  <data name="TelegramCodeTitle" xml:space="preserve">
+    <value>Код</value>
+  </data>
+  <data name="TelegramCode" xml:space="preserve">
+    <value>Код</value>
+  </data>
+  <data name="TelegramCodeInvalidTitle" xml:space="preserve">
+    <value>Неправильный код</value>
+  </data>
+  <data name="TelegramCodeInvalidMessage" xml:space="preserve">
+    <value>Пожалуйста, введите код Telegram</value>
+  </data>
+  <data name="TelegramInvalidCodeDetail" xml:space="preserve">
+    <value>Введен неправильный код</value>
+  </data>
+  <data name="TelegramSubmit" xml:space="preserve">
+    <value>Отправить</value>
+  </data>
+  <data name="TelegramCodeError" xml:space="preserve">
+    <value>Произошла ошибка. Пожалуйста, попробуйте еще раз.</value>
+  </data>
+  <data name="TelegramCodeNumberInvalid" xml:space="preserve">
+    <value>Указанный номер телефона недействителен. Пожалуйста, используйте другой.</value>
+  </data>
+  <data name="TelegramCodeCodeExpired" xml:space="preserve">
+    <value>Введенный код уже не действителен. Пожалуйста, отправьте себе новый код.</value>
+  </data>
+  <data name="TelegramCodeCodeInvalid" xml:space="preserve">
+    <value>Введен неправильный код. Пожалуйста, используйте другой.</value>
+  </data>
+  <data name="TelegramCodeFirstNameInvalid" xml:space="preserve">
+    <value>Неправильное имя. Пожалуйста, попробуйте еще раз.</value>
+  </data>
+  <data name="TelegramCodeLastNameInvalid" xml:space="preserve">
+    <value>Неправильная фамилия. Пожалуйста, попробуйте еще раз.</value>
+  </data>
+  <data name="TelegramContact" xml:space="preserve">
+    <value>Контакты</value>
+  </data>
+  <data name="TelegramEveryone" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="TelegramGroups" xml:space="preserve">
+    <value>Группы</value>
+  </data>
+  <data name="TelegramLastSeen" xml:space="preserve">
+    <value>Заходил</value>
+  </data>
+  <data name="TelegramNobody" xml:space="preserve">
+    <value>Никто</value>
+  </data>
+  <data name="TelegramNone" xml:space="preserve">
+    <value>Никаких</value>
+  </data>
+  <data name="TelegramNotRunningLong" xml:space="preserve">
+    <value>Пожалуйста, убедитесь что сервис Telegram запущен прежде чем изменить настройки профиля.</value>
+  </data>
+  <data name="TelegramPrivacyList" xml:space="preserve">
+    <value>Конфиденциальность</value>
+  </data>
+  <data name="TelegramCodeSentPhoneCall" xml:space="preserve">
+    <value>Вскоре вы получите автоматический звонок от Telegram  с кодом активации. Введите полученный код.</value>
+  </data>
+  <data name="TelegramCodeSentTelegramApp" xml:space="preserve">
+    <value>Сообщение с кодом было выслано приложению Telegram на другом вашем устройстве.</value>
+  </data>
+  <data name="TelegramCodeSentText" xml:space="preserve">
+    <value>Сообщение с кодом выслано по-средством SMS</value>
+  </data>
+  <data name="TelegramCodeResendViaPhoneCall" xml:space="preserve">
+    <value>Если вы не получили сообщение с кодом в течении минуты, пожалуйста, нажмите кнопку выше для активации через телефон.</value>
+  </data>
+  <data name="TelegramCodeResendViaText" xml:space="preserve">
+    <value>Если вы не получили код, пожалуйста, нажмите кнопку выше, чтобы получить код через SMS.</value>
+  </data>
+  <data name="TelegramSelect" xml:space="preserve">
+    <value>Выбрать</value>
+  </data>
+  <data name="TelegramVerify" xml:space="preserve">
+    <value>Проверить</value>
+  </data>
+  <data name="TelegramPassword" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="TelegramEnterPassword" xml:space="preserve">
+    <value>Введите пароль для входа</value>
+  </data>
+  <data name="TelegramPasswordTitle" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="TelegramFinish" xml:space="preserve">
+    <value>Конец</value>
+  </data>
+  <data name="TelegramForgotPassword" xml:space="preserve">
+    <value>Забыли Пароль?</value>
+  </data>
+  <data name="TelegramInvalidPassword" xml:space="preserve">
+    <value>Неправильный пароль</value>
+  </data>
+  <data name="TelegramInvalidPasswordDetail" xml:space="preserve">
+    <value>Вы ввели неправильный пароль. Пожалуйста, попробуйте еще раз.</value>
+  </data>
+  <data name="TelegramPasswordError" xml:space="preserve">
+    <value>Произошла ошибка. Пожалуйста, попробуйте еще раз.</value>
+  </data>
+  <data name="TelegramCodeIntitalText" xml:space="preserve">
+    <value>Пожалуйста, нажмите на кнопку для подтверждения вашего номера телефона.</value>
+  </data>
+  <data name="TelegramRecoverPassword" xml:space="preserve">
+    <value>Восстановление пароля</value>
+  </data>
+  <data name="TelegramRecoverPasswordEmail" xml:space="preserve">
+    <value>Восстановление пароля</value>
+  </data>
+  <data name="TelegramEnterCodeSentToEmail" xml:space="preserve">
+    <value>Пожалуйста, введите код который вы получили на электронную почту [emailPattern].</value>
+  </data>
+  <data name="TelegramCannotAccessEmail" xml:space="preserve">
+    <value>Нет доступа к электронной почте?</value>
+  </data>
+  <data name="TelegramCancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="TelegramResetAccount" xml:space="preserve">
+    <value>Сбросить настройки аккаунта</value>
+  </data>
+  <data name="TelegramNeedToResetAccount" xml:space="preserve">
+    <value>Если вы не имеете доступа к электронной почте, тогда единственный способ это сбросить настройки аккаунта. ВНИМАНИЕ! По нажатию на кнопку "Подтвердить" все ваши сообщения и данные будут удалены с серверов Telegram.</value>
+  </data>
+  <data name="TelegramPasswordCodeTitle" xml:space="preserve">
+    <value>Код восстановления пароля</value>
+  </data>
+  <data name="TelegramUserInformationTitle" xml:space="preserve">
+    <value>Информация о пользователе</value>
+  </data>
+  <data name="TelegramUsername" xml:space="preserve">
+    <value>Имя пользователя</value>
+  </data>
+  <data name="TelegramEdit" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="TelegramDone" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="TelegramNoUsernameSet" xml:space="preserve">
+    <value>Отсутствует имя пользователя</value>
+  </data>
+  <data name="TelegramEnterUsername" xml:space="preserve">
+    <value>Введите имя пользователя</value>
+  </data>
+  <data name="TelegramEnterLastName" xml:space="preserve">
+    <value>Введите вашу фамилию</value>
+  </data>
+  <data name="TelegramUserInformation" xml:space="preserve">
+    <value>Вы можете использовать символы a-z, 0-9 и подчеркивания. Минимум 5 знаков.</value>
+  </data>
+  <data name="TelegramUsernameNotLongEnough" xml:space="preserve">
+    <value>Имя пользователя не может быть короче 5 символов.</value>
+  </data>
+  <data name="TelegramUsernameInvalid" xml:space="preserve">
+    <value>Неправильное имя пользователя.</value>
+  </data>
+  <data name="TelegramUsernameTaken" xml:space="preserve">
+    <value>Извините, такое имя пользователя уже используется.</value>
+  </data>
+  <data name="TelegramUsernameAvailable" xml:space="preserve">
+    <value>[username] доступен!</value>
+  </data>
+  <data name="TelegramUsernameChecking" xml:space="preserve">
+    <value>Проверка имени пользователя...</value>
+  </data>
+  <data name="TelegramUsernameTryAgainLater" xml:space="preserve">
+    <value>Пожалуйста, попробуйте позже...</value>
+  </data>
+  <data name="TelegramNameFirstNameEmpty" xml:space="preserve">
+    <value>Имя не может быть пустым.</value>
+  </data>
+  <data name="TelegramMuteNotificationsTitle" xml:space="preserve">
+    <value>Отключить уведомления</value>
+  </data>
+  <data name="TelegramMuteNotificationsHeader" xml:space="preserve">
+    <value>На устройстве запущено приложение Telegram. Оба приложения Telegram и Disa могут быть запущены одновременно. &lt;b&gt;Чтобы не получать уведомлений два раза, пожалуйста, отключите уведомления Telegram:&lt;/b&gt;</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Title" xml:space="preserve">
+    <value>Как?</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Text" xml:space="preserve">
+    <value>Нажмите иконку с гамбургером на главном экране Telegram чтобы открыть меню. Потом выберите &lt;i&gt;"Настройки"&lt;/i&gt; =&gt; &lt;i&gt;"Звуки и уведомления"&lt;/i&gt;. Отключите обе опции &lt;i&gt;"Уведомления"&lt;/i&gt; для &lt;i&gt;"Сообщения"&lt;/i&gt; и &lt;i&gt;"Групповые сообщения"&lt;/i&gt;.</value>
+  </data>
+  <data name="TelegramMuteNotificationsWatchVideo" xml:space="preserve">
+    <value>Смотреть Видео</value>
+  </data>
+  <data name="TelegramSearchHint" xml:space="preserve">
+    <value>Введите имя контакта</value>
+  </data>
+
+</root>
