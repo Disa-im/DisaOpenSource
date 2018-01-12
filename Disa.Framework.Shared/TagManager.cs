@@ -386,6 +386,12 @@ namespace Disa.Framework
             return nodes.Select(n => n.Data).ToHashSet();
         }
 
+        public static Dictionary<string, Tag> FlatSubTree(Service service)
+        {
+            var serviceRoot = serviceRoots[service];
+            return serviceRoot.Children.SelectMany(child => child.FlatSubTreeWithData()).ToDictionary(p => p.Key, p => p.Value);
+        }
+
         // Expose a method to return a node
 
         //public Node<Tag, HashSet<Conversation>> GetNode(Node<Tag, HashSet<Conversation>> root, string tag)
