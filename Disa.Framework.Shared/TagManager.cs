@@ -213,7 +213,7 @@ namespace Disa.Framework
                 Parent = tree.Root.Data,
             };
 
-            var serviceRoot = new Node<Tag>(tag, tree.Root);
+            var serviceRoot = new Node<Tag>(tag, tree.Root) { Name = tag.Name };
             serviceRoots[service] = serviceRoot;
             serviceRootNodeDictionary[service.Information.ServiceName] = serviceRoot;
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = serviceRoot;
@@ -266,7 +266,7 @@ namespace Disa.Framework
                 throw new ArgumentException($"{nameof(Tag.Parent)}");
             }
             var parentNode = fullyQualifiedIdDictionary[tag.Parent.FullyQualifiedId];
-            var childNode = new Node<Tag>(tag, parentNode);
+            var childNode = new Node<Tag>(tag, parentNode) { Name = tag.Name };
             parentNode.AddChild(childNode);
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = childNode;
             tags.Add(tag);
