@@ -74,7 +74,7 @@ namespace Disa.Framework
         
         public Dictionary<string, Node<T>> FlatSubTree()
         {
-            var pathChildren = Children.SelectMany(child => child.FlatSubTree()).ToDictionary(p => p.Key, p => p.Value);
+            var pathChildren = Children.SelectMany(child => child.FlatSubTree()).ToDictionary(p => $"{Name}/{p.Key}", p => p.Value);
             pathChildren[Name] = this;
             return pathChildren;
         }
