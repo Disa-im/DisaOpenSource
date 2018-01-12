@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ProtoBuf;
 
@@ -69,6 +70,18 @@ namespace Disa.Framework
                 set.Add(descendant.Data);
             }
             return set;
+        }
+        
+        public Dictionary<string, Node<T>> FlatSubTree()
+        {
+            var pathChildren = Children.SelectMany(child => child.FlatSubTree()).ToDictionary(p => p.Key, p => p.Value);
+            pathChildren[Name] = this;
+            return pathChildren;
+        }
+
+        public Dictionary<string, T> FlatSubTreeWithData()
+        {
+            return FlatSubTree().ToDictionary(p => p.Key, p => p.Value.Data);
         }
 
         public void Print(StringBuilder builder, string padding)
