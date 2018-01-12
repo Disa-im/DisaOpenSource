@@ -14,12 +14,12 @@ namespace Disa.Framework
 
         public DirectedAcyclicGraph()
         {
-            rootNode = new Node<T>(default(T), null);
+            rootNode = new Node<T>(default(T), null) { Name = "" };
         }
 
         public DirectedAcyclicGraph(T data)
         {
-            rootNode = new Node<T>(data, null);
+            rootNode = new Node<T>(data, null) { Name = "" };
         }
 
         public string PrintToString()
