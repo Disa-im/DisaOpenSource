@@ -51,7 +51,7 @@ namespace Disa.Framework.Telegram.Mobile
             public Main(Service service)
             {
                 var running = ServiceManager.IsRunning(service);
-                var internetConnected = Platform.HasInternetConnection();
+                var internetConnected = global::Disa.Framework.Platform.HasInternetConnection();
 
                 _status = new Label();
                 if (running)
@@ -868,7 +868,7 @@ namespace Disa.Framework.Telegram.Mobile
                 {
                     using (var client = new Telegram.FullClientDisposable(telegramService))
                     {
-                        var resizedPhoto = Platform.GenerateJpegBytes(e, 640, 640);
+                        var resizedPhoto = global::Disa.Framework.Platform.GenerateJpegBytes(e, 640, 640);
                         var inputFile = await UploadProfilePhoto(telegramService, client.Client, resizedPhoto);
                         await SetProfilePhoto(telegramService, client.Client, inputFile);
                     }
