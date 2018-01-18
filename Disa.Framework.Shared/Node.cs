@@ -28,7 +28,10 @@ namespace Disa.Framework
         public List<Node<T>> Children { get; set; } = new List<Node<T>>();
         [ProtoMember(6)]
         public Dictionary<T, Node<T>> ChildrenDictionary { get; set; } = new Dictionary<T, Node<T>>();
-        
+
+        public static Func<T, int> GetHashCodeMethod { get; set; }
+        public static Func<T, T, bool> EqualityMethod { get; set; }
+
         public Node()
         {
         }
@@ -108,9 +111,9 @@ namespace Disa.Framework
 
         public bool Equals(Node<T> otherNode)
         {
-            if (otherNode == null)
+            if (EqualityMethod != null)
             {
-                return false;
+                return EqualityMethod(this.Data, otherNode.Data);
             }
             return Data.Equals(otherNode.Data);
         }
@@ -122,11 +125,15 @@ namespace Disa.Framework
             {
                 return false;
             }
-            return Data.Equals(otherNode.Data);
+            return Equals(otherNode);    
         }
 
         public override int GetHashCode()
         {
+            if (GetHashCodeMethod != null)
+            {
+                return GetHashCodeMethod(Data);
+            }
             unchecked // Overflow is fine, just wrap
             {
                 int hash = 17;
