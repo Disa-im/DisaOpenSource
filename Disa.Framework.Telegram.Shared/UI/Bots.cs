@@ -118,7 +118,7 @@ namespace Disa.Framework.Telegram
                                 var botInlineMediaResult = item as Bots.BotInlineMediaResult;
                                 botInlineMediaResult.Photo = HandleInlineModePhoto(telegramItem.Photo);
 
-                                botInlineMediaResult.Document = HandleInlineModeDocument(telegramItem.Document);
+                                botInlineMediaResult.Document = HandleFullDocument(telegramItem.Document);
                             }
                             else
                             {
@@ -357,7 +357,8 @@ namespace Disa.Framework.Telegram
             }
         }
 
-        private Bots.Document HandleInlineModeDocument(IDocument document)
+        // Helper function to fully convert a Telegram IDocument to a Disa Document
+        private Bots.Document HandleFullDocument(IDocument document)
         {
             var documentTelegram = document as SharpTelegram.Schema.Document;
 
@@ -410,7 +411,7 @@ namespace Disa.Framework.Telegram
                     documentDisa.Attributes.Add(new Bots.DocumentAttributeSticker
                     {
                         Alt = attributeStickerTelegram.Alt,
-                        Stickerset = HandleStickerSet(attributeStickerTelegram.Stickerset)
+                        Stickerset = HandleInputStickerSet(attributeStickerTelegram.Stickerset)
                     });
                 }
                 else if (attributeVideoTelegram != null)
@@ -445,7 +446,8 @@ namespace Disa.Framework.Telegram
             return documentDisa;
         }
 
-        private Bots.InputStickerSetBase HandleStickerSet(IInputStickerSet inputStickerSet)
+        // Helper function to convert a Telegram IInputStickerSet to a Disa InputStickerSet
+        private Bots.InputStickerSetBase HandleInputStickerSet(IInputStickerSet inputStickerSet)
         {
             var inputStickerSetIDTelegram = inputStickerSet as SharpTelegram.Schema.InputStickerSetID;
             var inputStickerSetShortNameTelegram = inputStickerSet as SharpTelegram.Schema.InputStickerSetShortName;

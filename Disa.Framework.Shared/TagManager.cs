@@ -385,11 +385,17 @@ namespace Disa.Framework
             var nodes = serviceRoot.EnumerateAllDescendantsAndSelf();
             return nodes.Select(n => n.Data).ToHashSet();
         }
-
-        public static Dictionary<string, Tag> FlatSubTree(Service service)
+        
+        public static IList<Tag> FlatSubTree(Service service)
         {
             var serviceRoot = serviceRoots[service];
-            return serviceRoot.Children.SelectMany(child => child.FlatSubTreeWithData()).ToDictionary(p => p.Key, p => p.Value);
+            return serviceRoot.Children.SelectMany(child => child.FlatSubTreeWithData())
+                                       .Select(c =>
+                                       {
+                                           c.Value.ConvenientName = c.Key;
+                                           return c.Value;
+                                       })
+                                       .ToList();
         }
 
         // Expose a method to return a node

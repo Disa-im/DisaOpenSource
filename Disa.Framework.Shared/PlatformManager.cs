@@ -64,13 +64,13 @@ namespace Disa.Framework
             Axolotl.AxolotlImplementation = axolotl;
         }
 
-        public static void InitializeMain(Service[] allServices)
+        public static void InitializeMain(Service[] allServices, Service[] preregisteredServices)
         {
             if (!Platform.Ready)
             {
                 throw new Exception("Please initialize the platform first");
             }
-            ServiceManager.Initialize(allServices.ToList());
+            ServiceManager.Initialize(allServices.ToList(), preregisteredServices.ToList());
             ServiceUserSettingsManager.LoadAll();
             BubbleGroupFactory.LoadAllPartiallyIfPossible();
             TagManager.Initialize();
