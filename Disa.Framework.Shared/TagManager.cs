@@ -195,6 +195,7 @@ namespace Disa.Framework
                 else
                 {
                     var node = serviceRootNodeDictionary[service.Information.ServiceName];
+                    node.Data.Service = service;
                     serviceRoots[service] = node;
                 }
             }

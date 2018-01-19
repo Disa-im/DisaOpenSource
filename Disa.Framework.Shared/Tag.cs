@@ -28,9 +28,11 @@ namespace Disa.Framework
 
         [ProtoMember(4, AsReference = true)]
         public Tag Parent { get; set; }
-
-        [ProtoMember(5)]
-        public string ServiceName { get; set; }
+        
+        public string ServiceName
+        {
+            get => Service?.Information.ServiceName;
+        }
 
         public HashSet<string> BubbleGroupAddresses { get; set; } = new HashSet<string>();
 
