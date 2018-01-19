@@ -13,7 +13,15 @@ namespace Disa.Framework
         public string ServiceName { get; private set; }
         public Type[] SupportedBubbles { get; private set; }
         public Type Settings { get; private set; }
+
+        /// <summary>
+        /// If set to False, then the <see cref="Service"/>'s <see cref="Service.ProcessBubbles"/> will be called in a loop assuming
+        /// the <see cref="Service"/> will respond from the method when it has <see cref="Bubble"/>s to process.
+        /// If set to True, then the <see cref="Service"/> will publish receipt of <see cref="Bubble"/>s by calling
+        /// <see cref="Service.EventBubble(Bubble)"/>.
+        /// </summary>
         public bool EventDrivenBubbles { get; private set; }
+
         public bool UsesInternet { get; private set; }
         public bool UsesMediaProgress { get; private set; }
         public bool SendingQuotes { get; private set; }
