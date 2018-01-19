@@ -20,6 +20,12 @@ namespace Disa.Framework
         internal string FullyQualifiedId { get; set; }
         [ProtoMember(3)]
         public string Name { get; set; }
+        
+        /// <summary>
+        /// A name that has been assigned for the UI
+        /// </summary>
+        public string ConvenientName { get; set; }
+
         [ProtoMember(4, AsReference = true)]
         public Tag Parent { get; set; }
 
