@@ -130,6 +130,12 @@ namespace Disa.Framework
 
         internal static Node<Tag> Root { get => tree.Root; }
 
+        public delegate void OnTagAddedRaiser(Tag tag);
+        public static event OnTagAddedRaiser OnTagAdded;
+
+        public delegate void OnTagDeletedRaiser(Tag tag);
+        public static event OnTagDeletedRaiser OnTagDeleted;
+
         internal static void Initialize()
         {
             var databasePath = Platform.GetDatabasePath();
@@ -279,6 +285,9 @@ namespace Disa.Framework
             databaseManager.InsertRow(tagConversationIds);
             Persist();
 
+            // Fire event to notify UI that new tag has been created
+            OnTagAdded(tag);
+
             return tag;
         }
 
@@ -289,6 +298,9 @@ namespace Disa.Framework
             fullyQualifiedIdDictionary.Remove(tag.FullyQualifiedId);
             tags.Remove(tag);
             Persist();
+        
+            // Fire event to notify UI that new tag has been deleted
+            OnTagDeleted(tag);
         }
 
         public static bool Exists(Service service, Tag tag)
