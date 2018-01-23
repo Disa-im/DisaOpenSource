@@ -428,6 +428,23 @@ namespace Disa.Framework
         //    return null;
         //}
 
+        public static HashSet<BubbleGroup> GetAllBubbleGroups(Tag tag)
+        {
+            var conversationIds = new HashSet<string>();
+            var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
+            if (node == null)
+            {
+                // XXX Should we throw exceptions?
+                Utils.DebugPrint($"Node for respective {tag.FullyQualifiedId} is not found");
+                return new HashSet<BubbleGroup>();
+            }
+            var tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
+            conversationIds.UnionWith(tagConversationIds);
+
+            var bubbleGroups = BubbleGroupManager.FindAll((BubbleGroup bg) => conversationIds.Contains(bg.Address)).ToHashSet();
+            return bubbleGroups;
+        }
+
         public static HashSet<BubbleGroup> GetAllBubbleGroups(IEnumerable<Tag> tags)
         {
             var conversationIds = new HashSet<string>();
@@ -436,6 +453,7 @@ namespace Disa.Framework
                 var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
                 if (node == null)
                 {
+                    Utils.DebugPrint($"Node for respective {tag.FullyQualifiedId} is not found");
                     continue;
                 }
                 var tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
