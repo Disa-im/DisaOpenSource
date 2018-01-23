@@ -327,9 +327,22 @@ namespace Disa.Framework
         private static void DeleteTag(Tag tag)
         {
             var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
+
+            var childrenTags = node.EnumerateAllDescendantsAndSelfData();
+            foreach (var childrenTag in childrenTags)
+            {
+                fullyQualifiedIdDictionary.Remove(childrenTag.FullyQualifiedId);
+                tags.Remove(childrenTag);
+            }
+
             node.Parent.RemoveChild(node);
             fullyQualifiedIdDictionary.Remove(tag.FullyQualifiedId);
             tags.Remove(tag);
+
+            var childrenTagIds = childrenTags.Select(t => t.FullyQualifiedId).ToHashSet();
+            Expression<Func<TagConversationIds, bool>> filter = 
+                (tagConversationId) => childrenTagIds.Contains(tagConversationId.FullyQualifiedId);
+            databaseManager.DeleteRow(filter);
         }
 
         public static void Delete(Tag tag)
