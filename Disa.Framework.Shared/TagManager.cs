@@ -130,11 +130,11 @@ namespace Disa.Framework
 
         internal static Node<Tag> Root { get => tree.Root; }
 
-        public delegate void OnTagAddedRaiser(Tag tag);
-        public static event OnTagAddedRaiser OnTagAdded;
+        public delegate void OnTagsAddedRaiser(IEnumerable<Tag> tag);
+        public static event OnTagsAddedRaiser OnTagsAdded;
 
-        public delegate void OnTagDeletedRaiser(Tag tag);
-        public static event OnTagDeletedRaiser OnTagDeleted;
+        public delegate void OnTagsDeletedRaiser(IEnumerable<Tag> tags);
+        public static event OnTagsDeletedRaiser OnTagsDeleted;
 
         internal static void Initialize()
         {
@@ -252,14 +252,13 @@ namespace Disa.Framework
             return fullyQualifiedIdDictionary[fullId].Data;
         }
 
-        // TODO: Extract Create and CreateService to common method
-        public static Tag Create(Tag tag)
+        private static Tag CreateTag(Tag tag)
         {
             if (tag.Parent == null || tag.Parent == tag)
             {
                 throw new ArgumentException(nameof(Tag.Parent));
             }
-            
+
             var fullQualifiedId = $"{tag.Service.Information.ServiceName}|{tag.Id}";
             tag.FullyQualifiedId = fullQualifiedId;
 
@@ -277,31 +276,80 @@ namespace Disa.Framework
             parentNode.AddChild(childNode);
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = childNode;
             tags.Add(tag);
+            
+            return tag;
+        }
 
+        // TODO: Extract Create and CreateService to common method
+        public static Tag Create(Tag tag)
+        {
+            tag = CreateTag(tag);
+            
             var tagConversationIds = new TagConversationIds()
             {
                 FullyQualifiedId = tag.FullyQualifiedId,
                 BubbleGroupAddresses = new HashSet<string>()
             };
             databaseManager.InsertRow(tagConversationIds);
+
             Persist();
 
             // Fire event to notify UI that new tag has been created
-            OnTagAdded(tag);
+            OnTagsAdded(new List<Tag> { tag });
 
             return tag;
         }
 
-        public static void Delete(Tag tag)
+        // TODO: Extract Create and CreateService to common method
+        public static List<Tag> Create(IEnumerable<Tag> tags)
+        {
+            var tagList = tags.Select(t => CreateTag(t)).ToList();
+
+            foreach (var tag in tagList)
+            {
+                var tagConversationIds = new TagConversationIds()
+                {
+                    FullyQualifiedId = tag.FullyQualifiedId,
+                    BubbleGroupAddresses = new HashSet<string>()
+                };
+                databaseManager.InsertRow(tagConversationIds);
+
+            }
+
+            Persist();
+
+            // Fire event to notify UI that new tag has been created
+            OnTagsAdded(tagList);
+
+            return tagList;
+        }
+
+        private static void DeleteTag(Tag tag)
         {
             var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
             node.Parent.RemoveChild(node);
             fullyQualifiedIdDictionary.Remove(tag.FullyQualifiedId);
             tags.Remove(tag);
+        }
+
+        public static void Delete(Tag tag)
+        {
+            DeleteTag(tag);
             Persist();
-        
             // Fire event to notify UI that new tag has been deleted
-            OnTagDeleted(tag);
+            OnTagsDeleted(new List<Tag> { tag });
+        }
+
+        public static void Delete(IEnumerable<Tag> tags)
+        {
+            foreach (var tag in tags)
+            {
+                DeleteTag(tag);
+            }
+            Persist();
+
+            // Fire event to notify UI that new tag has been deleted
+            OnTagsDeleted(tags);
         }
 
         public static bool Exists(Service service, Tag tag)
