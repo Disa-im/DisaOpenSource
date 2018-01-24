@@ -324,37 +324,48 @@ namespace Disa.Framework
             return tagList;
         }
 
-        private static void DeleteTag(Tag tag)
+        // Returns the tags and all the child tags that have been deleted
+        private static List<Tag> DeleteTag(Tag tag)
         {
+            if (tag == null)
+            {
+                return new List<Tag>();
+            }
+
             var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
 
-            var childrenTags = node.EnumerateAllDescendantsAndSelfData();
-            foreach (var childrenTag in childrenTags)
+            var selfAndDescendantsTags = node.EnumerateAllDescendantsAndSelfData();
+            foreach (var childrenTag in selfAndDescendantsTags)
             {
                 fullyQualifiedIdDictionary.Remove(childrenTag.FullyQualifiedId);
-                tags.Remove(childrenTag);
+                TagManager.tags.Remove(childrenTag);
             }
 
             node.Parent.RemoveChild(node);
-            fullyQualifiedIdDictionary.Remove(tag.FullyQualifiedId);
-            tags.Remove(tag);
-
-            var childrenTagIds = childrenTags.Select(t => t.FullyQualifiedId).ToHashSet();
+            
+            var tagIds = selfAndDescendantsTags.Select(t => t.FullyQualifiedId).ToHashSet();
             Expression<Func<TagConversationIds, bool>> filter = 
-                (tagConversationId) => childrenTagIds.Contains(tagConversationId.FullyQualifiedId);
+                (tagConversationId) => tagIds.Contains(tagConversationId.FullyQualifiedId);
             databaseManager.DeleteRow(filter);
+
+            return selfAndDescendantsTags.ToList();
         }
 
         public static void Delete(Tag tag)
         {
-            DeleteTag(tag);
+            var deletedTags = DeleteTag(tag);
             Persist();
             // Fire event to notify UI that new tag has been deleted
-            OnTagsDeleted(new List<Tag> { tag });
+            OnTagsDeleted(deletedTags);
         }
 
         public static void Delete(IEnumerable<Tag> tags)
         {
+            if (tags == null)
+            {
+                return;
+            }
+
             foreach (var tag in tags)
             {
                 DeleteTag(tag);
