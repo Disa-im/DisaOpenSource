@@ -6,6 +6,7 @@ namespace Disa.Framework
     {
         public static event EventHandler<Service> SettingsLoaded;
         public static event EventHandler<Service> ManualSettingsNeeded;
+        public static event EventHandler<Service> Registered;
         public static event EventHandler<Service> UnRegistered;
         public static event EventHandler<Service> Expired;
         public static event EventHandler<Service> Started;
@@ -54,6 +55,14 @@ namespace Disa.Framework
                 return;
 
             Expired(null, service);
+        }
+
+        public static void RaiseServiceRegistered(Service service)
+        {
+            if (Registered == null)
+                return;
+
+            Registered(null, service);
         }
 
         public static void RaiseServiceUnRegistered(Service service)
