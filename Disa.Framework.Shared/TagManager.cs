@@ -483,6 +483,11 @@ namespace Disa.Framework
         
         public static IList<Tag> FlatSubTree(Service service)
         {
+            if (!serviceRoots.ContainsKey(service))
+            {
+                return new List<Tag>();
+            }
+
             var serviceRoot = serviceRoots[service];
             return serviceRoot.Children.SelectMany(child => child.FlatSubTreeWithData())
                                        .Select(c =>
