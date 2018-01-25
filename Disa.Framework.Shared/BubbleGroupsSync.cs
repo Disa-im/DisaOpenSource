@@ -159,10 +159,12 @@ namespace Disa.Framework
                 var doneQueryingAgents = false;
                 var count = _pageSize;
                 var servicesFinished = new Dictionary<Service, bool>();
+                var tagServices = _tags.Select(t => t.Service).ToHashSet();
+
                 while (true)
                 {
                     var originalCardinality = _list.Count;
-                    var bubbleGroups = BubbleGroupManager.DisplayImmutable;
+                    var bubbleGroups = TagManager.GetAllBubbleGroups(_tags).ToList();
                     //Utils.DebugPrint("LOADING xx" + bubbleGroups.Count);
                     //FIXME: ConvoList in UI will call this method before BubbleGroupManager is ready.
                     //       Fix this race condition.
@@ -200,9 +202,9 @@ namespace Disa.Framework
                                 var agent = key as Agent;
                                 agent.OnLazyBubbleGroupsDeleted(lazyGroup.ToList());
                             }
-                            bubbleGroups = BubbleGroupManager.DisplayImmutable;
+                            bubbleGroups = TagManager.GetAllBubbleGroups(_tags).ToList();
                             _initiallyRemovedLazy = true;
-                        }   
+                        }
                     }
                     SortListByTime(bubbleGroups);
                     if (!_refreshState)
@@ -259,7 +261,8 @@ namespace Disa.Framework
                                     try
                                     {
                                         Utils.DebugPrint("BubbleGroupsSync", "Local bubblegroup for cloud start title: " + bubbleGroup.Title);
-                                        var task = agent.LoadBubbleGroups(bubbleGroup, _pageSize, null);
+                                        var serviceTags = _tags.Where(t => t.Service == bubbleGroup.Service).ToList();
+                                        var task = agent.LoadBubbleGroups(bubbleGroup, _pageSize, serviceTags);
                                         task.Wait();
                                         if (task.Result != null && task.Result.Count >= _pageSize)
                                         {
