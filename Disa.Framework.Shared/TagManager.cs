@@ -185,7 +185,7 @@ namespace Disa.Framework
                     nodes.AddRange(node.Children);
                 }
             }
-            InitializeServices();
+            RegisterServices();
 
             ServiceEvents.Registered += (sender, service) => 
             {
@@ -198,6 +198,7 @@ namespace Disa.Framework
             if (!serviceRootNodeDictionary.ContainsKey(service.Information.ServiceName))
             {
                 var tag = CreateNewService(service);
+                OnTagsAdded(new List<Tag> { tag });
             }
             else
             {
@@ -207,7 +208,7 @@ namespace Disa.Framework
             }
         }
 
-        internal static void InitializeServices()
+        internal static void RegisterServices()
         {
             var services = ServiceManager.RegisteredNoUnified;
             //var services = ServiceManager.AllNoUnified;
