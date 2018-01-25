@@ -37,6 +37,7 @@ namespace Disa.Framework
 
             private readonly List<BubbleGroup> _list;
             private readonly int _pageSize;
+            private readonly List<Tag> _tags;
             private readonly IEnumerator<Result> _enumerator;
 
             private bool _refreshState;
@@ -44,10 +45,12 @@ namespace Disa.Framework
             private Action _action;
             private bool _initiallyRemovedLazy;
 
-            public Cursor(List<BubbleGroup> list, int pageSize)
+            public Cursor(List<BubbleGroup> list, IEnumerable<Tag> tags, int pageSize)
             {
+                list.Clear();
                 _list = list;
                 _pageSize = pageSize;
+                _tags = tags.ToList();
                 _enumerator = LoadBubblesInternal().GetEnumerator();
             }
 
@@ -124,6 +127,15 @@ namespace Disa.Framework
                         }
                     }
                 });
+            }
+
+            private IEnumerable<Result> LoadBubblesInternal2()
+            {
+                var tagServices = _tags.Select(t => t.Service).ToHashSet();
+                var bubbleGroups = TagManager.GetAllBubbleGroups(_tags);
+                _list.Clear();
+                _list.AddRange(bubbleGroups);
+                yield return Result.Change;
             }
 
             //private class RemoveDuplicatesComparer : IEqualityComparer<BubbleGroup>
