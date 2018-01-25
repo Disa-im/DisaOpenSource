@@ -186,24 +186,34 @@ namespace Disa.Framework
                 }
             }
             InitializeServices();
+
+            ServiceEvents.Registered += (sender, service) => 
+            {
+                RegisterService(service);
+            };
+        }
+
+        private static void RegisterService(Service service)
+        {
+            if (!serviceRootNodeDictionary.ContainsKey(service.Information.ServiceName))
+            {
+                var tag = CreateNewService(service);
+            }
+            else
+            {
+                var node = serviceRootNodeDictionary[service.Information.ServiceName];
+                node.Data.Service = service;
+                serviceRoots[service] = node;
+            }
         }
 
         internal static void InitializeServices()
         {
-            //var services = ServiceManager.RegisteredNoUnified;
-            var services = ServiceManager.AllNoUnified;
+            var services = ServiceManager.RegisteredNoUnified;
+            //var services = ServiceManager.AllNoUnified;
             foreach (var service in services)
             {
-                if (!serviceRootNodeDictionary.ContainsKey(service.Information.ServiceName))
-                {
-                    var tag = CreateNewService(service);
-                }
-                else
-                {
-                    var node = serviceRootNodeDictionary[service.Information.ServiceName];
-                    node.Data.Service = service;
-                    serviceRoots[service] = node;
-                }
+                RegisterService(service);
             }
 
             // TODO: add code for removing tag space when a plugin is uninstalled
