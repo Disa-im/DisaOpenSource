@@ -17,7 +17,7 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        Task<List<VisualBubble>> BubbleGroupsSync.Agent.LoadBubbleGroups(BubbleGroup startGroup, int count, BubbleGroupsSync.Category category)
+        Task<List<VisualBubble>> BubbleGroupsSync.Agent.LoadBubbleGroups(BubbleGroup startGroup, int count, IEnumerable<Tag> tags)
         {
             return Task<List<VisualBubble>>.Factory.StartNew(() =>
             {

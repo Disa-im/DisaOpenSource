@@ -12,15 +12,9 @@ namespace Disa.Framework
     //TODO: Ensure BubbleGroupUpdater does not update Lazy groups
     public class BubbleGroupsSync
     {
-        //TODO: move out to own class when Category system is well defined
-        public class Category
-        {
-            
-        }
-
         public interface Agent
         {
-            Task<List<VisualBubble>> LoadBubbleGroups(BubbleGroup startGroup, int count = 10, Category category = null);
+            Task<List<VisualBubble>> LoadBubbleGroups(BubbleGroup startGroup, int count = 10, IEnumerable<Tag> tags = null);
 
             Task<bool> OnLazyBubbleGroupsDeleted(List<BubbleGroup> groups);
         }
