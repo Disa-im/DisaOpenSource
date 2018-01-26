@@ -11,6 +11,8 @@ namespace Disa.Framework
 {
     public static class ServiceManager
     {
+        private const string TAG = "[ServiceManager]";
+
         private class ServiceBinding
         {
             public Service Service { get; private set; }
@@ -43,17 +45,52 @@ namespace Disa.Framework
 
         private static List<ServiceBinding> ServicesBindings { get; set; }
 
-        internal static void Initialize(List<Service> allServices)
+        internal static void Initialize(List<Service> allServices, List<Service> preregisteredServices)
         {
             AllInternal = allServices;
             RegisteredServicesDatabase.RegisterAllRegistered();
             Register(GetUnified());
+
+            // IMPORTANT: Only call this helper method after registing with RegisterestedServicesDatabase.RegisterAllRegistered.
+            Preregister(preregisteredServices);
 
             Analytics.RaiseCountEvent(
                 Analytics.EventAction.ServiceActiveCount,
                 Analytics.EventCategory.Services,
                 Analytics.CustomDimensionIndex.ServiceActiveCount,
                 RegisteredNoUnified.Count());
+        }
+
+        // For the collection of Services passed in, proceed to register them with ServiceManager.
+        // This is for those Services such as Giphy and Tenor that do not require a registration flow via the Settings page.
+        // IMPORTANT: Only call this helper method after registing with RegisterestedServicesDatabase.RegisterAllRegistered.
+        private static void Preregister(List<Service> preregistered)
+        {
+            foreach (var service in preregistered)
+            {
+                // Go for the registration if necessary
+                if (!ServiceManager.IsRegistered(service))
+                {
+                    try
+                    {
+                        ServiceManager.Register(service);
+                    }
+                    catch (Exception ex)
+                    {
+                        Utils.DebugPrint(TAG, nameof(Preregister) + " exception in ServiceManager.Preregister: " + ex);
+                    }
+                }
+            }
+
+            try
+            {
+                // Record our latest set of registrations
+                ServiceManager.RegisteredServicesDatabase.SaveAllRegistered();
+            }
+            catch (Exception ex)
+            {
+                Utils.DebugPrint(TAG, nameof(Preregister) + " exception in ServiceManager.RegisteredServicesDatabase.SaveAllRegistered: " + ex);
+            }
         }
 
         static ServiceManager()

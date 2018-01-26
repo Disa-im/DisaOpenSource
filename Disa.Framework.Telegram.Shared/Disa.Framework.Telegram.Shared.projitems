@@ -1285,6 +1285,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\NewChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\NewMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\PartyOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\Stickers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\UserInformation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Authentication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachedDialogs.cs" />

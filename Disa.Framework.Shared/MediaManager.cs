@@ -161,6 +161,20 @@ namespace Disa.Framework
             return servicePath;
         }
 
+        public static string GetDisaGifsPath(Service service)
+        {
+            var path = Platform.GetGifsPath();
+
+            var servicePath = Path.Combine(path, service.Information.ServiceName);
+
+            if (!Directory.Exists(servicePath))
+            {
+                Directory.CreateDirectory(servicePath);
+            }
+
+            return servicePath;
+        }
+
         private static IEnumerable<int> FindIndexesFromRear(string str, char chr)
         {
             for (var i = str.Length - 1; i >= 0; i--)

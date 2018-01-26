@@ -17,8 +17,22 @@ namespace Disa.Framework
 
         public DisaServiceUserSettings UserSettings { get; internal set; }
 
+        /// <summary>
+        /// Will be called upon <see cref="Service"/> startup if the <see cref="Service"/> HAS stored a 
+        /// derived version of <see cref="DisaSettings"/> instance previously.
+        /// </summary>
+        /// <param name="settings">The deserialized instance of the derived <see cref="DisaSettings"/> instance
+        /// that was stored away previously.</param>
+        /// <returns>True if the <see cref="Service"/> can continue to the running state or False if the
+        /// <see cref="Service"/> needs manual settings applied first (e.g., user login, etc.)</returns>
 		public abstract bool Initialize(DisaSettings settings);
 
+        /// <summary>
+        /// Will be called upon <see cref="Service"/> startup if the <see cref="Service"/> HAS NOT
+        /// stored a derived version of a <see cref="DisaSettings"/> instance previously.
+        /// </summary>
+        /// <returns>True if the <see cref="Service"/> can continue to the running state or False if the
+        /// <see cref="Service"/> needs manual settings applied first (e.g., user login, etc.)</returns>
         public abstract bool InitializeDefault();
         
         public abstract bool Authenticate(WakeLock wakeLock);

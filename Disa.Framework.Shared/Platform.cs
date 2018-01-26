@@ -47,7 +47,12 @@ namespace Disa.Framework
             return PlatformImplementation.GetStickersPath();   
         }
 
-		public static Stream GetConversationExportAssetsArchiveStream()
+        public static string GetGifsPath()
+        {
+            return PlatformImplementation.GetGifsPath();
+        }
+
+        public static Stream GetConversationExportAssetsArchiveStream()
 		{
 			return PlatformImplementation.GetConversationExportAssetsArchiveStream();
 		}

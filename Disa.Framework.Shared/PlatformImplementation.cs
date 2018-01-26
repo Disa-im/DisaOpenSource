@@ -18,6 +18,8 @@ namespace Disa.Framework
 
         public abstract string GetStickersPath();
 
+        public abstract string GetGifsPath();
+
         public abstract string GetFilesPath();
 
         public abstract string GetPicturesPath();
