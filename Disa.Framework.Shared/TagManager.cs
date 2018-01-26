@@ -211,7 +211,6 @@ namespace Disa.Framework
         internal static void RegisterServices()
         {
             var services = ServiceManager.RegisteredNoUnified;
-            //var services = ServiceManager.AllNoUnified;
             foreach (var service in services)
             {
                 RegisterService(service);
@@ -563,6 +562,15 @@ namespace Disa.Framework
             var bubbleGroups = BubbleGroupManager.FindAll((BubbleGroup bg) => conversationIds.Contains(bg.Address)).ToHashSet();
             return bubbleGroups;
         }
+        
+        public static void PersistTags()
+        {
+            var databasePath = Platform.GetDatabasePath();
+            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
+
+            var bytes = Utils.ToProtoBytes(tree);
+            File.WriteAllBytes(treeDatabasePath, bytes);
+        }
 
         public static void Persist()
         {
@@ -572,11 +580,7 @@ namespace Disa.Framework
 
             conversationTagIdsTable = databaseManager.SetupTableObject<ConversationTagIds>();
             tagConversationIdsTable = databaseManager.SetupTableObject<TagConversationIds>();
-
-            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
-            
-            var bytes = Utils.ToProtoBytes(tree);
-            File.WriteAllBytes(treeDatabasePath, bytes);
+            PersistTags();
         }
 
         public static string PrintHierarchyToString()
