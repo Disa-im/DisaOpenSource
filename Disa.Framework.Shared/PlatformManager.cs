@@ -71,9 +71,9 @@ namespace Disa.Framework
                 throw new Exception("Please initialize the platform first");
             }
             ServiceManager.Initialize(allServices.ToList(), preregisteredServices.ToList());
+            TagManager.Initialize();
             ServiceUserSettingsManager.LoadAll();
             BubbleGroupFactory.LoadAllPartiallyIfPossible();
-            TagManager.Initialize();
         }
 
         public static string FrameworkVersion
