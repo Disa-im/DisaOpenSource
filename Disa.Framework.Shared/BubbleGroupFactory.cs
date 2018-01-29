@@ -464,6 +464,8 @@ namespace Disa.Framework
                 BubbleGroupSync.DeleteBubbleGroupIfHasAgent(@group, notifyService);
 
                 BubbleGroupManager.BubbleGroupsRemove(@group);
+
+                TagManager.RemoveBubbleGroups(new List<string> { group.Address });
             }
         }
 
