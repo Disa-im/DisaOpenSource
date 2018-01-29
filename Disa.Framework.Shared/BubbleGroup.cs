@@ -314,6 +314,7 @@ namespace Disa.Framework
             PartiallyLoaded = partiallyLoaded;
             Bubbles = new ThreadSafeList<VisualBubble> { initialBubble };
             Setup(id);
+            AssignTag();
         }
 
         public BubbleGroup(List<VisualBubble> initialBubbles, string id = null)
@@ -321,6 +322,7 @@ namespace Disa.Framework
             PartiallyLoaded = false;
             Bubbles = new ThreadSafeList<VisualBubble>(initialBubbles);
             Setup(id);
+            AssignTag();
         }
 
         private void Setup(string id)
@@ -337,6 +339,12 @@ namespace Disa.Framework
             var firstBubble = Bubbles.First();
 
             NeedsSync = firstBubble.Service is BubbleGroupSync.Agent;
+        }
+
+        private void AssignTag()
+        {
+            var serviceTag = TagManager.GetServiceRootTag(Service);
+            TagManager.Add(Service, Address, new List<Tag> { serviceTag });
         }
 
         public virtual Service Service
