@@ -136,7 +136,7 @@ namespace Disa.Framework
         public delegate void OnTagsDeletedRaiser(IEnumerable<Tag> tags);
         public static event OnTagsDeletedRaiser OnTagsDeleted;
 
-        internal static void Initialize()
+        public static void Initialize()
         {
             var databasePath = Platform.GetDatabasePath();
             var conversationDatabasePath = Path.Combine(databasePath, @"ConversationTags.db");
