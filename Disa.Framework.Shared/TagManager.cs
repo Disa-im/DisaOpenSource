@@ -203,14 +203,17 @@ namespace Disa.Framework
             else
             {
                 var node = serviceRootNodeDictionary[service.Information.ServiceName];
-                node.Data.Service = service;
+                foreach (var tag in node.EnumerateAllDescendantsAndSelfData())
+                {
+                    tag.Service = service;
+                }
                 serviceRoots[service] = node;
             }
         }
 
         internal static void RegisterServices()
         {
-            var services = ServiceManager.RegisteredNoUnified;
+            var services = ServiceManager.RegisteredNoUnified.ToList();
             foreach (var service in services)
             {
                 RegisterService(service);
@@ -249,6 +252,10 @@ namespace Disa.Framework
 
         public static Tag GetServiceRootTag(Service service)
         {
+            if (!serviceRoots.ContainsKey(service))
+            {
+                return null;
+            }
             return serviceRoots[service].Data;
         }
 
