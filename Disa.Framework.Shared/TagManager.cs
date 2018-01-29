@@ -130,8 +130,8 @@ namespace Disa.Framework
 
         internal static Node<Tag> Root { get => tree.Root; }
 
-        public delegate void OnTagsAddedRaiser(IEnumerable<Tag> tag);
-        public static event OnTagsAddedRaiser OnTagsAdded;
+        public delegate void OnTagsCreatedRaiser(IEnumerable<Tag> tag);
+        public static event OnTagsCreatedRaiser OnTagsCreated;
 
         public delegate void OnTagsDeletedRaiser(IEnumerable<Tag> tags);
         public static event OnTagsDeletedRaiser OnTagsDeleted;
@@ -198,7 +198,7 @@ namespace Disa.Framework
             if (!serviceRootNodeDictionary.ContainsKey(service.Information.ServiceName))
             {
                 var tag = CreateNewService(service);
-                OnTagsAdded(new List<Tag> { tag });
+                OnTagsCreated(new List<Tag> { tag });
             }
             else
             {
@@ -305,7 +305,7 @@ namespace Disa.Framework
             Persist();
 
             // Fire event to notify UI that new tag has been created
-            OnTagsAdded(new List<Tag> { tag });
+            OnTagsCreated(new List<Tag> { tag });
 
             return tag;
         }
@@ -329,7 +329,7 @@ namespace Disa.Framework
             Persist();
 
             // Fire event to notify UI that new tag has been created
-            OnTagsAdded(tagList);
+            OnTagsCreated(tagList);
 
             return tagList;
         }
