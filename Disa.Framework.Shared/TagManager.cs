@@ -563,6 +563,23 @@ namespace Disa.Framework
             return bubbleGroups;
         }
         
+        public static void RemoveBubbleGroups(IEnumerable<string> bubbleGroupAdresses)
+        {
+            var bubbleGroupAdressSet = bubbleGroupAdresses.ToHashSet();
+            // Update in database
+            Expression<Func<ConversationTagIds, bool>> filter = e => bubbleGroupAdressSet.Contains(e.Id);
+            var conversationTagIds = databaseManager.FindRows(filter);
+            foreach (var conversationTagId in conversationTagIds)
+            {
+                foreach (var fullyQualifiedTagId in conversationTagId.FullyQualifiedTagIds)
+                {
+                    var node = fullyQualifiedIdDictionary[fullyQualifiedTagId];
+                    node.Data.BubbleGroupAddresses.Remove(conversationTagId.Id);
+                }
+            }
+            Persist();
+        }
+
         public static void PersistTags()
         {
             var databasePath = Platform.GetDatabasePath();
