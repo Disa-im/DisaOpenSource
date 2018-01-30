@@ -56,26 +56,12 @@ namespace Disa.Framework
                         return new List<VisualBubble>();
                     });
 
-                var bubbleGroups = new List<BubbleGroup>();
-                var delta = new List<BubbleGroup>();
                 foreach (var bubble in allBubbles)
                 {
                     var group = new BubbleGroup(bubble, null, false);
                     group.Lazy = true;
-                    if (!BubbleGroupFactory.AddNewIfNotExist(group))
-                    {
-                        Utils.DebugPrint($"BubbleGroupsSync Duplicate bubblegroup detected: {group.Address}");
-                        delta.Add(group);
-                        bubbleGroups.Add(group);
-                    }
-                    else
-                    {
-                        var oldGroup = BubbleGroupManager.FindWithAddress(bubble.Service, bubble.Address);
-                        bubbleGroups.Add(oldGroup);
-                    }
+                    yield return group;
                 }
-                BubbleGroupUpdater.Update(delta);
-                return bubbleGroups;
             }
 
             private IEnumerable<BubbleGroup> LoadBubblesInternalTagManager()
