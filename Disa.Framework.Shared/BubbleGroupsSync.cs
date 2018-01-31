@@ -51,6 +51,15 @@ namespace Disa.Framework
                         {
                             var serviceTags = _tags.Where(t => t.Service == service).ToList();
                             var task = agent.LoadBubbleGroups(serviceTags);
+                            try
+                            {
+                                task.Wait();
+                            }
+                            catch (Exception ex)
+                            {
+                                Utils.DebugPrint($"{service} threw exception: {ex}");
+                                return new List<VisualBubble>();
+                            }
                             return task.Result;
                         }
                         return new List<VisualBubble>();
