@@ -39,7 +39,7 @@ namespace Disa.Framework
                 _tags = tags.ToList();
             }
             
-            private IEnumerable<BubbleGroup> LoadBubblesInternal2()
+            private IEnumerable<BubbleGroup> LoadBubblesInternalService()
             {
                 var tagServices = _tags.Select(t => t.Service).ToHashSet();
 
@@ -76,10 +76,11 @@ namespace Disa.Framework
             {
                 return TagManager.GetAllBubbleGroups(_tags);
             }
-
+            
             public IEnumerator<BubbleGroup> GetEnumerator()
             {
-                return LoadBubblesInternalTagManager().GetEnumerator();
+                //return LoadBubblesInternalTagManager().GetEnumerator();
+                return LoadBubblesInternalService().GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -116,22 +117,24 @@ namespace Disa.Framework
 
             protected virtual void Dispose(bool disposing)
             {
-                if (disposing)
+                if (!disposing)
                 {
-                    //FIXME: ensure services are running of the deleted groups
-                    var lazys = BubbleGroupManager.FindAll(x => x.Lazy);
-                    foreach (var lazy in lazys)
-                    {
-                        BubbleGroupFactory.Delete(lazy, false);
-                    }
+                    return;
+                }
+                
+                //FIXME: ensure services are running of the deleted groups
+                var lazys = BubbleGroupManager.FindAll(x => x.Lazy);
+                foreach (var lazy in lazys)
+                {
+                    BubbleGroupFactory.Delete(lazy, false);
+                }
 
-                    //FIXME: call into service needs to be atomic.
-                    foreach (var lazyGroup in lazys.GroupBy(x => x.Service))
-                    {
-                        var key = lazyGroup.Key;
-                        var agent = key as Agent;
-                        agent.OnLazyBubbleGroupsDeleted(lazyGroup.ToList());
-                    }
+                //FIXME: call into service needs to be atomic.
+                foreach (var lazyGroup in lazys.GroupBy(x => x.Service))
+                {
+                    var key = lazyGroup.Key;
+                    var agent = key as Agent;
+                    agent.OnLazyBubbleGroupsDeleted(lazyGroup.ToList());
                 }
             }
         }
