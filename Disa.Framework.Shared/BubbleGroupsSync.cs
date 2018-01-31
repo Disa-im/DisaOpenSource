@@ -31,7 +31,7 @@ namespace Disa.Framework
             });
         }
 
-        public class Cursor : IEnumerable<BubbleGroup>
+        public class Cursor : IEnumerable<BubbleGroup>, IDisposable
         {
             private readonly List<Tag> _tags;
             
@@ -94,6 +94,43 @@ namespace Disa.Framework
             //        return 0;
             //    }
             //}
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            
+            // NOTE: Leave out the finalizer altogether if this class doesn't   
+            // own unmanaged resources itself, but leave the other methods  
+            // exactly as they are.   
+            ~Cursor()
+            {
+                // Finalizer calls Dispose(false)  
+                Dispose(false);
+            }
+
+            // The bulk of the clean-up code is implemented in Dispose(bool)  
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    //FIXME: ensure services are running of the deleted groups
+                    var lazys = BubbleGroupManager.FindAll(x => x.Lazy);
+                    foreach (var lazy in lazys)
+                    {
+                        BubbleGroupFactory.Delete(lazy, false);
+                    }
+
+                    //FIXME: call into service needs to be atomic.
+                    foreach (var lazyGroup in lazys.GroupBy(x => x.Service))
+                    {
+                        var key = lazyGroup.Key;
+                        var agent = key as Agent;
+                        agent.OnLazyBubbleGroupsDeleted(lazyGroup.ToList());
+                    }
+                }
+            }
 
 #if false
             private IEnumerable<Result> LoadBubblesInternal()
