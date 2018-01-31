@@ -15,7 +15,6 @@ namespace Disa.Framework
     {
         public interface Agent
         {
-            Task<List<VisualBubble>> LoadBubbleGroups2(BubbleGroup startGroup, int count = 10, IEnumerable<Tag> tags = null);
             Task<IEnumerable<VisualBubble>> LoadBubbleGroups(IEnumerable<Tag> tags = null);
 
             Task<bool> OnLazyBubbleGroupsDeleted(List<BubbleGroup> groups);
@@ -110,16 +109,11 @@ namespace Disa.Framework
                 GC.SuppressFinalize(this);
             }
             
-            // NOTE: Leave out the finalizer altogether if this class doesn't   
-            // own unmanaged resources itself, but leave the other methods  
-            // exactly as they are.   
             ~Cursor()
             {
-                // Finalizer calls Dispose(false)  
                 Dispose(false);
             }
 
-            // The bulk of the clean-up code is implemented in Dispose(bool)  
             protected virtual void Dispose(bool disposing)
             {
                 if (disposing)
