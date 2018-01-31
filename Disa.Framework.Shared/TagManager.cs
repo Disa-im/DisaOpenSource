@@ -312,7 +312,10 @@ namespace Disa.Framework
             Persist();
 
             // Fire event to notify UI that new tag has been created
-            OnTagsCreated(new List<Tag> { tag });
+            if (OnTagsCreated != null)
+            {
+                OnTagsCreated(new List<Tag> {tag});
+            }
 
             return tag;
         }
@@ -336,7 +339,10 @@ namespace Disa.Framework
             Persist();
 
             // Fire event to notify UI that new tag has been created
-            OnTagsCreated(tagList);
+            if (OnTagsCreated != null)
+            {
+                OnTagsCreated(tagList);
+            }
 
             return tagList;
         }
@@ -373,7 +379,10 @@ namespace Disa.Framework
             var deletedTags = DeleteTag(tag);
             Persist();
             // Fire event to notify UI that new tag has been deleted
-            OnTagsDeleted(deletedTags);
+            if (OnTagsDeleted != null)
+            {
+                OnTagsDeleted(deletedTags);
+            }
         }
 
         public static void Delete(IEnumerable<Tag> tags)
@@ -383,14 +392,15 @@ namespace Disa.Framework
                 return;
             }
 
-            foreach (var tag in tags)
-            {
-                DeleteTag(tag);
-            }
+            var deletedTags = tags.SelectMany(DeleteTag).ToList();
             Persist();
 
             // Fire event to notify UI that new tag has been deleted
-            OnTagsDeleted(tags);
+            // Fire event to notify UI that new tag has been deleted
+            if (OnTagsDeleted != null)
+            {
+                OnTagsDeleted(deletedTags);
+            }
         }
 
         public static bool Exists(Service service, Tag tag)
