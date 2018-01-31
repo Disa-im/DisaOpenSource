@@ -128,7 +128,7 @@ namespace Disa.Framework
         private static AsyncTableQuery<ConversationTagIds> conversationTagIdsTable;
         private static AsyncTableQuery<TagConversationIds> tagConversationIdsTable;
 
-        internal static Node<Tag> Root { get => tree.Root; }
+        internal static Node<Tag> Root => tree.Root;
 
         public delegate void OnTagsCreatedRaiser(IEnumerable<Tag> tag);
         public static event OnTagsCreatedRaiser OnTagsCreated;
@@ -320,7 +320,7 @@ namespace Disa.Framework
         // TODO: Extract Create and CreateService to common method
         public static List<Tag> Create(IEnumerable<Tag> tags)
         {
-            var tagList = tags.Select(t => CreateTag(t)).ToList();
+            var tagList = tags.Select(CreateTag).ToList();
 
             foreach (var tag in tagList)
             {
