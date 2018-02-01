@@ -72,6 +72,83 @@ namespace Disa.Framework
                 }
             }
 
+            private IEnumerable<BubbleGroup> LoadBubblesInternalLazyService()
+            {
+                var tagServices = _tags.Select(t => t.Service).ToHashSet();
+
+                var serviceBubbleEnumerators = tagServices.Select(service =>
+                {
+                    var agent = service as Agent;
+                    if (agent != null)
+                    {
+                        // Service supports lazy loading
+                        var serviceTags = _tags.Where(t => t.Service == service).ToList();
+                        var task = agent.LoadBubbleGroups(serviceTags);
+                        try
+                        {
+                            task.Wait();
+                        }
+                        catch (Exception ex)
+                        {
+                            Utils.DebugPrint($"{service} threw exception: {ex}");
+                            return new List<VisualBubble>();
+                        }
+                        return task.Result;
+                    }
+                    else
+                    {
+                        // Service does not support lazy loading
+                        // Get the bubble groups from Tag Manager
+
+                    }
+                    return new List<VisualBubble>();
+                })
+                .Select(l => l.GetEnumerator())
+                .ToList();
+                
+                var priorityQueue = new List<(VisualBubble, IEnumerator<VisualBubble>)>();
+
+                // Initialize the queue
+                for (var i = 0; i < serviceBubbleEnumerators.Count;)
+                {
+                    var bubbleEnumerator = serviceBubbleEnumerators[i];
+                    if (bubbleEnumerator.MoveNext())
+                    {
+                        priorityQueue.Add((bubbleEnumerator.Current, bubbleEnumerator));
+                        i++;
+                    }
+                    else
+                    {
+                        serviceBubbleEnumerators.RemoveAt(i);
+                    }
+                }
+
+                priorityQueue = priorityQueue.OrderByDescending(t => t.Item1.Time).ToList();
+
+                while (true)
+                {
+                    // We're done enumerating all the bubbles we got from services
+                    if (!serviceBubbleEnumerators.Any())
+                    {
+                        break;
+                    }
+
+                    (var bubble, var enumerator) = priorityQueue[0];
+                    if (enumerator.MoveNext())
+                    {
+                        priorityQueue.Add((enumerator.Current, enumerator));
+                    }
+                    else
+                    {
+                        serviceBubbleEnumerators.Remove(enumerator);
+                    }
+                    priorityQueue = priorityQueue.OrderByDescending(t => t.Item1.Time).ToList();
+                    var group = new BubbleGroup(bubble, null, false);
+                    group.Lazy = true;
+                    yield return group;
+                }
+            }
+
             private IEnumerable<BubbleGroup> LoadBubblesInternalTagManager()
             {
                 return TagManager.GetAllBubbleGroups(_tags);
