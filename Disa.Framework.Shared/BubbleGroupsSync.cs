@@ -15,7 +15,7 @@ namespace Disa.Framework
     {
         public interface Agent
         {
-            Task<IEnumerable<VisualBubble>> LoadBubbleGroups(IEnumerable<Tag> tags = null);
+            Task<IEnumerable<BubbleGroup>> LoadBubbleGroups(IEnumerable<Tag> tags = null);
 
             Task<bool> OnLazyBubbleGroupsDeleted(List<BubbleGroup> groups);
         }

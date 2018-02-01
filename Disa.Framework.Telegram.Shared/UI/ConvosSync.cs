@@ -17,7 +17,7 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        Task<IEnumerable<VisualBubble>> BubbleGroupsSync.Agent.LoadBubbleGroups(IEnumerable<Tag> tags)
+        Task<IEnumerable<BubbleGroup>> BubbleGroupsSync.Agent.LoadBubbleGroups(IEnumerable<Tag> tags)
         {
             throw new NotImplementedException();
         }
