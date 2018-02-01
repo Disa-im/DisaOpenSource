@@ -39,50 +39,17 @@ namespace Disa.Framework
                 _tags = tags.ToList();
             }
             
-            private IEnumerable<BubbleGroup> LoadBubblesInternalService()
-            {
-                var tagServices = _tags.Select(t => t.Service).ToHashSet();
-
-                var allBubbles = tagServices.SelectMany(service => 
-                    {
-                        var agent = service as Agent;
-                        if (agent != null)
-                        {
-                            var serviceTags = _tags.Where(t => t.Service == service).ToList();
-                            var task = agent.LoadBubbleGroups(serviceTags);
-                            try
-                            {
-                                task.Wait();
-                            }
-                            catch (Exception ex)
-                            {
-                                Utils.DebugPrint($"{service} threw exception: {ex}");
-                                return new List<VisualBubble>();
-                            }
-                            return task.Result;
-                        }
-                        return new List<VisualBubble>();
-                    });
-
-                foreach (var bubble in allBubbles)
-                {
-                    var group = new BubbleGroup(bubble, null, false);
-                    group.Lazy = true;
-                    yield return group;
-                }
-            }
-
             private IEnumerable<BubbleGroup> LoadBubblesInternalLazyService()
             {
                 var tagServices = _tags.Select(t => t.Service).ToHashSet();
 
-                var serviceBubbleEnumerators = tagServices.Select(service =>
+                var serviceBubbleGroupsEnumerators = tagServices.Select(service =>
                 {
                     var agent = service as Agent;
+                    var serviceTags = _tags.Where(t => t.Service == service).ToList();
                     if (agent != null)
                     {
                         // Service supports lazy loading
-                        var serviceTags = _tags.Where(t => t.Service == service).ToList();
                         var task = agent.LoadBubbleGroups(serviceTags);
                         try
                         {
