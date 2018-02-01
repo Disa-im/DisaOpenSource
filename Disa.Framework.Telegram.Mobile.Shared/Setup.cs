@@ -404,7 +404,7 @@ namespace Disa.Framework.Telegram.Mobile
                     {
 						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
-                        if (Platform.DeviceHasApp(TelegramPackage))
+                        if (Disa.Framework.Platform.DeviceHasApp(TelegramPackage))
                         {
                             await Navigation.PushAsync(new MuteNotifications());
                         }
@@ -525,7 +525,7 @@ namespace Disa.Framework.Telegram.Mobile
                     {
 						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
-                        if (Platform.DeviceHasApp(TelegramPackage))
+                        if (Disa.Framework.Platform.DeviceHasApp(TelegramPackage))
                         {
                             await Navigation.PushAsync(new MuteNotifications());
                         }
@@ -771,12 +771,12 @@ namespace Disa.Framework.Telegram.Mobile
 
             private void OpenTelegram()
             {
-                Platform.OpenApp(TelegramPackage);
+                Disa.Framework.Platform.OpenApp(TelegramPackage);
             }
 
             private void DisableNotificationsVideo()
             {
-                Platform.LaunchViewIntent("https://www.youtube.com/watch?v=HJVJG7onFb0");
+                Disa.Framework.Platform.LaunchViewIntent("https://www.youtube.com/watch?v=HJVJG7onFb0");
             }
 
             public MuteNotifications()
@@ -858,7 +858,7 @@ namespace Disa.Framework.Telegram.Mobile
                     {
 						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
-                        if (Platform.DeviceHasApp(TelegramPackage))
+                        if (Disa.Framework.Platform.DeviceHasApp(TelegramPackage))
                         {
                             await Navigation.PushAsync(new MuteNotifications());
                         }
@@ -1361,7 +1361,7 @@ namespace Disa.Framework.Telegram.Mobile
                         }
 						CleanUp(service);
                         Save(service, result.AccountId, GetSettingsTelegramSettings(NationalNumber));
-                        if (Platform.DeviceHasApp(TelegramPackage))
+                        if (Disa.Framework.Platform.DeviceHasApp(TelegramPackage))
                         {
                             await Navigation.PushAsync(new MuteNotifications());
                         }
