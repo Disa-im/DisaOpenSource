@@ -58,7 +58,9 @@ namespace Disa.Framework
                         catch (Exception ex)
                         {
                             Utils.DebugPrint($"{service} threw exception: {ex}");
-                            return TagManager.GetAllBubbleGroups(serviceTags).ToList();
+                            return TagManager.GetAllBubbleGroups(serviceTags)
+                                             .OrderByDescending(g => g.LastBubbleSafe().Time)
+                                             .ToList();
                         }
                         return task.Result;
                     }
@@ -66,7 +68,9 @@ namespace Disa.Framework
                     {
                         // Service does not support lazy loading
                         // Get the bubble groups from Tag Manager
-                        return TagManager.GetAllBubbleGroups(serviceTags).ToList();
+                        return TagManager.GetAllBubbleGroups(serviceTags)
+                                         .OrderByDescending(g => g.LastBubbleSafe().Time)
+                                         .ToList();
                     }
                 })
                 .Select(l => l.GetEnumerator())
