@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using ProtoBuf;
 using SQLite;
 
@@ -195,10 +194,19 @@ namespace Disa.Framework
 
         private static void RegisterService(Service service)
         {
+            if(service == null)
+            {
+                Utils.DebugPrint($"Service is null");
+                return;
+            }
+            
             if (!serviceRootNodeDictionary.ContainsKey(service.Information.ServiceName))
             {
                 var tag = CreateNewService(service);
-                OnTagsCreated(new List<Tag> { tag });
+                if (OnTagsCreated != null)
+                {
+                    OnTagsCreated(new List<Tag> { tag });
+                }
             }
             else
             {
