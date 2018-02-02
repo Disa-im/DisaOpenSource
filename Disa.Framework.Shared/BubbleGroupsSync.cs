@@ -89,6 +89,7 @@ namespace Disa.Framework
                     }
                     else
                     {
+                        // We are done enumerating the bubble groups from that service
                         serviceBubbleGroupsEnumerators.RemoveAt(i);
                     }
                 }
@@ -119,14 +120,8 @@ namespace Disa.Framework
                 }
             }
 
-            private IEnumerable<BubbleGroup> LoadBubblesInternalTagManager()
-            {
-                return TagManager.GetAllBubbleGroups(_tags);
-            }
-            
             public IEnumerator<BubbleGroup> GetEnumerator()
             {
-                //return LoadBubblesInternalTagManager().GetEnumerator();
                 //return LoadBubblesInternalService().GetEnumerator();
                 return LoadBubblesInternalLazyService().GetEnumerator();
             }
@@ -183,6 +178,51 @@ namespace Disa.Framework
                     var key = lazyGroup.Key;
                     var agent = key as Agent;
                     agent.OnLazyBubbleGroupsDeleted(lazyGroup.ToList());
+                }
+            }
+        }
+        
+        public class TagBasedCursor : IEnumerable<BubbleGroup>
+        {
+            private readonly List<Tag> _tags;
+            
+            public TagBasedCursor(IEnumerable<Tag> tags)
+            {
+                _tags = tags.ToList();
+            }
+            
+            private IEnumerable<BubbleGroup> LoadBubblesInternalTagManager()
+            {
+                var bubbleGroups = TagManager.GetAllBubbleGroups(_tags);
+                return bubbleGroups.OrderByDescending(g => g.LastBubbleSafe().Time);
+            }
+            
+            public IEnumerator<BubbleGroup> GetEnumerator()
+            {
+                return LoadBubblesInternalTagManager().GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            
+            ~TagBasedCursor()
+            {
+                Dispose(false);
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!disposing)
+                {
+                    return;
                 }
             }
         }
