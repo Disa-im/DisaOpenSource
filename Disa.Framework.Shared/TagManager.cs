@@ -147,43 +147,50 @@ namespace Disa.Framework
             var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
             if (File.Exists(treeDatabasePath))
             {
-                tree = Utils.FromProtoBytesToObject <DirectedAcyclicGraph<Tag>>(File.ReadAllBytes(treeDatabasePath));
+                lock (tree)
+                {
+                    tree = Utils.FromProtoBytesToObject<DirectedAcyclicGraph<Tag>>(File.ReadAllBytes(treeDatabasePath));
 
-                //Initialize serviceRootNodeDictionary
-                foreach (var child in tree.Root.Children)
-                {
-                    serviceRootNodeDictionary[child.Data.FullyQualifiedId] = child;
-                }
+                    //Initialize serviceRootNodeDictionary
+                    foreach (var child in tree.Root.Children)
+                    {
+                        serviceRootNodeDictionary[child.Data.FullyQualifiedId] = child;
+                    }
 
-                var nodes = new List<Node<Tag>>()
-                {
-                    tree.Root,
-                };
-                while (nodes.Count > 0)
-                {
-                    var node = nodes[0];
-                    nodes.RemoveAt(0);
-                    // Setup values, which are stored in a sqlite database
-                    Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
-                    var tagConversationIds = databaseManager.FindRow<TagConversationIds>(filter);
-                    if (tagConversationIds == null)
+                    var nodes = new List<Node<Tag>>()
                     {
-                        Utils.DebugPrint($"WUT");
-                    }
-                    else
+                        tree.Root,
+                    };
+                    while (nodes.Count > 0)
                     {
-                        node.Data.BubbleGroupAddresses = tagConversationIds.BubbleGroupAddresses;
+                        var node = nodes[0];
+                        nodes.RemoveAt(0);
+                        // Setup values, which are stored in a sqlite database
+                        Expression<Func<TagConversationIds, bool>> filter = e =>
+                            e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
+                        var tagConversationIds = databaseManager.FindRow<TagConversationIds>(filter);
+                        if (tagConversationIds == null)
+                        {
+                            Utils.DebugPrint($"WUT");
+                        }
+                        else
+                        {
+                            node.Data.BubbleGroupAddresses = tagConversationIds.BubbleGroupAddresses;
+                        }
+
+                        fullyQualifiedIdDictionary[node.Data.FullyQualifiedId] = node;
+                        tags.Add(node.Data);
+                        // Setup Parents
+                        foreach (var child in node.Children)
+                        {
+                            child.Parent = node;
+                        }
+
+                        nodes.AddRange(node.Children);
                     }
-                    fullyQualifiedIdDictionary[node.Data.FullyQualifiedId] = node;
-                    tags.Add(node.Data);
-                    // Setup Parents
-                    foreach (var child in node.Children)
-                    {
-                        child.Parent = node;
-                    }
-                    nodes.AddRange(node.Children);
                 }
             }
+
             RegisterServices();
 
             ServiceEvents.Registered += (sender, service) => 
@@ -369,10 +376,13 @@ namespace Disa.Framework
             foreach (var childrenTag in selfAndDescendantsTags)
             {
                 fullyQualifiedIdDictionary.Remove(childrenTag.FullyQualifiedId);
-                TagManager.tags.Remove(childrenTag);
+                tags.Remove(childrenTag);
             }
 
-            node.Parent.RemoveChild(node);
+            lock(tree)
+            {
+                node.Parent.RemoveChild(node);
+            }
             
             var tagIds = selfAndDescendantsTags.Select(t => t.FullyQualifiedId).ToHashSet();
             Expression<Func<TagConversationIds, bool>> filter = 
@@ -494,16 +504,14 @@ namespace Disa.Framework
             }
         }
 
-        public static HashSet<Tag> GetAllTags()
-        {
-            return tags;
-        }
-
-        public static HashSet<Tag> GetAllServiceTags(Service service)
+        public static List<Tag> GetAllServiceTags(Service service)
         {
             var serviceRoot = serviceRoots[service];
-            var nodes = serviceRoot.EnumerateAllDescendantsAndSelf();
-            return nodes.Select(n => n.Data).ToHashSet();
+            lock (tree)
+            {
+                var nodes = serviceRoot.EnumerateAllDescendantsAndSelf();
+                return nodes.Select(n => n.Data).ToHashSet().ToList();
+            }
         }
         
         public static IList<Tag> FlatSubTree(Service service)
@@ -514,13 +522,17 @@ namespace Disa.Framework
             }
 
             var serviceRoot = serviceRoots[service];
-            return serviceRoot.Children.SelectMany(child => child.FlatSubTreeWithData())
-                                       .Select(c =>
-                                       {
-                                           c.Value.ConvenientName = c.Key;
-                                           return c.Value;
-                                       })
-                                       .ToList();
+
+            lock (tree)
+            {
+                return serviceRoot.Children.SelectMany(child => child.FlatSubTreeWithData())
+                    .Select(c =>
+                    {
+                        c.Value.ConvenientName = c.Key;
+                        return c.Value;
+                    })
+                    .ToList();
+            }
         }
 
         // Expose a method to return a node
@@ -609,8 +621,11 @@ namespace Disa.Framework
         {
             var databasePath = Platform.GetDatabasePath();
             var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
-
-            var bytes = Utils.ToProtoBytes(tree);
+            byte[] bytes = null;
+            lock (tree)
+            {
+                bytes = Utils.ToProtoBytes(tree);
+            }
             File.WriteAllBytes(treeDatabasePath, bytes);
         }
 
@@ -627,7 +642,10 @@ namespace Disa.Framework
 
         public static string PrintHierarchyToString()
         {
-            return tree.PrintToString();
+            lock (tree)
+            {
+                return tree.PrintToString();                
+            }
         }
 
         public static void PrintAllTags()
