@@ -135,6 +135,8 @@ namespace Disa.Framework
         public delegate void OnTagsDeletedRaiser(IEnumerable<Tag> tags);
         public static event OnTagsDeletedRaiser OnTagsDeleted;
 
+        public static IList<Tag> Tags => tags.ToList();
+        
         public static void Initialize()
         {
             var databasePath = Platform.GetDatabasePath();
@@ -564,7 +566,7 @@ namespace Disa.Framework
         //    return null;
         //}
 
-        public static HashSet<BubbleGroup> GetAllBubbleGroups(Tag tag)
+        public static List<BubbleGroup> GetAllBubbleGroups(Tag tag)
         {
             var conversationIds = new HashSet<string>();
             var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
@@ -572,12 +574,13 @@ namespace Disa.Framework
             {
                 // XXX Should we throw exceptions?
                 Utils.DebugPrint($"Node for respective {tag.FullyQualifiedId} is not found");
-                return new HashSet<BubbleGroup>();
+                return new List<BubbleGroup>();
             }
             var tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
             conversationIds.UnionWith(tagConversationIds);
 
-            var bubbleGroups = BubbleGroupManager.FindAll((BubbleGroup bg) => conversationIds.Contains(bg.Address)).ToHashSet();
+            var bubbleGroups = BubbleGroupManager.FindAll((BubbleGroup bg) => conversationIds.Contains(bg.Address))
+                                                 .ToList();
             return bubbleGroups;
         }
 
