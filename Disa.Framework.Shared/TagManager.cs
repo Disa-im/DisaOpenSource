@@ -212,10 +212,7 @@ namespace Disa.Framework
             if (!serviceRootNodeDictionary.ContainsKey(service.Information.ServiceName))
             {
                 var tag = CreateNewService(service);
-                if (OnTagsCreated != null)
-                {
-                    OnTagsCreated(new List<Tag> { tag });
-                }
+                OnTagsCreated?.Invoke(new List<Tag> { tag });
             }
             else
             {
@@ -336,10 +333,7 @@ namespace Disa.Framework
             Persist();
 
             // Fire event to notify UI that new tag has been created
-            if (OnTagsCreated != null)
-            {
-                OnTagsCreated(new List<Tag> {tag});
-            }
+            OnTagsCreated?.Invoke(new List<Tag> { tag });
 
             return tag;
         }
@@ -357,16 +351,12 @@ namespace Disa.Framework
                     BubbleGroupAddresses = new HashSet<string>()
                 };
                 databaseManager.InsertRow(tagConversationIds);
-
             }
 
             Persist();
 
             // Fire event to notify UI that new tag has been created
-            if (OnTagsCreated != null)
-            {
-                OnTagsCreated(tagList);
-            }
+            OnTagsCreated?.Invoke(tagList);
 
             return tagList;
         }
@@ -411,10 +401,7 @@ namespace Disa.Framework
             var deletedTags = DeleteTag(tag);
             Persist();
             // Fire event to notify UI that new tag has been deleted
-            if (OnTagsDeleted != null)
-            {
-                OnTagsDeleted(deletedTags);
-            }
+            OnTagsDeleted?.Invoke(deletedTags);
         }
 
         public static void Delete(IEnumerable<Tag> tags)
@@ -429,10 +416,7 @@ namespace Disa.Framework
 
             // Fire event to notify UI that new tag has been deleted
             // Fire event to notify UI that new tag has been deleted
-            if (OnTagsDeleted != null)
-            {
-                OnTagsDeleted(deletedTags);
-            }
+            OnTagsDeleted?.Invoke(deletedTags);
         }
 
         public static bool Exists(Service service, Tag tag)
