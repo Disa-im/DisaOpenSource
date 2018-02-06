@@ -254,7 +254,10 @@ namespace Disa.Framework
             serviceRoots[service] = serviceRoot;
             serviceRootNodeDictionary[service.Information.ServiceName] = serviceRoot;
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = serviceRoot;
-            tree.Root.AddChild(serviceRoot);
+            lock (tree)
+            {
+                tree.Root.AddChild(serviceRoot);
+            }
             tags.Add(tag);
 
             var tagConversationIds = new TagConversationIds()
@@ -306,8 +309,12 @@ namespace Disa.Framework
                 throw new ArgumentException($"{nameof(Tag.Parent)}");
             }
             var parentNode = fullyQualifiedIdDictionary[tag.Parent.FullyQualifiedId];
-            var childNode = new Node<Tag>(tag, parentNode) { Name = tag.Name };
-            parentNode.AddChild(childNode);
+            Node<Tag> childNode = null;
+            lock (tree)
+            {
+                childNode = new Node<Tag>(tag, parentNode) { Name = tag.Name };
+                parentNode.AddChild(childNode);
+            }
             fullyQualifiedIdDictionary[tag.FullyQualifiedId] = childNode;
             tags.Add(tag);
             
@@ -374,7 +381,12 @@ namespace Disa.Framework
 
             var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
 
-            var selfAndDescendantsTags = node.EnumerateAllDescendantsAndSelfData();
+            HashSet<Tag> selfAndDescendantsTags = null;
+            lock (tree)
+            {
+                selfAndDescendantsTags = node.EnumerateAllDescendantsAndSelfData();
+            }
+
             foreach (var childrenTag in selfAndDescendantsTags)
             {
                 fullyQualifiedIdDictionary.Remove(childrenTag.FullyQualifiedId);
@@ -576,7 +588,13 @@ namespace Disa.Framework
                 Utils.DebugPrint($"Node for respective {tag.FullyQualifiedId} is not found");
                 return new List<BubbleGroup>();
             }
-            var tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
+
+            IEnumerable<string> tagConversationIds = null;
+            lock (tree)
+            {
+                tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
+            }
+
             conversationIds.UnionWith(tagConversationIds);
 
             var bubbleGroups = BubbleGroupManager.FindAll((BubbleGroup bg) => conversationIds.Contains(bg.Address))
@@ -595,7 +613,12 @@ namespace Disa.Framework
                     Utils.DebugPrint($"Node for respective {tag.FullyQualifiedId} is not found");
                     continue;
                 }
-                var tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
+
+                IEnumerable<string> tagConversationIds = null;
+                lock (tree)
+                {
+                    tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
+                }
                 conversationIds.UnionWith(tagConversationIds);
             }
 
