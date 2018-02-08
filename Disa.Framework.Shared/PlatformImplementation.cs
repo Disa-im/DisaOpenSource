@@ -90,7 +90,7 @@ namespace Disa.Framework
 
         public abstract bool SwitchCurrentBubbleGroupOnUI(BubbleGroup group);
 
-        public abstract void DeleteBubbleGroup(BubbleGroup[] bubbleGroups);
+        public abstract void DeleteBubbleGroup(BubbleGroup[] bubbleGroups, bool notifyService);
 
         public abstract void ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
 

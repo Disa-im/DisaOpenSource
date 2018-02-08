@@ -219,9 +219,9 @@ namespace Disa.Framework
             return PlatformImplementation.SwitchCurrentBubbleGroupOnUI(group);
         }
 
-        public static void DeleteBubbleGroup(BubbleGroup[] bubbleGroups)
+        public static void DeleteBubbleGroup(BubbleGroup[] bubbleGroups, bool notifyService = false)
         {
-            PlatformImplementation.DeleteBubbleGroup(bubbleGroups);
+            PlatformImplementation.DeleteBubbleGroup(bubbleGroups, notifyService);
         }
 
         public static void ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately()
