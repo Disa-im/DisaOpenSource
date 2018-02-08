@@ -369,6 +369,11 @@ namespace Disa.Framework
                 return new List<Tag>();
             }
 
+            if (!fullyQualifiedIdDictionary.ContainsKey(tag.FullyQualifiedId))
+            {
+                return new List<Tag>();
+            }
+
             var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
 
             HashSet<Tag> selfAndDescendantsTags = null;
