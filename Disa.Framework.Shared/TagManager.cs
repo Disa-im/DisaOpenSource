@@ -199,6 +199,10 @@ namespace Disa.Framework
             {
                 RegisterService(service);
             };
+            ServiceEvents.UnRegistered += (sender, service) => 
+            {
+                UnregisterService(service);                
+            };
         }
 
         private static void RegisterService(Service service)
@@ -232,10 +236,27 @@ namespace Disa.Framework
             {
                 RegisterService(service);
             }
-
-            // TODO: add code for removing tag space when a plugin is uninstalled
         }
 
+        private static void UnregisterService(Service service)
+        {
+            if(service == null)
+            {
+                Utils.DebugPrint($"Service is null");
+                return;
+            }
+            
+            if (!serviceRootNodeDictionary.ContainsKey(service.Information.ServiceName))
+            {
+                Utils.DebugPrint($"{service.Information.ServiceName} is not in TagManager");
+            }
+
+            serviceRoots.Remove(service);
+            var node = serviceRootNodeDictionary[service.Information.ServiceName];
+            var serviceTag = node.Data;
+            Delete(serviceTag);
+        }
+        
         private static Tag CreateNewService(Service service)
         {
             var tag = new Tag()
