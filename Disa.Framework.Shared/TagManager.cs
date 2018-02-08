@@ -290,21 +290,13 @@ namespace Disa.Framework
 
         public static Tag GetServiceRootTag(Service service)
         {
-            if (!serviceRoots.ContainsKey(service))
-            {
-                return null;
-            }
-            return serviceRoots[service].Data;
+            return serviceRoots.ContainsKey(service) ? serviceRoots[service].Data : null;
         }
 
         public static Tag GetTagById(Service service, string id)
         {
             var fullId = $"{service.Information.ServiceName}|{id}";
-            if (!fullyQualifiedIdDictionary.ContainsKey(fullId))
-            {
-                return null;
-            }
-            return fullyQualifiedIdDictionary[fullId].Data;
+            return fullyQualifiedIdDictionary.ContainsKey(fullId) ? fullyQualifiedIdDictionary[fullId].Data : null;
         }
 
         private static Tag CreateTag(Tag tag)
@@ -364,16 +356,13 @@ namespace Disa.Framework
         {
             var tagList = tags.Select(CreateTag).ToList();
 
-            foreach (var tag in tagList)
+            var tagConversationIds = tagList.Select(tag => new TagConversationIds()
             {
-                var tagConversationIds = new TagConversationIds()
-                {
-                    FullyQualifiedId = tag.FullyQualifiedId,
-                    BubbleGroupAddresses = new HashSet<string>()
-                };
-                databaseManager.InsertRow(tagConversationIds);
-            }
-
+                FullyQualifiedId = tag.FullyQualifiedId,
+                BubbleGroupAddresses = new HashSet<string>()
+            }).ToList();
+            databaseManager.InsertRows(tagConversationIds);
+            
             Persist();
 
             // Fire event to notify UI that new tag has been created
@@ -441,7 +430,6 @@ namespace Disa.Framework
             Persist();
 
             // Fire event to notify UI that new tag has been deleted
-            // Fire event to notify UI that new tag has been deleted
             OnTagsDeleted?.Invoke(deletedTags);
         }
 
@@ -482,7 +470,9 @@ namespace Disa.Framework
             {
                 Console.WriteLine($"WUT");
             }
-            foreach (var tag in tags)
+
+            var tagsList = tags.ToList();
+            foreach (var tag in tagsList)
             {
                 if (!fullyQualifiedIdDictionary.ContainsKey(tag.FullyQualifiedId))
                 {
@@ -493,39 +483,43 @@ namespace Disa.Framework
                 node.Data.BubbleGroupAddresses.Add(bubbleGroupAddress);
 
                 // Update in database
-                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
+                Expression<Func<TagConversationIds, bool>> filter = 
+                    e => e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
                 var tagConversationIds = databaseManager.FindRow(filter);
                 tagConversationIds.BubbleGroupAddresses.Add(bubbleGroupAddress);
                 databaseManager.UpdateRow(tagConversationIds);
-
-                var conversationTagIds = new ConversationTagIds()
-                {
-                    Id = bubbleGroupAddress,
-                    FullyQualifiedTagIds = tags.Select(t => t.Id).ToHashSet(),
-                };
-                //databaseManager.InsertRow();
             }
+            
+            var conversationTagIds = new ConversationTagIds()
+            {
+                Id = bubbleGroupAddress,
+                FullyQualifiedTagIds = tagsList.Select(t => t.Id).ToHashSet(),
+            };
+            databaseManager.InsertRow(conversationTagIds);
         }
 
         public static void Remove(Service service, string bubbleGroupAddress, IEnumerable<Tag> tags)
         {
-            foreach (var tag in tags)
+            var tagsList = tags.ToList();
+            foreach (var tag in tagsList)
             {
                 var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
                 node.Data.BubbleGroupAddresses.Remove(bubbleGroupAddress);
                 
                 // Update in database
-                Expression<Func<TagConversationIds, bool>> filter = e => e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
+                Expression<Func<TagConversationIds, bool>> filter = 
+                    e => e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
                 var tagConversationIds = databaseManager.FindRow(filter);
                 tagConversationIds.BubbleGroupAddresses.Remove(bubbleGroupAddress);
                 databaseManager.UpdateRow(tagConversationIds);
-
-                var conversationTagIds = new ConversationTagIds()
-                {
-                    Id = bubbleGroupAddress,
-                    FullyQualifiedTagIds = tags.Select(t => t.Id).ToHashSet(),
-                };
             }
+            
+            // FIX
+            var conversationTagIds = new ConversationTagIds()
+            {
+                Id = bubbleGroupAddress,
+                FullyQualifiedTagIds = tagsList.Select(t => t.Id).ToHashSet(),
+            };
         }
 
         public static List<Tag> GetAllServiceTags(Service service)
