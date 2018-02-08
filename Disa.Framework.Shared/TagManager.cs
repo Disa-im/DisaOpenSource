@@ -624,6 +624,8 @@ namespace Disa.Framework
                     node.Data.BubbleGroupAddresses.Remove(conversationTagId.Id);
                 }
             }
+
+            databaseManager.DeleteRows(conversationTagIds);
             Persist();
         }
 
