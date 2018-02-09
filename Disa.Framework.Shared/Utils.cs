@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Linq;
+using System.Linq.Expressions;
 using Disa.Framework.Bubbles;
 using System.Reflection;
 using ProtoBuf;
@@ -286,6 +287,66 @@ namespace Disa.Framework
                 }
             }
             return types;
+        }
+
+        /// <summary>
+        /// Returns in descending order
+        /// </summary>
+        /// <param name="enumerables">
+        /// Assumption is enumerables are sorted in descending order
+        /// </param>
+        /// <param name="keySelector"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
+        /// <returns></returns>
+        public static IEnumerable<T> LazySorting<T, TKey>(IEnumerable<IEnumerable<T>> enumerables, 
+                                                Func<T, TKey> keySelector)
+        {
+            Func<(T, IEnumerator<T>), TKey> tupleKeySelector = t => keySelector(t.Item1);
+            var enumerators = enumerables.Select(e => e.GetEnumerator())
+                                         .ToList();
+            var priorityQueue = new List<(T, IEnumerator<T>)>();
+
+            // Initialize the queue
+            for (var i = 0; i < enumerators.Count;)
+            {
+                var currentEnumerator = enumerators[i];
+                if (currentEnumerator.MoveNext())
+                {
+                    priorityQueue.Add((currentEnumerator.Current, currentEnumerator));
+                    i++;
+                }
+                else
+                {
+                    // We are done enumerating the bubble groups from that service
+                    enumerators.RemoveAt(i);
+                }
+            }
+
+            priorityQueue = priorityQueue.OrderByDescending(tupleKeySelector).ToList();
+
+            while (true)
+            {
+                // We're done enumerating all the elements we got from enumerators
+                if (!enumerators.Any())
+                {
+                    break;
+                }
+
+                (var item, var enumerator) = priorityQueue[0];
+                priorityQueue.RemoveAt(0);
+                if (enumerator.MoveNext())
+                {
+                    priorityQueue.Add((enumerator.Current, enumerator));
+                }
+                else
+                {
+                    enumerators.Remove(enumerator);
+                }
+                priorityQueue = priorityQueue.OrderByDescending(tupleKeySelector).ToList();
+
+                yield return item;
+            }
         }
 
         /// <summary>
