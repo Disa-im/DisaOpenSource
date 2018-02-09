@@ -221,6 +221,7 @@ namespace Disa.Framework
             else
             {
                 var node = serviceRootNodeDictionary[service.Information.ServiceName];
+                
                 foreach (var tag in node.EnumerateAllDescendantsAndSelfData())
                 {
                     tag.Service = service;
@@ -486,19 +487,19 @@ namespace Disa.Framework
             Expression<Func<ConversationTagIds, bool>> conversationFilter = 
                 e => e.Id.Equals(bubbleGroupAddress);
             var conversationTagIds = databaseManager.FindRow(conversationFilter);
-            var tagIds = tagsList.Select(t => t.Id).ToHashSet();
+            var fullyQualifiedTagIds = tagsList.Select(t => t.FullyQualifiedId).ToHashSet();
             if (conversationTagIds == null)
             {
                 conversationTagIds = new ConversationTagIds()
                 {
                     Id = bubbleGroupAddress,
-                    FullyQualifiedTagIds = tagIds,
+                    FullyQualifiedTagIds = fullyQualifiedTagIds,
                 };
                 databaseManager.InsertRow(conversationTagIds);
             }
             else
             {
-                conversationTagIds.FullyQualifiedTagIds.UnionWith(tagIds);
+                conversationTagIds.FullyQualifiedTagIds.UnionWith(fullyQualifiedTagIds);
                 databaseManager.InsertOrReplaceRow(conversationTagIds);
             }
         }
