@@ -313,12 +313,14 @@ namespace Disa.Framework
             {
                 return null;
             }
-
-            if (!fullyQualifiedIdDictionary.ContainsKey(tag.Parent.FullyQualifiedId))
+            
+            Node<Tag> parentNode;
+            if (!fullyQualifiedIdDictionary.TryGetValue(tag.Parent.FullyQualifiedId, out parentNode))
             {
+                Utils.DebugPrint($"Node for respective {tag.Parent.FullyQualifiedId} is not found");
                 throw new ArgumentException($"{nameof(Tag.Parent)}");
             }
-            var parentNode = fullyQualifiedIdDictionary[tag.Parent.FullyQualifiedId];
+            
             Node<Tag> childNode = null;
             lock (tree)
             {
@@ -379,12 +381,12 @@ namespace Disa.Framework
                 return new List<Tag>();
             }
 
-            if (!fullyQualifiedIdDictionary.ContainsKey(tag.FullyQualifiedId))
+            Node<Tag> node;
+            if (!fullyQualifiedIdDictionary.TryGetValue(tag.FullyQualifiedId, out node))
             {
+                Utils.DebugPrint($"Node for respective {tag.FullyQualifiedId} is not found");
                 return new List<Tag>();
             }
-
-            var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
 
             HashSet<Tag> selfAndDescendantsTags = null;
             lock (tree)
@@ -439,16 +441,6 @@ namespace Disa.Framework
             return tags.Contains(tag);
         }
 
-        public static void Update(Tag tag)
-        {
-            if (!fullyQualifiedIdDictionary.ContainsKey(tag.FullyQualifiedId))
-            {
-                throw new ArgumentException("Get existing tag object from the framework");                
-            }
-            tag = fullyQualifiedIdDictionary[tag.FullyQualifiedId].Data;
-            Persist();
-        }
-        
         public static void UpdateTags(Service service, 
                                       string bubbleGroupAddress, 
                                       IEnumerable<Tag> tagsToAdd = null, 
@@ -474,15 +466,15 @@ namespace Disa.Framework
             var tagsList = tags.ToList();
             foreach (var tag in tagsList)
             {
-                if (!fullyQualifiedIdDictionary.ContainsKey(tag.FullyQualifiedId))
+                Node<Tag> node;
+                if (!fullyQualifiedIdDictionary.TryGetValue(tag.FullyQualifiedId, out node))
                 {
-                    Utils.DebugPrint("");
+                    Utils.DebugPrint($"Node for respective {tag.FullyQualifiedId} is not found");
                     continue;
                 }
-                var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
                 node.Data.BubbleGroupAddresses.Add(bubbleGroupAddress);
 
-                // Update in database
+                // Update in tag id -> conversation ids table
                 Expression<Func<TagConversationIds, bool>> filter = 
                     e => e.FullyQualifiedId.Equals(node.Data.FullyQualifiedId);
                 var tagConversationIds = databaseManager.FindRow(filter);
@@ -490,12 +482,25 @@ namespace Disa.Framework
                 databaseManager.UpdateRow(tagConversationIds);
             }
             
-            var conversationTagIds = new ConversationTagIds()
+            // Update conversation id -> tag ids table
+            Expression<Func<ConversationTagIds, bool>> conversationFilter = 
+                e => e.Id.Equals(bubbleGroupAddress);
+            var conversationTagIds = databaseManager.FindRow(conversationFilter);
+            var tagIds = tagsList.Select(t => t.Id).ToHashSet();
+            if (conversationTagIds == null)
             {
-                Id = bubbleGroupAddress,
-                FullyQualifiedTagIds = tagsList.Select(t => t.Id).ToHashSet(),
-            };
-            databaseManager.InsertRow(conversationTagIds);
+                conversationTagIds = new ConversationTagIds()
+                {
+                    Id = bubbleGroupAddress,
+                    FullyQualifiedTagIds = tagIds,
+                };
+                databaseManager.InsertRow(conversationTagIds);
+            }
+            else
+            {
+                conversationTagIds.FullyQualifiedTagIds.UnionWith(tagIds);
+                databaseManager.InsertOrReplaceRow(conversationTagIds);
+            }
         }
 
         public static void Remove(Service service, string bubbleGroupAddress, IEnumerable<Tag> tags)
@@ -503,7 +508,11 @@ namespace Disa.Framework
             var tagsList = tags.ToList();
             foreach (var tag in tagsList)
             {
-                var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
+                Node<Tag> node;
+                if (!fullyQualifiedIdDictionary.TryGetValue(tag.FullyQualifiedId, out node))
+                {
+                    continue;
+                }
                 node.Data.BubbleGroupAddresses.Remove(bubbleGroupAddress);
                 
                 // Update in database
@@ -514,12 +523,21 @@ namespace Disa.Framework
                 databaseManager.UpdateRow(tagConversationIds);
             }
             
-            // FIX
-            var conversationTagIds = new ConversationTagIds()
+            // Update conversation id -> tag ids table
+            Expression<Func<ConversationTagIds, bool>> conversationFilter = 
+                e => e.Id.Equals(bubbleGroupAddress);
+            var conversationTagIds = databaseManager.FindRow(conversationFilter);
+
+            if (conversationTagIds != null)
             {
-                Id = bubbleGroupAddress,
-                FullyQualifiedTagIds = tagsList.Select(t => t.Id).ToHashSet(),
-            };
+                var tagIds = tagsList.Select(t => t.Id).ToHashSet();
+                conversationTagIds.FullyQualifiedTagIds.RemoveWhere(id => tagIds.Contains(id));
+                databaseManager.InsertOrReplaceRow(conversationTagIds);
+            }
+            else
+            {
+                Utils.DebugPrint($"");
+            }
         }
 
         public static List<Tag> GetAllServiceTags(Service service)
@@ -585,10 +603,10 @@ namespace Disa.Framework
         public static List<BubbleGroup> GetAllBubbleGroups(Tag tag)
         {
             var conversationIds = new HashSet<string>();
-            var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
-            if (node == null)
+            
+            Node<Tag> node;
+            if (!fullyQualifiedIdDictionary.TryGetValue(tag.FullyQualifiedId, out node))
             {
-                // XXX Should we throw exceptions?
                 Utils.DebugPrint($"Node for respective {tag.FullyQualifiedId} is not found");
                 return new List<BubbleGroup>();
             }
@@ -596,7 +614,8 @@ namespace Disa.Framework
             IEnumerable<string> tagConversationIds = null;
             lock (tree)
             {
-                tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
+                tagConversationIds = node.EnumerateAllDescendantsAndSelfData()
+                                         .SelectMany(t => t.BubbleGroupAddresses);
             }
 
             conversationIds.UnionWith(tagConversationIds);
@@ -611,22 +630,24 @@ namespace Disa.Framework
             var conversationIds = new HashSet<string>();
             foreach (var tag in tags)
             {
-                var node = fullyQualifiedIdDictionary[tag.FullyQualifiedId];
-                if (node == null)
+                Node<Tag> node;
+                if (!fullyQualifiedIdDictionary.TryGetValue(tag.FullyQualifiedId, out node))
                 {
                     Utils.DebugPrint($"Node for respective {tag.FullyQualifiedId} is not found");
                     continue;
                 }
-
+                
                 IEnumerable<string> tagConversationIds = null;
                 lock (tree)
                 {
-                    tagConversationIds = node.EnumerateAllDescendantsAndSelfData().SelectMany(t => t.BubbleGroupAddresses);
+                    tagConversationIds = node.EnumerateAllDescendantsAndSelfData()
+                                             .SelectMany(t => t.BubbleGroupAddresses);
                 }
                 conversationIds.UnionWith(tagConversationIds);
             }
 
-            var bubbleGroups = BubbleGroupManager.FindAll((BubbleGroup bg) => conversationIds.Contains(bg.Address)).ToHashSet();
+            var bubbleGroups = BubbleGroupManager.FindAll((BubbleGroup bg) => conversationIds.Contains(bg.Address))
+                                                 .ToHashSet();
             return bubbleGroups;
         }
         
@@ -640,7 +661,12 @@ namespace Disa.Framework
             {
                 foreach (var fullyQualifiedTagId in conversationTagId.FullyQualifiedTagIds)
                 {
-                    var node = fullyQualifiedIdDictionary[fullyQualifiedTagId];
+                    Node<Tag> node;
+                    if (!fullyQualifiedIdDictionary.TryGetValue(fullyQualifiedTagId, out node))
+                    {
+                        Utils.DebugPrint($"Node for respective {fullyQualifiedTagId} is not found");
+                        continue;
+                    }
                     node.Data.BubbleGroupAddresses.Remove(conversationTagId.Id);
                 }
             }
@@ -676,7 +702,7 @@ namespace Disa.Framework
         {
             lock (tree)
             {
-                return tree.PrintToString();                
+                return tree.PrintToString();           
             }
         }
 
