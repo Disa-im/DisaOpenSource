@@ -7,6 +7,11 @@ using Disa.Framework.Bubbles;
 
 namespace Disa.Framework
 {
+    public interface ISearchAgent
+    {
+        Task<IEnumerable<BubbleGroup>> SearchBubbleGroups(string query);
+    }
+    
     //FIXME: If BubbleGroupIndex gets re-generated, a lazy group will become a permanent group.
     //FIXME: If a lazy bubble group gets merged into a unified bubble group, the lazy tag should be dropped.
     //FIXME: Incoming bubble (event, process, and sync), drop lazy tag
@@ -42,7 +47,7 @@ namespace Disa.Framework
             private IEnumerable<BubbleGroup> LoadBubblesInternalLazyService()
             {
                 var tagServices = _tags.Select(t => t.Service).ToHashSet();
-
+                
                 var serviceBubbleGroupsEnumerators = tagServices.Select(service =>
                 {
                     var agent = service as Agent;
@@ -72,52 +77,9 @@ namespace Disa.Framework
                                          .OrderByDescending(g => g.LastBubbleSafe().Time)
                                          .ToList();
                     }
-                })
-                .Select(l => l.GetEnumerator())
-                .ToList();
-                
-                var priorityQueue = new List<(BubbleGroup, IEnumerator<BubbleGroup>)>();
+                });
 
-                // Initialize the queue
-                for (var i = 0; i < serviceBubbleGroupsEnumerators.Count;)
-                {
-                    var bubbleEnumerator = serviceBubbleGroupsEnumerators[i];
-                    if (bubbleEnumerator.MoveNext())
-                    {
-                        priorityQueue.Add((bubbleEnumerator.Current, bubbleEnumerator));
-                        i++;
-                    }
-                    else
-                    {
-                        // We are done enumerating the bubble groups from that service
-                        serviceBubbleGroupsEnumerators.RemoveAt(i);
-                    }
-                }
-
-                priorityQueue = priorityQueue.OrderByDescending(t => t.Item1.LastBubbleSafe().Time).ToList();
-
-                while (true)
-                {
-                    // We're done enumerating all the bubbles we got from services
-                    if (!serviceBubbleGroupsEnumerators.Any())
-                    {
-                        break;
-                    }
-
-                    (var bubbleGroup, var enumerator) = priorityQueue[0];
-                    priorityQueue.RemoveAt(0);
-                    if (enumerator.MoveNext())
-                    {
-                        priorityQueue.Add((enumerator.Current, enumerator));
-                    }
-                    else
-                    {
-                        serviceBubbleGroupsEnumerators.Remove(enumerator);
-                    }
-                    priorityQueue = priorityQueue.OrderByDescending(t => t.Item1.LastBubbleSafe().Time).ToList();
-                    
-                    yield return bubbleGroup;
-                }
+                return Utils.LazySorting(serviceBubbleGroupsEnumerators, group => group.LastBubbleSafe().Time);
             }
 
             public IEnumerator<BubbleGroup> GetEnumerator()
