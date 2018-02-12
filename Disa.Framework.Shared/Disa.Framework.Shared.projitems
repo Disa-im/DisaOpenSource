@@ -33,6 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bots\Photo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bots\PhotoSize.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bots\Update.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SearchCursor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DatabaseManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gifs\Gif.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gifs\GifLocationInfo.cs" />

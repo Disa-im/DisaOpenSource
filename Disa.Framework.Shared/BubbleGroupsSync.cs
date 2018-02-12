@@ -7,11 +7,6 @@ using Disa.Framework.Bubbles;
 
 namespace Disa.Framework
 {
-    public interface ISearchAgent
-    {
-        Task<IEnumerable<BubbleGroup>> SearchBubbleGroups(string query);
-    }
-    
     //FIXME: If BubbleGroupIndex gets re-generated, a lazy group will become a permanent group.
     //FIXME: If a lazy bubble group gets merged into a unified bubble group, the lazy tag should be dropped.
     //FIXME: Incoming bubble (event, process, and sync), drop lazy tag
