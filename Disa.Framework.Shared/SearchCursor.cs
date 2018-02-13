@@ -20,14 +20,39 @@ namespace Disa.Framework
         {
             Query = query;
         }
-        
+
+        private IEnumerable<BubbleGroup> SearchBubbleGroups(Service service)
+        {
+            var filtered = BubbleGroupManager.FindAll(service).Where(group =>
+            {
+                var unifiedGroup = group as UnifiedBubbleGroup;
+                if (unifiedGroup != null)
+                {
+                    group = unifiedGroup.PrimaryGroup;
+                }
+
+                if (Utils.Search(group.Title, Query))
+                    return true;
+
+                if (group.Participants == null)
+                    return false;
+                foreach (var participant in group.Participants)
+                {
+                    if (Utils.Search(participant.Name, Query))
+                        return true;
+                }
+
+                return false;
+            }).ToList();
+            return filtered;
+        }
+
         private IEnumerable<BubbleGroup> LoadBubblesInternalLazyService()
         {
             var services = ServiceManager.RegisteredNoUnified.ToList();
             var serviceBubbleGroupsEnumerators = services.Select(service =>
             {
-                var agent = service as ISearchAgent;
-                if (agent != null)
+                if (service is ISearchAgent agent)
                 {
                     // Service supports lazy loading
                     var task = agent.SearchBubbleGroups(Query);
@@ -38,15 +63,15 @@ namespace Disa.Framework
                     catch (Exception ex)
                     {
                         Utils.DebugPrint($"{service} threw exception: {ex}");
-                        return new List<BubbleGroup>();
+                        return SearchBubbleGroups(service);
                     }
                     return task.Result;
                 }
                 else
                 {
-                    // Service does not support lazy loading
-                    // Get the bubble groups from Tag Manager
-                    return new List<BubbleGroup>();
+                    // Service does not support searching
+                    // Search bubble groups                    
+                    return SearchBubbleGroups(service);
                 }
             });
 
