@@ -12,7 +12,7 @@ namespace Disa.Framework
     public static class TagManager
     {
         [ProtoContract]
-        class ConversationTagIds : ISerializableType<ConversationTagIds>
+        private class ConversationTagIds : ISerializableType<ConversationTagIds>
         {
             [ProtoMember(1)]
             [PrimaryKey]
@@ -55,7 +55,7 @@ namespace Disa.Framework
             }
         }
 
-        class TagConversationIds : ISerializableType<TagConversationIds>
+        private class TagConversationIds : ISerializableType<TagConversationIds>
         {
             [PrimaryKey]
             public string FullyQualifiedId { get; set; }
