@@ -381,5 +381,38 @@ namespace Disa.Framework
             }
             return obj;
         }
+        
+        public static void IgnoreExceptions(Action act)
+        {
+            if (act != null)
+            {
+                try
+                {
+                    act.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    Utils.DebugPrint($"{ex}");
+                }
+            }
+        }
+
+        public static void FireAndForget(Action act)
+        {
+            if (act != null)
+            {
+                Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        act.Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        Utils.DebugPrint($"{ex}");                        
+                    }
+                });
+            }
+        }
     }
 }
