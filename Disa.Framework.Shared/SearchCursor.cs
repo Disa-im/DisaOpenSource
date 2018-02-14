@@ -32,14 +32,20 @@ namespace Disa.Framework
                 }
 
                 if (Utils.Search(group.Title, Query))
+                {
                     return true;
+                }
 
                 if (group.Participants == null)
+                {
                     return false;
+                }
                 foreach (var participant in group.Participants)
                 {
                     if (Utils.Search(participant.Name, Query))
+                    {
                         return true;
+                    }
                 }
 
                 return false;

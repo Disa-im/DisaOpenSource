@@ -291,13 +291,13 @@ namespace Disa.Framework
 
         public static Tag GetServiceRootTag(Service service)
         {
-            return serviceRoots.ContainsKey(service) ? serviceRoots[service].Data : null;
+            return serviceRoots.GetValueOrDefault(service)?.Data;
         }
 
         public static Tag GetTagById(Service service, string id)
         {
             var fullId = $"{service.Information.ServiceName}|{id}";
-            return fullyQualifiedIdDictionary.ContainsKey(fullId) ? fullyQualifiedIdDictionary[fullId].Data : null;
+            return fullyQualifiedIdDictionary.GetValueOrDefault(fullId)?.Data;
         }
 
         private static Tag CreateTag(Tag tag)
@@ -612,14 +612,13 @@ namespace Disa.Framework
                 return new List<BubbleGroup>();
             }
 
-            IEnumerable<string> tagConversationIds = null;
+            HashSet<string> conversationIds;
             lock (tree)
             {
-                tagConversationIds = node.EnumerateAllDescendantsAndSelfData()
-                                         .SelectMany(t => t.BubbleGroupAddresses);
+                conversationIds = node.EnumerateAllDescendantsAndSelfData()
+                                      .SelectMany(t => t.BubbleGroupAddresses)
+                                      .ToHashSet();
             }
-
-            conversationIds.UnionWith(tagConversationIds);
 
             var bubbleGroups = BubbleGroupManager.FindAll((BubbleGroup bg) => conversationIds.Contains(bg.Address))
                                                  .ToList();
@@ -628,6 +627,12 @@ namespace Disa.Framework
 
         public static HashSet<BubbleGroup> GetAllBubbleGroups(IEnumerable<Tag> tags)
         {
+            if (tags == null)
+            {
+                Utils.DebugPrint($"{nameof(tags)} is null");
+                return new HashSet<BubbleGroup>();
+            }
+
             var conversationIds = new HashSet<string>();
             foreach (var tag in tags)
             {
