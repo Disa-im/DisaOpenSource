@@ -29,11 +29,43 @@ using Disa.Framework.Bots;
 
 namespace Disa.Framework.Telegram
 {
-    [ServiceInfo("Telegram", true, true, true, false, true, true, typeof(TelegramSettings),
-        ServiceInfo.ProcedureType.ConnectAuthenticate, typeof(TextBubble), typeof(ReadBubble),
-                 typeof(TypingBubble), typeof(PresenceBubble), typeof(ImageBubble), typeof(FileBubble), typeof(AudioBubble), typeof(LocationBubble), typeof(ContactBubble))]
-    [FileParameters(1000000000)] //1GB
-    [AudioParameters(AudioParameters.RecordType.M4A, AudioParameters.NoDurationLimit, 25000000, ".mp3", ".aac", ".m4a", ".mp4", ".wav", ".3ga", ".3gp", ".3gpp", ".amr", ".ogg", ".webm", ".weba", ".opus")]
+    [ServiceInfo(
+        serviceName: "Telegram", 
+        eventDrivenBubbles: true, 
+        usesMediaProgress: true, 
+        usesInternet: true, 
+        supportsBatterySavingsMode: false, 
+        delayedNotifications: true, 
+        sendingQuotes: true, 
+        settings: typeof(TelegramSettings),
+        procedureType: ServiceInfo.ProcedureType.ConnectAuthenticate, 
+        supportedBubbles: new Type[] {
+        typeof(AudioBubble),
+        typeof(ContactBubble),
+        typeof(FileBubble),
+        typeof(ImageBubble),
+        typeof(LocationBubble),
+        typeof(PresenceBubble),
+        typeof(ReadBubble),
+        typeof(StickerBubble),
+        typeof(TextBubble),
+        typeof(TypingBubble), })]
+    [AudioParameters(
+        recordType: AudioParameters.RecordType.M4A, 
+        durationLimit: AudioParameters.NoDurationLimit, 
+        sizeLimit: 25000000, // 25MB
+        supportedExtensions: new string[]
+            { ".mp3", ".aac", ".m4a", ".mp4", ".wav", ".3ga", ".3gp", ".3gpp", ".amr", ".ogg", ".webm", ".weba", ".opus" })]
+    [FileParameters(
+        sizeLimit: 1000000000)] //1GB
+    [GifParameters(
+        gifRecordType: GifParameters.RecordType.Gif,
+        sizeLimit: 25000000, // 25MB
+        supportedExtensions: new string[] { ".gif" })]
+    [StickerParameters(
+        stickerRecordType: StickerParameters.RecordType.Webp,
+        sizeLimit: 25000000, // 25MB
+        supportedExtensions: new string[] { ".webp" })]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
         public static uint MESSAGE_FLAG_REPLY = 0x00000001;
@@ -3025,6 +3057,15 @@ namespace Disa.Framework.Telegram
                 {
                     SendContact(contactBubble);
                 }
+
+                var stickerBubble = b as StickerBubble;
+                if (stickerBubble != null)
+                {
+                    var fileId = GenerateRandomId();
+                    var inputFile = UploadFile(stickerBubble, fileId, 0);
+                    SendFile(stickerBubble, inputFile);
+                }
+
             }
             catch (Exception ex)
             {
@@ -3190,6 +3231,7 @@ namespace Disa.Framework.Telegram
             var fileBubble = bubble as FileBubble;
             var audioBubble = bubble as AudioBubble;
             var imageBubble = bubble as ImageBubble;
+            var stickerBubble = bubble as StickerBubble;
 
             if (fileBubble != null)
             {
@@ -3203,6 +3245,10 @@ namespace Disa.Framework.Telegram
             {
                 return imageBubble.ImagePathNative;
             }
+            else if (stickerBubble != null)
+            {
+                return stickerBubble.StickerPathNative;
+            }
             return null;
 
         }
@@ -3212,7 +3258,7 @@ namespace Disa.Framework.Telegram
             var fileBubble = bubble as FileBubble;
             var audioBubble = bubble as AudioBubble;
             var imageBubble = bubble as ImageBubble;
-
+            var stickerBubble = bubble as StickerBubble;
 
             if (fileBubble != null)
             {
@@ -3225,6 +3271,10 @@ namespace Disa.Framework.Telegram
             else if(imageBubble!=null)
             {
                 return imageBubble.ImagePath;
+            }
+            else if (stickerBubble != null)
+            {
+                return stickerBubble.StickerPath;
             }
             return null;
 
@@ -3350,6 +3400,7 @@ namespace Disa.Framework.Telegram
             var imageBubble = bubble as ImageBubble;
             var fileBubble = bubble as FileBubble;
             var audioBubble = bubble as AudioBubble;
+            var stickerBubble = bubble as StickerBubble;
 
             using (var client = new FullClientDisposable(this))
             {
@@ -3403,6 +3454,7 @@ namespace Disa.Framework.Telegram
 					visualBubble.IdService = messageId;
 					SendToResponseDispatcher(iUpdates, client.Client);
                 };
+
                 if (imageBubble != null)
                 {
                     if (!imageBubble.IsAnimated)
@@ -3450,6 +3502,10 @@ namespace Disa.Framework.Telegram
                     {
                         dispatchFile(imageBubble, Path.GetFileName(imageBubble.ImagePath), "image/gif");
                     }
+                }
+                else if (stickerBubble != null)
+                {
+                    dispatchFile(stickerBubble, Path.GetFileName(stickerBubble.StickerPath), "image/webp");
                 }
                 else if (fileBubble != null)
                 {

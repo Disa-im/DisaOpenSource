@@ -47,17 +47,27 @@ namespace Disa.Framework
             return PlatformImplementation.GetStickersPath();   
         }
 
+        public static string GetCachedStickersPath()
+        {
+            return PlatformImplementation.GetCachedStickersPath();
+        }
+
         public static string GetGifsPath()
         {
             return PlatformImplementation.GetGifsPath();
         }
 
-        public static Stream GetConversationExportAssetsArchiveStream()
-		{
-			return PlatformImplementation.GetConversationExportAssetsArchiveStream();
-		}
+        public static string GetCachedGifsPath()
+        {
+            return PlatformImplementation.GetCachedGifsPath();
+        }
 
-		public static string GetPicturesPath()
+        public static Stream GetConversationExportAssetsArchiveStream()
+        {
+            return PlatformImplementation.GetConversationExportAssetsArchiveStream();
+        }
+
+        public static string GetPicturesPath()
         {
             return PlatformImplementation.GetPicturesPath();
         }
@@ -229,10 +239,10 @@ namespace Disa.Framework
             PlatformImplementation.ExecuteAllOldWakeLocksAndAllGracefulWakeLocksImmediately();
         }
 
-		public static void ShareContent(string mimeType, string uri)
-		{
-			PlatformImplementation.ShareContent(mimeType, uri);
-		}
+        public static void ShareContent(string mimeType, string uri)
+        {
+            PlatformImplementation.ShareContent(mimeType, uri);
+        }
 
         public static void OpenApp(string appName)
         {

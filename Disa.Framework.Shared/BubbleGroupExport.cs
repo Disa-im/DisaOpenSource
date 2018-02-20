@@ -104,7 +104,7 @@ namespace Disa.Framework
 					participant.Photo = null;
 				}
 			}
-			var finalZip = MediaManager.GenerateFileLocation((cache.Name ?? "Unknown").Replace("/", "_") + ".zip");
+			var finalZip = MediaManager.GenerateDisaFileLocation((cache.Name ?? "Unknown").Replace("/", "_") + ".zip");
 			// Should never happen, as GenerateFileLocation ensures it's a new file. But just in case.
 			if (File.Exists(finalZip))
 			{

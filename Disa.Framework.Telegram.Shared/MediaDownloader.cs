@@ -106,7 +106,7 @@ namespace Disa.Framework.Telegram
                     {
                         if (document == null) return null;
                         var stickerId = document.DcId + "-" + document.Id;
-                        savePath = MediaManager.GenerateStickerPath(this, stickerId);
+                        savePath = MediaManager.GenerateDisaStickerLocation(stickerId);
                         if (File.Exists(savePath))
                         {
                             return savePath;
