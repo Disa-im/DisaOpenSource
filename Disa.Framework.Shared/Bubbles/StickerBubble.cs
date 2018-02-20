@@ -39,7 +39,7 @@ namespace Disa.Framework.Bubbles
                     }
                     catch (Exception ex)
                     {
-                        Utils.DebugPrint("Error patching path on ImageBubble : " + ex);
+                        Utils.DebugPrint("Error patching path on StickerBubble : " + ex);
                     }
                 }
 

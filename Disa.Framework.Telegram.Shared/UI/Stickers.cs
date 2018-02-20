@@ -360,10 +360,11 @@ namespace Disa.Framework.Telegram
                         AccessHash = stickerDocument.AccessHash,
                     };
 
-                    // Let's get our service specific save path
+                    // Let's get our service specific cached save path
                     string savePath = null;
                     var stickerId = telegramDocument.DcId + "-" + telegramDocument.Id;
-                    savePath = MediaManager.GenerateStickerPath(this, stickerId) + ".webp";
+                    var stickerFileName = stickerId + ".webp";
+                    savePath = Path.Combine(MediaManager.GetCachedStickersPath(this), stickerFileName);
                     if (savePath == null)
                     {
                         Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(DownloadSticker) + " savePath is null in Telegram.");

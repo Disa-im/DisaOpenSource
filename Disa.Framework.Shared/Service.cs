@@ -25,7 +25,7 @@ namespace Disa.Framework
         /// that was stored away previously.</param>
         /// <returns>True if the <see cref="Service"/> can continue to the running state or False if the
         /// <see cref="Service"/> needs manual settings applied first (e.g., user login, etc.)</returns>
-		public abstract bool Initialize(DisaSettings settings);
+        public abstract bool Initialize(DisaSettings settings);
 
         /// <summary>
         /// Will be called upon <see cref="Service"/> startup if the <see cref="Service"/> HAS NOT
@@ -65,26 +65,26 @@ namespace Disa.Framework
 
         public abstract Task GetBubbleGroupLastOnline(BubbleGroup group, Action<long> result);
 
-		public virtual Task GetBubbleGroupInputDisabled(BubbleGroup group, Action<bool> result)
-		{
-			return Task.Factory.StartNew(() =>
-			{
-				result(false);
-			});
-		}
+        public virtual Task GetBubbleGroupInputDisabled(BubbleGroup group, Action<bool> result)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                result(false);
+            });
+        }
 
         public virtual void RefreshPhoneBookContacts()
         {
             Utils.DebugPrint("Refresh contacts not implemented.... but the service has it enabled.");
         }
 
-		public virtual Task NewBubbleGroupCreated(BubbleGroup group)
-		{
+        public virtual Task NewBubbleGroupCreated(BubbleGroup group)
+        {
             return Task.Factory.StartNew(() =>
             {
                 Utils.DebugPrint("New bubble group created not overidden.");
             });
-		}
+        }
 
         public virtual Task OpenedBubbleGroup(BubbleGroup group)
         {
@@ -118,6 +118,9 @@ namespace Disa.Framework
             VideoParameters = GetParameter<VideoParameters>();
             AudioParameters = GetParameter<AudioParameters>();
             FileParameters = GetParameter<FileParameters>();
+            GifParameters = GetParameter<GifParameters>();
+            StickerParameters = GetParameter<StickerParameters>();
+
             QueuedBubblesParameters = GetParameter<QueuedBubblesParameters>();
         }
 
@@ -141,6 +144,10 @@ namespace Disa.Framework
         public FileParameters FileParameters { get; private set; }
 
         public QueuedBubblesParameters QueuedBubblesParameters { get; private set; }
+
+        public GifParameters GifParameters { get; private set; }
+
+        public StickerParameters StickerParameters { get; private set; }
 
         public void DebugPrint(string str)
         {
