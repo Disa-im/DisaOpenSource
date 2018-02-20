@@ -612,7 +612,6 @@ namespace Disa.Framework
                 return new List<BubbleGroup>();
             }
 
-            HashSet<string> conversationIds;
             lock (tree)
             {
                 conversationIds = node.EnumerateAllDescendantsAndSelfData()
