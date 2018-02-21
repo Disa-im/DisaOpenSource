@@ -5,12 +5,13 @@ using System.IO;
 using System.Threading.Tasks;
 using SQLite;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace Disa.Framework
 {
 	public class DatabaseManager
 	{
-	    protected static T ExecuteTask<T>(Task<T> task)
+	    protected static T ExecuteTask<T>(Task<T> task, [CallerMemberName] string callerName = "")
 	    {
 		    try
 		    {
@@ -19,17 +20,18 @@ namespace Disa.Framework
 		    }
 		    catch (SQLiteException ex)
 		    {
-			    Utils.DebugPrint($"SQLiteException {ex.Message}");
+			    Utils.DebugPrint($"{callerName} failed. SQLiteException {ex.Message}");
 			    return default(T);
 		    }
 		    catch (AggregateException ex)
 		    {
-			    Utils.DebugPrint($"{nameof(AggregateException)} {ex.Message}");
+			    Utils.DebugPrint($"{callerName} failed. {nameof(AggregateException)} {ex.Message}");
 			    return default(T);
 		    }
 		    catch (Exception ex)
 		    {
-			    throw;
+                Utils.DebugPrint($"{callerName} failed. {ex.GetType()} {ex.Message}");
+                throw;
 		    }
 	    }
 		
