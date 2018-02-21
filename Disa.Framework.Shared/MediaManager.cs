@@ -6,119 +6,66 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Disa.Framework.Bubbles;
 
+
 namespace Disa.Framework
 {
+    /// <summary>
+    /// A Manager style class to manage the folder structure for media attachments and media caches.
+    /// 
+    /// Provides additional helper functions for the handling of media.
+    /// </summary>
     public static class MediaManager
     {
-        public const string PicturesDirectoryName = "Disa Images";
-        public const string VideosDirectoryName = "Disa Videos";
-        public const string AudioDirectoryName = "Disa Audio";
-        public const string FilesDirectoryName = "Disa Files";
-
         private const string noMedia = ".nomedia";
 
-        public static void RemoveNoMediaIfNeeded()
-        {
-            #if __ANDROID__
+        #region Public disa folder names
 
-            var pictures = GetDisaPicturesPath();
-            var videos = GetDisaVideosPath();
-            var audios = GetDisaAudioPath();
-            var files = GetDisaFilesPath();
+        /// <summary>
+        /// The name of the public folder where audio attachments are saved to.
+        /// </summary>
+        public const string AudioDirectoryName = "Disa Audio";
 
-            var picturesNoMedia = Path.Combine(pictures, noMedia);
-            var videosNoMedia = Path.Combine(videos, noMedia);
-            var audiosNoMedia = Path.Combine(audios, noMedia);
-            var filesNoMedia = Path.Combine(files, noMedia);
+        /// <summary>
+        /// The name of the public folder where file attachments are saved to.
+        /// </summary>
+        public const string FilesDirectoryName = "Disa Files";
 
-            if (File.Exists(picturesNoMedia))
-            {
-                File.Delete(picturesNoMedia);
-            }
-            if (File.Exists(videosNoMedia))
-            {
-                File.Delete(videosNoMedia);
-            }
-            if (File.Exists(audiosNoMedia))
-            {
-                File.Delete(audiosNoMedia);
-            }
-            if (File.Exists(filesNoMedia))
-            {
-                File.Delete(filesNoMedia);
-            }
+        /// <summary>
+        /// The name of the root public folder where gif attachments are saved to.
+        /// 
+        /// IMPORTANT: 
+        /// Service specific folders are created under this root folder using the <see cref="Service.Information.ServiceName"/>
+        /// and the actual gifs are stored there.
+        /// </summary>
+        public const string GifsDirectoryName = "Disa Gifs";
 
-            #else
+        /// <summary>
+        /// The name of the public folder where picture attachments are saved to.
+        /// </summary>
+        public const string PicturesDirectoryName = "Disa Images";
 
-            Utils.DebugPrint("Not running on Android. No need to remove no medias.");
+        /// <summary>
+        /// The name of the root public folder where gif attachments are saved to.
+        /// 
+        /// IMPORTANT: 
+        /// Service specific folders are created under this root folder using the <see cref="Service.Information.ServiceName"/>
+        /// and the actual stickers are stored there.
+        /// </summary>
+        public const string StickersDirectoryName = "Disa Stickers";
 
-            #endif
+        /// <summary>
+        /// The name of the public folder where video attachments are saved to.
+        /// </summary>
+        public const string VideosDirectoryName = "Disa Videos";
 
-        }
+        #endregion
 
-        public static void InsertNoMediasIfNeeded()
-        {
-#if __ANDROID__
-            var pictures = GetDisaPicturesPath();
-            var videos = GetDisaVideosPath();
-            var audios = GetDisaAudioPath();
-            var files = GetDisaFilesPath();
+        #region Get public disa folder paths
 
-            var picturesNoMedia = Path.Combine(pictures, noMedia);
-            var videosNoMedia = Path.Combine(videos, noMedia);
-            var audiosNoMedia = Path.Combine(audios, noMedia);
-            var filesNoMedia = Path.Combine(files, noMedia);
-
-            if (!File.Exists(picturesNoMedia))
-            {
-                File.Create(picturesNoMedia);
-            }
-            if (!File.Exists(videosNoMedia))
-            {
-                File.Create(videosNoMedia);
-            }
-            if (!File.Exists(audiosNoMedia))
-            {
-                File.Create(audiosNoMedia);
-            }
-            if (!File.Exists(filesNoMedia))
-            {
-                File.Create(filesNoMedia);
-            }
-
-#else
-            Utils.DebugPrint("Not running on Android. No need to insert no medias.");
-#endif
-        }
-
-        public static string GetDisaPicturesPath()
-        {
-            var path = Platform.GetPicturesPath();
-
-            var disa = Path.Combine(path, PicturesDirectoryName);
-
-            if (!Directory.Exists(disa))
-            {
-                Directory.CreateDirectory(disa);
-            }
-
-            return disa;
-        }
-
-        public static string GetDisaVideosPath()
-        {
-            var path = Platform.GetVideosPath();
-
-            var disa = Path.Combine(path, VideosDirectoryName);
-
-            if (!Directory.Exists(disa))
-            {
-                Directory.CreateDirectory(disa);
-            }
-
-            return disa;
-        }
-
+        /// <summary>
+        /// The public disa folder path where audio attachments are saved to.
+        /// </summary>
+        /// <returns>The public disa folder path where audio attachments are saved to.</returns>
         public static string GetDisaAudioPath()
         {
             var path = Platform.GetAudioPath();
@@ -133,6 +80,10 @@ namespace Disa.Framework
             return disa;
         }
 
+        /// <summary>
+        /// The public disa folder path where file attachments are saved to.
+        /// </summary>
+        /// <returns>The public disa folder path where file attachments are saved to.</returns>
         public static string GetDisaFilesPath()
         {
             var path = Platform.GetFilesPath();
@@ -147,26 +98,94 @@ namespace Disa.Framework
             return disa;
         }
 
-        public static string GetDisaStickersPath(Service service)
-        {
-            var path = Platform.GetStickersPath();
-
-            var servicePath = Path.Combine(path, service.Information.ServiceName);
-
-            if (!Directory.Exists(servicePath))
-            {
-                Directory.CreateDirectory(servicePath);
-            }
-
-            return servicePath;
-        }
-
-        public static string GetDisaGifsPath(Service service)
+        /// <summary>
+        /// The public disa folder path where gif attachments are saved to.
+        /// </summary>
+        /// <returns>The public disa folder path where gif attachments are saved to.</returns>
+        public static string GetDisaGifsPath()
         {
             var path = Platform.GetGifsPath();
 
-            var servicePath = Path.Combine(path, service.Information.ServiceName);
+            var disa = Path.Combine(path, GifsDirectoryName);
+            if (!Directory.Exists(disa))
+            {
+                Directory.CreateDirectory(disa);
+            }
 
+            return disa;
+        }
+
+        /// <summary>
+        /// The public disa folder path where picture attachments are saved to.
+        /// </summary>
+        /// <returns>The public disa folder path where picture attachments are saved to.</returns>
+        public static string GetDisaPicturesPath()
+        {
+            var path = Platform.GetPicturesPath();
+
+            var disa = Path.Combine(path, PicturesDirectoryName);
+
+            if (!Directory.Exists(disa))
+            {
+                Directory.CreateDirectory(disa);
+            }
+
+            return disa;
+        }
+
+        /// <summary>
+        /// The public disa folder path where sticker attachments are saved to.
+        /// </summary>
+        /// <returns>The public disa folder path where sticker attachments are saved to.</returns>
+        public static string GetDisaStickersPath()
+        {
+            var path = Platform.GetStickersPath();
+
+            var disa = Path.Combine(path, StickersDirectoryName);
+            if (!Directory.Exists(disa))
+            {
+                Directory.CreateDirectory(disa);
+            }
+
+            return disa;
+        }
+
+        /// <summary>
+        /// The public disa folder path where video attachments are saved to.
+        /// </summary>
+        /// <returns>The public disa folder path where video attachments are saved to.</returns>
+        public static string GetDisaVideosPath()
+        {
+            var path = Platform.GetVideosPath();
+
+            var disa = Path.Combine(path, VideosDirectoryName);
+
+            if (!Directory.Exists(disa))
+            {
+                Directory.CreateDirectory(disa);
+            }
+
+            return disa;
+        }
+
+        #endregion
+
+        #region Get private cache folder paths
+
+        /// <summary>
+        /// The private cache folder path where cached gifs are maintained.
+        /// 
+        /// IMPORTANT: 
+        /// The folder path will include a root folder for gifs with a subfolder based on the 
+        /// <see cref="Service.Information.ServiceName"/>.
+        /// </summary>
+        /// <param name="service">The <see cref="Service"/> to base the subfolder name on.</param>
+        /// <returns>The private cache folder path where cached gifs are maintained.</returns>
+        public static string GetCachedGifsPath(Service service)
+        {
+            var path = Platform.GetCachedGifsPath();
+
+            var servicePath = Path.Combine(path, service.Information.ServiceName);
             if (!Directory.Exists(servicePath))
             {
                 Directory.CreateDirectory(servicePath);
@@ -175,138 +194,100 @@ namespace Disa.Framework
             return servicePath;
         }
 
-        private static IEnumerable<int> FindIndexesFromRear(string str, char chr)
+        /// <summary>
+        /// The private cache folder path where cached stickers are maintained.
+        /// 
+        /// IMPORTANT: 
+        /// The folder path will include a root folder for stickers with a subfolder based on the 
+        /// <see cref="Service.Information.ServiceName"/>.
+        /// </summary>
+        /// <param name="service">The <see cref="Service"/> to base the subfolder name on.</param>
+        /// <returns>The private cache folder path where cached stickers are maintained.</returns>
+        public static string GetCachedStickersPath(Service service)
         {
-            for (var i = str.Length - 1; i >= 0; i--)
-            {
-                if (str[i] == chr)
-                    yield return i;
-            }
-        }
+            var path = Platform.GetCachedStickersPath();
 
-        public static string PatchPath(VisualBubble bubble)
-        {
-            string path = null;
-            string newBase = null;
-
-            var imageBubble = bubble as ImageBubble;
-            var videoBubble = bubble as VideoBubble;
-            var audioBubble = bubble as AudioBubble;
-            var fileBubble = bubble as FileBubble;
-            if (imageBubble != null)
+            var servicePath = Path.Combine(path, service.Information.ServiceName);
+            if (!Directory.Exists(servicePath))
             {
-                path = imageBubble.ImagePathNative;
-                newBase = Platform.GetPicturesPath();
-            }
-            else if (videoBubble != null)
-            {
-                path = videoBubble.VideoPathNative;
-                newBase = Platform.GetVideosPath();
-            }
-            else if (audioBubble != null)
-            {
-                path = audioBubble.AudioPathNative;
-                newBase = Platform.GetAudioPath();
-            }
-            else if (fileBubble != null)
-            {
-                path = fileBubble.PathNative;
-                newBase = Platform.GetFilesPath();
+                Directory.CreateDirectory(servicePath);
             }
 
-            if (path == null || newBase == null)
-                throw new Exception("Uknown bubble");
-
-            var indexes = FindIndexesFromRear(path, Path.DirectorySeparatorChar);
-            var seperators = indexes.Take(2).ToList();
-            if (seperators.Count < 2)
-                return path;
-
-            var end = path.Substring(seperators[1] + 1);
-            return Path.Combine(newBase, end);
+            return servicePath;
         }
 
-        public static Tuple<bool, string> CopyPhotoToDisaPictureLocation(string file)
-        {
-			return CopyFileToDirectoryIfNeeded(GetDisaPicturesPath, file);
-        }
+        #endregion
 
-        public static Tuple<bool, string> CopyVideoToDisaVideoLocation(string file)
-        {
-			return CopyFileToDirectoryIfNeeded(GetDisaVideosPath, file);
-        }
+        #region Generate public disa file locations
 
-        public static Tuple<bool, string> CopyAudioToDisaAudioLocation(string file)
-        {
-			return CopyFileToDirectoryIfNeeded(GetDisaAudioPath, file);
-        }
-
-        public static Tuple<bool, string> CopyFileToDisaFileLocation(string file)
-        {
-            return CopyFileToDirectoryIfNeeded(GetDisaFilesPath, file);
-        }
-
+        /// <summary>
+        /// Given an <see cref="AudioParameters.RecordType"/>, generate a public disa file location for an audio file
+        /// of the format:
+        /// 
+        /// public disa audio path/timestamp+spinner+extension
+        /// 
+        /// The extension will be derived from the enum passed in.
+        /// </summary>
+        /// <param name="recordType">An enum specifying the audio record type.</param>
+        /// <returns>A public disa file location for an audio file.</returns>
         public static string GenerateDisaAudioLocation(AudioParameters.RecordType recordType)
         {
             return GenerateDisaMediaLocationUsingExtension(GetDisaAudioPath, recordType == AudioParameters.RecordType.M4A ? ".m4a" : ".3gp");
         }
 
-        public static string GenerateDisaVideoLocation(VideoParameters.RecordType recordType)
-        {
-            return GenerateDisaMediaLocationUsingExtension(GetDisaVideosPath,
-                                                           recordType == VideoParameters.RecordType.Mp4 ? ".mp4" : ".3gp");
-        }
-
-        public static string GenerateDisaVideoLocation(string fileName)
-        {
-            return GenerateFileLocation(GetDisaVideosPath, fileName);
-        }
-
-        public static string GenerateDisaVideoLocationNoFileName(string oldLocation)
-        {
-			var extension = GetSafeExtension(oldLocation, ".mp4"); //Path.GetExtension(oldLocation);
-            return String.IsNullOrEmpty(extension)
-                       ? null
-                       : GenerateDisaMediaLocationUsingExtension(GetDisaVideosPath, extension);
-        }
-
-        public static string GenerateDisaPictureLocation()
-        {
-            return GenerateDisaMediaLocationUsingExtension(GetDisaPicturesPath, ".jpg");
-        }
-
-        public static string GenerateDisaPictureLocation(string fileName)
-        {
-            return GenerateFileLocation(GetDisaPicturesPath, fileName);
-        }
-
-        public static string GenerateDisaPictureLocationNoFileName(string oldLocation)
-        {
-			var extension = GetSafeExtension(oldLocation, ".jpg"); //Path.GetExtension(oldLocation);
-            return String.IsNullOrEmpty(extension)
-                       ? null
-                       : GenerateDisaMediaLocationUsingExtension(GetDisaPicturesPath, extension);
-        }
-
+        /// <summary>
+        /// Given a filename, generate a public disa file location for an audio file of the format:
+        /// 1. file exists
+        ///    path/filename(counter).optional extension if the filename had it
+        /// 2. file does not exist
+        ///    path/filename
+        /// </summary>
+        /// <param name="fileName">The filename to create the location from.</param>
+        /// <returns>A public disa file location for an audio file.</returns>
         public static string GenerateDisaAudioLocation(string fileName)
         {
-            return GenerateFileLocation(GetDisaAudioPath, fileName);
+            return GenerateDisaFileLocation(GetDisaAudioPath, fileName);
         }
 
+        /// <summary>
+        /// Given an old location filename, produce a public disa file location for an audio file
+        /// of the format:
+        /// path/timestamp+spinner+extension
+        /// </summary>
+        /// <param name="oldLocation">The old location filename to create the location from.</param>
+        /// <returns>A public disa file location for an audio file.</returns>
         public static string GenerateDisaAudioLocationNoFileName(string oldLocation)
         {
-			var extension = GetSafeExtension(oldLocation, ".m4a"); //Path.GetExtension(oldLocation);
+            var extension = GetSafeExtension(oldLocation, ".m4a"); //Path.GetExtension(oldLocation);
             return String.IsNullOrEmpty(extension)
                        ? null
                        : GenerateDisaMediaLocationUsingExtension(GetDisaAudioPath, extension);
         }
 
-        public static string GenerateFileLocation(string fileName)
+        /// <summary>
+        /// Given a filename, generate a public disa file location for a file of the format:
+        /// 1. file exists
+        ///    path/filename(counter).optional extension if the filename had it
+        /// 2. file does not exist
+        ///    path/filename
+        /// </summary>
+        /// <param name="fileName">The filename to create the location from.</param>
+        /// <returns>A public disa file location for a file.</returns>
+        public static string GenerateDisaFileLocation(string fileName)
         {
-            return GenerateFileLocation(GetDisaFilesPath, fileName);
+            return GenerateDisaFileLocation(GetDisaFilesPath, fileName);
         }
 
-        public static string GenerateFileLocation(Func<string> basePath, string fileName)
+        /// <summary>
+        /// Given a base path and a filename, generate a public disa file location for a file of the format:
+        /// 1. file exists
+        ///    path/filename(counter).optional extension if the filename had it
+        /// 2. file does not exist
+        ///    path/filename
+        /// </summary>
+        /// <param name="fileName">The filename to create the location from.</param>
+        /// <returns>A public disa file location for a file.</returns>
+        public static string GenerateDisaFileLocation(Func<string> basePath, string fileName)
         {
             var filePath = Path.Combine(basePath(), fileName);
 
@@ -347,64 +328,377 @@ namespace Disa.Framework
             return filePath;
         }
 
-        private static string RemoveArgumentsFromExtension(string extension)
-        {
-            var index = extension.IndexOf('?');
-            if (index > -1)
-            {
-                return extension.Substring(0, index);
-            }
-            return extension.ToString();
-        }
-
-		private static string GetSafeExtension(string location, string @default)
-		{
-            var extension = RemoveArgumentsFromExtension(Path.GetExtension(location));
-
-			if (extension == null)
-			{
-				return @default;
-			}
-
-			return extension;
-		}
-
-        private static readonly object SpinnerLock = new object();
-        private static long _spinner;    
-        private static long Spinner
-        {
-            get
-            {
-                lock (SpinnerLock) return _spinner;
-            }
-            set
-            {
-                lock (SpinnerLock) _spinner = value;
-            }
-        }
-
-        public static string GenerateFileName(string extension)
+        /// <summary>
+        /// Given an extension, generate a unique filename of the format:
+        /// timestamp+spinner+extension
+        /// </summary>
+        /// <param name="extension">The extension to use.</param>
+        /// <returns>A unique string representing a filename with the extension.</returns>
+        public static string GenerateDisaFileName(string extension)
         {
             return DateTime.Now.ToString("yyyyMMdd_HHmmssfff") + Spinner++ + extension;
         }
 
-        public static string GenerateDisaMediaLocationUsingExtension(Func<string> basePath, string extension)
+        /// <summary>
+        /// Given a filename, generate a public disa file location for a gif file of the format:
+        /// 1. file exists
+        ///    path/filename(counter).optional extension if the filename had it
+        /// 2. file does not exist
+        ///    path/filename
+        /// </summary>
+        /// <param name="fileName">The filename to  create the location from.</param>
+        /// <returns>A public disa file location for a gif file.</returns>
+        public static string GenerateDisaGifLocation(string fileName)
         {
-            var picturesLocation = basePath();
-            var fileName = GenerateFileName(extension);
-            return Path.Combine(picturesLocation, fileName);
+            return GenerateDisaFileLocation(GetDisaGifsPath, fileName);
         }
 
-        public static string GenerateStickerPath(Service service, string stickerId = null)
+        /// <summary>
+        /// Given a base path and an extension, generate unique public disa file location of the format:
+        /// base path/unique filename.extension
+        /// </summary>
+        /// <param name="basePath">The public disa base path.</param>
+        /// <param name="extension">The extension to use.</param>
+        /// <returns>A a unique disa file location.</returns>
+        public static string GenerateDisaMediaLocationUsingExtension(Func<string> basePath, string extension)
         {
-            var path = GetDisaStickersPath(service);
-            if (string.IsNullOrWhiteSpace(stickerId))
+            var @base = basePath();
+            var fileName = GenerateDisaFileName(extension);
+            return Path.Combine(@base, fileName);
+        }
+
+        /// <summary>
+        /// Generate a unique public disa file location of the format:
+        /// public disa picture path/timestamp+spinner+.jpg
+        /// </summary>
+        /// <returns>A public disa file location for a picture.</returns>
+        public static string GenerateDisaPictureLocation()
+        {
+            return GenerateDisaMediaLocationUsingExtension(GetDisaPicturesPath, ".jpg");
+        }
+
+        /// <summary>
+        /// Given a filename, generate a public disa file location for a picture file of the format:
+        /// 1. file exists
+        ///    path/filename(counter).optional extension if the filename had it
+        /// 2. file does not exist
+        ///    path/filename
+        /// </summary>
+        /// <param name="fileName">The filename to  create the location from.</param>
+        /// <returns>A public disa file location for a picture file.</returns>
+        public static string GenerateDisaPictureLocation(string fileName)
+        {
+            return GenerateDisaFileLocation(GetDisaPicturesPath, fileName);
+        }
+
+        /// <summary>
+        /// Given an old location filename, produce a public disa file location for a picture file
+        /// of the format:
+        /// path/timestamp+spinner+extension
+        /// </summary>
+        /// <param name="oldLocation">The old location filename to create the location from.</param>
+        /// <returns>A public disa file location for a picture file.</returns>
+        public static string GenerateDisaPictureLocationNoFileName(string oldLocation)
+        {
+            var extension = GetSafeExtension(oldLocation, ".jpg"); //Path.GetExtension(oldLocation);
+            return String.IsNullOrEmpty(extension)
+                       ? null
+                       : GenerateDisaMediaLocationUsingExtension(GetDisaPicturesPath, extension);
+        }
+
+        /// <summary>
+        /// Given a filename, generate a public disa file location for a sticker file of the format:
+        /// 1. file exists
+        ///    path/filename(counter).optional extension if the filename had it
+        /// 2. file does not exist
+        ///    path/filename
+        /// </summary>
+        /// <param name="fileName">The filename to  create the location from.</param>
+        /// <returns>A public disa file location for a sticker file.</returns>
+        public static string GenerateDisaStickerLocation(string fileName)
+        {
+            return GenerateDisaFileLocation(GetDisaStickersPath, fileName);
+        }
+
+        /// <summary>
+        /// Given a <see cref="VideoParameters.RecordType"/>, generate a public disa file location for a video file
+        /// of the format:
+        /// 
+        /// public disa video path/timestamp+spinner+extension
+        /// 
+        /// The extension will be derived from the enum passed in.
+        /// </summary>
+        /// <param name="recordType">An enum specifying the video record type.</param>
+        /// <returns>A public disa file location for a video file.</returns>
+        public static string GenerateDisaVideoLocation(VideoParameters.RecordType recordType)
+        {
+            return GenerateDisaMediaLocationUsingExtension(GetDisaVideosPath,
+                                                           recordType == VideoParameters.RecordType.Mp4 ? ".mp4" : ".3gp");
+        }
+
+        /// <summary>
+        /// Given a filename, generate a public disa file location for a video file of the format:
+        /// 1. file exists
+        ///    path/filename(counter).optional extension if the filename had it
+        /// 2. file does not exist
+        ///    path/filename
+        /// </summary>
+        /// <param name="fileName">The filename to create the location from.</param>
+        /// <returns>A public disa file location for a video file.</returns>
+        public static string GenerateDisaVideoLocation(string fileName)
+        {
+            return GenerateDisaFileLocation(GetDisaVideosPath, fileName);
+        }
+
+        /// <summary>
+        /// Given an old location filename, produce a public disa file location for a video file
+        /// of the format:
+        /// path/timestamp+spinner+extension
+        /// </summary>
+        /// <param name="oldLocation">The old location filename to create the location from.</param>
+        /// <returns>A public disa file location for a video file.</returns>
+        public static string GenerateDisaVideoLocationNoFileName(string oldLocation)
+        {
+            var extension = GetSafeExtension(oldLocation, ".mp4"); //Path.GetExtension(oldLocation);
+            return String.IsNullOrEmpty(extension)
+                       ? null
+                       : GenerateDisaMediaLocationUsingExtension(GetDisaVideosPath, extension);
+        }
+
+        #endregion
+
+        #region Determine if mime type
+
+        /// <summary>
+        /// Given a mime type, determine if it represents an audio mime type.
+        /// </summary>
+        /// <param name="mime">The mime type to analyze.</param>
+        /// <returns>True if the passed in mime type represents an audio mime type. False if not.</returns>
+        public static bool IsAudioType(string mime)
+        {
+            mime = mime.ToLower().Trim();
+            return mime.IndexOf("audio", StringComparison.Ordinal) == 0;
+        }
+
+        /// <summary>
+        /// Given a mime type, determine if it represents a gif mime type.
+        /// </summary>
+        /// <param name="mime">The mime type to analyze.</param>
+        /// <returns>True if the passed in mime type represents a gif mime type. False if not.</returns>
+        public static bool IsGifType(string mime)
+        {
+            if (mime == null)
+                return false;
+
+            return mime.ToLower().Contains("image/gif");
+        }
+
+        /// <summary>
+        /// Given a mime type, determine if it represents an image mime type.
+        /// </summary>
+        /// <param name="mime">The mime type to analyze.</param>
+        /// <returns>True if the passed in mime type represents an image mime type. False if not.</returns>
+        public static bool IsImageType(string mime)
+        {
+            mime = mime.ToLower().Trim();
+            return mime.IndexOf("image", StringComparison.Ordinal) == 0;
+        }
+
+        /// <summary>
+        /// Given a mime type, determine if it represents a sticker mime type.
+        /// </summary>
+        /// <param name="mime">The mime type to analyze.</param>
+        /// <returns>True if the passed in mime type represents a sticker mime type. False if not.</returns>
+        public static bool IsStickerType(string mime)
+        {
+            if (mime == null)
+                return false;
+
+            return mime.ToLower().Contains("image/webp");
+        }
+
+        /// <summary>
+        /// Given a mime type, determine if it represents a text mime type.
+        /// </summary>
+        /// <param name="mime">The mime type to analyze.</param>
+        /// <returns>True if the passed in mime type represents a text mime type. False if not.</returns>
+        public static bool IsTextType(string mime)
+        {
+            mime = mime.ToLower().Trim();
+            return mime.IndexOf("text", StringComparison.Ordinal) == 0;
+        }
+
+        /// <summary>
+        /// Given a mime type, determine if it represents a VCard mime type.
+        /// </summary>
+        /// <param name="mime">The mime type to analyze.</param>
+        /// <returns>True if the passed in mime type represents a vcard mime type. False if not.</returns>
+        public static bool IsVCardType(string mime)
+        {
+            mime = mime.ToLower().Trim();
+            return mime.IndexOf("text/x-vcard", StringComparison.Ordinal) == 0 ||
+                mime.IndexOf("text/vcard", StringComparison.Ordinal) == 0;
+        }
+
+        /// <summary>
+        /// Given a mime type, determine if it represents a video mime type.
+        /// </summary>
+        /// <param name="mime">The mime type to analyze.</param>
+        /// <returns>True if the passed in mime type represents a video mime type. False if not.</returns>
+        public static bool IsVideoType(string mime)
+        {
+            mime = mime.ToLower().Trim();
+            return mime.IndexOf("video", StringComparison.Ordinal) == 0;
+        }
+
+        #endregion
+
+        #region Additional miscellaneous API
+
+        public static void RemoveNoMediaIfNeeded()
+        {
+#if __ANDROID__
+
+            var pictures = GetDisaPicturesPath();
+            var videos = GetDisaVideosPath();
+            var audios = GetDisaAudioPath();
+            var files = GetDisaFilesPath();
+            var gifs = GetDisaGifsPath();
+            var stickers = GetDisaStickersPath();
+
+            var picturesNoMedia = Path.Combine(pictures, noMedia);
+            var videosNoMedia = Path.Combine(videos, noMedia);
+            var audiosNoMedia = Path.Combine(audios, noMedia);
+            var filesNoMedia = Path.Combine(files, noMedia);
+            var gifsNoMedia = Path.Combine(gifs, noMedia);
+            var stickersNoMedia = Path.Combine(stickers, noMedia);
+
+            if (File.Exists(picturesNoMedia))
             {
-                stickerId = Guid.NewGuid().ToString();
+                File.Delete(picturesNoMedia);
             }
-			stickerId += ".sticker";
-            var stickerPath = Path.Combine(path, stickerId);
-            return stickerPath;
+            if (File.Exists(videosNoMedia))
+            {
+                File.Delete(videosNoMedia);
+            }
+            if (File.Exists(audiosNoMedia))
+            {
+                File.Delete(audiosNoMedia);
+            }
+            if (File.Exists(filesNoMedia))
+            {
+                File.Delete(filesNoMedia);
+            }
+            if (File.Exists(gifsNoMedia))
+            {
+                File.Delete(gifsNoMedia);
+            }
+            if (File.Exists(stickersNoMedia))
+            {
+                File.Delete(stickersNoMedia);
+            }
+
+#else
+
+            Utils.DebugPrint("Not running on Android. No need to remove no medias.");
+
+#endif
+
+        }
+
+        public static void InsertNoMediasIfNeeded()
+        {
+#if __ANDROID__
+            var pictures = GetDisaPicturesPath();
+            var videos = GetDisaVideosPath();
+            var audios = GetDisaAudioPath();
+            var files = GetDisaFilesPath();
+            var gifs = GetDisaGifsPath();
+            var stickers = GetDisaStickersPath();
+
+            var picturesNoMedia = Path.Combine(pictures, noMedia);
+            var videosNoMedia = Path.Combine(videos, noMedia);
+            var audiosNoMedia = Path.Combine(audios, noMedia);
+            var filesNoMedia = Path.Combine(files, noMedia);
+            var gifsNoMedia = Path.Combine(gifs, noMedia);
+            var stickersNoMedia = Path.Combine(stickers, noMedia);
+
+            if (!File.Exists(picturesNoMedia))
+            {
+                File.Create(picturesNoMedia);
+            }
+            if (!File.Exists(videosNoMedia))
+            {
+                File.Create(videosNoMedia);
+            }
+            if (!File.Exists(audiosNoMedia))
+            {
+                File.Create(audiosNoMedia);
+            }
+            if (!File.Exists(filesNoMedia))
+            {
+                File.Create(filesNoMedia);
+            }
+            if (!File.Exists(gifsNoMedia))
+            {
+                File.Create(gifsNoMedia);
+            }
+            if (!File.Exists(stickersNoMedia))
+            {
+                File.Create(stickersNoMedia);
+            }
+
+#else
+            Utils.DebugPrint("Not running on Android. No need to insert no medias.");
+#endif
+        }
+
+        public static string PatchPath(VisualBubble bubble)
+        {
+            string path = null;
+            string newBase = null;
+
+            var imageBubble = bubble as ImageBubble;
+            var videoBubble = bubble as VideoBubble;
+            var audioBubble = bubble as AudioBubble;
+            var fileBubble = bubble as FileBubble;
+            var stickerBubble = bubble as StickerBubble;
+            if (imageBubble != null)
+            {
+                path = imageBubble.ImagePathNative;
+                newBase = Platform.GetPicturesPath();
+            }
+            else if (videoBubble != null)
+            {
+                path = videoBubble.VideoPathNative;
+                newBase = Platform.GetVideosPath();
+            }
+            else if (audioBubble != null)
+            {
+                path = audioBubble.AudioPathNative;
+                newBase = Platform.GetAudioPath();
+            }
+            else if (fileBubble != null)
+            {
+                path = fileBubble.PathNative;
+                newBase = Platform.GetFilesPath();
+            }
+            else if (stickerBubble != null)
+            {
+                path = stickerBubble.StickerPathNative;
+                newBase = Platform.GetStickersPath();
+            }
+
+            if (path == null || newBase == null)
+                throw new Exception("Uknown bubble");
+
+            var indexes = FindIndexesFromRear(path, Path.DirectorySeparatorChar);
+            var seperators = indexes.Take(2).ToList();
+            if (seperators.Count < 2)
+                return path;
+
+            var end = path.Substring(seperators[1] + 1);
+            return Path.Combine(newBase, end);
         }
 
         public static async Task<string> IsFileInDisaDirectory(Func<string> disaDirectory, string path)
@@ -446,6 +740,72 @@ namespace Disa.Framework
             }
         }
 
+        public static string GetExtensionFromPath(string path)
+        {
+            return Path.GetExtension(path);
+        }
+
+        public static string GetExtensionWithoutPeriod(string path)
+        {
+            var extension = Path.GetExtension(path);
+            if (String.IsNullOrEmpty(extension))
+            {
+                return null;
+            }
+
+            var index = extension.IndexOf('.');
+            return index == -1 ? null : extension.Remove(0, index + 1).ToLower().Trim();
+        }
+
+        #endregion
+
+        #region Helper methods
+
+        private static IEnumerable<int> FindIndexesFromRear(string str, char chr)
+        {
+            for (var i = str.Length - 1; i >= 0; i--)
+            {
+                if (str[i] == chr)
+                    yield return i;
+            }
+        }
+
+        private static string RemoveArgumentsFromExtension(string extension)
+        {
+            var index = extension.IndexOf('?');
+            if (index > -1)
+            {
+                return extension.Substring(0, index);
+            }
+            return extension.ToString();
+        }
+
+        private static string GetSafeExtension(string location, string @default)
+        {
+            var extension = RemoveArgumentsFromExtension(Path.GetExtension(location));
+
+            if (extension == null)
+            {
+                return @default;
+            }
+
+            return extension;
+        }
+
+        private static readonly object SpinnerLock = new object();
+        private static long _spinner;
+        private static long Spinner
+        {
+            get
+            {
+                lock (SpinnerLock) return _spinner;
+            }
+            set
+            {
+                lock (SpinnerLock) _spinner = value;
+            }
+        }
+
         private static byte[] ComputeHash(string fileLocation)
         {
             using (var fs = File.OpenRead(fileLocation))
@@ -458,12 +818,12 @@ namespace Disa.Framework
             }
         }
 
-		private static Tuple<bool, string> CopyFileToDirectoryIfNeeded(Func<string> directory, string oldPath)
-		{
-			try
-			{ 
+        private static Tuple<bool, string> CopyFileToDirectoryIfNeeded(Func<string> directory, string oldPath)
+        {
+            try
+            {
                 bool newFile;
-				var newPath = Path.Combine(directory(), Path.GetFileName(oldPath));
+                var newPath = Path.Combine(directory(), Path.GetFileName(oldPath));
                 if (oldPath != newPath)
                 {
                     if (File.Exists(newPath))
@@ -481,68 +841,15 @@ namespace Disa.Framework
                     newFile = false;
                 }
                 return Tuple.Create(newFile, newPath);
-			}
-			catch (Exception ex)
-			{
-				Utils.DebugPrint("File " + oldPath + " could not be copied to the Disa gallery location: " + ex.Message);
-                return Tuple.Create(false, (string)null);
-			}
-		}
-
-        public static string GetExtensionFromPath(string path)
-        {
-            return Path.GetExtension(path);
-        }
-
-        public static bool IsImageGif(string mimeType)
-        {
-            if (mimeType == null)
-                return false;
-
-            return mimeType.ToLower().Contains("image/gif");
-        }
-
-        public static bool IsImageType(string mime)
-        {
-            mime = mime.ToLower().Trim();
-            return mime.IndexOf("image", StringComparison.Ordinal) == 0;
-        }
-
-        public static bool IsVideoType(string mime)
-        {
-            mime = mime.ToLower().Trim();
-            return mime.IndexOf("video", StringComparison.Ordinal) == 0;
-        }
-
-        public static bool IsAudioType(string mime)
-        {
-            mime = mime.ToLower().Trim();
-            return mime.IndexOf("audio", StringComparison.Ordinal) == 0;
-        }
-
-        public static bool IsTextType(string mime)
-        {
-            mime = mime.ToLower().Trim();
-            return mime.IndexOf("text", StringComparison.Ordinal) == 0;
-        }
-
-        public static bool IsVCardType(string mime)
-        {
-            mime = mime.ToLower().Trim();
-            return mime.IndexOf("text/x-vcard", StringComparison.Ordinal) == 0 || 
-                mime.IndexOf("text/vcard", StringComparison.Ordinal) == 0;
-        }
-
-        public static string GetExtensionWithoutPeriod(string path)
-        {
-            var extension = Path.GetExtension(path);
-            if (String.IsNullOrEmpty(extension))
-            {
-                return null;
             }
-
-            var index = extension.IndexOf('.');
-            return index == -1 ? null : extension.Remove(0, index + 1).ToLower().Trim();
+            catch (Exception ex)
+            {
+                Utils.DebugPrint("File " + oldPath + " could not be copied to the Disa gallery location: " + ex.Message);
+                return Tuple.Create(false, (string)null);
+            }
         }
+
+        #endregion
+
     }
 }
