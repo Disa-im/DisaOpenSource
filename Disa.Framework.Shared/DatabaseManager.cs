@@ -60,7 +60,7 @@ namespace Disa.Framework
             return sqliteAsyncConnection.Table<T>();
 		}
 
-		public List<T> ReadRows<T>() where T : ISerializableType<T>, new()
+		public IList<T> ReadRows<T>() where T : ISerializableType<T>, new()
         {
 			var query = sqliteAsyncConnection.Table<T>();
 
@@ -151,7 +151,7 @@ namespace Disa.Framework
             return result;
         }
 
-        public List<T> FindRows<T>(Expression<Func<T, bool>> filter)
+        public IList<T> FindRows<T>(Expression<Func<T, bool>> filter)
             where T : class, ISerializableType<T>, new()
         {
             var table = sqliteAsyncConnection.Table<T>();

@@ -123,6 +123,13 @@ namespace Disa.Framework
         private static Dictionary<string, Node<Tag>> serviceRootNodeDictionary =
             new Dictionary<string, Node<Tag>>();
 
+        private static string conversationDatabasePath;
+        private static string treeDatabasePath;
+        private static string filtersDatabasePath;
+
+        // 
+        private static List<Filter> views = new List<Filter>();
+
         private static DatabaseManager databaseManager;
         private static AsyncTableQuery<ConversationTagIds> conversationTagIdsTable;
         private static AsyncTableQuery<TagConversationIds> tagConversationIdsTable;
@@ -140,13 +147,13 @@ namespace Disa.Framework
         public static void Initialize()
         {
             var databasePath = Platform.GetDatabasePath();
-            var conversationDatabasePath = Path.Combine(databasePath, @"ConversationTags.db");
+            conversationDatabasePath = Path.Combine(databasePath, @"ConversationTags.db");
             databaseManager = new DatabaseManager(conversationDatabasePath);
 
             conversationTagIdsTable = databaseManager.SetupTableObject<ConversationTagIds>();
             tagConversationIdsTable = databaseManager.SetupTableObject<TagConversationIds>();
 
-            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
+            treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
             if (File.Exists(treeDatabasePath))
             {
                 lock (tree)
@@ -191,6 +198,12 @@ namespace Disa.Framework
                         nodes.AddRange(node.Children);
                     }
                 }
+            }
+
+            filtersDatabasePath = Path.Combine(databasePath, @"Filters.protobytes");
+            if (File.Exists(filtersDatabasePath))
+            {
+                views = Utils.FromProtoBytesToObject<List<Filter>>(File.ReadAllBytes(filtersDatabasePath));
             }
 
             RegisterServices();
@@ -682,8 +695,6 @@ namespace Disa.Framework
 
         public static void PersistTags()
         {
-            var databasePath = Platform.GetDatabasePath();
-            var treeDatabasePath = Path.Combine(databasePath, @"ConversationTree.protobytes");
             byte[] bytes = null;
             lock (tree)
             {
@@ -692,14 +703,14 @@ namespace Disa.Framework
             File.WriteAllBytes(treeDatabasePath, bytes);
         }
 
+        public static void PersistViews()
+        {
+            var bytes = Utils.ToProtoBytes(views);
+            File.WriteAllBytes(filtersDatabasePath, bytes);
+        }
+
         public static void Persist()
         {
-            var databasePath = Platform.GetDatabasePath();
-            var conversationDatabasePath = Path.Combine(databasePath, @"ConversationTags.db");
-            databaseManager = new DatabaseManager(conversationDatabasePath);
-
-            conversationTagIdsTable = databaseManager.SetupTableObject<ConversationTagIds>();
-            tagConversationIdsTable = databaseManager.SetupTableObject<TagConversationIds>();
             PersistTags();
         }
 

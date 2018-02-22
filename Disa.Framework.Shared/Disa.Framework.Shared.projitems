@@ -57,6 +57,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Stickers\Sticker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Stickers\StickerPack.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Stickers\FullStickerPack.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ZipStorer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Axolotl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AxolotlImplementation.cs" />
