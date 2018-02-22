@@ -638,6 +638,19 @@ namespace Disa.Framework
         }
     }
 
+    [AttributeUsage(AttributeTargets.All)]
+    public class PluginInfo : Attribute
+    {
+        public enum PluginType { Messaging, Media, }
+
+        public PluginType Type { get; private set; }
+
+        public PluginInfo(PluginType type)
+        {
+            Type = type;
+        }
+    }
+
     /// <summary>
     /// Used to flag an interface as belonging to the Disa Framework.
     /// 
