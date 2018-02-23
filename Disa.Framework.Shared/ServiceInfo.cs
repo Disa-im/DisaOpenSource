@@ -53,6 +53,8 @@ namespace Disa.Framework
             AuthenticateConnect
         };
 
+        public enum ServiceType { Messaging, Media, }
+
         /// <summary>
         /// The name of the <see cref="Service"/>.
         /// 
@@ -137,6 +139,8 @@ namespace Disa.Framework
         /// </summary>
         public bool DelayedNotifications { get; private set; }
 
+        public ServiceType Type { get; private set; }
+
         /// <summary>
         /// Constuct the <see cref="ServiceInfo"/> <see cref="Attribute"/> passing in a subset of
         /// parameters.
@@ -172,6 +176,28 @@ namespace Disa.Framework
             Procedure = procedureType;
             SupportsBatterySavingsMode = supportsBatterySavingsMode;
             DelayedNotifications = delayedNotifications;
+        }
+
+        public ServiceInfo(
+            string serviceName,
+            bool eventDrivenBubbles,
+            bool usesMediaProgress,
+            bool usesInternet,
+            bool delayedNotifications,
+            Type settings,
+            ServiceType serviceType,
+            ProcedureType procedureType,
+            params Type[] supportedBubbles)
+        {
+            ServiceName = serviceName;
+            EventDrivenBubbles = eventDrivenBubbles;
+            SupportedBubbles = supportedBubbles;
+            Settings = settings;
+            UsesInternet = usesInternet;
+            UsesMediaProgress = usesMediaProgress;
+            Procedure = procedureType;
+            DelayedNotifications = delayedNotifications;
+            Type = serviceType;
         }
 
         /// <summary>
@@ -635,19 +661,6 @@ namespace Disa.Framework
         public bool DoesSupportExtension(string extension)
         {
             return SupportedExtensions.FirstOrDefault(x => x.ToLower() == extension.ToLower()) != null;
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.All)]
-    public class PluginInfo : Attribute
-    {
-        public enum PluginType { Messaging, Media, }
-
-        public PluginType Type { get; private set; }
-
-        public PluginInfo(PluginType type)
-        {
-            Type = type;
         }
     }
 

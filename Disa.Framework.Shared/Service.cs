@@ -120,7 +120,6 @@ namespace Disa.Framework
             FileParameters = GetParameter<FileParameters>();
             GifParameters = GetParameter<GifParameters>();
             StickerParameters = GetParameter<StickerParameters>();
-            PluginInformation = GetParameter<PluginInfo>();
             QueuedBubblesParameters = GetParameter<QueuedBubblesParameters>();
         }
 
@@ -148,8 +147,6 @@ namespace Disa.Framework
         public GifParameters GifParameters { get; private set; }
 
         public StickerParameters StickerParameters { get; private set; }
-
-        public PluginInfo PluginInformation { get; private set; }
 
         public void DebugPrint(string str)
         {
