@@ -299,7 +299,7 @@ namespace Disa.Framework
             }
         }
 
-        internal static List<BubbleGroup> FindAll(Func<BubbleGroup, bool> predicate)
+        public static List<BubbleGroup> FindAll(Func<BubbleGroup, bool> predicate)
         {
             lock (BubbleGroupsLock)
             {
