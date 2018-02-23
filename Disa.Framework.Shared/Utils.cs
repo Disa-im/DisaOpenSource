@@ -343,12 +343,20 @@ namespace Disa.Framework
 
                 (var item, var enumerator) = priorityQueue[0];
                 priorityQueue.RemoveAt(0);
-                if (enumerator.MoveNext())
+                try
                 {
-                    priorityQueue.Add((enumerator.Current, enumerator));
+                    if (enumerator.MoveNext())
+                    {
+                        priorityQueue.Add((enumerator.Current, enumerator));
+                    }
+                    else
+                    {
+                        enumerators.Remove(enumerator);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
+                    Utils.DebugPrint($"Error enumerating {currentEnumerator}: {ex}. Removing the enumerator.");
                     enumerators.Remove(enumerator);
                 }
                 priorityQueue = priorityQueue.OrderByDescending(tupleKeySelector).ToList();
