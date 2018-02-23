@@ -23,34 +23,8 @@ namespace Disa.Framework
 
         private IEnumerable<BubbleGroup> SearchBubbleGroups(Service service)
         {
-            var filtered = BubbleGroupManager.FindAll(service).Where(group =>
-            {
-                var unifiedGroup = group as UnifiedBubbleGroup;
-                if (unifiedGroup != null)
-                {
-                    group = unifiedGroup.PrimaryGroup;
-                }
-
-                if (Utils.Search(group.Title, Query))
-                {
-                    return true;
-                }
-
-                if (group.Participants == null)
-                {
-                    return false;
-                }
-                foreach (var participant in group.Participants)
-                {
-                    if (Utils.Search(participant.Name, Query))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }).ToList();
-            return filtered;
+            var bubbleGroups = BubbleGroupManager.FindAll(service);
+            return Utils.SearchBubbleGroups(bubbleGroups, Query);
         }
 
         private IEnumerable<BubbleGroup> LoadBubblesInternalLazyService()

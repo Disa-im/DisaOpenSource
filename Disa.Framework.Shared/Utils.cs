@@ -349,6 +349,43 @@ namespace Disa.Framework
             }
         }
 
+        public static IEnumerable<BubbleGroup> SearchBubbleGroups(IEnumerable<BubbleGroup> bubbleGroups, string query)
+        {
+            if (query == null)
+            {
+                return new List<BubbleGroup>();
+            }
+
+            var filtered = bubbleGroups.Where(group =>
+            {
+                var unifiedGroup = group as UnifiedBubbleGroup;
+                if (unifiedGroup != null)
+                {
+                    group = unifiedGroup.PrimaryGroup;
+                }
+
+                if (Utils.Search(group.Title, query))
+                {
+                    return true;
+                }
+
+                if (group.Participants == null)
+                {
+                    return false;
+                }
+                foreach (var participant in group.Participants)
+                {
+                    if (Utils.Search(participant.Name, query))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }).ToList();
+            return filtered;
+        }
+
         /// <summary>
         /// Returns protobuf serialized bytes
         /// </summary>
