@@ -311,14 +311,22 @@ namespace Disa.Framework
             for (var i = 0; i < enumerators.Count;)
             {
                 var currentEnumerator = enumerators[i];
-                if (currentEnumerator.MoveNext())
+                try
                 {
-                    priorityQueue.Add((currentEnumerator.Current, currentEnumerator));
-                    i++;
+                    if (currentEnumerator.MoveNext())
+                    {
+                        priorityQueue.Add((currentEnumerator.Current, currentEnumerator));
+                        i++;
+                    }
+                    else
+                    {
+                        // We are done enumerating the bubble groups from that service
+                        enumerators.RemoveAt(i);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // We are done enumerating the bubble groups from that service
+                    Utils.DebugPrint($"Error enumerating {currentEnumerator}: {ex}. Removing the enumerator.");
                     enumerators.RemoveAt(i);
                 }
             }
