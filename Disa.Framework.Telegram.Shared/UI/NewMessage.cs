@@ -6,6 +6,7 @@ using System.Linq;
 using System.Globalization;
 using SharpMTProto;
 using System.Diagnostics.Contracts;
+using System.Net;
 
 namespace Disa.Framework.Telegram
 {
@@ -16,7 +17,6 @@ namespace Disa.Framework.Telegram
             Contract.Ensures(Contract.Result<Task>() != null);
             return Task.Factory.StartNew(async () =>
             {
-
                 if (!searchForParties)
                 {
                     var users = await FetchContacts();
@@ -144,22 +144,50 @@ namespace Disa.Framework.Telegram
                 var kicked = TelegramUtils.GetChatKicked(chat);
                 if (kicked)
                     continue;
-                var isChannel = chat is Channel;
-                if (forChannels && !isChannel)
+                var channel = chat as Channel;
+
+                if (forChannels)
                 {
-                    continue;
+                    if (channel != null)
+                    {
+                        if (channel.Broadcast != null)
+                        {
+                            // it is a channel
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
-                else if (!forChannels && isChannel)
+                else
                 {
-                    continue;
+                    if (channel != null)
+                    {
+                        if (channel.Broadcast != null)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            // it is not a channel
+                        }
+                    }
+                    else
+                    {
+                        // it is not a channel
+                    }
                 }
 
                 // Public channels require us knowing the AccessHash for them in order
                 // to join them
                 ulong channelAccessHash = 0;
-                if (isChannel)
+                if (channel != null)
                 {
-                    var channel = chat as Channel;
                     channelAccessHash = channel.AccessHash;
                 }
 
@@ -172,7 +200,7 @@ namespace Disa.Framework.Telegram
                                 {
                                     Service = this,
                                     Id = TelegramUtils.GetChatId(chat),
-                                    ExtendedParty = isChannel
+                                    ExtendedParty = channel != null,
                                 }
                             },
                     AccessHash = channelAccessHash
@@ -288,17 +316,7 @@ namespace Disa.Framework.Telegram
                         {
                             if (BubbleGroupComparer(contactId.Id, group.Address))
                             {
-                                // Sanity check, make sure we DO NOT HAVE a Disa Channel
-                                var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
-                                if (channel != null &&
-                                    channel.Broadcast != null)
-                                {
-                                    result(null);
-                                }
-                                else
-                                {
-                                    result(group);
-                                }
+                                result(group);
 
                                 return;
                             }
@@ -684,6 +702,23 @@ namespace Disa.Framework.Telegram
 
         private LinkType GetLinkType(string link, out string linkUsefulPart)
         {
+            if (!link.StartsWith("https://") && !link.StartsWith("http://"))
+            {
+                link = "https://" + link;
+            }
+            string redirectedLink;
+            try
+            {
+                redirectedLink = HttpUtilities.GetFinalRedirect(link);
+            }
+            catch
+            {
+                redirectedLink = null;
+            }
+            if (!string.IsNullOrWhiteSpace(redirectedLink))
+            {
+                link = redirectedLink;
+            }
             Uri uri = null;
             try
             {
@@ -694,6 +729,19 @@ namespace Disa.Framework.Telegram
                 DebugPrint("Invalid uri" + e);
                 linkUsefulPart = null;
                 return LinkType.Invalid;
+            }
+            try
+            {
+                if (uri.Host.StartsWith("google") || uri.Host.StartsWith("www.google"))
+                {
+                    var queries = HttpUtilities.DecodeQueryParameters(uri);
+                    var url = Uri.UnescapeDataString(queries["url"]);
+                    uri = new Uri(url);
+                }
+            }
+            catch
+            {
+                // do nothing
             }
             if (uri != null)
             {

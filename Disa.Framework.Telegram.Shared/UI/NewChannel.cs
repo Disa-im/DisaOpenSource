@@ -87,20 +87,53 @@ namespace Disa.Framework.Telegram
                     return;
                 }
 
-                // If we have an existing channel group based on a SINGLE Contact.ID 
-                // in our passed in collection return that
-                foreach (var group in BubbleGroupManager.FindAll(this))
+                foreach (var chat in _dialogs.GetAllChats())
                 {
-                    if (BubbleGroupComparer(contactIds[0].Id, group.Address))
+                    var name = TelegramUtils.GetChatTitle(chat);
+                    var upgraded = TelegramUtils.GetChatUpgraded(chat);
+                    if (upgraded)
+                        continue;
+                    var left = TelegramUtils.GetChatLeft(chat);
+                    if (left)
+                        continue;
+                    var kicked = TelegramUtils.GetChatKicked(chat);
+                    if (kicked)
+                        continue;
+                    var isChannel = chat is Channel;
+                    if (isChannel)
                     {
-                        // Sanity check, make sure we HAVE a Disa Channel
-                        var channel = _dialogs.GetChat(uint.Parse(group.Address)) as Channel;
-                        if (channel != null &&
-                            channel.Broadcast != null)
+                        var channel = chat as Channel;
+                        if (channel.Broadcast == null)
                         {
-                            result(group);
-                            return;
+                            continue;
                         }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    var channelAddress = TelegramUtils.GetChatId(chat);
+                    if (BubbleGroupComparer(contactIds[0].Id, channelAddress))
+                    {
+                        var newBubble = new NewBubble(
+                            time: Time.GetNowUnixTimestamp(),
+                            direction: Bubble.BubbleDirection.Outgoing,
+                            address: channelAddress,
+                            participantAddress: null,
+                            party: true,
+                            service: this);
+                        newBubble.ExtendedParty = true;
+
+                        var newGroup = BubbleGroupFactory.AddNewIfNotExist(newBubble);
+                        if (newGroup == null)
+                        {
+                            newGroup = BubbleGroupManager.FindWithAddress(this, channelAddress);
+                        }
+
+                        result(newGroup);
+
+                        return;
                     }
                 }
 
