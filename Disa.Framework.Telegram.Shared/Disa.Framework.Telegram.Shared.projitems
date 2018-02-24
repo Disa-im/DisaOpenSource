@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CachedChat.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachedUser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FileInformation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpUtilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Localize.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MediaDownloader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Nito.AsyncEx\Base\AsyncAutoResetEvent.cs" />
