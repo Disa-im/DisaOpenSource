@@ -7,6 +7,16 @@ namespace Disa.Framework
 {
     /// <summary>
     /// An optional interface for plugin developers to implement to expose their sticker capabilities.
+    /// 
+    /// IMPORTANT IMPLEMENTATION NOTES:
+    /// 1. Service providers must provide Sticker with Id and StickerPackId valid for a file name of:
+    /// <see cref="Sticker.StickerPackId"/>-<see cref="Sticker.Id"/>
+    /// Example: 435-897 
+    /// 2. The combination of <see cref="Sticker.StickerPackId"/> and <see cref="Sticker.Id"/> must be unique for the service provider.
+    /// 3. A retrieval of a still version of the sticker must always be available. An animated version is optional.
+    /// 4. <see cref="Sticker.HasAnimated"/> will signal that retrieval of the sticker will produce both a still and animated version.
+    /// 5. The fields <see cref="Sticker.LocationStill"/> and <see cref="Sticker.LocationAnimated"/> are not to be filled in
+    /// by the service provider, but will be filled in by the framework.
     /// </summary>
     [DisaFramework]
     public interface IStickers
