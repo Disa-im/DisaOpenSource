@@ -299,7 +299,6 @@ namespace Disa.Framework.Telegram
                         {
                             Id = stickerPack.Id,
                             ServiceName = stickerPack.ServiceName,
-                            Location = stickerPack.Location,
                             Installed = stickerPack.Installed,
                             Archived = stickerPack.Archived,
                             FeaturedSticker = disaStickers[0],

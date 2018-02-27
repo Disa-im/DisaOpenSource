@@ -27,13 +27,5 @@ namespace Disa.Framework.Stickers
         /// </summary>
         [ProtoMember(252)]
         public List<EmojiStickerPack> EmojiStickerPacks { get; set; }
-
-        /// <summary>
-        /// An indicator to tell if the collection of Sticker contains stickers that can be animated.
-        /// 
-        /// This is helpful for determining if to display a play/pause button.
-        /// </summary>
-        [ProtoMember(253)]
-        public bool HasAnimated { get; set; }
     }
 }
