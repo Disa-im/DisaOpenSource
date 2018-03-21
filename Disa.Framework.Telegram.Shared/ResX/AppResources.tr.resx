@@ -1,0 +1,449 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TelegramRunning" xml:space="preserve">
+    <value>Telegram çalışıyor</value>
+  </data>
+  <data name="TelegramNotRunning" xml:space="preserve">
+    <value>Telegram Çalışmıyor</value>
+  </data>
+  <data name="TelegramAllGood" xml:space="preserve">
+    <value>Her şey iyi görünüyor.</value>
+  </data>
+  <data name="TelegramHelp" xml:space="preserve">
+    <value>Yardım</value>
+  </data>
+  <data name="TelegramSettingsTitle" xml:space="preserve">
+    <value>Telegram  Ayarları</value>
+  </data>
+  <data name="TelegramPleaseStart" xml:space="preserve">
+    <value>Lütfen Telegram'ı Disa'nın ayarlarında başlatın.</value>
+  </data>
+  <data name="TelegramPleaseStartNoInternet" xml:space="preserve">
+    <value>Lütfen Telegram'ı Disa'nın ayarlarında başlatın veya kurulum sihirbazını yeniden çalıştırın. Bu seçeneklerin hiçbiri işe yaramıyorsa, o zaman Telegram muhtemelen çalışmıyordur.</value>
+  </data>
+  <data name="TelegramSetupWizard" xml:space="preserve">
+    <value>Kurulum Sihirbazı</value>
+  </data>
+  <data name="TelegramProfileSettings" xml:space="preserve">
+    <value>Profil Ayarları</value>
+  </data>
+  <data name="TelegramDescription" xml:space="preserve">
+    <value>Telegram, hız ve güvenliğe odaklanmış bir mesajlaşma uygulamasıdır. Süper hızlı, basit, güvenli ve ücretsizdir.</value>
+  </data>
+  <data name="TelegramPleaseConnectToInternet" xml:space="preserve">
+    <value>Kurulum Sihirbazını çalıştırmadan önce lütfen internete bağlanın.</value>
+  </data>
+  <data name="TelegramSetupWizardTitle" xml:space="preserve">
+    <value>Telegram Kurulum Sihirbazı</value>
+  </data>
+  <data name="TelegramFirstName" xml:space="preserve">
+    <value>Ad</value>
+  </data>
+  <data name="TelegramLastName" xml:space="preserve">
+    <value>Soyad</value>
+  </data>
+  <data name="TelegramLoadConversations" xml:space="preserve">
+    <value>Son 10 sohbeti Disa'ya yükleyin.</value>
+  </data>
+  <data name="TelegramPhoneNumber" xml:space="preserve">
+    <value>Telefon Numarası</value>
+  </data>
+  <data name="TelegramNext" xml:space="preserve">
+    <value>Sonraki</value>
+  </data>
+  <data name="TelegramInvalidFirstNameTitle" xml:space="preserve">
+    <value>Geçersiz ad</value>
+  </data>
+  <data name="TelegramInvalidFirstNameMessage" xml:space="preserve">
+    <value>Lütfen adınızı giriniz.</value>
+  </data>
+  <data name="TelegramInvalidLastNameTitle" xml:space="preserve">
+    <value>Geçersiz Soyadı</value>
+  </data>
+  <data name="TelegramInvalidLastNameMessage" xml:space="preserve">
+    <value>Lütfen soyadınızı giriniz.</value>
+  </data>
+  <data name="TelegramOkay" xml:space="preserve">
+    <value>Tamam</value>
+  </data>
+  <data name="TelegramYes" xml:space="preserve">
+    <value>Evet</value>
+  </data>
+  <data name="TelegramNo" xml:space="preserve">
+    <value>Hayır</value>
+  </data>
+  <data name="TelegramInvalidNumberTitle" xml:space="preserve">
+    <value>Geçersiz Numara</value>
+  </data>
+  <data name="TelegramInvalidNumberMessage" xml:space="preserve">
+    <value>Girdiğiniz numara geçerli değil. Lütfen numarayı düzeltin.</value>
+  </data>
+  <data name="TelegramConfirmNumberTitle" xml:space="preserve">
+    <value>Numarayı Onayla</value>
+  </data>
+  <data name="TelegramConfirmNumberMessage" xml:space="preserve">
+    <value>Bu numara : [number] doğru mu? Bunu Telegram hesabınızı doğrulamak için kullanacağız.</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedMessage" xml:space="preserve">
+    <value>Kimlik doğrulama oluşturulamadı. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="TelegramAuthGenerationFailedTitle" xml:space="preserve">
+    <value>Yetkilendirme Oluşturma Başarısız Oldu</value>
+  </data>
+  <data name="TelegramInformationTitle" xml:space="preserve">
+    <value>Bilgi</value>
+  </data>
+  <data name="TelegramVerificationTitle" xml:space="preserve">
+    <value>Doğrulama</value>
+  </data>
+  <data name="TelegramVerifyHaveCode" xml:space="preserve">
+    <value>Bir kodum var</value>
+  </data>
+  <data name="TelegramVerifyQuestion" xml:space="preserve">
+    <value>Telegram hesabınızı nasıl doğrulamak istersiniz?</value>
+  </data>
+  <data name="TelegramVerifyViaPhone" xml:space="preserve">
+    <value>Telefon ile</value>
+  </data>
+  <data name="TelegramVerifyViaSms" xml:space="preserve">
+    <value>SMS ile</value>
+  </data>
+  <data name="TelegramVerifySentToTelegram" xml:space="preserve">
+    <value>Doğrulama kodu, diğer cihazınızdaki Telegram uygulamasına gönderildi</value>
+  </data>
+  <data name="TelegramVerifySentViaSms" xml:space="preserve">
+    <value>Doğrulama kodu SMS ile gönderildi </value>
+  </data>
+  <data name="TelegramVerifyError" xml:space="preserve">
+    <value>Bir hata oluştu. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="TelegramVerifyInvalidNumber" xml:space="preserve">
+    <value>Girdiğiniz telefon numarası geçersiz. Lütfen başka birini kullanın.</value>
+  </data>
+  <data name="TelegramCodeSentViaSms" xml:space="preserve">
+    <value>Telegram aktivasyonu ile iletişime geçildi! Kısa sürede bir aktivasyon kodu ile mesaj alacaksınız.</value>
+  </data>
+  <data name="TelegramCodeSentViaPhone" xml:space="preserve">
+    <value>Telegram aktivasyonu ile iletişime geçildi! Kısa sürede bir aktivasyon kodu ile mesaj alacaksınız.</value>
+  </data>
+  <data name="TelegramCodeManualEnter" xml:space="preserve">
+    <value>Lütfen aşağıda  Telegramdan'dan sağlanan 6 karakterli kodu giriniz.</value>
+  </data>
+  <data name="TelegramCodeSentNotComingSms" xml:space="preserve">
+    <value>Eğer kodunuz gelmiyorsa, lütfen 'Doğrulama' sekmesini tıklayın ve 'Telefonla' seçeneğiyle Telegram'ı etkinleştirin.</value>
+  </data>
+  <data name="TelegramCodeTitle" xml:space="preserve">
+    <value>Kod</value>
+  </data>
+  <data name="TelegramCode" xml:space="preserve">
+    <value>Kod</value>
+  </data>
+  <data name="TelegramCodeInvalidTitle" xml:space="preserve">
+    <value>Geçersiz kod</value>
+  </data>
+  <data name="TelegramCodeInvalidMessage" xml:space="preserve">
+    <value>Telegramı doğrulamak için lütfen bir kod giriniz.</value>
+  </data>
+  <data name="TelegramInvalidCodeDetail" xml:space="preserve">
+    <value>Girilen kod geçersiz</value>
+  </data>
+  <data name="TelegramSubmit" xml:space="preserve">
+    <value>Gönder</value>
+  </data>
+  <data name="TelegramCodeError" xml:space="preserve">
+    <value>Bir hata oluştu. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="TelegramCodeNumberInvalid" xml:space="preserve">
+    <value>Girilen telefon numarası geçersiz. Lütfen başka bir numara deneyin.</value>
+  </data>
+  <data name="TelegramCodeCodeExpired" xml:space="preserve">
+    <value>Girilen kodun süresi doldu. Lütfen kendinize yeni bir kod gönderin.</value>
+  </data>
+  <data name="TelegramCodeCodeInvalid" xml:space="preserve">
+    <value>Girilen kod geçersiz. Lütfen başka bir tane deneyin.</value>
+  </data>
+  <data name="TelegramCodeFirstNameInvalid" xml:space="preserve">
+    <value>Girilen ad geçersiz. Lütfen başka bir tane deneyin.</value>
+  </data>
+  <data name="TelegramCodeLastNameInvalid" xml:space="preserve">
+    <value>Girilen soyadı geçersiz. Lütfen başka bir tane deneyin.</value>
+  </data>
+  <data name="TelegramContact" xml:space="preserve">
+    <value>Kişiler</value>
+  </data>
+  <data name="TelegramEveryone" xml:space="preserve">
+    <value>Herkes</value>
+  </data>
+  <data name="TelegramGroups" xml:space="preserve">
+    <value>Gruplar</value>
+  </data>
+  <data name="TelegramLastSeen" xml:space="preserve">
+    <value>Son Görülme</value>
+  </data>
+  <data name="TelegramNobody" xml:space="preserve">
+    <value>Hiç Kimse</value>
+  </data>
+  <data name="TelegramNone" xml:space="preserve">
+    <value>Hiçbiri</value>
+  </data>
+  <data name="TelegramNotRunningLong" xml:space="preserve">
+    <value>Profil ayarlarını değiştirebilmeniz için önce telegramın çalışması gerekiyor.</value>
+  </data>
+  <data name="TelegramPrivacyList" xml:space="preserve">
+    <value>Gizlilik Listesi</value>
+  </data>
+  <data name="TelegramCodeSentPhoneCall" xml:space="preserve">
+    <value>Telegram'dan kodu söyleyen bir arama alacaksınız. Kodu aşağıya giriniz.</value>
+  </data>
+  <data name="TelegramCodeSentTelegramApp" xml:space="preserve">
+    <value>Kod, diğer cihazınızdaki Telegram uygulamasına gönderildi</value>
+  </data>
+  <data name="TelegramCodeSentText" xml:space="preserve">
+    <value>Kod SMS ile size gönderildi</value>
+  </data>
+  <data name="TelegramCodeResendViaPhoneCall" xml:space="preserve">
+    <value>Bir dakika sonra bile kodu almadınız mı? Girilecek kodu bildiren bir çağrı almak için yukarıdaki düğmeye basın.</value>
+  </data>
+  <data name="TelegramCodeResendViaText" xml:space="preserve">
+    <value>Kodu almadınız mı? SMS yoluyla kodu almak için yukarıdaki düğmeye basın.</value>
+  </data>
+  <data name="TelegramSelect" xml:space="preserve">
+    <value>Seç</value>
+  </data>
+  <data name="TelegramVerify" xml:space="preserve">
+    <value>Onayla</value>
+  </data>
+  <data name="TelegramPassword" xml:space="preserve">
+    <value>Şifre</value>
+  </data>
+  <data name="TelegramEnterPassword" xml:space="preserve">
+    <value>Lütfen giriş yapmak için şifrenizi giriniz</value>
+  </data>
+  <data name="TelegramPasswordTitle" xml:space="preserve">
+    <value>Şifre</value>
+  </data>
+  <data name="TelegramFinish" xml:space="preserve">
+    <value>Tamamla</value>
+  </data>
+  <data name="TelegramForgotPassword" xml:space="preserve">
+    <value>Şifrenizi unuttunuz mu?</value>
+  </data>
+  <data name="TelegramInvalidPassword" xml:space="preserve">
+    <value>Geçersiz Şifre</value>
+  </data>
+  <data name="TelegramInvalidPasswordDetail" xml:space="preserve">
+    <value>Girdiğiniz şifre geçersiz. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="TelegramPasswordError" xml:space="preserve">
+    <value>Bir hata oluştu. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="TelegramCodeIntitalText" xml:space="preserve">
+    <value>Telefon numaranızı doğrulamak için aşağıdaki düğmeyi tıklayın.</value>
+  </data>
+  <data name="TelegramRecoverPassword" xml:space="preserve">
+    <value>Şifre kurtarma</value>
+  </data>
+  <data name="TelegramRecoverPasswordEmail" xml:space="preserve">
+    <value>Şifre kurtarma</value>
+  </data>
+  <data name="TelegramEnterCodeSentToEmail" xml:space="preserve">
+    <value>Lütfen [emailPattern] adresinden ikincil e-posta adresinize gönderilen kodu girin.</value>
+  </data>
+  <data name="TelegramCannotAccessEmail" xml:space="preserve">
+    <value>E-postaya erişemiyor musunuz?</value>
+  </data>
+  <data name="TelegramCancel" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="TelegramResetAccount" xml:space="preserve">
+    <value>Hesabı Sıfırla</value>
+  </data>
+  <data name="TelegramNeedToResetAccount" xml:space="preserve">
+    <value>Eğer E-postanıza erişemiyorsanız, tek seçeneğiniz hesabınızı sıfırlamaktır. UYARI! Tamam düğmesini tıkladığınızda tüm sohbet ve verileriniz Telegram sunucularından silinecektir.</value>
+  </data>
+  <data name="TelegramPasswordCodeTitle" xml:space="preserve">
+    <value>Şifre Kurtarma Kodu</value>
+  </data>
+  <data name="TelegramUserInformationTitle" xml:space="preserve">
+    <value>Kullanıcı Bilgisi</value>
+  </data>
+  <data name="TelegramUsername" xml:space="preserve">
+    <value>Kullanıcı adı</value>
+  </data>
+  <data name="TelegramEdit" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
+  <data name="TelegramDone" xml:space="preserve">
+    <value>Tamam</value>
+  </data>
+  <data name="TelegramNoUsernameSet" xml:space="preserve">
+    <value>Hiçbir kullanıcı adı ayarlanmadı</value>
+  </data>
+  <data name="TelegramEnterUsername" xml:space="preserve">
+    <value>Bir kullanıcı adı giriniz</value>
+  </data>
+  <data name="TelegramEnterLastName" xml:space="preserve">
+    <value>Soyadınızı giriniz</value>
+  </data>
+  <data name="TelegramUserInformation" xml:space="preserve">
+    <value>A-z, 0-9 ve alt çizgi kullanabilirsiniz. Minimum uzunluk 5 karakterdir.</value>
+  </data>
+  <data name="TelegramUsernameNotLongEnough" xml:space="preserve">
+    <value>Bir kullanıcı adı en az 5 karakterden oluşmalıdır.</value>
+  </data>
+  <data name="TelegramUsernameInvalid" xml:space="preserve">
+    <value>Üzgünüz, bu kullanıcı adı geçersiz.</value>
+  </data>
+  <data name="TelegramUsernameTaken" xml:space="preserve">
+    <value>Üzgünüz, bu kullanıcı adı zaten alınmış.</value>
+  </data>
+  <data name="TelegramUsernameAvailable" xml:space="preserve">
+    <value>[username] kullanılabilir!</value>
+  </data>
+  <data name="TelegramUsernameChecking" xml:space="preserve">
+    <value>Kullanıcı adı kontrol ediliyor...</value>
+  </data>
+  <data name="TelegramUsernameTryAgainLater" xml:space="preserve">
+    <value>Lütfen daha sonra tekrar deneyiniz...</value>
+  </data>
+  <data name="TelegramNameFirstNameEmpty" xml:space="preserve">
+    <value>Adınız boş bırakılamaz.</value>
+  </data>
+  <data name="TelegramMuteNotificationsTitle" xml:space="preserve">
+    <value>Bildirimleri Sessize Al</value>
+  </data>
+  <data name="TelegramMuteNotificationsHeader" xml:space="preserve">
+    <value>Şu anda Telegram yüklü! Hem Telegram hem de Disa aynı anda kullanılabilir. &lt;b&gt; Yinelenen bildirimleri almamak için lütfen Telegram bildirimlerini devre dışı bırakınız: &lt;/b&gt;</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Title" xml:space="preserve">
+    <value>Nasıl?</value>
+  </data>
+  <data name="TelegramMuteNotificationsStep1Text" xml:space="preserve">
+    <value>Menüsünü açmak için ana Telegram uygulamasının ekranındaki hamburger düğmesine basın.  Sonra 
+&lt;i&gt;Ayarlar&lt;/i&gt; ardından &lt;i&gt;Bildirimler ve Seslere&lt;/i&gt; tıklayın. &lt;i&gt;Mesaj bildirimleri&lt;/i&gt; ve &lt;i&gt;Grup bildirimlerinin&lt;/i&gt;  altındaki iki &lt;i&gt;Uyarı&lt;/i&gt; geçişini devre dışı bırakın</value>
+  </data>
+  <data name="TelegramMuteNotificationsWatchVideo" xml:space="preserve">
+    <value>Videoyu İzleyin</value>
+  </data>
+  <data name="TelegramSearchHint" xml:space="preserve">
+    <value>Kişi adını yaz</value>
+  </data>
+
+</root>
