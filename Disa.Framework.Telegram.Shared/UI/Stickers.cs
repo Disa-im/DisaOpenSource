@@ -446,55 +446,6 @@ namespace Disa.Framework.Telegram
             });
         }
 
-        public Task StickerPacksReordered(string stickerPackId, int newPos, List<string> newOrder, Action<bool> result)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                // Standardize our error response
-                Action errorResponse = () =>
-                {
-                    result(false);
-                };
-
-                try
-                {
-                    using (var client = new FullClientDisposable(this))
-                    {
-                        var telegramOrder = new List<ulong>();
-                        foreach (var disaOrderEntry in newOrder)
-                        {
-                            var telegramOrderEntry = ulong.Parse(disaOrderEntry);
-                            telegramOrder.Add(telegramOrderEntry);
-                        }
-                        if (telegramOrder.Count == 0)
-                        {
-                            Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPacksReordered) + " telegramOrder.Count is 0.");
-
-                            errorResponse();
-                            return;
-                        }
-
-                        var args = new MessagesReorderStickerSetsArgs
-                        {
-                            Order = telegramOrder
-                        };
-
-                        bool response =
-                            (bool)TelegramUtils.RunSynchronously(
-                                client.Client.Methods.MessagesReorderStickerSetsAsync(args));
-
-                        result(response);
-                    }
-                }
-                catch(Exception ex)
-                {
-                    Utils.DebugPrint(TAG_TELEGRAM_STICKERS, nameof(StickerPacksReordered) + " exception reordering stickers in Telegram: " + ex);
-
-                    errorResponse();
-                }
-            });
-        }
-
         public Task StickerPackInstalled(Stickers.StickerPack stickerPack, Action<bool> result)
         {
             return Task.Factory.StartNew(() =>

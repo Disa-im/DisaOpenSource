@@ -169,18 +169,6 @@ namespace Disa.Framework
         Task StickerPackUninstalled(StickerPack stickerPack, Action<bool> result);
 
         /// <summary>
-        /// Set the result of the <see cref="Action{bool}"/> as the success or failure of 
-        /// redefining the order of the <see cref="StickerPack"/>s.
-        /// </summary>
-        /// <param name="stickerPackId">The <see cref="StickerPack.Id"/> whose position has changed.</param>
-        /// <param name="newPos">The new position for the <see cref="StickerPack"/>.</param>
-        /// <param name="newOrder">A collection of <see cref="StickerPack.ID"/>s specifying the new 
-        /// order of the <see cref="StickerPack"/>s.</param>
-        /// <param name="result"><see cref="Action"/> on which the result should be set.</param>
-        /// <returns>A new <see cref="Task"/> that sets the result <see cref="Action{bool}"/>.</returns>
-        Task StickerPacksReordered(string stickerPackId, int newPos, List<string> newOrder, Action<bool> result);
-
-        /// <summary>
         /// Set the result of the <see cref="Action{Byte[]}"/> as the the attribution logo
         /// for this stickers service provider.
         /// 

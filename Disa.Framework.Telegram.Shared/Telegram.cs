@@ -65,7 +65,7 @@ namespace Disa.Framework.Telegram
     [StickerParameters(
         stickerRecordType: StickerParameters.RecordType.Webp,
         sizeLimit: 25000000, // 25MB
-        supportedExtensions: new string[] { ".webp" })]
+        supportedExtensions: new string[] { ".gif", ".webp" })]
     public partial class Telegram : Service, IVisualBubbleServiceId, ITerminal
     {
         public static uint MESSAGE_FLAG_REPLY = 0x00000001;
