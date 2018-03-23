@@ -79,7 +79,7 @@ namespace Disa.Framework
         {
             get
             {
-                return "50";
+                return "60";
             }
         }
 
