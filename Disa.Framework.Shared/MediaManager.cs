@@ -504,6 +504,14 @@ namespace Disa.Framework
             return mime.IndexOf("image", StringComparison.Ordinal) == 0;
         }
 
+        public static bool IsImageGif(string mimeType)
+        {
+            if (mimeType == null)
+                return false;
+
+            return mimeType.ToLower().Contains("image/gif");
+        }
+
         /// <summary>
         /// Given a mime type, determine if it represents a sticker mime type.
         /// </summary>
