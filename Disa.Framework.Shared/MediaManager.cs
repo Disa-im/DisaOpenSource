@@ -328,6 +328,12 @@ namespace Disa.Framework
             return filePath;
         }
 
+        [Obsolete("GenerateFileLocation is deprecated, please use GenerateDisaFileLocation instead.", true)]
+        public static string GenerateFileLocation(Func<string> basePath, string fileName)
+        {
+            return GenerateDisaFileLocation(basePath, fileName);
+        }
+
         /// <summary>
         /// Given an extension, generate a unique filename of the format:
         /// timestamp+spinner+extension
@@ -504,6 +510,7 @@ namespace Disa.Framework
             return mime.IndexOf("image", StringComparison.Ordinal) == 0;
         }
 
+        [Obsolete("IsImageGif is deprecated, please use IsGifType instead.", true)]
         public static bool IsImageGif(string mimeType)
         {
             if (mimeType == null)
