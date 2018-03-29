@@ -517,7 +517,7 @@ namespace Disa.Framework.Telegram
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
