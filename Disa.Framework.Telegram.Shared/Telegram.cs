@@ -420,7 +420,7 @@ namespace Disa.Framework.Telegram
                         {
                             if (channel.Left != null)
                             {
-                                Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroup });
+                                // do nothing
                             }
                             else
                             {
@@ -1524,14 +1524,10 @@ namespace Disa.Framework.Telegram
                     var bubbleGroupToDelete = BubbleGroupManager.FindWithAddress(this, address);
                     if (bubbleGroupToSwitch != null)
                     {
-						if (Platform.GetCurrentBubbleGroupOnUI() == bubbleGroupToDelete)
+						if (Platform.GetCurrentBubbleGroupOnUI()?.Address == bubbleGroupToDelete?.Address)
 						{
-							Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
+                            Platform.SwitchCurrentBubbleGroupOnUI(bubbleGroupToSwitch);
 						}
-                    }
-                    if (bubbleGroupToDelete != null)
-                    {
-                        Platform.DeleteBubbleGroup(new BubbleGroup[] { bubbleGroupToDelete });
                     }
                 }
                 return new List<VisualBubble>();
