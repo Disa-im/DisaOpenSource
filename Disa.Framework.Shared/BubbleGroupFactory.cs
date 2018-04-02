@@ -469,57 +469,71 @@ namespace Disa.Framework
 
         public static BubbleGroup AddNewIfNotExist(VisualBubble bubble, bool updateUi = false)
         {
-            var group =
+            lock (BubbleGroupDatabase.OperationLock)
+            {
+                var group =
                 BubbleGroupManager.FindWithAddress(bubble.Service, bubble.Address);
-            if (@group != null)
-                return null;
+                if (@group != null)
+                    return null;
 
-            return AddNewInternal(bubble, updateUi);
+                return AddNewInternal(bubble, updateUi);
+            }
         }
 
         public static BubbleGroup AddNew(NewBubble newBubble, bool updateUi = false)
         {
-            return AddNewInternal((VisualBubble)newBubble, updateUi);
+            lock (BubbleGroupDatabase.OperationLock)
+            {
+                var group =
+                BubbleGroupManager.FindWithAddress(newBubble.Service, newBubble.Address);
+                if (@group != null)
+                    return group;
+
+                return AddNewInternal(newBubble, updateUi);
+            }
         }
 
         private static BubbleGroup AddNewInternal(VisualBubble newBubble, bool raiseBubbleInserted)
         {
-            var group = new BubbleGroup(newBubble, null, false);
-
-            BubbleGroupSettingsManager.SetUnreadIndicatorGuid(group, group.LastBubbleSafe().ID, true);
-
-            if (ServiceManager.IsRunning(@group.Service))
+            lock (BubbleGroupDatabase.OperationLock)
             {
-                newBubble.Service.NewBubbleGroupCreated(@group).ContinueWith(x =>
+                var group = new BubbleGroup(newBubble, null, false);
+
+                BubbleGroupSettingsManager.SetUnreadIndicatorGuid(group, group.LastBubbleSafe().ID, true);
+
+                if (ServiceManager.IsRunning(@group.Service))
                 {
+                    newBubble.Service.NewBubbleGroupCreated(@group).ContinueWith(x =>
+                    {
                     // force the UI to refetch the photo
                     @group.IsPhotoSetFromService = false;
-                    BubbleManager.SendSubscribe(@group, true);
-                    BubbleGroupUpdater.Update(@group);
-                });
-            }
-
-            BubbleGroupManager.BubbleGroupsAdd(@group);
-
-            BubbleGroupDatabase.AddBubble(@group, newBubble);
-
-            if (raiseBubbleInserted)
-            {
-                try
-                {
-                    BubbleGroupEvents.RaiseBubbleInserted(newBubble, @group);
+                        BubbleManager.SendSubscribe(@group, true);
+                        BubbleGroupUpdater.Update(@group);
+                    });
                 }
-                catch (Exception ex)
+
+                BubbleGroupManager.BubbleGroupsAdd(@group);
+
+                BubbleGroupDatabase.AddBubble(@group, newBubble);
+
+                if (raiseBubbleInserted)
                 {
-                    Utils.DebugPrint(
-                        "Error in notifying the interface that the bubble group has been updated (" +
-                        newBubble.Service.Information.ServiceName + "): " + ex.Message);
+                    try
+                    {
+                        BubbleGroupEvents.RaiseBubbleInserted(newBubble, @group);
+                    }
+                    catch (Exception ex)
+                    {
+                        Utils.DebugPrint(
+                            "Error in notifying the interface that the bubble group has been updated (" +
+                            newBubble.Service.Information.ServiceName + "): " + ex.Message);
+                    }
                 }
+
+                BubbleGroupUpdater.Update(@group);
+
+                return @group;
             }
-
-            BubbleGroupUpdater.Update(@group);
-
-            return @group;
         }
     }
 }
