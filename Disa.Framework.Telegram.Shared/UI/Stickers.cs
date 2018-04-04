@@ -1,4 +1,5 @@
-﻿using Disa.Framework.Stickers;
+﻿/* Removing sticker support until we get to schema 66 for Telegram
+using Disa.Framework.Stickers;
 using ProtoBuf;
 using SharpTelegram.Schema;
 using System;
@@ -864,3 +865,4 @@ namespace Disa.Framework.Telegram
         #endregion
     }
 }
+*/
