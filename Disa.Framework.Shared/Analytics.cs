@@ -1,7 +1,7 @@
 ﻿namespace Disa.Framework
 {
     /// <summary>
-    /// A centralized collection of official meta-data and other supporting elements for our Google Analytics implementation.
+    /// A centralized collection of official meta-data and other supporting elements for our Firebase Analytics implementation.
     /// 
     /// IMPORTANT: The actual submission of analytics events is done in the Disa Android client. Disa.Framework will actually publish
     /// analytics events to the Disa Android client via C# events (see below).
@@ -9,8 +9,9 @@
     public static class Analytics
     {
         /// <summary>
-        /// This enum provides type-safe representations for Google Analytics Screen Names.
+        /// This enum provides type-safe representations for Firebase Analytics Screen Names.
         /// 
+        /// This note does not apply to Firebase yet as Firebase does not support publishing screen names with parameters.
         /// IMPORTANT: Some of these Screen Names require a <see cref="Service"/> to be assocated with them as well. 
         /// Comments for an enum representing a Screen Name requiring a <see cref="Service"/> to be associated 
         /// will indicate when this is necessary.
@@ -80,7 +81,27 @@
         }
 
         /// <summary>
-        /// This enum provides type-safe representations for Google Analytics Event Actions.
+        /// Our defined parameter key for the category of an event when submitting a Firebase Analytics event.
+        /// </summary>
+        public const string EVENT_CATEGORY_KEY = "event_category";
+
+        /// <summary>
+        /// Our defined parameter key for the plugin name associated with an event when submitting a Firebase Analytics event.
+        /// </summary>
+        public const string EVENT_PLUGIN_NAME_KEY = "event_plugin_name";
+
+        /// <summary>
+        /// Our defined parameter key for the service name associated with an event when submitting a Firebase Analytics event.
+        /// </summary>
+        public const string EVENT_SERVICE_NAME_KEY = "event_service_name";
+
+        /// <summary>
+        /// Our defined parameter key for a count associated with an event when submitting a Firebase Analytics event.
+        /// </summary>
+        public const string EVENT_COUNT_KEY = "event_count";
+
+        /// <summary>
+        /// This enum provides type-safe representations for Firebase Analytics Event Actions.
         /// </summary>
         public enum EventAction
         {
@@ -100,7 +121,7 @@
         }
 
         /// <summary>
-        /// This enum provides type-safe representations for Google Analytics Event Categories.
+        /// This enum provides type-safe representations for Firebase Analytics Event Categories.
         /// </summary>
         public enum EventCategory
         {
@@ -109,22 +130,9 @@
             Messaging
         }
 
-        /// <summary>
-        /// This enum provides type-safe representations for Google Analytics Custom Dimension Indexes.
-        /// </summary>
-        public enum CustomDimensionIndex
-        {
-            PluginName,
-            ServiceName,
-            ServiceActiveCount
-        }
-
-        public delegate void ScreenNameHandler(ScreenName screenName);
-        public delegate void ScreenNameWithBubbleGroupHandler(ScreenName screenName, BubbleGroup bubbleGroup);
-        public delegate void ScreenNameWithServiceHandler(ScreenName screenName, Service service);
         public delegate void PluginEventHandler(EventAction eventAction, EventCategory eventCategory, string pluginName);
         public delegate void ServiceEventHandler(EventAction eventAction, EventCategory eventCategory, Service service);
-        public delegate void CountEventHandler(EventAction eventAction, EventCategory eventCategory, CustomDimensionIndex customDimensionIndex, int count);
+        public delegate void CountEventHandler(EventAction eventAction, EventCategory eventCategory, int count);
 
         /// <summary>
         /// This event allows Disa.Framework to publish <see cref="Service"/> related analytic events to the Disa Android client.
@@ -160,19 +168,17 @@
         /// </summary>
         /// <param name="eventAction">The type safe representation of the Event Action.</param>
         /// <param name="eventCategory">The type safe representation of the Event Category.</param>
-        /// <param name="customDimensionIndex">The type safe representation of the Custom Dimension Index.</param>
         /// <param name="count">The count to be associated with this Google Analytics event.</param>
         internal static void RaiseCountEvent(
             EventAction eventAction,
             EventCategory eventCategory,
-            CustomDimensionIndex customDimensionIndex,
             int count)
         {
-            CountEvent?.Invoke(eventAction, eventCategory, customDimensionIndex, count);
+            CountEvent?.Invoke(eventAction, eventCategory, count);
         }
 
         /// <summary>
-        /// Converts a type safe <see cref="ScreenName"/> enum into a defined string for Google Analytics.
+        /// Converts a type safe <see cref="ScreenName"/> enum into a defined string for Firebase Analytics.
         /// </summary>
         /// <param name="screenName">The type safe enum we want to convert.</param>
         /// <returns> The defined string for Google Analytics.</returns>
@@ -210,7 +216,7 @@
         }
 
         /// <summary>
-        /// Converts a type safe <see cref="EventAction"/> into a defined string for Google Analytics.
+        /// Converts a type safe <see cref="EventAction"/> into a defined string for Firebase Analytics.
         /// </summary>
         /// <param name="eventAction">The type safe enum we want to convert.</param>
         /// <returns>The defined string for Google Analytics.</returns>
@@ -240,7 +246,7 @@
         }
 
         /// <summary>
-        /// Converts a type safe <see cref="EventCategory"/> enum into a defined string for Google Analytics.
+        /// Converts a type safe <see cref="EventCategory"/> enum into a defined string for Firebase Analytics.
         /// </summary>
         /// <param name="eventCategory">The type safe enum we want to convert.</param>
         /// <returns>The defined string for Google Analytics.</returns>
@@ -254,27 +260,6 @@
             }
 
             return string.Empty;
-        }
-
-        /// <summary>
-        /// Converts a type safe <see cref="CustomDimensionIndex"/> into a defined int for Google Analytics.
-        /// 
-        /// Note:
-        /// Although we could define the enum values to match the DimensionIndex, we are using this helper function
-        /// to stay consistent with how we determine values for other Google Analytics elements.
-        /// </summary>
-        /// <param name="customDimensionIndex">The enum we want to convert.</param>
-        /// <returns>The defined int for Google Analytics.</returns>
-        public static int GetCustomDimensionIndex(CustomDimensionIndex customDimensionIndex)
-        {
-            switch (customDimensionIndex)
-            {
-                case CustomDimensionIndex.PluginName: { return 1; }
-                case CustomDimensionIndex.ServiceName: { return 4; }
-                case CustomDimensionIndex.ServiceActiveCount: { return 3; }
-            }
-
-            return -1;
         }
     }
 }

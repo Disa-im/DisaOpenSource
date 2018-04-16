@@ -57,7 +57,6 @@ namespace Disa.Framework
             Analytics.RaiseCountEvent(
                 Analytics.EventAction.ServiceActiveCount,
                 Analytics.EventCategory.Services,
-                Analytics.CustomDimensionIndex.ServiceActiveCount,
                 RegisteredNoUnified.Count());
         }
 
