@@ -1,7 +1,7 @@
 ﻿namespace Disa.Framework
 {
     /// <summary>
-    /// A centralized collection of official meta-data and other supporting elements for our Firebase Analytics implementation.
+    /// A centralized collection of official meta-data and other supporting elements for our App Center Analytics implementation.
     /// 
     /// IMPORTANT: The actual submission of analytics events is done in the Disa Android client. Disa.Framework will actually publish
     /// analytics events to the Disa Android client via C# events (see below).
@@ -9,9 +9,9 @@
     public static class Analytics
     {
         /// <summary>
-        /// This enum provides type-safe representations for Firebase Analytics Screen Names.
+        /// This enum provides type-safe representations for App Center Analytics Screen Names.
         /// 
-        /// This note does not apply to Firebase yet as Firebase does not support publishing screen names with parameters.
+        /// This note does not apply to App Center yet as App Center does not support publishing screen names with parameters.
         /// IMPORTANT: Some of these Screen Names require a <see cref="Service"/> to be assocated with them as well. 
         /// Comments for an enum representing a Screen Name requiring a <see cref="Service"/> to be associated 
         /// will indicate when this is necessary.
@@ -81,27 +81,27 @@
         }
 
         /// <summary>
-        /// Our defined parameter key for the category of an event when submitting a Firebase Analytics event.
+        /// Our defined parameter key for the category of an event when submitting a App Center Analytics event.
         /// </summary>
         public const string EVENT_CATEGORY_KEY = "event_category";
 
         /// <summary>
-        /// Our defined parameter key for the plugin name associated with an event when submitting a Firebase Analytics event.
+        /// Our defined parameter key for the plugin name associated with an event when submitting a App Center Analytics event.
         /// </summary>
         public const string EVENT_PLUGIN_NAME_KEY = "event_plugin_name";
 
         /// <summary>
-        /// Our defined parameter key for the service name associated with an event when submitting a Firebase Analytics event.
+        /// Our defined parameter key for the service name associated with an event when submitting a App Center Analytics event.
         /// </summary>
         public const string EVENT_SERVICE_NAME_KEY = "event_service_name";
 
         /// <summary>
-        /// Our defined parameter key for a count associated with an event when submitting a Firebase Analytics event.
+        /// Our defined parameter key for a count associated with an event when submitting a App Center Analytics event.
         /// </summary>
         public const string EVENT_COUNT_KEY = "event_count";
 
         /// <summary>
-        /// This enum provides type-safe representations for Firebase Analytics Event Actions.
+        /// This enum provides type-safe representations for App Center Analytics Event Actions.
         /// </summary>
         public enum EventAction
         {
@@ -121,7 +121,7 @@
         }
 
         /// <summary>
-        /// This enum provides type-safe representations for Firebase Analytics Event Categories.
+        /// This enum provides type-safe representations for App Center Analytics Event Categories.
         /// </summary>
         public enum EventCategory
         {
@@ -178,7 +178,7 @@
         }
 
         /// <summary>
-        /// Converts a type safe <see cref="ScreenName"/> enum into a defined string for Firebase Analytics.
+        /// Converts a type safe <see cref="ScreenName"/> enum into a defined string for App Center Analytics.
         /// </summary>
         /// <param name="screenName">The type safe enum we want to convert.</param>
         /// <returns> The defined string for Google Analytics.</returns>
@@ -216,7 +216,7 @@
         }
 
         /// <summary>
-        /// Converts a type safe <see cref="EventAction"/> into a defined string for Firebase Analytics.
+        /// Converts a type safe <see cref="EventAction"/> into a defined string for App Center Analytics.
         /// </summary>
         /// <param name="eventAction">The type safe enum we want to convert.</param>
         /// <returns>The defined string for Google Analytics.</returns>
@@ -246,7 +246,7 @@
         }
 
         /// <summary>
-        /// Converts a type safe <see cref="EventCategory"/> enum into a defined string for Firebase Analytics.
+        /// Converts a type safe <see cref="EventCategory"/> enum into a defined string for App Center Analytics.
         /// </summary>
         /// <param name="eventCategory">The type safe enum we want to convert.</param>
         /// <returns>The defined string for Google Analytics.</returns>
